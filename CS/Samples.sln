@@ -1,0 +1,76 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.6
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebDAVServer.FileSystemStorage.HttpListener", "WebDAVServer.FileSystemStorage.HttpListener\WebDAVServer.FileSystemStorage.HttpListener.csproj", "{536F0C1C-D441-4928-A961-10E073B8B52A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebDAVServer.SqlStorage.HttpListener", "WebDAVServer.SqlStorage.HttpListener\WebDAVServer.SqlStorage.HttpListener.csproj", "{046D3CF7-9839-492A-AF5F-32F1DDA1006D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CalDAVServer.FileSystemStorage.AspNet", "CalDAVServer.FileSystemStorage.AspNet\CalDAVServer.FileSystemStorage.AspNet.csproj", "{B003F52F-D825-4296-8874-B2E517FED127}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CalDAVServer.SqlStorage.AspNet", "CalDAVServer.SqlStorage.AspNet\CalDAVServer.SqlStorage.AspNet.csproj", "{5185E6DC-0FF9-4AE7-869F-938E4015D9C1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CardDAVServer.FileSystemStorage.AspNet", "CardDAVServer.FileSystemStorage.AspNet\CardDAVServer.FileSystemStorage.AspNet.csproj", "{D44EBC8D-8299-4E05-A3C1-0BEA20EF2219}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CardDAVServer.SqlStorage.AspNet", "CardDAVServer.SqlStorage.AspNet\CardDAVServer.SqlStorage.AspNet.csproj", "{97609EB6-4D8B-4BAA-97A6-2F3842F98388}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebDAVServer.FileSystemStorage.AspNet", "WebDAVServer.FileSystemStorage.AspNet\WebDAVServer.FileSystemStorage.AspNet.csproj", "{8E1FFEDD-8FE5-4DAD-8F17-ACEB82565764}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebDAVServer.FileSystemStorage.AspNetCore", "WebDAVServer.FileSystemStorage.AspNetCore\WebDAVServer.FileSystemStorage.AspNetCore.csproj", "{7882E99E-DCD0-4F3E-BE04-548723FB12C1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebDAVServer.SqlStorage.AspNet", "WebDAVServer.SqlStorage.AspNet\WebDAVServer.SqlStorage.AspNet.csproj", "{E5E564B3-A984-42AA-B4F2-9165A2C7945D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebDAVServer.SqlStorage.AspNetCore", "WebDAVServer.SqlStorage.AspNetCore\WebDAVServer.SqlStorage.AspNetCore.csproj", "{F4F9511F-2FF8-42AC-88FB-B70197AD20D2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{536F0C1C-D441-4928-A961-10E073B8B52A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{536F0C1C-D441-4928-A961-10E073B8B52A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{536F0C1C-D441-4928-A961-10E073B8B52A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{536F0C1C-D441-4928-A961-10E073B8B52A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{046D3CF7-9839-492A-AF5F-32F1DDA1006D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{046D3CF7-9839-492A-AF5F-32F1DDA1006D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{046D3CF7-9839-492A-AF5F-32F1DDA1006D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{046D3CF7-9839-492A-AF5F-32F1DDA1006D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B003F52F-D825-4296-8874-B2E517FED127}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B003F52F-D825-4296-8874-B2E517FED127}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B003F52F-D825-4296-8874-B2E517FED127}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B003F52F-D825-4296-8874-B2E517FED127}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5185E6DC-0FF9-4AE7-869F-938E4015D9C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5185E6DC-0FF9-4AE7-869F-938E4015D9C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5185E6DC-0FF9-4AE7-869F-938E4015D9C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5185E6DC-0FF9-4AE7-869F-938E4015D9C1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D44EBC8D-8299-4E05-A3C1-0BEA20EF2219}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D44EBC8D-8299-4E05-A3C1-0BEA20EF2219}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D44EBC8D-8299-4E05-A3C1-0BEA20EF2219}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D44EBC8D-8299-4E05-A3C1-0BEA20EF2219}.Release|Any CPU.Build.0 = Release|Any CPU
+		{97609EB6-4D8B-4BAA-97A6-2F3842F98388}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{97609EB6-4D8B-4BAA-97A6-2F3842F98388}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{97609EB6-4D8B-4BAA-97A6-2F3842F98388}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{97609EB6-4D8B-4BAA-97A6-2F3842F98388}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8E1FFEDD-8FE5-4DAD-8F17-ACEB82565764}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E1FFEDD-8FE5-4DAD-8F17-ACEB82565764}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8E1FFEDD-8FE5-4DAD-8F17-ACEB82565764}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8E1FFEDD-8FE5-4DAD-8F17-ACEB82565764}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7882E99E-DCD0-4F3E-BE04-548723FB12C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7882E99E-DCD0-4F3E-BE04-548723FB12C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7882E99E-DCD0-4F3E-BE04-548723FB12C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7882E99E-DCD0-4F3E-BE04-548723FB12C1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E5E564B3-A984-42AA-B4F2-9165A2C7945D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E5E564B3-A984-42AA-B4F2-9165A2C7945D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E5E564B3-A984-42AA-B4F2-9165A2C7945D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E5E564B3-A984-42AA-B4F2-9165A2C7945D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F4F9511F-2FF8-42AC-88FB-B70197AD20D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F4F9511F-2FF8-42AC-88FB-B70197AD20D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F4F9511F-2FF8-42AC-88FB-B70197AD20D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F4F9511F-2FF8-42AC-88FB-B70197AD20D2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>PayloadContent</key>
+    <array>
+      <dict>
+        <key>CalDAVAccountDescription</key>
+        <string>{5}</string>
+        <key>CalDAVHostName</key>
+        <string>{0}</string>
+        <key>CalDAVPort</key>
+        <real>{3}</real>
+        <key>CalDAVPrincipalURL</key>
+        <string>{1}</string>
+        <key>CalDAVUseSSL</key>
+        <{4}/>
+        <key>CalDAVUsername</key>
+        <string>{2}</string>
+        <key>PayloadDescription</key>
+        <string>CalDAV-Account</string>
+        <key>PayloadDisplayName</key>
+        <string>CalDAV</string>
+        <key>PayloadIdentifier</key>
+        <string>{0}.caldav</string>
+        <key>PayloadOrganization</key>
+        <string></string>
+        <key>PayloadType</key>
+        <string>com.apple.caldav.account</string>
+        <key>PayloadUUID</key>
+        <string>{8}</string>
+        <key>PayloadVersion</key>
+        <integer>1</integer>
+      </dict>
+    </array>
+    <key>PayloadDescription</key>
+    <string>My Calendar Server v{6} built on IT Hit WebDAV Server Engine v{7}</string>
+    <key>PayloadDisplayName</key>
+    <string>My Calendar Server</string>
+    <key>PayloadIdentifier</key>
+    <string>{0}.cal</string>
+    <key>PayloadOrganization</key>
+    <string>My Corp, Ltd</string>
+    <key>PayloadRemovalDisallowed</key>
+    <false/>
+    <key>PayloadType</key>
+    <string>Configuration</string>
+    <key>PayloadUUID</key>
+    <string>fea7bd47-ba91-4107-b71b-7a2b1a14d457</string>
+    <key>PayloadVersion</key>
+    <integer>1</integer>
+  </dict>
+</plist>

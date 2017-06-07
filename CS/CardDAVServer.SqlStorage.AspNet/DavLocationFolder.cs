@@ -1,0 +1,76 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Threading.Tasks;
+
+using ITHit.WebDAV.Server;
+
+using CardDAVServer.SqlStorage.AspNet.Acl;
+using CardDAVServer.SqlStorage.AspNet.CardDav;
+
+namespace CardDAVServer.SqlStorage.AspNet
+{
+    /// <summary>
+    /// Logical folder which contains /acl/, /calendars/ and /addressbooks/ folders.
+    /// Represents a folder with the following path: [DAVLocation]
+    /// </summary>
+    /// <example>
+    /// [DavLocation]
+    ///  |-- acl
+    ///  |-- calendars
+    ///  |-- addressbooks
+    /// </example>
+    public class DavLocationFolder : LogicalFolder
+    {
+        /// <summary>
+        /// Path to this folder.
+        /// </summary>
+        /// <value>Returns first non-root path from DavLocation section from config file or "/" if no DavLocation section is found.</value>
+        public static string DavLocationFolderPath
+        {
+            get
+            {
+                NameValueCollection davLocationsSection = (NameValueCollection)System.Configuration.ConfigurationManager.GetSection("davLocations");
+
+                if (davLocationsSection != null)
+                {
+                    foreach (string path in davLocationsSection.AllKeys)
+                    {
+                        // Typically you will enable WebDAV on site root ('/') to allow CalDAV/CardDAV 
+                        // discovery. We skip site root WebDAV location to find first non-root location.
+                        if (!string.IsNullOrEmpty(path.Trim('/')))
+                            return path.TrimEnd('/') + '/';
+                    }
+                }
+
+                // If no davLocation section is found or no non-root WebDAV location is specified in 
+                // configuration file asume the WebDAV is on web site root.
+                return "/";
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of this class.
+        /// </summary>
+        /// <param name="context">Instance of <see cref="DavContext"/></param>
+        public DavLocationFolder(DavContext context)
+            : base(context, DavLocationFolderPath)
+        {
+        }
+
+        /// <summary>
+        /// Retrieves children of this folder: /acl/, /calendars/ and /addressbooks/ folders.
+        /// </summary>
+        /// <param name="propNames">Properties requested by client application for each child.</param>
+        /// <returns>Children of this folder.</returns>
+        public override async Task<IEnumerable<IHierarchyItemAsync>> GetChildrenAsync(IList<PropertyName> propNames)
+        {
+            // In this samle we list users folder only. Groups and groups folder is not implemented.
+            return new IHierarchyItemAsync[] 
+            { 
+                  new AclFolder(Context)
+                , new AddressbooksRootFolder(Context)
+            };
+        }
+    }
+}

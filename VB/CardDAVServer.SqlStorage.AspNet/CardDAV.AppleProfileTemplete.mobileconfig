@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>PayloadContent</key>
+    <array>
+      <dict>
+        <key>CardDAVAccountDescription</key>
+        <string>{5}</string>
+        <key>CardDAVHostName</key>
+        <string>{0}</string>
+        <key>CardDAVPort</key>
+        <integer>{3}</integer>
+        <key>CardDAVPrincipalURL</key>
+        <string>{1}</string>
+        <key>CardDAVUseSSL</key>
+        <{4}/>
+        <key>CardDAVUsername</key>
+        <string>{2}</string>
+        <key>PayloadDescription</key>
+        <string>CardDAV-Accounts</string>
+        <key>PayloadDisplayName</key>
+        <string>CardDAV</string>
+        <key>PayloadIdentifier</key>
+        <string>{0}.carddav</string>
+        <key>PayloadOrganization</key>
+        <string></string>
+        <key>PayloadType</key>
+        <string>com.apple.carddav.account</string>
+        <key>PayloadUUID</key>
+        <string>{8}</string>
+        <key>PayloadVersion</key>
+        <integer>1</integer>
+      </dict>
+    </array>
+    <key>PayloadDescription</key>
+    <string>My Contacts Server v{6} built on IT Hit WebDAV Server Engine v{7}</string>
+    <key>PayloadDisplayName</key>
+    <string>My Contacts Server</string>
+    <key>PayloadIdentifier</key>
+    <string>{0}.card</string>
+    <key>PayloadOrganization</key>
+    <string>My Corp, Ltd</string>
+    <key>PayloadRemovalDisallowed</key>
+    <false/>
+    <key>PayloadType</key>
+    <string>Configuration</string>
+    <key>PayloadUUID</key>
+    <string>fea7bd47-ba91-4107-b71b-7a2b1a14d451</string>
+    <key>PayloadVersion</key>
+    <integer>1</integer>
+  </dict>
+</plist>
