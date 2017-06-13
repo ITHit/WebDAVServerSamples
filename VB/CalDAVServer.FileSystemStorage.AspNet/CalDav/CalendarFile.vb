@@ -32,6 +32,12 @@ Namespace CalDav
         Inherits DavFile
         Implements ICalendarFileAsync
 
+        ''' <summary>
+        ''' Returns calendar file that corresponds to path or null if no calendar file is found.
+        ''' </summary>
+        ''' <param name="context">Instance of <see cref="DavContext"/></param>
+        ''' <param name="path">Encoded path relative to WebDAV root.</param>
+        ''' <returns>CalendarFile instance or null if not found.</returns>
         Public Shared Function GetCalendarFile(context As DavContext, path As String) As CalendarFile
             Dim pattern As String = String.Format("^/?{0}/(?<user_name>[^/]+)/(?<calendar_name>[^/]+)/(?<file_name>[^/]+\.ics)$",
                                                  CalendarsRootFolder.CalendarsRootFolderPath.Trim(New Char() {"/"c}).Replace("/", "/?"))
@@ -51,7 +57,12 @@ Namespace CalDav
             MyBase.New(file, context, path)
         End Sub
 
+        ''' <summary>
+        ''' Called when client application deletes this file.
+        ''' </summary>
+        ''' <param name="multistatus">Error description if case delate failed. Ignored by most clients.</param>
         Public Overrides Async Function DeleteAsync(multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.DeleteAsync
+            ' Notify attendees that event is canceled if deletion is successful.
             Dim calendarObjectContent As String = File.ReadAllText(fileSystemInfo.FullName)
             Await MyBase.DeleteAsync(multistatus)
             Dim calendars As IEnumerable(Of IComponent) = New vFormatter().Deserialize(calendarObjectContent)
@@ -60,8 +71,18 @@ Namespace CalDav
             Await iMipEventSchedulingTransport.NotifyAttendeesAsync(context, calendar)
         End Function
 
+        ''' <summary>
+        ''' Called when event or to-do is being saved to back-end storage.
+        ''' </summary>
+        ''' <param name="stream">Stream containing VCALENDAR, typically with a single VEVENT ot VTODO component.</param>
+        ''' <param name="contentType">Content type.</param>
+        ''' <param name="startIndex">Starting byte in target file
+        ''' for which data comes in <paramref name="content"/>  stream.</param>
+        ''' <param name="totalFileSize">Size of file as it will be after all parts are uploaded. -1 if unknown (in case of chunked upload).</param>
+        ''' <returns>Whether the whole stream has been written.</returns>
         Public Overrides Async Function WriteAsync(content As Stream, contentType As String, startIndex As Long, totalFileSize As Long) As Task(Of Boolean) Implements IContentAsync.WriteAsync
             Dim result As Boolean = Await MyBase.WriteAsync(content, contentType, startIndex, totalFileSize)
+            ' Notify attendees that event is created or modified.
             Dim calendarObjectContent As String = File.ReadAllText(fileSystemInfo.FullName)
             Dim calendars As IEnumerable(Of IComponent) = New vFormatter().Deserialize(calendarObjectContent)
             Dim calendar As ICalendar2 = TryCast(calendars.First(), ICalendar2)

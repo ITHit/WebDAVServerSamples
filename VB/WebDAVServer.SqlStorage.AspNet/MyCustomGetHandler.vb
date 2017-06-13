@@ -65,13 +65,25 @@ Friend Class MyCustomGetHandler
         Me.htmlPath = contentRootPathFolder
     End Sub
 
+    ''' <summary>
+    ''' Handles GET and HEAD request.
+    ''' </summary>
+    ''' <param name="context">Instace of <see cref="DavContextBaseAsync"/> .</param>
+    ''' <param name="item">Instance of <see cref="IHierarchyItemAsync"/>  which was returned by
+    ''' <see cref="DavContextBaseAsync.GetHierarchyItemAsync"/>  for this request.</param>
     Public Async Function ProcessRequestAsync(context As DavContextBaseAsync, item As IHierarchyItemAsync) As Task Implements IMethodHandlerAsync.ProcessRequestAsync
         If TypeOf item Is IItemCollectionAsync Then
+            ' In case of GET requests to WebDAV folders we serve a web page to display 
+            ' any information about this server and how to use it.
+            ' Remember to call EnsureBeforeResponseWasCalledAsync here if your context implementation
+            ' makes some useful things in BeforeResponseAsync.
             Await context.EnsureBeforeResponseWasCalledAsync()
             Dim page As IHttpAsyncHandler = CType(System.Web.Compilation.BuildManager.CreateInstanceFromVirtualPath("~/MyCustomHandlerPage.aspx", GetType(MyCustomHandlerPage)), IHttpAsyncHandler)
             If Type.GetType("Mono.Runtime") IsNot Nothing Then
                 page.ProcessRequest(HttpContext.Current)
             Else
+                ' Here we call BeginProcessRequest instead of ProcessRequest to start an async page execution and be able to call RegisterAsyncTask if required. 
+                ' To call APM method (Begin/End) from TAP method (Task/async/await) the Task.FromAsync must be used.
                 Await Task.Factory.FromAsync(AddressOf page.BeginProcessRequest, AddressOf page.EndProcessRequest, HttpContext.Current, Nothing)
             End If
         Else
@@ -79,6 +91,13 @@ Friend Class MyCustomGetHandler
         End If
     End Function
 
+    ''' <summary>
+    ''' This handler shall only be invoked for <see cref="IFolderAsync"/>  items or if original handler (which
+    ''' this handler substitutes) shall be called for the item.
+    ''' </summary>
+    ''' <param name="item">Instance of <see cref="IHierarchyItemAsync"/>  which was returned by
+    ''' <see cref="DavContextBaseAsync.GetHierarchyItemAsync"/>  for this request.</param>
+    ''' <returns>Returns <c>true</c> if this handler can handler this item.</returns>
     Public Function AppliesTo(item As IHierarchyItemAsync) As Boolean Implements IMethodHandlerAsync.AppliesTo
         Return TypeOf item Is IFolderAsync OrElse OriginalHandler.AppliesTo(item)
     End Function

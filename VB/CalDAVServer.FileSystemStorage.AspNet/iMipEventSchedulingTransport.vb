@@ -16,6 +16,10 @@ Public Class iMipEventSchedulingTransport
 
     Private Const ContentTypePattern As String = "text/calendar; method={0}; charset=UTF-8"
 
+    ''' <summary>
+    ''' Sends an e-mail with event/to-do attachment to every attendee found in <see cref="ICalendar2.Attendees"/>  list.
+    ''' </summary>
+    ''' <param name="calendar">Calendar object with event or to-do. The <see cref="ICalendar2.Method"/>  property must be specified in this calendar object.</param>
     Public Shared Async Function NotifyAttendeesAsync(context As DavContext, calendar As ICalendar2) As Task
         Dim components As IEnumerable(Of IEventBase) = calendar.Events.Cast(Of IEventBase)()
         If Not components.Any() Then
@@ -43,12 +47,18 @@ Public Class iMipEventSchedulingTransport
                     End Using
                 End Using
             Catch ex As Exception
+                ' Probably SMTP server is not configured in web.config/app.config
                 Dim message As String = "Faled to notify attendees about event change. SMTP server is not configured in web.config/app.config" & Environment.NewLine
                 context.Logger.LogError(message, ex)
             End Try
         Next
     End Function
 
+    ''' <summary>
+    ''' Creates <see cref="MailAddress"/>  from <see cref="ICalAddress"/>  that contains e-mail.
+    ''' </summary>
+    ''' <param name="address"><see cref="ICalAddress"/>  that contains e-mail.</param>
+    ''' <returns>New instance of <see cref="MailAddress"/> .</returns>
     Private Shared Function GetMailAddress(address As ICalAddress) As MailAddress
         If Not String.IsNullOrEmpty(address.CommonName) Then
             Return New MailAddress(address.Uri.Replace("mailto:", ""), address.CommonName, Encoding.UTF8)

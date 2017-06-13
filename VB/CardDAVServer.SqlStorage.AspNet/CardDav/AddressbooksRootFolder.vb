@@ -34,7 +34,14 @@ Namespace CardDav
             MyBase.New(context, AddressbooksRootFolderPath)
         End Sub
 
+        ''' <summary>
+        ''' Retrieves children of this folder.
+        ''' </summary>
+        ''' <param name="propNames">Properties requested by client application for each child.</param>
+        ''' <returns>Children of this folder.</returns>
         Public Overrides Async Function GetChildrenAsync(propNames As IList(Of PropertyName)) As Task(Of IEnumerable(Of IHierarchyItemAsync)) Implements IItemCollectionAsync.GetChildrenAsync
+            ' Here we list addressbooks from back-end storage. 
+            ' You can filter addressbooks if requied and return only addressbooks that user has access to.
             Return(Await AddressbookFolder.LoadAllAsync(Context)).OrderBy(Function(x) x.Name)
         End Function
 
@@ -42,6 +49,10 @@ Namespace CardDav
             Throw New DavException("Not implemented.", DavStatus.NOT_IMPLEMENTED)
         End Function
 
+        ''' <summary>
+        ''' Creates a new address book.
+        ''' </summary>
+        ''' <param name="name">Name of the new address book.</param>
         Public Async Function CreateFolderAsync(name As String) As Task Implements IFolderAsync.CreateFolderAsync
             Await AddressbookFolder.CreateAddressbookFolderAsync(Context, name, "")
         End Function

@@ -67,9 +67,20 @@ Friend Class MyCustomGetHandler
         Me.htmlPath = contentRootPathFolder
     End Sub
 
+    ''' <summary>
+    ''' Handles GET and HEAD request.
+    ''' </summary>
+    ''' <param name="context">Instace of <see cref="DavContextBaseAsync"/> .</param>
+    ''' <param name="item">Instance of <see cref="IHierarchyItemAsync"/>  which was returned by
+    ''' <see cref="DavContextBaseAsync.GetHierarchyItemAsync"/>  for this request.</param>
     Public Async Function ProcessRequestAsync(context As DavContextBaseAsync, item As IHierarchyItemAsync) As Task Implements IMethodHandlerAsync.ProcessRequestAsync
         If TypeOf item Is IItemCollectionAsync Then
+            ' In case of GET requests to WebDAV folders we serve a web page to display 
+            ' any information about this server and how to use it.
+            ' Remember to call EnsureBeforeResponseWasCalledAsync here if your context implementation
+            ' makes some useful things in BeforeResponseAsync.
             Await context.EnsureBeforeResponseWasCalledAsync()
+            ' Request to iOS/OS X CalDAV/CardDAV profile.
             If context.Request.RawUrl.EndsWith("?connect") Then
                 Await WriteProfileAsync(context, item, htmlPath)
                 Return
@@ -79,6 +90,8 @@ Friend Class MyCustomGetHandler
             If Type.GetType("Mono.Runtime") IsNot Nothing Then
                 page.ProcessRequest(HttpContext.Current)
             Else
+                ' Here we call BeginProcessRequest instead of ProcessRequest to start an async page execution and be able to call RegisterAsyncTask if required. 
+                ' To call APM method (Begin/End) from TAP method (Task/async/await) the Task.FromAsync must be used.
                 Await Task.Factory.FromAsync(AddressOf page.BeginProcessRequest, AddressOf page.EndProcessRequest, HttpContext.Current, Nothing)
             End If
         Else
@@ -86,10 +99,23 @@ Friend Class MyCustomGetHandler
         End If
     End Function
 
+    ''' <summary>
+    ''' This handler shall only be invoked for <see cref="IFolderAsync"/>  items or if original handler (which
+    ''' this handler substitutes) shall be called for the item.
+    ''' </summary>
+    ''' <param name="item">Instance of <see cref="IHierarchyItemAsync"/>  which was returned by
+    ''' <see cref="DavContextBaseAsync.GetHierarchyItemAsync"/>  for this request.</param>
+    ''' <returns>Returns <c>true</c> if this handler can handler this item.</returns>
     Public Function AppliesTo(item As IHierarchyItemAsync) As Boolean Implements IMethodHandlerAsync.AppliesTo
         Return TypeOf item Is IFolderAsync OrElse OriginalHandler.AppliesTo(item)
     End Function
 
+    ''' <summary>
+    ''' Writes iOS / OS X CalDAV/CardDAV profile.
+    ''' </summary>
+    ''' <param name="context">Instace of <see cref="DavContextBaseAsync"/> .</param>
+    ''' <param name="item">ICalendarFolderAsync or IAddressbookFolderAsync item.</param>
+    ''' <returns></returns>
     Private Async Function WriteProfileAsync(context As DavContextBaseAsync, item As IHierarchyItemAsync, htmlPath As String) As Task
         Dim mobileconfigFileName As String = Nothing
         Dim decription As String = Nothing
@@ -111,8 +137,11 @@ Friend Class MyCustomGetHandler
                                              item.Path, ' CalDAV / CardDAV Principal URL. Here we can return (await (item as ICurrentUserPrincipalAsync).GetCurrentUserPrincipalAsync()).Path if needed.
                                              TryCast(context, DavContext).Identity.Name, ' user name
                                              url.Port, ' port                
-                                             (url.Scheme = "https").ToString().ToLower(), decription, ' CardDAV / CardDAV Account Description
-                                             Assembly.GetAssembly(Me.GetType()).GetName().Version.ToString(), Assembly.GetAssembly(GetType(DavEngineAsync)).GetName().Version.ToString(), payloadUUID
+                                             (url.Scheme = "https").ToString().ToLower(), ' SSL
+                                             decription, ' CardDAV / CardDAV Account Description
+                                             Assembly.GetAssembly(Me.GetType()).GetName().Version.ToString(),
+                                             Assembly.GetAssembly(GetType(DavEngineAsync)).GetName().Version.ToString(),
+                                             payloadUUID
                                              )
         Dim profileBytes As Byte() = SignProfile(context, profile)
         context.Response.ContentType = "application/x-apple-aspen-config"
@@ -123,7 +152,15 @@ Friend Class MyCustomGetHandler
         End Using
     End Function
 
+    ''' <summary>
+    ''' Signs iOS / OS X payload profile with SSL certificate.
+    ''' </summary>
+    ''' <param name="context">Instace of <see cref="DavContextBaseAsync"/> .</param>
+    ''' <param name="profile">Profile to sign.</param>
+    ''' <returns>Signed profile.</returns>
     Private Function SignProfile(context As DavContextBaseAsync, profile As String) As Byte()
+        ' Here you will sign your profile with SSL certificate to avoid "Unsigned" warning on iOS and OS X.
+        ' For demo purposes we just return the profile content unmodified.
         Return context.Engine.ContentEncoding.GetBytes(profile)
     End Function
 End Class

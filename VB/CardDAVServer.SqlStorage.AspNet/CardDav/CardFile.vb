@@ -26,17 +26,37 @@ Namespace CardDav
         ''' </summary>
         Public Shared Extension As String = ".vcf"
 
+        ''' <summary>
+        ''' Loads card files contained in an addressbook folder by address book folder ID.
+        ''' </summary>
+        ''' <param name="context">Instance of <see cref="DavContext"/>  class.</param>
+        ''' <param name="addressbookFolderId">Address book for which cards should be loaded.</param>
+        ''' <param name="propsToLoad">Specifies which properties should be loaded.</param>
+        ''' <returns>List of <see cref="ICardFileAsync"/>  items.</returns>
         Public Shared Async Function LoadByAddressbookFolderIdAsync(context As DavContext, addressbookFolderId As Guid, propsToLoad As PropsToLoad) As Task(Of IEnumerable(Of ICardFileAsync))
+            ' propsToLoad == PropsToLoad.Minimum -> Typical GetChildren call by iOS, Android, eM Client, etc CardDAV clients
+            ' [Summary] is typically not required in GetChildren call, 
+            ' they are extracted for demo purposes only, to be displayed in Ajax File Browser.
+            ' propsToLoad == PropsToLoad.All -> Bynari call, it requires all props in GetChildren call.
             If propsToLoad <> PropsToLoad.Minimum Then Throw New NotImplementedException("LoadByAddressbookFolderIdAsync is implemented only with PropsToLoad.Minimum.")
             Dim sql As String = "SELECT * FROM [card_CardFile] 
                            WHERE [AddressbookFolderId] = @AddressbookFolderId
                            AND [AddressbookFolderId] IN (SELECT [AddressbookFolderId] FROM [card_Access] WHERE [UserId]=@UserId)"
+            'sql = string.Format(sql, GetScPropsToLoad(propsToLoad));
             Return Await LoadAsync(context, sql,
                                   "@UserId", context.UserId,
                                   "@AddressbookFolderId", addressbookFolderId)
         End Function
 
+        ''' <summary>
+        ''' Loads card files by list of their names.
+        ''' </summary>
+        ''' <param name="context">Instance of <see cref="DavContext"/>  class.</param>
+        ''' <param name="fileNames">File names to load.</param>
+        ''' <param name="propsToLoad">Specifies which properties should be loaded.</param>
+        ''' <returns>List of <see cref="ICardFileAsync"/>  items.</returns>
         Public Shared Async Function LoadByFileNamesAsync(context As DavContext, fileNames As IEnumerable(Of String), propsToLoad As PropsToLoad) As Task(Of IEnumerable(Of ICardFileAsync))
+            ' Get IN clause part with list of file UIDs for SELECT.
             Dim selectIn As String = String.Join(", ", fileNames.Select(Function(a) String.Format("'{0}'", a)).ToArray())
             Dim sql As String = "SELECT * FROM [card_CardFile] 
                            WHERE [FileName] IN ({0})
@@ -56,6 +76,13 @@ Namespace CardDav
                                   "@ClientAppName", AppleCardInteroperability.GetClientAppName(context.Request.UserAgent))
         End Function
 
+        ''' <summary>
+        ''' Loads card files by SQL.
+        ''' </summary>
+        ''' <param name="context">Instance of <see cref="DavContext"/>  class.</param>
+        ''' <param name="sql">SQL that queries [card_CardFile], [card_Email], etc tables.</param>
+        ''' <param name="prms">List of SQL parameters.</param>
+        ''' <returns>List of <see cref="ICardFileAsync"/>  items.</returns>
         Private Shared Async Function LoadAsync(context As DavContext, sql As String, ParamArray prms As Object()) As Task(Of IEnumerable(Of ICardFileAsync))
             Dim items As IList(Of ICardFileAsync) = New List(Of ICardFileAsync)()
             Dim stopWatch As Stopwatch = Stopwatch.StartNew()
@@ -102,6 +129,13 @@ Namespace CardDav
             Return items
         End Function
 
+        ''' <summary>
+        ''' Creates a new card file. The actual new [card_CardFile], [card_Email], etc. records are inserted into the database during <see cref="WriteAsync"/>  method call.
+        ''' </summary>
+        ''' <param name="context">Instance of <see cref="DavContext"/>  class.</param> 
+        ''' <param name="addressbookFolderId">Address book folder ID to which this card file will belong to.</param>
+        ''' <param name="fileName">New card file name.</param>
+        ''' <returns>Instance of <see cref="CardFile"/> .</returns>
         Public Shared Function CreateCardFile(context As DavContext, addressbookFolderId As Guid, fileName As String) As CardFile
             Dim cardFile As CardFile = New CardFile(context, fileName, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing)
             cardFile.addressbookFolderId = addressbookFolderId
@@ -266,6 +300,15 @@ Namespace CardDav
             Me.rowsCustomProperties = rowsCustomProperties
         End Sub
 
+        ''' <summary>
+        ''' Called when card is being saved to back-end storage.
+        ''' </summary>
+        ''' <param name="stream">Stream containing VCARD.</param>
+        ''' <param name="contentType">Content type.</param>
+        ''' <param name="startIndex">Starting byte in target file
+        ''' for which data comes in <paramref name="content"/>  stream.</param>
+        ''' <param name="totalFileSize">Size of file as it will be after all parts are uploaded. -1 if unknown (in case of chunked upload).</param>
+        ''' <returns>Whether the whole stream has been written.</returns>
         Public Async Function WriteAsync(stream As Stream, contentType As String, startIndex As Long, totalFileSize As Long) As Task(Of Boolean) Implements IContentAsync.WriteAsync
             'Set timeout to maximum value to be able to upload large card files.
             System.Web.HttpContext.Current.Server.ScriptTimeout = Integer.MaxValue
@@ -274,21 +317,31 @@ Namespace CardDav
                 vCard = reader.ReadToEnd()
             End Using
 
+            ' Typically the stream contains a single vCard.
             Dim cards As IEnumerable(Of IComponent) = New vFormatter().Deserialize(vCard)
             Dim card As ICard2 = TryCast(cards.First(), ICard2)
+            ' Card file UID which is equal to file name.
             Dim uid As String = card.Uid.Text
+            ' Check if this CardDAV client application requires properties conversion.
             If AppleCardInteroperability.NeedsConversion(Context.Request.UserAgent) Then
                 ''' Replace "itemX.PROP" properties created by iOS and OS X with "PROP", so they 
                 ''' are saved as normal props to storage and can be read by any CardDAV client.
                 AppleCardInteroperability.Normalize(card)
             End If
 
+            ' The client app name is stored in DB to update and extract only custom props created by the client making a request.
             Dim clientAppName As String = AppleCardInteroperability.GetClientAppName(Context.Request.UserAgent)
+            ' Save data to [card_CardFile] table.
             Await WriteCardFileAsync(Context, card, addressbookFolderId, isNew, clientAppName)
+            ' Save emails.
             Await WriteEmailsAsync(Context, card.Emails, uid, clientAppName)
+            ' Save addresses.
             Await WriteAddressesAsync(Context, card.Addresses, uid, clientAppName)
+            ' Save telephones.
             Await WriteTelephonesAsync(Context, card.Telephones, uid, clientAppName)
+            ' Save URLs
             Await WriteUrlsAsync(Context, card.Urls, uid, clientAppName)
+            ' Save instant messengers. vCard 3.0+ only
             Dim card3 As ICard3 = TryCast(card, ICard3)
             If card3 IsNot Nothing Then
                 Await WriteInstantMessengersAsync(Context, card3.InstantMessengers, uid, clientAppName)
@@ -297,6 +350,19 @@ Namespace CardDav
             Return True
         End Function
 
+        ''' <summary>
+        ''' Saves data to [card_CardFile] table.
+        ''' </summary>
+        ''' <param name="context">Instance of <see cref="DavContext"/>  class.</param>
+        ''' <param name="card">Card to read data from.</param>
+        ''' <param name="addressbookFolderId">Address book folder that contains this file.</param>
+        ''' <param name="isNew">Flag indicating if this is a new file or file should be updated.</param>
+        ''' <param name="clientAppName">Used to keep custom props created by this CardDAV client when updated by other CardDAV clients.</param>
+        ''' <remarks>
+        ''' This function deletes records in [card_Email], [card_Address], [card_InstantMessenger],
+        ''' [card_Telephone], [card_Url] tables if the card should be updated. Values from the [card_CustomProperty] table 
+        ''' is being deleted if updated by the same client that created a specific custom property.
+        ''' </remarks>
         Private Async Function WriteCardFileAsync(context As DavContext, card As ICard2, addressbookFolderId As Guid, isNew As Boolean, clientAppName As String) As Task
             Dim sql As String
             If isNew Then
@@ -427,6 +493,9 @@ Namespace CardDav
                       END"
             End If
 
+            ' [ClientAppName] = @ClientAppName -> delete all custom props created by this client.
+            ' [ParentId] != [UID]              -> delete all custom params from multiple props: EMAIL, ADR, TEL, IMPP. Keep custom params for any single props in [card_Card].
+            ' [ClientAppName] IS NULL          -> delete all custom props created by some unknown CardDAV client.
             Dim uid As String = card.Uid.Text
             If Await context.ExecuteNonQueryAsync(sql,
                                                  "@UID", uid,                                                                   ' UID
@@ -443,9 +512,13 @@ Namespace CardDav
                                                  "@HonorificPrefix", card.Name.HonorificPrefix,                                             ' N
                                                  "@HonorificSuffix", card.Name.HonorificSuffix,                                             ' N
                                                  "@Kind", TryCast(card, ICard4)?.Kind?.Text,                                          ' KIND         (vCard 4.0)
-                                                 "@Nickname", TryCast(card, ICard3)?.NickNames.PreferedOrFirstProperty?.Values.First(), CreateVarBinaryParam("@Photo", card.Photos.PreferedOrFirstProperty?.Base64Data), "@PhotoMediaType", card.Photos.PreferedOrFirstProperty?.MediaType,                        ' PHOTO TYPE param
-                                                 CreateVarBinaryParam("@Logo", card.Logos.PreferedOrFirstProperty?.Base64Data), "@LogoMediaType", card.Logos.PreferedOrFirstProperty?.MediaType,                         ' LOGO  TYPE param
-                                                 CreateVarBinaryParam("@Sound", card.Sounds.PreferedOrFirstProperty?.Base64Data), "@SoundMediaType", card.Sounds.PreferedOrFirstProperty?.MediaType,                        ' SOUND TYPE param
+                                                 "@Nickname", TryCast(card, ICard3)?.NickNames.PreferedOrFirstProperty?.Values.First(),   ' NICKNAME     (vCard 3.0+)    Here we assume only 1 prop with 1 value for the sake of simplicity.
+                                                 CreateVarBinaryParam("@Photo", card.Photos.PreferedOrFirstProperty?.Base64Data),           ' PHOTO                        Here we assume only 1 prop for the sake of simplicity.
+                                                 "@PhotoMediaType", card.Photos.PreferedOrFirstProperty?.MediaType,                        ' PHOTO TYPE param
+                                                 CreateVarBinaryParam("@Logo", card.Logos.PreferedOrFirstProperty?.Base64Data),            ' LOGO                         Here we assume only 1 prop for the sake of simplicity.
+                                                 "@LogoMediaType", card.Logos.PreferedOrFirstProperty?.MediaType,                         ' LOGO  TYPE param
+                                                 CreateVarBinaryParam("@Sound", card.Sounds.PreferedOrFirstProperty?.Base64Data),           ' SOUND                        Here we assume only 1 prop for the sake of simplicity.
+                                                 "@SoundMediaType", card.Sounds.PreferedOrFirstProperty?.MediaType,                        ' SOUND TYPE param
                                                  New SqlParameter("@Birthday", If(card.BirthDate?.Value?.DateVal, TryCast(DBNull.Value, Object))) With {.SqlDbType = SqlDbType.DateTime2}, New SqlParameter("@Anniversary", If(TryCast(card, ICard4)?.Anniversary?.Value?.DateVal, TryCast(DBNull.Value, Object))) With {.SqlDbType = SqlDbType.DateTime2}, "@Gender", TryCast(card, ICard4)?.Gender?.Sex,                                         ' GENDER       (vCard 4.0)
                                                  "@RevisionUtc", card.Revision?.Value.DateVal,                                          ' REV
                                                  "@SortString", card.SortString?.Text,                                                 ' SORT-STRING
@@ -454,13 +527,16 @@ Namespace CardDav
                                                  "@Geo", Nothing, "@Title", card.Titles.PreferedOrFirstProperty?.Text,                             ' TITLE
                                                  "@Role", card.Roles.PreferedOrFirstProperty?.Text,                              ' ROLE
                                                  "@OrgName", card.Organizations.PreferedOrFirstProperty?.Name,                      ' ORG                          Here we assume only 1 prop for the sake of simplicity.
-                                                 "@OrgUnit", card.Organizations.PreferedOrFirstProperty?.Units?.First(), "@Categories", ListToString(Of String)(TryCast(card, ICard3)?.Categories.Select(Function(x) ListToString(Of String)(x.Values, ",")), ";"), "@Note", card.Notes.PreferedOrFirstProperty?.Text,                              ' NOTE                         Here we assume only 1 prop for the sake of simplicity.
+                                                 "@OrgUnit", card.Organizations.PreferedOrFirstProperty?.Units?.First(),            ' ORG                          Here we assume only 1 prop with 1 unit value for the sake of simplicity.
+                                                 "@Categories", ListToString(Of String)(TryCast(card, ICard3)?.Categories.Select(Function(x) ListToString(Of String)(x.Values, ",")), ";"), ' CATEGORIES  (vCard 3.0+)
+                                                 "@Note", card.Notes.PreferedOrFirstProperty?.Text,                              ' NOTE                         Here we assume only 1 prop for the sake of simplicity.
                                                  "@Classification", TryCast(card, ICard3)?.Classes.PreferedOrFirstProperty?.Text,               ' CLASS                        Here we assume only 1 prop for the sake of simplicity.
                                                  "@ClientAppName", clientAppName                                                         ' Used to keep custom props created by this CardDAV client when updated by other CardDAV clients.
                                                  ) < 1 Then
                 Throw New DavException("Item not found or you do not have enough permissions to complete this operation.", DavStatus.FORBIDDEN)
             End If
 
+            ' Save custom properties and parameters of this component to [card_CustomProperty] table.
             Dim customPropsSqlInsert As String
             Dim customPropsParamsInsert As List(Of Object)
             If PrepareSqlCustomPropertiesOfComponentAsync(card, uid, uid, clientAppName, customPropsSqlInsert, customPropsParamsInsert) Then
@@ -468,11 +544,21 @@ Namespace CardDav
             End If
         End Function
 
+        ''' <summary>
+        ''' Converts <see cref="IEnumerable{T}"/>  to string. Returns null if the list is empty.
+        ''' </summary>
+        ''' <returns>String that contains elements separated by ','.</returns>
         Private Shared Function ListToString(Of T)(arr As IEnumerable(Of T), Optional separator As String = ",") As String
             If(arr Is Nothing) OrElse Not arr.Any() Then Return Nothing
             Return String.Join(Of T)(separator, arr)
         End Function
 
+        ''' <summary>
+        ''' Creates a new SqlParameter with VARBINARY type and base64 content.
+        ''' </summary>
+        ''' <param name="parameterName">SQL parameter name.</param>
+        ''' <param name="base64">Base 64-encoded parameter value.</param>
+        ''' <returns></returns>
         Private Shared Function CreateVarBinaryParam(parameterName As String, base64 As String) As SqlParameter
             Dim param As SqlParameter = New SqlParameter(parameterName, SqlDbType.VarBinary)
             If String.IsNullOrEmpty(base64) Then
@@ -488,6 +574,13 @@ Namespace CardDav
             Return param
         End Function
 
+        ''' <summary>
+        ''' Saves data to [card_Email] table.
+        ''' </summary>
+        ''' <param name="context">Instance of <see cref="DavContext"/>  class.</param>
+        ''' <param name="emails">List of emails to be saved.</param>
+        ''' <param name="uid">Card UID.</param>
+        ''' <param name="clientAppName">Used to keep custom props created by this CardDAV client when updated by other CardDAV clients.</param>
         Private Async Function WriteEmailsAsync(context As DavContext, emails As ITextPropertyList(Of IEmail2), uid As String, clientAppName As String) As Task
             Dim sql As String = "INSERT INTO [card_Email] (
                       [EmailId]
@@ -512,9 +605,12 @@ Namespace CardDav
                 )", i))
                 Dim emailId As Guid = Guid.NewGuid()
                 parameters.AddRange(New Object() {"@EmailId" & i, emailId,
-                                                 "@Type" & i, ListToString(Of EmailType)(email.Types), "@Email" & i, email.Text,                              ' EMAIL VALUE
-                                                 "@PreferenceLevel" & i, GetPrefParameter(email), "@SortIndex" & i, email.RawProperty.SortIndex             ' Property position in vCard.
+                                                 "@Type" & i, ListToString(Of EmailType)(email.Types),    ' EMAIL TYPE param
+                                                 "@Email" & i, email.Text,                              ' EMAIL VALUE
+                                                 "@PreferenceLevel" & i, GetPrefParameter(email),                 ' EMAIL PREF param
+                                                 "@SortIndex" & i, email.RawProperty.SortIndex             ' Property position in vCard.
                                                  })
+                ' Prepare SQL to save custom property parameters to [card_CustomProperty] table.
                 Dim customPropSqlInsert As String
                 Dim customPropParametersInsert As List(Of Object)
                 If PrepareSqlParamsWriteCustomProperty("EMAIL", email.RawProperty, emailId.ToString(), uid, clientAppName, customPropSqlInsert, customPropParametersInsert) Then
@@ -530,6 +626,13 @@ Namespace CardDav
             End If
         End Function
 
+        ''' <summary>
+        ''' Saves data to [card_Address] table.
+        ''' </summary>
+        ''' <param name="context">Instance of <see cref="DavContext"/>  class.</param>
+        ''' <param name="addresses">List of addresses to be saved.</param>
+        ''' <param name="uid">Card UID.</param>
+        ''' <param name="clientAppName">Used to keep custom props created by this CardDAV client when updated by other CardDAV clients.</param>
         Private Async Function WriteAddressesAsync(context As DavContext, addresses As ICardPropertyList(Of IAddress2), uid As String, clientAppName As String) As Task
             Dim sql As String = "INSERT INTO [card_Address] (
                       [AddressId]
@@ -566,8 +669,18 @@ Namespace CardDav
                 )", i))
                 Dim addressId As Guid = Guid.NewGuid()
                 parameters.AddRange(New Object() {"@AddressId" & i, addressId,
-                                                 "@Type" & i, ListToString(Of AddressType)(address.Types), "@PoBox" & i, address.PoBox.FirstOrDefault(), "@AppartmentNumber" & i, address.AppartmentNumber.FirstOrDefault(), "@Street" & i, address.Street.FirstOrDefault(), "@Locality" & i, address.Locality.FirstOrDefault(), "@Region" & i, address.Region.FirstOrDefault(), "@PostalCode" & i, address.PostalCode.FirstOrDefault(), "@Country" & i, address.Country.FirstOrDefault(), "@PreferenceLevel" & i, GetPrefParameter(address), "@SortIndex" & i, address.RawProperty.SortIndex               ' Property position in vCard.
+                                                 "@Type" & i, ListToString(Of AddressType)(address.Types),    ' ADR TYPE param
+                                                 "@PoBox" & i, address.PoBox.FirstOrDefault(),
+                                                 "@AppartmentNumber" & i, address.AppartmentNumber.FirstOrDefault(),
+                                                 "@Street" & i, address.Street.FirstOrDefault(),
+                                                 "@Locality" & i, address.Locality.FirstOrDefault(),
+                                                 "@Region" & i, address.Region.FirstOrDefault(),
+                                                 "@PostalCode" & i, address.PostalCode.FirstOrDefault(),
+                                                 "@Country" & i, address.Country.FirstOrDefault(),
+                                                 "@PreferenceLevel" & i, GetPrefParameter(address),                   ' ADR PREF param
+                                                 "@SortIndex" & i, address.RawProperty.SortIndex               ' Property position in vCard.
                                                  })
+                ' Prepare SQL to save custom property parameters to [card_CustomProperty] table.
                 Dim customPropSqlInsert As String
                 Dim customPropParametersInsert As List(Of Object)
                 If PrepareSqlParamsWriteCustomProperty("ADR", address.RawProperty, addressId.ToString(), uid, clientAppName, customPropSqlInsert, customPropParametersInsert) Then
@@ -583,6 +696,13 @@ Namespace CardDav
             End If
         End Function
 
+        ''' <summary>
+        ''' Saves data to [card_InstantMessenger] table.
+        ''' </summary>
+        ''' <param name="context">Instance of <see cref="DavContext"/>  class.</param>
+        ''' <param name="instantMessengers">List of instant messengers to be saved.</param>
+        ''' <param name="uid">Card UID.</param>
+        ''' <param name="clientAppName">Used to keep custom props created by this CardDAV client when updated by other CardDAV clients.</param>
         Private Async Function WriteInstantMessengersAsync(context As DavContext, instantMessengers As ITextPropertyList(Of IInstantMessenger3), uid As String, clientAppName As String) As Task
             Dim sql As String = "INSERT INTO [card_InstantMessenger] (
                       [InstantMessengerId]
@@ -607,9 +727,12 @@ Namespace CardDav
                 )", i))
                 Dim instantMessengerId As Guid = Guid.NewGuid()
                 parameters.AddRange(New Object() {"@InstantMessengerId" & i, instantMessengerId,
-                                                 "@Type" & i, ListToString(Of MessengerType)(instantMessenger.Types), "@InstantMessenger" & i, instantMessenger.Text,                               ' IMPP VALUE
-                                                 "@PreferenceLevel" & i, GetPrefParameter(instantMessenger), "@SortIndex" & i, instantMessenger.RawProperty.SortIndex              ' Property position in vCard.
+                                                 "@Type" & i, ListToString(Of MessengerType)(instantMessenger.Types), ' IMPP TYPE param
+                                                 "@InstantMessenger" & i, instantMessenger.Text,                               ' IMPP VALUE
+                                                 "@PreferenceLevel" & i, GetPrefParameter(instantMessenger),                  ' IMPP PREF param
+                                                 "@SortIndex" & i, instantMessenger.RawProperty.SortIndex              ' Property position in vCard.
                                                  })
+                ' Prepare SQL to save custom property parameters to [card_CustomProperty] table.
                 Dim customPropSqlInsert As String
                 Dim customPropParametersInsert As List(Of Object)
                 If PrepareSqlParamsWriteCustomProperty("IMPP", instantMessenger.RawProperty, instantMessengerId.ToString(), uid, clientAppName, customPropSqlInsert, customPropParametersInsert) Then
@@ -625,6 +748,13 @@ Namespace CardDav
             End If
         End Function
 
+        ''' <summary>
+        ''' Saves data to [card_Telephone] table.
+        ''' </summary>
+        ''' <param name="context">Instance of <see cref="DavContext"/>  class.</param>
+        ''' <param name="instantMessengers">List of telephones to be saved.</param>
+        ''' <param name="uid">Card UID.</param>
+        ''' <param name="clientAppName">Used to keep custom props created by this CardDAV client when updated by other CardDAV clients.</param>
         Private Async Function WriteTelephonesAsync(context As DavContext, telephones As ITextPropertyList(Of ITelephone2), uid As String, clientAppName As String) As Task
             Dim sql As String = "INSERT INTO [card_Telephone] (
                       [TelephoneId]
@@ -649,9 +779,12 @@ Namespace CardDav
                 )", i))
                 Dim telephoneId As Guid = Guid.NewGuid()
                 parameters.AddRange(New Object() {"@TelephoneId" & i, telephoneId,
-                                                 "@Type" & i, ListToString(Of TelephoneType)(telephone.Types), "@Telephone" & i, telephone.Text,                              ' TEL VALUE
-                                                 "@PreferenceLevel" & i, GetPrefParameter(telephone), "@SortIndex" & i, telephone.RawProperty.SortIndex             ' Property position in vCard.
+                                                 "@Type" & i, ListToString(Of TelephoneType)(telephone.Types),' TEL TYPE param
+                                                 "@Telephone" & i, telephone.Text,                              ' TEL VALUE
+                                                 "@PreferenceLevel" & i, GetPrefParameter(telephone),                 ' TEL PREF param
+                                                 "@SortIndex" & i, telephone.RawProperty.SortIndex             ' Property position in vCard.
                                                  })
+                ' Prepare SQL to save custom property parameters to [card_CustomProperty] table.
                 Dim customPropSqlInsert As String
                 Dim customPropParametersInsert As List(Of Object)
                 If PrepareSqlParamsWriteCustomProperty("TEL", telephone.RawProperty, telephoneId.ToString(), uid, clientAppName, customPropSqlInsert, customPropParametersInsert) Then
@@ -667,6 +800,13 @@ Namespace CardDav
             End If
         End Function
 
+        ''' <summary>
+        ''' Saves data to [card_Url] table.
+        ''' </summary>
+        ''' <param name="context">Instance of <see cref="DavContext"/>  class.</param>
+        ''' <param name="url">List of URLs to be saved.</param>
+        ''' <param name="uid">Card UID.</param>
+        ''' <param name="clientAppName">Used to keep custom props created by this CardDAV client when updated by other CardDAV clients.</param>
         Private Async Function WriteUrlsAsync(context As DavContext, urls As ICardPropertyList(Of ICardUriProperty2), uid As String, clientAppName As String) As Task
             Dim sql As String = "INSERT INTO [card_Url] (
                       [UrlId]
@@ -691,9 +831,12 @@ Namespace CardDav
                 )", i))
                 Dim urlId As Guid = Guid.NewGuid()
                 parameters.AddRange(New Object() {"@UrlId" & i, urlId,
-                                                 "@Type" & i, ListToString(Of ExtendibleEnum)(url.Types), "@Url" & i, url.Text,                                ' URL VALUE
-                                                 "@PreferenceLevel" & i, GetPrefParameter(url), "@SortIndex" & i, url.RawProperty.SortIndex               ' Property position in vCard.
+                                                 "@Type" & i, ListToString(Of ExtendibleEnum)(url.Types), ' TEL TYPE param 
+                                                 "@Url" & i, url.Text,                                ' URL VALUE
+                                                 "@PreferenceLevel" & i, GetPrefParameter(url),                   ' URL PREF param
+                                                 "@SortIndex" & i, url.RawProperty.SortIndex               ' Property position in vCard.
                                                  })
+                ' Prepare SQL to save custom property parameters to [card_CustomProperty] table.
                 Dim customPropSqlInsert As String
                 Dim customPropParametersInsert As List(Of Object)
                 If PrepareSqlParamsWriteCustomProperty("URL", url.RawProperty, urlId.ToString(), uid, clientAppName, customPropSqlInsert, customPropParametersInsert) Then
@@ -709,6 +852,11 @@ Namespace CardDav
             End If
         End Function
 
+        ''' <summary>
+        ''' Gets 1 if property is preferred in case of vCard 2.1 &  3.0. Returns preference level in case of vCard 4.0.
+        ''' </summary>
+        ''' <param name="prop">Card property to get prefference from.</param>
+        ''' <returns>Integer between 1 and 100 or null if PREF property is not specified.</returns>
         Private Shared Function GetPrefParameter(prop As ICardMultiProperty) As Byte?
             Dim prop4 As ICardMultiProperty4 = TryCast(prop, ICardMultiProperty4)
             If prop4 Is Nothing Then
@@ -718,6 +866,19 @@ Namespace CardDav
             Return CType(prop4.PreferenceLevel, Byte?)
         End Function
 
+        ''' <summary>
+        ''' Creates SQL to write custom properties and parameters to [card_CustomProperty] table.
+        ''' </summary>
+        ''' <param name="prop">Raw property to be saved to database.</param>
+        ''' <param name="parentId">
+        ''' Parent component ID or parent property ID to which this custom property or parameter belongs to. 
+        ''' This could be UID (in case of [card_CardFile] table), EmailId, InstantMessengerId, etc.
+        ''' </param>
+        ''' <param name="uid">Card UID.</param>
+        ''' <param name="clientAppName">Used to keep custom props created by this CardDAV client when updated by other CardDAV clients.</param>
+        ''' <param name="sql">SQL to insert data to DB.</param>
+        ''' <param name="parameters">SQL parameter values that will be filled by this method.</param>
+        ''' <returns>True if any custom properies or parameters found, false otherwise.</returns>
         Private Function PrepareSqlParamsWriteCustomProperty(propName As String, prop As IRawProperty, parentId As String, uid As String, clientAppName As String, ByRef sql As String, ByRef parameters As List(Of Object)) As Boolean
             sql = "INSERT INTO [card_CustomProperty] (
                       [ParentId]
@@ -731,8 +892,12 @@ Namespace CardDav
             Dim valuesSql As List(Of String) = New List(Of String)()
             parameters = New List(Of Object)()
             Dim origParamsCount As Integer = parameters.Count()
+            ' Custom properties are one of the following:
+            '  - props that start with "X-". This is a standard-based approach to creating custom props.
+            '  - props that has "." in its name. Typically "item1.X-PROP". Such props are created by iOS and OS X.
             Dim isCustomProp As Boolean = propName.StartsWith("X-", StringComparison.InvariantCultureIgnoreCase) OrElse propName.Contains(".")
             Dim paramName As String = Nothing
+            ' Save custom prop value.
             If isCustomProp Then
                 Dim val As String = prop.RawValue
                 valuesSql.Add(String.Format("(
@@ -755,8 +920,11 @@ Namespace CardDav
                 paramIndex += 1
             End If
 
+            ' Save parameters and their values.
             For Each param As Parameter In prop.Parameters
                 paramName = param.Name
+                ' For standard properties we save only custom params (that start with 'X-'). All standard params go to their fields in DB.
+                ' For custom properies we save all params.
                 If Not isCustomProp AndAlso Not paramName.StartsWith("X-", StringComparison.InvariantCultureIgnoreCase) Then Continue For
                 For Each value As String In param.Values
                     Dim val As String = value
@@ -788,10 +956,25 @@ Namespace CardDav
             Return False
         End Function
 
+        ''' <summary>
+        ''' Creates SQL to write custom properties and parameters to [card_CustomProperty] table for specified component.
+        ''' </summary>
+        ''' <param name="component">Component to be saved to database.</param>
+        ''' <param name="parentId">
+        ''' Parent component ID to which this custom property or parameter belongs to. 
+        ''' This could be UID (in case of [card_CardFile] table), EmailId, InstantMessengerId, etc.
+        ''' </param>
+        ''' <param name="uid">Card UID.</param>
+        ''' <param name="clientAppName">Used to keep custom props created by this CardDAV client when updated by other CardDAV clients.</param>
+        ''' <param name="sql">SQL to insert data to DB.</param>
+        ''' <param name="parameters">SQL parameter values that will be filled by this method.</param>
+        ''' <returns>True if any custom properies or parameters found, false otherwise.</returns>
         Private Function PrepareSqlCustomPropertiesOfComponentAsync(component As IComponent, parentId As String, uid As String, clientAppName As String, ByRef sql As String, ByRef parameters As List(Of Object)) As Boolean
             sql = ""
             parameters = New List(Of Object)()
+            ' We save only single custom props here, multiple props are saved in other methods.
             Dim multiProps As String() = New String() {"EMAIL", "ADR", "IMPP", "TEL", "URL"}
+            ' Properties in IComponent.Properties are grouped by name.
             For Each pair As KeyValuePair(Of String, IList(Of IRawProperty)) In component.Properties
                 If multiProps.Contains(pair.Key.ToUpper()) OrElse (pair.Value.Count <> 1) Then Continue For
                 Dim sqlInsert As String
@@ -805,6 +988,10 @@ Namespace CardDav
             Return Not String.IsNullOrEmpty(sql)
         End Function
 
+        ''' <summary>
+        ''' Called when client application deletes this file.
+        ''' </summary>
+        ''' <param name="multistatus">Error description if case delate failed. Ignored by most clients.</param>
         Public Overrides Async Function DeleteAsync(multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.DeleteAsync
             Dim sql As String = "DELETE FROM [card_CardFile] 
                            WHERE FileName=@FileName
@@ -816,6 +1003,12 @@ Namespace CardDav
             End If
         End Function
 
+        ''' <summary>
+        ''' Called when a card must be read from back-end storage.
+        ''' </summary>
+        ''' <param name="output">Stream to write vCard content.</param>
+        ''' <param name="startIndex">Index to start reading data from back-end storage. Used for segmented reads, not used by CardDAV clients.</param>
+        ''' <param name="count">Number of bytes to read. Used for segmented reads, not used by CardDAV clients.</param>
         Public Async Function ReadAsync(output As Stream, startIndex As Long, count As Long) As Task Implements IContentAsync.ReadAsync
             Dim vCardVersion As String = rowCardFile.Field(Of String)("Version")
             Dim card As ICard2 = CardFactory.CreateCard(vCardVersion)
@@ -824,11 +1017,13 @@ Namespace CardDav
             ReadAddresses(card.Addresses, rowsAddresses)
             ReadTelephones(card.Telephones, rowsTelephones)
             ReadUrls(card.Urls, rowsUrls)
+            ' IMPP is vCard 3.0 & 4.0 prop
             Dim card3 As ICard3 = TryCast(card, ICard3)
             If card3 IsNot Nothing Then
                 ReadMessengers(card3.InstantMessengers, rowsInstantMessengers)
             End If
 
+            ' Check if this CardDAV client application requires properties conversion.
             If AppleCardInteroperability.NeedsConversion(Context.Request.UserAgent) Then
                 ' In case of iOS & OS X the props below must be converted to the following format:
                 ' item2.TEL:(222)222 - 2222
@@ -857,28 +1052,34 @@ Namespace CardDav
                                            rowCardFile.Field(Of String)("AdditionalNames"),
                                            rowCardFile.Field(Of String)("HonorificPrefix"),
                                            rowCardFile.Field(Of String)("HonorificSuffix"))
+            ' PHOTO
             If Not rowCardFile.IsNull("Photo") Then
                 card.Photos.Add(Convert.ToBase64String(rowCardFile.Field(Of Byte())("Photo")), rowCardFile.Field(Of String)("PhotoMediaType"), False)
             End If
 
+            ' LOGO
             If Not rowCardFile.IsNull("Logo") Then
                 card.Photos.Add(Convert.ToBase64String(rowCardFile.Field(Of Byte())("Logo")), rowCardFile.Field(Of String)("LogoMediaType"), False)
             End If
 
+            ' SOUND
             If Not rowCardFile.IsNull("Sound") Then
                 card.Photos.Add(Convert.ToBase64String(rowCardFile.Field(Of Byte())("Sound")), rowCardFile.Field(Of String)("SoundMediaType"), False)
             End If
 
+            ' BDAY
             Dim birthday As DateTime? = rowCardFile.Field(Of DateTime?)("Birthday")
             If birthday IsNot Nothing Then
                 card.BirthDate = card.CreateDateProp(birthday.Value, DateComponents.[Date])
             End If
 
+            ' REV
             Dim revision As DateTime? = rowCardFile.Field(Of DateTime?)("RevisionUtc")
             If revision IsNot Nothing Then
                 card.Revision = card.CreateDateProp(revision.Value)
             End If
 
+            ' SORT-STRING
             Dim sortString As String = rowCardFile.Field(Of String)("SortString")
             If Not String.IsNullOrEmpty(sortString) Then
                 Dim propSortString As ITextProperty2 = card.CreateProperty(Of ITextProperty2)()
@@ -886,21 +1087,26 @@ Namespace CardDav
                 card.SortString = propSortString
             End If
 
+            ' TZ
             Dim timeZone As String = rowCardFile.Field(Of String)("TimeZone")
             If Not String.IsNullOrEmpty(timeZone) Then
                 card.TimeZones.Add(timeZone)
             End If
 
+            ' GEO
+            ' TITLE
             Dim title As String = rowCardFile.Field(Of String)("Title")
             If Not String.IsNullOrEmpty(title) Then
                 card.Titles.Add(title)
             End If
 
+            ' ROLE
             Dim role As String = rowCardFile.Field(Of String)("Role")
             If Not String.IsNullOrEmpty(role) Then
                 card.Roles.Add(role)
             End If
 
+            ' ORG
             Dim orgName As String = rowCardFile.Field(Of String)("OrgName")
             Dim orgUnit As String = rowCardFile.Field(Of String)("OrgUnit")
             If Not String.IsNullOrEmpty(orgName) OrElse Not String.IsNullOrEmpty(orgUnit) Then
@@ -910,13 +1116,16 @@ Namespace CardDav
                 card.Organizations.Add(propOrg)
             End If
 
+            ' NOTE
             Dim note As String = rowCardFile.Field(Of String)("Note")
             If Not String.IsNullOrEmpty(note) Then
                 card.Notes.Add(note)
             End If
 
+            ' vCard v3.0 & v4.0 props
             If TypeOf card Is ICard3 Then
                 Dim card3 As ICard3 = TryCast(card, ICard3)
+                ' NICKNAME
                 Dim nickname As String = rowCardFile.Field(Of String)("Nickname")
                 If Not String.IsNullOrEmpty(nickname) Then
                     Dim propNickname As INickname3 = card3.NickNames.CreateProperty()
@@ -924,6 +1133,7 @@ Namespace CardDav
                     card3.NickNames.Add(propNickname)
                 End If
 
+                ' CATEGORIES
                 Dim categories As String = rowCardFile.Field(Of String)("Categories")
                 If Not String.IsNullOrEmpty(categories) Then
                     Dim aCategories As String() = categories.Split({";"c}, StringSplitOptions.RemoveEmptyEntries)
@@ -934,14 +1144,17 @@ Namespace CardDav
                     Next
                 End If
 
+                ' CLASS
                 Dim classification As String = rowCardFile.Field(Of String)("Classification")
                 If Not String.IsNullOrEmpty(classification) Then
                     card3.Classes.Add(classification)
                 End If
             End If
 
+            ' vCard v4.0 props
             If TypeOf card Is ICard4 Then
                 Dim card4 As ICard4 = TryCast(card, ICard4)
+                ' KIND
                 Dim kind As String = rowCardFile.Field(Of String)("Kind")
                 If kind IsNot Nothing Then
                     Dim propKind As IKind4 = card4.CreateProperty(Of IKind4)()
@@ -949,6 +1162,7 @@ Namespace CardDav
                     card4.Kind = propKind
                 End If
 
+                ' ANNIVERSARY
                 Dim anniversary As DateTime? = rowCardFile.Field(Of DateTime?)("Anniversary")
                 If anniversary IsNot Nothing Then
                     Dim propAnniversary As IAnniversary4 = card4.CreateProperty(Of IAnniversary4)()
@@ -956,6 +1170,7 @@ Namespace CardDav
                     card4.Anniversary = propAnniversary
                 End If
 
+                ' GENDER
                 Dim gender As String = rowCardFile.Field(Of String)("Gender")
                 If Not String.IsNullOrEmpty(gender) Then
                     Dim propGender As IGender4 = card4.CreateProperty(Of IGender4)()
@@ -963,12 +1178,14 @@ Namespace CardDav
                     card4.Gender = propGender
                 End If
 
+                ' LANG
                 Dim language As String = rowCardFile.Field(Of String)("Language")
                 If Not String.IsNullOrEmpty(language) Then
                     card4.ContactLanguages.Add(language)
                 End If
             End If
 
+            ' Get custom properties and custom parameters
             Dim rowsCardCustomProperties As IEnumerable(Of DataRow) = rowsCustomProperties.Where(Function(x) x.Field(Of String)("ParentId") = uid)
             ReadCustomProperties(card, rowsCardCustomProperties)
         End Sub
@@ -1082,6 +1299,10 @@ Namespace CardDav
             End If
         End Sub
 
+        ''' <summary>
+        ''' Parses TYPE parameter.
+        ''' </summary>
+        ''' <param name="typesList">Coma separated list of types.</param>
         Private Shared Function ParseType(Of T As {ExtendibleEnum, New})(typesList As String) As T()
             If Not String.IsNullOrEmpty(typesList) Then
                 Dim aStrTypes As String() = typesList.Split({","c}, StringSplitOptions.RemoveEmptyEntries)
@@ -1134,6 +1355,13 @@ Namespace CardDav
             Next
         End Sub
 
+        ''' <summary>
+        ''' Converts string to <see cref="ExtendibleEnum"/>  of spcified type. Returns <b>null</b> if <b>null</b> is passed. 
+        ''' If no matching string value is found the <see cref="ExtendibleEnum.Name"/>  is set to passed parameter <b>value</b> and <see cref="ExtendibleEnum.Number"/>  is set to -1.
+        ''' </summary>
+        ''' <typeparam name="T">Type to convert to.</typeparam>
+        ''' <param name="value">String to convert from.</param>
+        ''' <returns><see cref="ExtendibleEnum"/>  of type <b>T</b> or <b>null</b> if <b>null</b> is passed as a parameter.</returns>
         Private Shared Function StringToEnum(Of T As {ExtendibleEnum, New})(value As String) As T
             If value Is Nothing Then Return Nothing
             Dim res As T

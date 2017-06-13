@@ -59,7 +59,7 @@ namespace WebDAVServer.SqlStorage.AspNet
 
         public async Task<DavFolder> GetParentAsync()
         {
-            string[] parts = Path.TrimEnd('/').Split('/');
+            string[] parts = Path.Trim('/').Split('/');
             string parentParentPath = "/";
             if (parts.Length >= 2)
             {

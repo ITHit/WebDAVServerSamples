@@ -91,6 +91,10 @@ Public Class DavContext
     ''' </summary>
     Public Property AnonymousUser As WindowsIdentity
 
+    ''' <summary>
+    ''' Retrieves or creates <see cref="PrincipalContext"/>  to be used for user related operations.
+    ''' </summary>
+    ''' <returns>Instance of <see cref="PrincipalContext"/> .</returns>
     Public Function GetPrincipalContext() As PrincipalContext
         If principalContext Is Nothing Then
             If String.IsNullOrEmpty(Domain) OrElse Environment.MachineName.Equals(Domain, StringComparison.InvariantCultureIgnoreCase) Then
@@ -119,6 +123,13 @@ Public Class DavContext
         End Using
     End Sub
 
+    ''' <summary>
+    ''' Performs operation which queries, creates, deletes or modifies user or group.
+    ''' Performs impersonification and exception handling.
+    ''' </summary>
+    ''' <param name="func">Function to perform.</param>
+    ''' <typeparam name="T">Type of operation result.</typeparam>
+    ''' <returns>The value which <paramref name="func"/>  returned.</returns>
     Public Function PrincipalOperation(Of T)(func As Func(Of T)) As T
         Using impersonate()
             Try
@@ -146,8 +157,14 @@ Public Class DavContext
         If httpContext.User IsNot Nothing Then Identity = httpContext.User.Identity
     End Sub
 
+    ''' <summary>
+    ''' Creates <see cref="IHierarchyItemAsync"/>  instance by path.
+    ''' </summary>
+    ''' <param name="path">Item relative path including query string.</param>
+    ''' <returns>Instance of corresponding <see cref="IHierarchyItemAsync"/>  or null if item is not found.</returns>
     Public Overrides Async Function GetHierarchyItemAsync(path As String) As Task(Of IHierarchyItemAsync)
         path = path.Trim({" "c, "/"c})
+        'remove query string.
         Dim ind As Integer = path.IndexOf("?"c)
         If ind > -1 Then
             path = path.Remove(ind)
@@ -171,7 +188,14 @@ Public Class DavContext
         Return Nothing
     End Function
 
+    ''' <summary>
+    ''' Returns the physical file path that corresponds to the specified virtual path on the Web server.
+    ''' </summary>
+    ''' <param name="relativePath">Path relative to WebDAV root folder.</param>
+    ''' <returns>Corresponding path in file system.</returns>
     Friend Function MapPath(relativePath As String) As String
+        'Convert to local file system path by decoding every part, reversing slashes and appending
+        'to repository root.
         Dim encodedParts As String() = relativePath.Split({"/"}, StringSplitOptions.RemoveEmptyEntries)
         Dim decodedParts As String() = encodedParts.Select(Of String)(AddressOf EncodeUtil.DecodeUrlPart).ToArray()
         Return Path.Combine(RepositoryPath, String.Join(Path.DirectorySeparatorChar.ToString(), decodedParts))
@@ -203,6 +227,13 @@ Public Class DavContext
         End Try
     End Sub
 
+    ''' <summary>
+    ''' Performs file system operation with translating exceptions to those expected by WebDAV engine.
+    ''' </summary>
+    ''' <param name="item">Item on which operation is performed.</param>
+    ''' <param name="action">The action to be performed.</param>
+    ''' <param name="privilege">Privilege which is needed to perform the operation. If <see cref="UnauthorizedAccessException"/>  is thrown
+    ''' this method will convert it to <see cref="NeedPrivilegesException"/>  exception and specify this privilege in it.</param>
     Public Async Function FileOperationAsync(item As IHierarchyItemAsync, actionAsync As Func(Of Task), privilege As Privilege) As Task
         Try
             Using impersonate()
@@ -222,6 +253,16 @@ Public Class DavContext
         End Try
     End Function
 
+    ''' <summary>
+    ''' Performs file system operation with translating exceptions to those expected by WebDAV engine.
+    ''' </summary>
+    ''' <param name="item">Item on which operation is performed.</param>
+    ''' <param name="func">The action to be performed.</param>
+    ''' <param name="privilege">Privilege which is needed to perform the operation.
+    ''' If <see cref="UnauthorizedAccessException"/>  is thrown  this method will convert it to
+    ''' <see cref="NeedPrivilegesException"/>  exception and specify this privilege in it.</param>
+    ''' <typeparam name="T">Type of operation's result.</typeparam>
+    ''' <returns>Result returned by <paramref name="func"/> .</returns>
     Public Async Function FileOperationAsync(Of T)(item As IHierarchyItemAsync, actionAsync As Func(Of Task(Of T)), privilege As Privilege) As Task(Of T)
         Try
             Using impersonate()
@@ -241,6 +282,11 @@ Public Class DavContext
         End Try
     End Function
 
+    ''' <summary>
+    ''' Performs file system operation with translating exceptions to those expected by WebDAV engine, except
+    ''' <see cref="UnauthorizedAccessException"/>  which must be caught and translated manually.
+    ''' </summary>        
+    ''' <param name="action">The action to be performed.</param>
     Public Async Function FileOperationAsync(actionAsync As Func(Of Task)) As Task
         Try
             Using impersonate()
@@ -276,6 +322,16 @@ Public Class DavContext
         End Try
     End Sub
 
+    ''' <summary>
+    ''' Performs file system operation with translating exceptions to those expected by WebDAV engine.
+    ''' </summary>
+    ''' <param name="item">Item on which operation is performed.</param>
+    ''' <param name="func">The action to be performed.</param>
+    ''' <param name="privilege">Privilege which is needed to perform the operation.
+    ''' If <see cref="UnauthorizedAccessException"/>  is thrown  this method will convert it to
+    ''' <see cref="NeedPrivilegesException"/>  exception and specify this privilege in it.</param>
+    ''' <typeparam name="T">Type of operation's result.</typeparam>
+    ''' <returns>Result returned by <paramref name="func"/> .</returns>
     Public Function FileOperation(Of T)(item As IHierarchyItemAsync, func As Func(Of T), privilege As Privilege) As T
         Try
             Using impersonate()
@@ -304,6 +360,10 @@ Public Class DavContext
         End If
     End Sub
 
+    ''' <summary>
+    ''' Impersonates current user.
+    ''' </summary>
+    ''' <returns>Impersonation context, which must be disposed to 'unimpersonate'</returns>
     Private Function impersonate() As WindowsImpersonationContext
         Return LogonUtil.DuplicateToken(WindowsIdentity).Impersonate()
     End Function

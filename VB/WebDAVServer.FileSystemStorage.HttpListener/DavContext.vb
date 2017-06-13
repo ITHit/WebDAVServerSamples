@@ -81,8 +81,14 @@ Public Class DavContext
         If principal IsNot Nothing Then Identity = principal.Identity
     End Sub
 
+    ''' <summary>
+    ''' Creates <see cref="IHierarchyItemAsync"/>  instance by path.
+    ''' </summary>
+    ''' <param name="path">Item relative path including query string.</param>
+    ''' <returns>Instance of corresponding <see cref="IHierarchyItemAsync"/>  or null if item is not found.</returns>
     Public Overrides Async Function GetHierarchyItemAsync(path As String) As Task(Of IHierarchyItemAsync)
         path = path.Trim({" "c, "/"c})
+        'remove query string.
         Dim ind As Integer = path.IndexOf("?"c)
         If ind > -1 Then
             path = path.Remove(ind)
@@ -97,7 +103,14 @@ Public Class DavContext
         Return Nothing
     End Function
 
+    ''' <summary>
+    ''' Returns the physical file path that corresponds to the specified virtual path on the Web server.
+    ''' </summary>
+    ''' <param name="relativePath">Path relative to WebDAV root folder.</param>
+    ''' <returns>Corresponding path in file system.</returns>
     Friend Function MapPath(relativePath As String) As String
+        'Convert to local file system path by decoding every part, reversing slashes and appending
+        'to repository root.
         Dim encodedParts As String() = relativePath.Split({"/"}, StringSplitOptions.RemoveEmptyEntries)
         Dim decodedParts As String() = encodedParts.Select(Of String)(AddressOf EncodeUtil.DecodeUrlPart).ToArray()
         Return Path.Combine(RepositoryPath, String.Join(Path.DirectorySeparatorChar.ToString(), decodedParts))

@@ -27,14 +27,24 @@ Public Class DavLocationFolder
             Dim davLocationsSection As NameValueCollection = CType(System.Configuration.ConfigurationManager.GetSection("davLocations"), NameValueCollection)
             If davLocationsSection IsNot Nothing Then
                 For Each path As String In davLocationsSection.AllKeys
+                    ' Typically you will enable WebDAV on site root ('/') to allow CalDAV/CardDAV 
+                    ' discovery. We skip site root WebDAV location to find first non-root location.
                     If Not String.IsNullOrEmpty(path.Trim("/"c)) Then Return path.TrimEnd("/"c) & "/"c
                 Next
             End If
 
+            ' If no davLocation section is found or no non-root WebDAV location is specified in 
+            ' configuration file asume the WebDAV is on web site root.
             Return "/"
         End Get
     End Property
 
+    ''' <summary>
+    ''' Returns DavLocationFolder folder if path corresponds to [DavLocation].
+    ''' </summary>
+    ''' <param name="context">Instance of <see cref="DavContext"/></param>
+    ''' <param name="path">Encoded path relative to WebDAV root.</param>
+    ''' <returns>DavLocationFolder instance or null if physical folder not found in file system.</returns>
     Public Shared Function GetDavLocationFolder(context As DavContext, path As String) As DavLocationFolder
         Dim davPath As String = DavLocationFolderPath
         If Not path.Equals(davPath.Trim({"/"c}), StringComparison.OrdinalIgnoreCase) Then Return Nothing
@@ -54,6 +64,11 @@ Public Class DavLocationFolder
         MyBase.New(directory, context, path)
     End Sub
 
+    ''' <summary>
+    ''' Retrieves children of this folder: /acl/, /calendars/ and /addressbooks/ folders.
+    ''' </summary>
+    ''' <param name="propNames">Properties requested by client application for each child.</param>
+    ''' <returns>Children of this folder.</returns>
     Public Overrides Async Function GetChildrenAsync(propNames As IList(Of PropertyName)) As Task(Of IEnumerable(Of IHierarchyItemAsync))
         Dim children As List(Of IHierarchyItemAsync) = New List(Of IHierarchyItemAsync)()
         ' At the upper level we have folder named [DavLocation]/acl/ which stores users and groups.

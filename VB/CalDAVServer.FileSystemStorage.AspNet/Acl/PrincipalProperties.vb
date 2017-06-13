@@ -2,6 +2,9 @@ Imports ITHit.WebDAV.Server
 
 Namespace Acl
 
+    ''' <summary>
+    ''' Contains description of principal's properties.
+    ''' </summary>
     Module PrincipalProperties
 
         Public ReadOnly FullName As PropertyName = New PropertyName("full-name", "ithit")

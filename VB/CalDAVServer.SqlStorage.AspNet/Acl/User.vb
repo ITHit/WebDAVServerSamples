@@ -22,6 +22,7 @@ Namespace Acl
         Private ReadOnly email As String
 
         Public Shared Async Function GetUserAsync(context As DavContext, userId As String) As Task(Of User)
+            ' Loged-in user can access only his own account data.
             If Not context.UserId.Equals(userId, StringComparison.InvariantCultureIgnoreCase) Then Throw New DavException("Forbidden.", DavStatus.FORBIDDEN)
             Dim user As MembershipUser = Membership.GetUser(userId)
             Return New User(context, userId, user.UserName, user.Email, New DateTime(2000, 1, 1), New DateTime(2000, 1, 1))
@@ -78,42 +79,94 @@ Namespace Acl
         ''' </summary>
         Public Property Modified As DateTime Implements IHierarchyItemAsync.Modified
 
+        ''' <summary>
+        ''' Creates new user as copy of this one.
+        ''' </summary>
+        ''' <param name="destFolder">Is not used as there's no more locations a user can be copied.</param>
+        ''' <param name="destName">New user name.</param>
+        ''' <param name="deep">Whether to copy children - is not user.</param>
+        ''' <param name="multistatus">Is not used as there's no children.</param>
         Public Async Function CopyToAsync(destFolder As IItemCollectionAsync, destName As String, deep As Boolean, multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.CopyToAsync
             Throw New DavException("Not implemented.", DavStatus.NOT_IMPLEMENTED)
         End Function
 
+        ''' <summary>
+        ''' Renames principal.
+        ''' </summary>
+        ''' <param name="destFolder">We don't use it as moving groups to different folder is not supported.</param>
+        ''' <param name="destName">New name.</param>
+        ''' <param name="multistatus">We don't use it as there're no child objects.</param>
         Public Async Function MoveToAsync(destFolder As IItemCollectionAsync, destName As String, multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.MoveToAsync
             Throw New DavException("Not implemented.", DavStatus.NOT_IMPLEMENTED)
         End Function
 
+        ''' <summary>
+        ''' Deletes the principal.
+        ''' </summary>
+        ''' <param name="multistatus">We don't use it currently as there are no child objects.</param>
         Public Async Function DeleteAsync(multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.DeleteAsync
             Throw New DavException("Not implemented.", DavStatus.NOT_IMPLEMENTED)
         End Function
 
+        ''' <summary>
+        ''' Retrieves properties of the user.
+        ''' </summary>
+        ''' <param name="props">Properties to retrieve.</param>
+        ''' <param name="allprop">Whether all properties shall be retrieved.</param>
+        ''' <returns>Property values.</returns>
         Public Async Function GetPropertiesAsync(props As IList(Of PropertyName), allprop As Boolean) As Task(Of IEnumerable(Of PropertyValue)) Implements IHierarchyItemAsync.GetPropertiesAsync
             Return New PropertyValue(-1) {}
         End Function
 
+        ''' <summary>
+        ''' Retrieves names of dead properties.
+        ''' </summary>
+        ''' <returns>Dead propery names.</returns>
         Public Async Function GetPropertyNamesAsync() As Task(Of IEnumerable(Of PropertyName)) Implements IHierarchyItemAsync.GetPropertyNamesAsync
             Return New PropertyName(-1) {}
         End Function
 
+        ''' <summary>
+        ''' Updates dead properties.
+        ''' </summary>
+        ''' <param name="setProps">Properties to set.</param>
+        ''' <param name="delProps">Properties to delete.</param>
+        ''' <param name="multistatus">Here we report problems with properties.</param>
         Public Async Function UpdatePropertiesAsync(setProps As IList(Of PropertyValue), delProps As IList(Of PropertyName), multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.UpdatePropertiesAsync
             Throw New DavException("Not implemented.", DavStatus.NOT_IMPLEMENTED)
         End Function
 
+        ''' <summary>
+        ''' We don't implement it - users doesn't support setting members.
+        ''' The method is here because from WebDAV perspective there's no difference
+        ''' between users and groups.
+        ''' </summary>
+        ''' <param name="members">Members of the group.</param>
         Public Async Function SetGroupMembersAsync(members As IList(Of IPrincipalAsync)) As Task Implements IPrincipalAsync.SetGroupMembersAsync
             Throw New DavException("User objects can not contain other users.", DavStatus.CONFLICT)
         End Function
 
+        ''' <summary>
+        ''' Retrieves principal members. Users have no members, so return empty list.
+        ''' </summary>
+        ''' <returns>Principal members.</returns>
         Public Async Function GetGroupMembersAsync() As Task(Of IEnumerable(Of IPrincipalAsync)) Implements IPrincipalAsync.GetGroupMembersAsync
             Return New IPrincipalAsync(-1) {}
         End Function
 
+        ''' <summary>
+        ''' Gets groups to which this principal belongs.
+        ''' </summary>
+        ''' <returns>Enumerable with groups.</returns>
         Public Async Function GetGroupMembershipAsync() As Task(Of IEnumerable(Of IPrincipalAsync)) Implements IPrincipalAsync.GetGroupMembershipAsync
             Return New IPrincipalAsync(-1) {}
         End Function
 
+        ''' <summary>
+        ''' Checks whether this user is of well-known type.
+        ''' </summary>
+        ''' <param name="wellknownPrincipal">Type to check.</param>
+        ''' <returns><c>true</c> if the user is of specified well-known type.</returns>
         Public Function IsWellKnownPrincipal(wellknownPrincipal As WellKnownPrincipal) As Boolean Implements IPrincipalAsync.IsWellKnownPrincipal
             Return(wellknownPrincipal = WellKnownPrincipal.Unauthenticated) AndAlso (Name = "Anonymous")
         End Function

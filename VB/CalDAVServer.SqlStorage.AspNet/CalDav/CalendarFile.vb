@@ -94,7 +94,18 @@ Namespace CalDav
         ''' </summary>
         Public Shared Extension As String = ".ics"
 
+        ''' <summary>
+        ''' Loads calendar files contained in a calendar folder by calendar folder ID.
+        ''' </summary>
+        ''' <param name="context">Instance of <see cref="DavContext"/>  class.</param>
+        ''' <param name="calendarFolderId">Calendar for which events or to-dos should be loaded.</param>
+        ''' <param name="propsToLoad">Specifies which properties should be loaded.</param>
+        ''' <returns>List of <see cref="ICalendarFileAsync"/>  items.</returns>
         Public Shared Async Function LoadByCalendarFolderIdAsync(context As DavContext, calendarFolderId As Guid, propsToLoad As PropsToLoad) As Task(Of IEnumerable(Of ICalendarFileAsync))
+            ' propsToLoad == PropsToLoad.Minimum -> Typical GetChildren call by iOS, Android, eM Client, etc CalDAV clients
+            ' [Summary] is typically not required in GetChildren call, 
+            ' they are extracted for demo purposes only, to be displayed in Ajax File Browser.
+            ' propsToLoad == PropsToLoad.All -> Bynari call, it requires all props in GetChildren call.
             If propsToLoad <> PropsToLoad.Minimum Then Throw New NotImplementedException("LoadByCalendarFolderIdAsync is implemented only with PropsToLoad.Minimum.")
             Dim sql As String = "SELECT * FROM [cal_CalendarFile] 
                            WHERE [CalendarFolderId] = @CalendarFolderId
@@ -109,7 +120,15 @@ Namespace CalDav
                                   "@CalendarFolderId", calendarFolderId)
         End Function
 
+        ''' <summary>
+        ''' Loads calendar files by list of UIDs.
+        ''' </summary>
+        ''' <param name="context">Instance of <see cref="DavContext"/>  class.</param>
+        ''' <param name="uids">File UIDs to load.</param>
+        ''' <param name="propsToLoad">Specifies which properties should be loaded.</param>
+        ''' <returns>List of <see cref="ICalendarFileAsync"/>  items.</returns>
         Public Shared Async Function LoadByUidsAsync(context As DavContext, uids As IEnumerable(Of String), propsToLoad As PropsToLoad) As Task(Of IEnumerable(Of ICalendarFileAsync))
+            ' Get IN clause part with list of file UIDs for SELECT.
             Dim selectIn As String = String.Join(", ", uids.Select(Function(a) String.Format("'{0}'", a)).ToArray())
             Dim sql As String = "SELECT * FROM [cal_CalendarFile] 
                            WHERE [UID] IN ({1})
@@ -131,6 +150,13 @@ Namespace CalDav
             Return Await LoadAsync(context, sql, "@UserId", context.UserId)
         End Function
 
+        ''' <summary>
+        ''' Loads calendar files by SQL.
+        ''' </summary>
+        ''' <param name="context">Instance of <see cref="DavContext"/>  class.</param>
+        ''' <param name="sql">SQL that queries [cal_CalendarFile], [cal_EventComponent], etc tables.</param>
+        ''' <param name="prms">List of SQL parameters.</param>
+        ''' <returns>List of <see cref="ICalendarFileAsync"/>  items.</returns>
         Private Shared Async Function LoadAsync(context As DavContext, sql As String, ParamArray prms As Object()) As Task(Of IEnumerable(Of ICalendarFileAsync))
             Dim items As IList(Of ICalendarFileAsync) = New List(Of ICalendarFileAsync)()
             Dim stopWatch As Stopwatch = Stopwatch.StartNew()
@@ -178,6 +204,8 @@ Namespace CalDav
                 Case PropsToLoad.None
                     Return "[UID]"
                 Case PropsToLoad.Minimum
+                    ' [Summary] is typically not required in GetChildren call, 
+                    ' they are extracted for demo purposes only, to be displayed in Ajax File Browser as a file display name.
                     Return "[UID], [Summary]"
                 Case PropsToLoad.All
                     Return "*"
@@ -186,6 +214,12 @@ Namespace CalDav
             Throw New Exception("Should never come here.")
         End Function
 
+        ''' <summary>
+        ''' Creates new calendar file. The actual new [cal_CalendarFile], [cal_EventComponent], etc. records are inserted into the database during <see cref="WriteAsync"/>  method call.
+        ''' </summary>
+        ''' <param name="context">Instance of <see cref="DavContext"/>  class.</param> 
+        ''' <param name="calendarFolderId">Calendar folder ID to which this calendar file will belong to.</param>
+        ''' <returns>Instance of <see cref="CalendarFile"/> .</returns>
         Public Shared Function CreateCalendarFile(context As DavContext, calendarFolderId As Guid) As CalendarFile
             Dim calendarFile As CalendarFile = New CalendarFile(context, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing)
             calendarFile.calendarFolderId = calendarFolderId
@@ -260,6 +294,7 @@ Namespace CalDav
         ''' <remarks>CalDAV clients typically never request this property.</remarks>
         Public Overrides ReadOnly Property Name As String Implements IHierarchyItemAsync.Name
             Get
+                ' Show all components summaries contained in this file.
                 Return String.Join(", ", rowsEventComponents.Select(Function(x) String.Format("[{0}]", x.Field(Of String)("Summary"))).ToArray())
             End Get
         End Property
@@ -356,6 +391,15 @@ Namespace CalDav
             Me.rowsAttachments = rowsAttachments
         End Sub
 
+        ''' <summary>
+        ''' Called when event or to-do is being saved to back-end storage.
+        ''' </summary>
+        ''' <param name="stream">Stream containing VCALENDAR, typically with a single VEVENT ot VTODO component.</param>
+        ''' <param name="contentType">Content type.</param>
+        ''' <param name="startIndex">Starting byte in target file
+        ''' for which data comes in <paramref name="content"/>  stream.</param>
+        ''' <param name="totalFileSize">Size of file as it will be after all parts are uploaded. -1 if unknown (in case of chunked upload).</param>
+        ''' <returns>Whether the whole stream has been written.</returns>
         Public Async Function WriteAsync(stream As Stream, contentType As String, startIndex As Long, totalFileSize As Long) As Task(Of Boolean) Implements IContentAsync.WriteAsync
             'Set timeout to maximum value to be able to upload iCalendar files with large file attachments.
             System.Web.HttpContext.Current.Server.ScriptTimeout = Integer.MaxValue
@@ -364,6 +408,7 @@ Namespace CalDav
                 iCalendar = reader.ReadToEnd()
             End Using
 
+            ' Typically the stream contains a single iCalendar that contains one or more event or to-do components.
             Dim calendars As IEnumerable(Of IComponent) = New vFormatter().Deserialize(iCalendar)
             Dim calendar As ICalendar2 = TryCast(calendars.First(), ICalendar2)
             Dim components As IEnumerable(Of IEventBase) = calendar.Events.Cast(Of IEventBase)()
@@ -372,14 +417,21 @@ Namespace CalDav
             End If
 
             If components Is Nothing Then Throw New DavException("Event or to-do was expected in the input stream, no events or to-dos were found.", DavStatus.UNSUPPORTED_MEDIA_TYPE)
+            ' All components inside calendar file has the same UID which is equal to file name.
             Dim uid As String = components.First().Uid.Text
+            ' Save data to [cal_CalendarFile] table.
             Await WriteCalendarFileAsync(Context, uid, calendarFolderId, isNew)
             For Each component As IEventBase In components
                 Dim eventComponentId As Guid = Guid.NewGuid()
+                ' Save data to [cal_EventComponent] table.
                 Await WriteEventComponentAsync(Context, component, eventComponentId, uid)
+                ' Save recurrence days exceptions for recurring events and to-dos. 
                 Await WriteRecurrenceExceptionsAsync(Context, component.ExceptionDateTimes, eventComponentId, uid)
+                ' Save alarms.
                 Await WriteAlarmsAsync(Context, component.Alarms, eventComponentId, uid)
+                ' Save attendees.
                 Await WriteAttendeesAsync(Context, component.Attendees, eventComponentId, uid)
+                ' Save attachments.
                 Await WriteAttachmentsAsync(Context, component.Attachments, eventComponentId, uid)
             Next
 
@@ -389,6 +441,17 @@ Namespace CalDav
             Return True
         End Function
 
+        ''' <summary>
+        ''' Saves data to [cal_CalendarFile] table.
+        ''' </summary>
+        ''' <param name="context">Instance of <see cref="DavContext"/>  class.</param>
+        ''' <param name="uid">File UID to be updated or created.</param>
+        ''' <param name="calendarFolderId">Calendar folder that contains this file.</param>
+        ''' <param name="isNew">Flag indicating if this is a new file or file should be updated.</param>
+        ''' <remarks>
+        ''' This function deletes records in [cal_EventComponent], [cal_RecurrenceException], [cal_Alarm],
+        ''' [cal_Attendee], [cal_Attachment] and [cal_CustomProperty] tables if the event or to-do should be updated.
+        ''' </remarks>
         Private Shared Async Function WriteCalendarFileAsync(context As DavContext, uid As String, calendarFolderId As Guid, isNew As Boolean) As Task
             Dim sql As String
             If isNew Then
@@ -431,6 +494,13 @@ Namespace CalDav
             End If
         End Function
 
+        ''' <summary>
+        ''' Saves data to [cal_EventComponent] table.
+        ''' </summary>
+        ''' <param name="context">Instance of <see cref="DavContext"/>  class.</param>
+        ''' <param name="sc">Event or to-do component to read data from.</param>
+        ''' <param name="eventComponentId">New event component ID.</param>
+        ''' <param name="uid">File UID.</param>
         Private Async Function WriteEventComponentAsync(context As DavContext, sc As IEventBase, eventComponentId As Guid, uid As String) As Task
             Dim sql As String = "INSERT INTO [cal_EventComponent] (
                           [EventComponentId]
@@ -508,6 +578,7 @@ Namespace CalDav
                         , @ToDoPercentComplete
                     )"
             Dim isEvent As Boolean = TypeOf sc Is IEvent
+            ' Get END in case of event or DUE in case of to-do component. 
             Dim endProp As ICalDate = If(isEvent, TryCast(sc, IEvent).End, TryCast(sc, IToDo).Due)
             Await context.ExecuteNonQueryAsync(sql,
                                               "@EventComponentId", eventComponentId,
@@ -518,27 +589,37 @@ Namespace CalDav
                                               "@LastModifiedUtc", sc.LastModifiedUtc?.Value?.DateVal,                                    ' LAST-MODIFIED value
                                               "@Summary", sc.Summary?.Text,                                                      ' SUMMARY value
                                               "@Description", sc.Description?.Text,                                                  ' DESCRIPTION value
-                                              "@OrganizerEmail", sc.Organizer?.Uri?.Replace("mailto:", ""), "@OrganizerCommonName", sc.Organizer?.CommonName,                                              ' ORGANIZER CN param
+                                              "@OrganizerEmail", sc.Organizer?.Uri?.Replace("mailto:", ""),                             ' ORGANIZER value
+                                              "@OrganizerCommonName", sc.Organizer?.CommonName,                                              ' ORGANIZER CN param
                                               "@Start", sc.Start?.Value?.DateVal,                                              ' DTSTART value
                                               "@StartTimeZoneId", If(sc.Start?.Value?.DateVal.Kind = DateTimeKind.Utc, TimeZoneInfo.Utc.Id, sc.Start?.TimeZoneId),  ' DTSTART TZID param
                                               "@End", endProp?.Value?.DateVal,                                               ' DTEND or DUE value
                                               "@EndTimeZoneId", If(endProp?.Value?.DateVal.Kind = DateTimeKind.Utc, TimeZoneInfo.Utc.Id, endProp?.TimeZoneId),    ' DTEND or DUE TZID param
                                               "@Duration", CType(sc.Duration?.Value, TimeSpan?)?.Ticks,                                             ' DURATION value
-                                              "@AllDay", Not sc.Start?.Value?.Components.HasFlag(DateComponents.Time), "@Class", sc.Class?.Value.Name,                                                  ' CLASS value
+                                              "@AllDay", Not sc.Start?.Value?.Components.HasFlag(DateComponents.Time), ' Check if start contains the time part to determine if this is a all-day event/to-do.
+                                              "@Class", sc.Class?.Value.Name,                                                  ' CLASS value
                                               "@Location", sc.Location?.Text,                                                     ' LOCATION value
                                               "@Priority", sc.Priority?.Value,                                                    ' PRIORITY value
                                               "@Sequence", sc.Sequence?.Value,                                                    ' SEQUENCE value
                                               "@Status", sc.Status?.Value.Name,                                                 ' STATUS value
-                                              "@Categories", ListToString(Of String)(sc.Categories.Select(Function(x) ListToString(Of String)(x.Categories, ",")), ";"), "@RecurFrequency", sc.RecurrenceRule?.Frequency?.ToString(), "@RecurInterval", CType(sc.RecurrenceRule?.Interval, Integer?),                                     ' RRULE INTERVAL value part
+                                              "@Categories", ListToString(Of String)(sc.Categories.Select(Function(x) ListToString(Of String)(x.Categories, ",")), ";"), ' CATEGORIES value
+                                              "@RecurFrequency", sc.RecurrenceRule?.Frequency?.ToString(),                              ' RRULE FREQ value part
+                                              "@RecurInterval", CType(sc.RecurrenceRule?.Interval, Integer?),                                     ' RRULE INTERVAL value part
                                               "@RecurUntil", sc.RecurrenceRule?.Until?.DateVal,                                     ' RRULE UNTIL value part
                                               "@RecurCount", CType(sc.RecurrenceRule?.Count, Integer?),                                        ' RRULE COUNT value part
-                                              "@RecurWeekStart", CType(sc.RecurrenceRule?.WeekStart, DayOfWeek?)?.ToString(), "@RecurByDay", ListToString(Of DayRule)(sc.RecurrenceRule?.ByDay), "@RecurByMonthDay", ListToString(Of Short)(sc.RecurrenceRule?.ByMonthDay), "@RecurByMonth", ListToString(Of UShort)(sc.RecurrenceRule?.ByMonth), "@RecurBySetPos", ListToString(Of Short)(sc.RecurrenceRule?.BySetPos), "@RecurrenceIdDate", sc.RecurrenceId?.Value.DateVal,                                        ' RECURRENCE-ID value
+                                              "@RecurWeekStart", CType(sc.RecurrenceRule?.WeekStart, DayOfWeek?)?.ToString(),                              ' RRULE WKST value part
+                                              "@RecurByDay", ListToString(Of DayRule)(sc.RecurrenceRule?.ByDay),                       ' RRULE BYDAY value part
+                                              "@RecurByMonthDay", ListToString(Of Short)(sc.RecurrenceRule?.ByMonthDay),                    ' RRULE BYMONTHDAY value part
+                                              "@RecurByMonth", ListToString(Of UShort)(sc.RecurrenceRule?.ByMonth),                      ' RRULE BYMONTH value part
+                                              "@RecurBySetPos", ListToString(Of Short)(sc.RecurrenceRule?.BySetPos),                      ' RRULE BYSETPOS value part
+                                              "@RecurrenceIdDate", sc.RecurrenceId?.Value.DateVal,                                        ' RECURRENCE-ID value
                                               "@RecurrenceIdTimeZoneId", sc.RecurrenceId?.TimeZoneId,                                           ' RECURRENCE-ID TZID param
                                               "@RecurrenceIdThisAndFuture", sc.RecurrenceId?.IsThisAndFuture,                                    ' RECURRENCE-ID RANGE param
                                               "@EventTransparency", TryCast(sc, IEvent)?.Transparency?.IsTransparent,                           ' VEVENT TRANSP value
                                               "@ToDoCompletedUtc", TryCast(sc, IToDo)?.CompletedUtc?.Value?.DateVal,                           ' VTODO COMPLETED value
                                               "@ToDoPercentComplete", TryCast(sc, IToDo)?.PercentComplete?.Value                                 ' VTODO PERCENT-COMPLETE value
                                               )
+            ' Save custom properties and parameters of this component to [cal_CustomProperty] table.
             Dim customPropsSqlInsert As String
             Dim customPropsParamsInsert As List(Of Object)
             If PrepareSqlCustomPropertiesOfComponentAsync(sc, eventComponentId, uid, customPropsSqlInsert, customPropsParamsInsert) Then
@@ -546,12 +627,24 @@ Namespace CalDav
             End If
         End Function
 
+        ''' <summary>
+        ''' Converts <see cref="IEnumerable{T}"/>  to string. Returns null if the list is empty.
+        ''' </summary>
+        ''' <returns>String that contains elements separated by ','.</returns>
         Private Shared Function ListToString(Of T)(arr As IEnumerable(Of T), Optional separator As String = ",") As String
             If(arr Is Nothing) OrElse Not arr.Any() Then Return Nothing
             Return String.Join(Of T)(separator, arr)
         End Function
 
+        ''' <summary>
+        ''' Saves data to [cal_RecurrenceException] table.
+        ''' </summary>
+        ''' <param name="context">Instance of <see cref="DavContext"/>  class.</param>
+        ''' <param name="recurrenceExceptions">Event or to-do recurrence exceptions dates to be saved.</param>
+        ''' <param name="eventComponentId">Event component to associate these recurrence exceptions dates with.</param>
+        ''' <param name="uid">File UID.</param>
         Private Shared Async Function WriteRecurrenceExceptionsAsync(context As DavContext, recurrenceExceptions As IPropertyList(Of ICalDateList), eventComponentId As Guid, uid As String) As Task
+            ' Typically CalDAV clients pass a single date value per EXDATE property.
             Dim sql As String = "INSERT INTO [cal_RecurrenceException] (
                       [EventComponentId]
                     , [UID]
@@ -576,7 +669,8 @@ Namespace CalDav
                     )", i))
                     parameters.AddRange(New Object() {"@ExceptionDate" & i, [date].DateVal,                                                                         ' EXDATE value
                                                      "@TimeZoneId" & i, If([date].DateVal.Kind = DateTimeKind.Utc, TimeZoneInfo.Utc.Id, dateListProp.TimeZoneId),' EXDATE TZID param
-                                                     "@AllDay" & i, Not [date].Components.HasFlag(DateComponents.Time)})
+                                                     "@AllDay" & i, Not [date].Components.HasFlag(DateComponents.Time)                                        ' EXDATE DATE or DATE-TIME
+                                                     })
                 Next
 
                 i += 1
@@ -587,6 +681,13 @@ Namespace CalDav
             End If
         End Function
 
+        ''' <summary>
+        ''' Saves data to [cal_Alarm] table.
+        ''' </summary>
+        ''' <param name="context">Instance of <see cref="DavContext"/>  class.</param>
+        ''' <param name="alarms">List of alarms to be saved.</param>
+        ''' <param name="eventComponentId">Event component to associate these alarms with.</param>
+        ''' <param name="uid">File UID.</param>
         Private Async Function WriteAlarmsAsync(context As DavContext, alarms As IComponentList(Of IAlarm), eventComponentId As Guid, uid As String) As Task
             Dim sql As String = "INSERT INTO [cal_Alarm] (
                       [AlarmId]
@@ -631,6 +732,7 @@ Namespace CalDav
                                                  "@Duration" & i, CType(alarm.Duration?.Value, TimeSpan?)?.Ticks,                                                    ' Alarm DURATION property
                                                  "@Repeat" & i, alarm.Repeat?.Value                                                             ' Alarm REPEAT property
                                                  })
+                ' Create SQL to save custom properties of this component of this component to [cal_CustomProperty] table.
                 Dim customPropsSqlInsert As String
                 Dim customPropsParamsInsert As List(Of Object)
                 If PrepareSqlCustomPropertiesOfComponentAsync(alarm, alarmId, uid, customPropsSqlInsert, customPropsParamsInsert) Then
@@ -646,6 +748,13 @@ Namespace CalDav
             End If
         End Function
 
+        ''' <summary>
+        ''' Saves data to [cal_Attendee] table.
+        ''' </summary>
+        ''' <param name="context">Instance of <see cref="DavContext"/>  class.</param>
+        ''' <param name="attendees">List of attendees to be saved.</param>
+        ''' <param name="eventComponentId">Event component to associate these attendees with.</param>
+        ''' <param name="uid">File UID.</param>
         Private Async Function WriteAttendeesAsync(context As DavContext, attendees As IPropertyList(Of IAttendee), eventComponentId As Guid, uid As String) As Task
             Dim sql As String = "INSERT INTO [cal_Attendee] (
                       [AttendeeId]
@@ -687,15 +796,19 @@ Namespace CalDav
                 )", i))
                 Dim attendeeId As Guid = Guid.NewGuid()
                 parameters.AddRange(New Object() {"@AttendeeId" & i, attendeeId,
-                                                 "@Email" & i, attendee.Uri?.Replace("mailto:", ""), "@CommonName" & i, attendee.CommonName,                     ' Attendee CN parameter
+                                                 "@Email" & i, attendee.Uri?.Replace("mailto:", ""),    ' Attendee value
+                                                 "@CommonName" & i, attendee.CommonName,                     ' Attendee CN parameter
                                                  "@DirectoryEntryRef" & i, attendee.Dir,                            ' Attendee DIR parameter
                                                  "@Language" & i, attendee.Language,                       ' Attendee LANGUAGE parameter
                                                  "@UserType" & i, attendee.UserType?.Name,                 ' Attendee CUTYPE parameter
                                                  "@SentBy" & i, attendee.SentBy,                         ' Attendee SENT-BY parameter
-                                                 "@DelegatedFrom" & i, attendee.DelegatedFrom.FirstOrDefault(), "@DelegatedTo" & i, attendee.DelegatedTo.FirstOrDefault(), "@Rsvp" & i, attendee.Rsvp = RsvpType.True,          ' Attendee RSVP parameter
+                                                 "@DelegatedFrom" & i, attendee.DelegatedFrom.FirstOrDefault(), ' Attendee DELEGATED-FROM parameter, here we assume only 1 delegator for the sake of simplicity
+                                                 "@DelegatedTo" & i, attendee.DelegatedTo.FirstOrDefault(),   ' Attendee DELEGATED-TO parameter, here we assume only 1 delegatee for the sake of simplicity
+                                                 "@Rsvp" & i, attendee.Rsvp = RsvpType.True,          ' Attendee RSVP parameter
                                                  "@ParticipationRole" & i, attendee.ParticipationRole?.Name,        ' Attendee ROLE parameter
                                                  "@ParticipationStatus" & i, attendee.ParticipationStatus?.Name      ' Attendee PARTSTAT parameter
                                                  })
+                ' Prepare SQL to save custom property parameters to [cal_CustomProperty] table.
                 Dim customPropSqlInsert As String
                 Dim customPropParametersInsert As List(Of Object)
                 If PrepareSqlParamsWriteCustomProperty("ATTENDEE", attendee.RawProperty, attendeeId, uid, customPropSqlInsert, customPropParametersInsert) Then
@@ -711,7 +824,16 @@ Namespace CalDav
             End If
         End Function
 
+        ''' <summary>
+        ''' Saves data to [cal_Attachment] table.
+        ''' </summary>
+        ''' <param name="context">Instance of <see cref="DavContext"/>  class.</param>
+        ''' <param name="attachments">List of attachments to be saved.</param>
+        ''' <param name="eventComponentId">Event component to associate these attachments with.</param>
+        ''' <param name="uid">File UID.</param>
         Private Async Function WriteAttachmentsAsync(context As DavContext, attachments As IPropertyList(Of IMedia), eventComponentId As Guid, uid As String) As Task
+            ' It is recommended to keep attchment size below 256Kb. In case files over 1Mb should 
+            ' be stored, use SQL FILESTREAM, FileTable or store content in file system.
             Dim sqlAttachment As String = "INSERT INTO [cal_Attachment] (
                       [AttachmentId]
                     , [EventComponentId]
@@ -730,6 +852,7 @@ Namespace CalDav
             Dim customPropertiesSql As String = ""
             Dim customPropertiesParameters As List(Of Object) = New List(Of Object)()
             For Each attachment As IMedia In attachments
+                ' To insert NULL to VARBINARY column SqlParameter must be passed with Size=-1 and Value=DBNull.Value.
                 Dim contentParam As SqlParameter = New SqlParameter("@Content", SqlDbType.VarBinary, -1)
                 contentParam.Value = DBNull.Value
                 If Not attachment.IsExternal Then
@@ -746,6 +869,7 @@ Namespace CalDav
                                                   "@MediaType", attachment.MediaType,
                                                   "@ExternalUrl", If(attachment.IsExternal, attachment.Uri, Nothing), contentParam
                                                   )
+                ' Prepare SQL to save custom property parameters to [].
                 Dim customPropSqlInsert As String
                 Dim customPropParametersInsert As List(Of Object)
                 If PrepareSqlParamsWriteCustomProperty("ATTACH", attachment.RawProperty, attachmentId, uid, customPropSqlInsert, customPropParametersInsert) Then
@@ -759,6 +883,18 @@ Namespace CalDav
             End If
         End Function
 
+        ''' <summary>
+        ''' Creates SQL to write custom properties and parameters to [cal_CustomProperty] table.
+        ''' </summary>
+        ''' <param name="prop">Raw property to be saved to database.</param>
+        ''' <param name="parentId">
+        ''' Parent component ID or parent property ID to which this custom property or parameter belongs to. 
+        ''' This could be EventComponentId, AlarmId, AttachmentId, AttendeeId.
+        ''' </param>
+        ''' <param name="uid">File UID.</param>
+        ''' <param name="sql">SQL to insert data to DB.</param>
+        ''' <param name="parameters">SQL parameter values that will be filled by this method.</param>
+        ''' <returns>True if any custom properies or parameters found, false otherwise.</returns>
         Private Function PrepareSqlParamsWriteCustomProperty(propName As String, prop As IRawProperty, parentId As Guid, uid As String, ByRef sql As String, ByRef parameters As List(Of Object)) As Boolean
             sql = "INSERT INTO [cal_CustomProperty] (
                       [ParentId]
@@ -772,6 +908,7 @@ Namespace CalDav
             Dim origParamsCount As Integer = parameters.Count()
             Dim isCustomProp As Boolean = propName.StartsWith("X-", StringComparison.InvariantCultureIgnoreCase)
             Dim paramName As String = Nothing
+            ' Save custom prop value.
             If isCustomProp Then
                 Dim val As String = prop.RawValue
                 valuesSql.Add(String.Format("(
@@ -790,8 +927,11 @@ Namespace CalDav
                 paramIndex += 1
             End If
 
+            ' Save parameters and their values.
             For Each param As Parameter In prop.Parameters
                 paramName = param.Name
+                ' For standard properties we save only custom params (that start with 'X-'). All standard patrams go to their fields in DB.
+                ' For custom properies we save all params.
                 If Not isCustomProp AndAlso Not paramName.StartsWith("X-", StringComparison.InvariantCultureIgnoreCase) Then Continue For
                 For Each value As String In param.Values
                     Dim val As String = value
@@ -820,10 +960,24 @@ Namespace CalDav
             Return False
         End Function
 
+        ''' <summary>
+        ''' Creates SQL to write custom properties and parameters to [cal_CustomProperty] table for specified component.
+        ''' </summary>
+        ''' <param name="component">Component to be saved to database.</param>
+        ''' <param name="parentId">
+        ''' Parent component ID to which this custom property or parameter belongs to. 
+        ''' This could be EventComponentId, AlarmId, etc.
+        ''' </param>
+        ''' <param name="uid">File UID.</param>
+        ''' <param name="sql">SQL to insert data to DB.</param>
+        ''' <param name="parameters">SQL parameter values that will be filled by this method.</param>
+        ''' <returns>True if any custom properies or parameters found, false otherwise.</returns>
         Private Function PrepareSqlCustomPropertiesOfComponentAsync(component As IComponent, parentId As Guid, uid As String, ByRef sql As String, ByRef parameters As List(Of Object)) As Boolean
             sql = ""
             parameters = New List(Of Object)()
+            ' We save only single custom props here, multiple props are saved in other methods.
             Dim multiProps As String() = New String() {"ATTACH", "ATTENDEE", "EXDATE"}
+            ' Properties in IComponent.Properties are grouped by name.
             For Each pair As KeyValuePair(Of String, IList(Of IRawProperty)) In component.Properties
                 If multiProps.Contains(pair.Key.ToUpper()) OrElse (pair.Value.Count <> 1) Then Continue For
                 Dim sqlInsert As String
@@ -837,6 +991,10 @@ Namespace CalDav
             Return Not String.IsNullOrEmpty(sql)
         End Function
 
+        ''' <summary>
+        ''' Called when client application deletes this file.
+        ''' </summary>
+        ''' <param name="multistatus">Error description if case delate failed. Ignored by most clients.</param>
         Public Overrides Async Function DeleteAsync(multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.DeleteAsync
             Dim cal As ICalendar2 = Await GetCalendarAsync()
             Dim sql As String = "DELETE FROM [cal_CalendarFile] 
@@ -853,15 +1011,28 @@ Namespace CalDav
             Await iMipEventSchedulingTransport.NotifyAttendeesAsync(Context, cal)
         End Function
 
+        ''' <summary>
+        ''' Called when the event or to-do must be read from back-end storage.
+        ''' </summary>
+        ''' <param name="output">Stream to write event or to-do content.</param>
+        ''' <param name="startIndex">Index to start reading data from back-end storage. Used for segmented reads, not used by CalDAV clients.</param>
+        ''' <param name="count">Number of bytes to read. Used for segmented reads, not used by CalDAV clients.</param>
+        ''' <returns></returns>
         Public Async Function ReadAsync(output As Stream, startIndex As Long, count As Long) As Task Implements IContentAsync.ReadAsync
             Dim cal As ICalendar2 = Await GetCalendarAsync()
             Call New vFormatter().Serialize(output, cal)
         End Function
 
+        ''' <summary>
+        ''' Creates calendar based on loaded data rows. Loads attachments from database if required.
+        ''' </summary>
+        ''' <returns>Object that implements <see cref="ICalendar2"/> .</returns>
         Private Async Function GetCalendarAsync() As Task(Of ICalendar2)
             Dim cal As ICalendar2 = CalendarFactory.CreateCalendar2()
             cal.ProductId = cal.CreateTextProp("-//IT Hit//Collab Lib//EN")
+            ' Recurrent event or to-do can contain more than one VEVENT/VTODO component in one file.
             For Each rowEventComponent As DataRow In rowsEventComponents
+                ' add either event or to-do to the calendar
                 Dim isEvent As Boolean = rowEventComponent.Field(Of Boolean)("ComponentType")
                 Dim sc As IEventBase
                 If isEvent Then
@@ -875,12 +1046,17 @@ Namespace CalDav
                 ' Read component properties from previously loaded [cal_EventComponent] rows.
                 ReadEventComponent(sc, rowEventComponent, cal)
                 Dim eventComponentId As Guid = rowEventComponent.Field(Of Guid)("EventComponentId")
+                ' Get [cal_RecurrenceException] rows that belong to this event component only and read recurrence exceptions dates.
                 Dim rowsThisScRecurrenceExceptions As IEnumerable(Of DataRow) = rowsRecurrenceExceptions.Where(Function(x) x.Field(Of Guid)("EventComponentId") = eventComponentId)
                 ReadRecurrenceExceptions(sc.ExceptionDateTimes, rowsThisScRecurrenceExceptions, cal)
+                ' Get [cal_Alarm] rows that belong to this event component only and read alarms.
                 Dim rowsThisScAlarms As IEnumerable(Of DataRow) = rowsAlarms.Where(Function(x) x.Field(Of Guid)("EventComponentId") = eventComponentId)
                 ReadAlarms(sc.Alarms, rowsThisScAlarms, cal)
+                ' Get [cal_Attendee] rows that belong to this event component only and read attendees.
                 Dim rowsThisScAttendees As IEnumerable(Of DataRow) = rowsAttendees.Where(Function(x) x.Field(Of Guid)("EventComponentId") = eventComponentId)
                 ReadAttendees(sc.Attendees, rowsThisScAttendees, cal)
+                ' Get [cal_Attachment] rows that belong to this event component only.
+                ' Read attachments, load [cal_Attachment].[Content] if required.
                 Dim rowsThisScAttachments As IEnumerable(Of DataRow) = rowsAttachments.Where(Function(x) x.Field(Of Guid)("EventComponentId") = eventComponentId)
                 Await ReadAttachmentsAsync(Context, sc.Attachments, rowsThisScAttachments, cal)
             Next
@@ -913,8 +1089,11 @@ Namespace CalDav
             sc.Status = cal.CreateStatusProp(row.Field(Of String)("Status"))
             sc.Organizer = cal.CreateCalAddressProp(EmailToUri(row.Field(Of String)("OrganizerEmail")), row.Field(Of String)("OrganizerCommonName"))
             ' RECURRENCE-ID property
-            sc.RecurrenceId = cal.CreateRecurrenceIdProp(row.Field(Of DateTime?)("RecurrenceIdDate"), row.Field(Of String)("RecurrenceIdTimeZoneId"), isAllDay,                                                                                          ' RECURRENCE-ID DATE or DATE-TIME
+            sc.RecurrenceId = cal.CreateRecurrenceIdProp(row.Field(Of DateTime?)("RecurrenceIdDate"),                                                            ' RECURRENCE-ID value
+                                                        row.Field(Of String)("RecurrenceIdTimeZoneId"),                                                       ' RECURRENCE-ID TZID param
+                                                        isAllDay,                                                                                          ' RECURRENCE-ID DATE or DATE-TIME
                                                         row.Field(Of Boolean?)("RecurrenceIdThisAndFuture").GetValueOrDefault())
+            ' CATEGORIES property list
             Dim categories As String = TryCast(row.Field(Of String)("Categories"), String)
             If Not String.IsNullOrEmpty(categories) Then
                 Dim strCatProp As String() = categories.Split({";"c}, StringSplitOptions.RemoveEmptyEntries)
@@ -925,17 +1104,20 @@ Namespace CalDav
                 Next
             End If
 
+            ' RRULE property
             Dim recurFrequency As String = row.Field(Of String)("RecurFrequency")
             If Not String.IsNullOrEmpty(recurFrequency) Then
                 sc.RecurrenceRule = cal.CreateProperty(Of IRecurrenceRule)()
                 sc.RecurrenceRule.Frequency = ExtendibleEnum.FromString(Of FrequencyType)(recurFrequency)
                 sc.RecurrenceRule.Interval = CType(row.Field(Of Integer?)("RecurInterval"), UInteger?)
                 sc.RecurrenceRule.Count = CType(row.Field(Of Integer?)("RecurCount"), UInteger?)
+                ' WKST rule part
                 Dim weekStart As String = row.Field(Of String)("RecurWeekStart")
                 If Not String.IsNullOrEmpty(weekStart) Then
                     sc.RecurrenceRule.WeekStart = CType([Enum].Parse(GetType(DayOfWeek), weekStart), DayOfWeek)
                 End If
 
+                ' UNTIL rule part
                 Dim until As DateTime? = row.Field(Of DateTime?)("RecurUntil")
                 If until IsNot Nothing Then
                     ' UNTIL must be in UTC if DTSTART contains time zone or DTSTART is UTC.
@@ -947,21 +1129,25 @@ Namespace CalDav
                                                         sc.Start.Value.Components)
                 End If
 
+                ' BYDAY rule part
                 Dim byDay As String = row.Field(Of String)("RecurByDay")
                 If Not String.IsNullOrEmpty(byDay) Then
                     sc.RecurrenceRule.ByDay = byDay.Split(","c).Select(Function(x) DayRule.Parse(x)).ToArray()
                 End If
 
+                ' BYMONTHDAY rule part
                 Dim byMonthDay As String = row.Field(Of String)("RecurByMonthDay")
                 If Not String.IsNullOrEmpty(byMonthDay) Then
                     sc.RecurrenceRule.ByMonthDay = byMonthDay.Split(","c).Select(Function(x) Short.Parse(x)).ToArray()
                 End If
 
+                ' BYMONTH rule part
                 Dim byMonth As String = row.Field(Of String)("RecurByMonth")
                 If Not String.IsNullOrEmpty(byMonth) Then
                     sc.RecurrenceRule.ByMonth = byMonth.Split(","c).Select(Function(x) UShort.Parse(x)).ToArray()
                 End If
 
+                ' BYSETPOS  rule part
                 Dim bySetPos As String = row.Field(Of String)("RecurBySetPos")
                 If Not String.IsNullOrEmpty(bySetPos) Then
                     sc.RecurrenceRule.BySetPos = bySetPos.Split(","c).Select(Function(x) Short.Parse(x)).ToArray()
@@ -969,16 +1155,19 @@ Namespace CalDav
             End If
 
             If TypeOf sc Is IEvent Then
+                ' Properties specific for events only
                 Dim vEvent As IEvent = TryCast(sc, IEvent)
                 vEvent.End = cal.CreateCalDateProp(row.Field(Of DateTime?)("End"), row.Field(Of String)("EndTimeZoneId"), isAllDay)
                 vEvent.Transparency = cal.CreateTransparencyProp(row.Field(Of Boolean?)("EventTransparency"))
             Else
+                ' Properties specific for to-dos only
                 Dim vToDo As IToDo = TryCast(sc, IToDo)
                 vToDo.Due = cal.CreateCalDateProp(row.Field(Of DateTime?)("End"), row.Field(Of String)("EndTimeZoneId"), isAllDay)
                 vToDo.CompletedUtc = cal.CreateDateProp(row.Field(Of DateTime?)("ToDoCompletedUtc"), DateTimeKind.Utc)
                 vToDo.PercentComplete = cal.CreateIntegerProp(row.Field(Of Byte?)("ToDoPercentComplete"))
             End If
 
+            ' Get custom properties and custom parameters
             Dim eventComponentId As Guid = row.Field(Of Guid)("EventComponentId")
             Dim rowsEventCustomProperties As IEnumerable(Of DataRow) = rowsCustomProperties.Where(Function(x) x.Field(Of Guid)("ParentId") = eventComponentId)
             ReadCustomProperties(sc, rowsEventCustomProperties)
@@ -991,7 +1180,10 @@ Namespace CalDav
         ''' <param name="rowsRecurrenceExceptions">Data from [cal_RecurrenceException] table to populate recurrenceExceptions parameter.</param>
         Private Shared Sub ReadRecurrenceExceptions(recurrenceExceptions As IPropertyList(Of ICalDateList), rowsRecurrenceExceptions As IEnumerable(Of DataRow), cal As ICalendar2)
             For Each rowRecurrenceException As DataRow In rowsRecurrenceExceptions
-                Dim exdate As ICalDateList = cal.CreateCalDateListProp(New DateTime() {rowRecurrenceException.Field(Of DateTime)("ExceptionDate")}, rowRecurrenceException.Field(Of String)("TimeZoneId"), rowRecurrenceException.Field(Of Boolean?)("AllDay").GetValueOrDefault())
+                ' EXDATE property
+                Dim exdate As ICalDateList = cal.CreateCalDateListProp(New DateTime() {rowRecurrenceException.Field(Of DateTime)("ExceptionDate")}, rowRecurrenceException.Field(Of String)("TimeZoneId"),                                                ' EXDATE TZID param
+                                                                      rowRecurrenceException.Field(Of Boolean?)("AllDay").GetValueOrDefault()                                 ' EXDATE DATE or DATE-TIME
+                                                                      )
                 recurrenceExceptions.Add(exdate)
             Next
         End Sub
@@ -1022,11 +1214,13 @@ Namespace CalDav
                     alarm.Trigger.RelativeOffset = New TimeSpan(offset.Value)
                 End If
 
+                ' Alarm trigger RELATED param
                 Dim related As Boolean? = rowAlarm.Field(Of Boolean?)("TriggerRelatedStart")
                 If related IsNot Nothing Then
                     alarm.Trigger.Related = If(related.Value, RelatedType.Start, RelatedType.End)
                 End If
 
+                ' Get custom properties and custom parameters
                 Dim alarmId As Guid = rowAlarm.Field(Of Guid)("AlarmId")
                 Dim rowsEventCustomProperties As IEnumerable(Of DataRow) = rowsCustomProperties.Where(Function(x) x.Field(Of Guid)("ParentId") = alarmId)
                 ReadCustomProperties(alarm, rowsEventCustomProperties)
@@ -1051,6 +1245,7 @@ Namespace CalDav
                 attendee.SentBy = EmailToUri(rowAttendee.Field(Of String)("SentBy"))
                 attendee.DelegatedFrom = {EmailToUri(rowAttendee.Field(Of String)("DelegatedFrom"))}
                 attendee.DelegatedTo = {EmailToUri(rowAttendee.Field(Of String)("DelegatedTo"))}
+                ' Attendee RSVP parameter
                 Dim rsvp As Boolean? = rowAttendee.Field(Of Boolean?)("Rsvp")
                 If rsvp IsNot Nothing Then
                     attendee.Rsvp = If(rsvp.Value, RsvpType.True, RsvpType.False)
@@ -1063,7 +1258,14 @@ Namespace CalDav
             Next
         End Sub
 
+        ''' <summary>
+        ''' Reads data from [cal_Attachment] rows. Loads [cal_Attachment].[Content] if required.
+        ''' </summary>
+        ''' <param name="attachments">Empty attachments list that will be populated with data from rowsAttachments parameter.</param>
+        ''' <param name="rowsAttachments">Data from [cal_Attachment] table to populate attachments parameter.</param>
+        ''' <param name="cal">Calendar object.</param>
         Private Async Function ReadAttachmentsAsync(context As DavContext, attachments As IPropertyList(Of IMedia), rowsAttachments As IEnumerable(Of DataRow), cal As ICalendar2) As Task
+            ' Find if any attachments content should be read from datatbase.
             Dim loadContent As Boolean = rowsAttachments.Any(Function(x)(x.Field(Of Integer)("ContentExists") = 1))
             If loadContent Then
                 ' Reading attachments content from database.
@@ -1075,16 +1277,19 @@ Namespace CalDav
                     While Await reader.ReadAsync()
                         Dim attachment As IMedia = attachments.CreateProperty()
                         Dim attachmentId As Guid = Await reader.GetFieldValueAsync(Of Guid)(reader.GetOrdinal("AttachmentId"))
+                        ' Attachment FMTTYPE parameter
                         Dim ordMediaType As Integer = reader.GetOrdinal("MediaType")
                         If Not Await reader.IsDBNullAsync(ordMediaType) Then
                             attachment.MediaType = Await reader.GetFieldValueAsync(Of String)(ordMediaType)
                         End If
 
+                        ' Attachment value as URL
                         Dim ordExternalUrl As Integer = reader.GetOrdinal("ExternalUrl")
                         If Not Await reader.IsDBNullAsync(ordExternalUrl) Then
                             attachment.Uri = Await reader.GetFieldValueAsync(Of String)(ordExternalUrl)
                         End If
 
+                        ' Attachment value as inline content
                         Dim ordContent As Integer = reader.GetOrdinal("Content")
                         If Not Await reader.IsDBNullAsync(ordContent) Then
                             Using stream As Stream = reader.GetStream(ordContent)
@@ -1100,6 +1305,7 @@ Namespace CalDav
                     End While
                 End Using
             Else
+                ' Attachments contain only URLs to external files.
                 For Each rowAttachment As DataRow In rowsAttachments
                     Dim attachment As IMedia = attachments.CreateProperty()
                     attachment.MediaType = rowAttachment.Field(Of String)("MediaType")
@@ -1159,7 +1365,10 @@ Namespace CalDav
         ''' <param name="paramName">Parameter name.</param>
         ''' <param name="paramValue">Parameter value to be added.</param>
         Private Shared Sub AddParamValue(prop As IRawProperty, paramName As String, paramValue As String)
+            ' There could be parameters with identical name withing one property.
+            ' This call returns all values from all properties with specified name.
             Dim paramVals As IEnumerable(Of String) = prop.Parameters(paramName)
+            ' Add value.
             Dim paramNewVals As List(Of String) = paramVals.ToList()
             paramNewVals.Add(paramValue)
             ' This call removes any parameters with identical names if any and 
@@ -1167,12 +1376,24 @@ Namespace CalDav
             prop.Parameters(paramName) = paramNewVals
         End Sub
 
+        ''' <summary>
+        ''' Adds "mailto:" schema to e-mail address if "@" is found. If null is passed returns null.
+        ''' </summary>
+        ''' <param name="email">E-mail.</param>
+        ''' <returns>E-mail string with "mailto:" schema.</returns>
         Private Shared Function EmailToUri(email As String) As String
             If email Is Nothing Then Return Nothing
             If email.IndexOf("@"c) > 0 Then Return String.Format("mailto:{0}", email)
             Return email
         End Function
 
+        ''' <summary>
+        ''' Converts string to <see cref="ExtendibleEnum"/>  of spcified type. Returns <b>null</b> if <b>null</b> is passed. 
+        ''' If no matching string value is found the <see cref="ExtendibleEnum.Name"/>  is set to passed parameter <b>value</b> and <see cref="ExtendibleEnum.Number"/>  is set to -1.
+        ''' </summary>
+        ''' <typeparam name="T">Type to convert to.</typeparam>
+        ''' <param name="value">String to convert from.</param>
+        ''' <returns><see cref="ExtendibleEnum"/>  of type <b>T</b> or <b>null</b> if <b>null</b> is passed as a parameter.</returns>
         Private Shared Function StringToEnum(Of T As {ExtendibleEnum, New})(value As String) As T
             If value Is Nothing Then Return Nothing
             Dim res As T

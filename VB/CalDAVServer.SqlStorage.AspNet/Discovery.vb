@@ -19,6 +19,10 @@ Public Class Discovery
         Me.Context = context
     End Sub
 
+    ''' <summary>
+    ''' Returns list of folders that contain calendars owned by this principal.
+    ''' </summary>
+    ''' <remarks>This enables calendars discovery owned by current loged-in principal.</remarks>
     Public Async Function GetCalendarHomeSetAsync() As Task(Of IEnumerable(Of IItemCollectionAsync)) Implements ICalendarDiscoveryAsync.GetCalendarHomeSetAsync
         Return {New CalendarsRootFolder(Context)}
     End Function

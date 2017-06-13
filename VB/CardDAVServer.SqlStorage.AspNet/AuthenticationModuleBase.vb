@@ -29,11 +29,15 @@ Public MustInherit Class AuthenticationModuleBase
         If IsAuthorizationPresent(HttpContext.Current.Request) Then
             Dim principal As IPrincipal = AuthenticateRequest(HttpContext.Current.Request)
             If principal IsNot Nothing Then
+                ' authenticated succesfully
                 HttpContext.Current.User = principal
             Else
+                ' invalid credentials
                 unauthorized()
             End If
         Else
+            ' To support Miniredirector/Web Folders on XP and Server 2003 as well as 
+            ' Firefox CORS requests, OPTIONS must be processed without authorization.
             If HttpContext.Current.Request.HttpMethod = "OPTIONS" Then Return
             unauthorized()
         End If
@@ -42,6 +46,7 @@ Public MustInherit Class AuthenticationModuleBase
     Private Sub App_OnEndRequest(source As Object, eventArgs As EventArgs)
         Dim app As HttpApplication = CType(source, HttpApplication)
         If app.Response.StatusCode = 401 Then
+            ' show login dialog
             app.Response.AppendHeader("WWW-Authenticate", GetChallenge())
         End If
     End Sub

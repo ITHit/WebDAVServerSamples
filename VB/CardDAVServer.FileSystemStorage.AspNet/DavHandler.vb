@@ -56,6 +56,13 @@ Public Class DavHandler
         End Get
     End Property
 
+    ''' <summary>
+    ''' Enables processing of HTTP Web requests.
+    ''' </summary>
+    ''' <param name="context">An <see cref="T:System.Web.HttpContext"/>  object that provides references to the
+    ''' intrinsic server objects (for example, Request, Response, Session, and Server) used to service
+    ''' HTTP requests. 
+    ''' </param>
     Public Overrides Async Function ProcessRequestAsync(context As HttpContext) As Task
         Dim engine As DavEngineAsync = getOrInitializeEngine(context)
         context.Response.BufferOutput = False
@@ -63,12 +70,23 @@ Public Class DavHandler
         Await engine.RunAsync(ntfsDavContext)
     End Function
 
+    ''' <summary>
+    ''' Initializes engine.
+    ''' </summary>
+    ''' <param name="context">Instance of <see cref="HttpContext"/> .</param>
+    ''' <returns>Initialized <see cref="DavEngine"/> .</returns>
     Private Function initializeEngine(context As HttpContext) As DavEngineAsync
         Dim logger As ILogger = CardDAVServer.FileSystemStorage.AspNet.Logger.Instance
         logger.LogFlags = LogFlagsEnum.LogGetResponseBody Or LogFlagsEnum.LogPutRequestBody
-        Dim engine As DavEngineAsync = New DavEngineAsync With {.Logger = logger, .OutputXmlFormatting = True, .CorsAllowedFor = Nothing, .UseFullUris = False}
+        Dim engine As DavEngineAsync = New DavEngineAsync With {.Logger = logger,
+                                                          .OutputXmlFormatting = True, .CorsAllowedFor = Nothing, .UseFullUris = False}
         engine.License = license
         Dim contentRootPath As String = HttpContext.Current.Request.MapPath("/")
+        ' Set custom handler to process GET and HEAD requests to folders and display 
+        ' info about how to connect to server. We are using the same custom handler 
+        ' class (but different instances) here to process both GET and HEAD because 
+        ' these requests are very similar. Some WebDAV clients may fail to connect if HEAD 
+        ' request is not processed.
         Dim handlerGet As MyCustomGetHandler = New MyCustomGetHandler(contentRootPath)
         Dim handlerHead As MyCustomGetHandler = New MyCustomGetHandler(contentRootPath)
         handlerGet.OriginalHandler = engine.RegisterMethodHandler("GET", handlerGet)
@@ -81,7 +99,14 @@ Public Class DavHandler
         Return engine
     End Function
 
+    ''' <summary>
+    ''' Initializes or gets engine singleton.
+    ''' </summary>
+    ''' <param name="context">Instance of <see cref="HttpContext"/> .</param>
+    ''' <returns>Instance of <see cref="DavEngineAsync"/> .</returns>
     Private Function getOrInitializeEngine(context As HttpContext) As DavEngineAsync
+        'we don't use any double check lock pattern here because nothing wrong
+        'is going to happen if we created occasionally several engines.
         Const ENGINE_KEY As String = "$DavEngine$"
         If context.Application(ENGINE_KEY) Is Nothing Then
             context.Application(ENGINE_KEY) = initializeEngine(context)

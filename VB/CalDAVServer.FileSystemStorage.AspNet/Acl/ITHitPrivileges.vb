@@ -3,6 +3,9 @@ Imports ITHit.WebDAV.Server.Acl
 
 Namespace Acl
 
+    ''' <summary>
+    ''' Privileges defined for this sample which match one-to-one to windows permissions.
+    ''' </summary>
     Module ITHitPrivileges
 
         ''' <summary>

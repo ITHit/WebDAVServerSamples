@@ -60,7 +60,7 @@ namespace WebDAVServer.SqlStorage.HttpListener
         /// <returns></returns>
         public async Task NotifyRefreshAsync(string folderPath)
         {
-            folderPath = folderPath.TrimStart('/').TrimEnd('/');
+            folderPath = folderPath.Trim('/');
             Notification notifyObject = new Notification
             {
                 FolderPath = folderPath,
@@ -82,7 +82,7 @@ namespace WebDAVServer.SqlStorage.HttpListener
         /// <returns></returns>
         public async Task NotifyDeleteAsync(string folderPath)
         {
-            folderPath = folderPath.TrimStart('/').TrimEnd('/');
+            folderPath = folderPath.Trim('/');
             Notification notifyObject = new Notification
             {
                 FolderPath = folderPath,

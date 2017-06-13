@@ -6,7 +6,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>2D5A5161-83B4-4E77-8DD8-30E5BF87019E</ProjectGuid>
+    <ProjectGuid>62D9248A-CE32-4340-ABFD-4D3D8AAFC96D</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>WebDAVServer.FileSystemStorage.HttpListener</RootNamespace>
@@ -75,7 +75,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Service.Designer.vb">
-      <DependentUpon>Service.cs</DependentUpon>
+      <DependentUpon>Service.vb</DependentUpon>
     </Compile>
     <Compile Include="MacOsXPreprocessor.vb" />
     <Compile Include="MyCustomGetHandler.vb" />
@@ -88,7 +88,7 @@
     <Compile Include="DavFolder.vb" />
     <Compile Include="DavHierarchyItem.vb" />
     <EmbeddedResource Include="ServiceInstaller.resx">
-      <DependentUpon>ServiceInstaller.cs</DependentUpon>
+      <DependentUpon>ServiceInstaller.vb</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <Content Include="AjaxFileBrowser\AjaxIntegrationTests.html" />
@@ -104,7 +104,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="ServiceInstaller.Designer.vb">
-      <DependentUpon>ServiceInstaller.cs</DependentUpon>
+      <DependentUpon>ServiceInstaller.vb</DependentUpon>
     </Compile>
     <Content Include="App_Data\WebDav\Storage\Library\Content.txt" />
     <Content Include="App_Data\WebDav\Storage\Library\General.doc" />
@@ -142,10 +142,10 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="ITHit.WebDAV.Server">
-      <HintPath>..\packages\ITHit.WebDAV.Server.5.5.3486\lib\net46\ITHit.WebDAV.Server.dll</HintPath>
+      <HintPath>..\packages\ITHit.WebDAV.Server.5.5.3491\lib\net46\ITHit.WebDAV.Server.dll</HintPath>
     </Reference>
     <Reference Include="ITHit.WebDAV.Server.HttpListener">
-      <HintPath>..\packages\ITHit.WebDAV.Server.HttpListener.5.5.3486\lib\net46\ITHit.WebDAV.Server.HttpListener.dll</HintPath>
+      <HintPath>..\packages\ITHit.WebDAV.Server.HttpListener.5.5.3491\lib\net46\ITHit.WebDAV.Server.HttpListener.dll</HintPath>
     </Reference>
   </ItemGroup>
   <PropertyGroup>

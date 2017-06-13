@@ -21,6 +21,13 @@ Namespace ExtendedAttributes
 
         Private Const systemErrorCodeDiskFull As Integer = 112
 
+        ''' <summary>
+        ''' Determines whether extended attributes are supported. 
+        ''' </summary>
+        ''' <param name="checkPath">File or folder path.</param>
+        ''' <returns>True if extended attributes are supported, false otherwise.</returns>
+        ''' <exception cref="ArgumentNullException">Throw when path is null or empty.</exception>
+        ''' <exception cref="COMException">Throw when happens some system exception.</exception>
         Public Async Function IsExtendedAttributesSupportedAsync(checkPath As String) As Task(Of Boolean) Implements IExtendedAttribute.IsExtendedAttributesSupportedAsync
             If String.IsNullOrEmpty(checkPath) Then
                 Throw New ArgumentNullException("path")
@@ -42,6 +49,12 @@ Namespace ExtendedAttributes
             Return(fileSystemFlags And fileSystemAttributeBlockSize) = fileSystemAttributeBlockSize
         End Function
 
+        ''' <summary>
+        ''' Gets extended attribute.
+        ''' </summary>
+        ''' <param name="path">File or folder path.</param>
+        ''' <param name="attribName">Attribute name.</param>
+        ''' <returns>Attribute value or null if attribute or file not found.</returns>
         Public Async Function GetExtendedAttributeAsync(path As String, attribName As String) As Task(Of String) Implements IExtendedAttribute.GetExtendedAttributeAsync
             If String.IsNullOrEmpty(path) Then
                 Throw New ArgumentNullException("path")
@@ -70,6 +83,12 @@ Namespace ExtendedAttributes
             End Using
         End Function
 
+        ''' <summary>
+        ''' Sets extended attribute.
+        ''' </summary>
+        ''' <param name="path">File or folder path.</param>
+        ''' <param name="attribName">Attribute name.</param>
+        ''' <param name="attribValue">Attribute value.</param>
         Public Async Function SetExtendedAttributeAsync(path As String, attribName As String, attribValue As String) As Task Implements IExtendedAttribute.SetExtendedAttributeAsync
             If String.IsNullOrEmpty(path) Then
                 Throw New ArgumentNullException("path")
@@ -97,6 +116,11 @@ Namespace ExtendedAttributes
             End Using
         End Function
 
+        ''' <summary>
+        ''' Deletes extended attribute.
+        ''' </summary>
+        ''' <param name="path">File or folder path.</param>
+        ''' <param name="attribName">Attribute name.</param>
         Public Async Function DeleteExtendedAttributeAsync(path As String, attribName As String) As Task Implements IExtendedAttribute.DeleteExtendedAttributeAsync
             If String.IsNullOrEmpty(path) Then
                 Throw New ArgumentNullException("path")
@@ -112,6 +136,14 @@ Namespace ExtendedAttributes
             End If
         End Function
 
+        ''' <summary>
+        ''' Gets file handler.
+        ''' </summary>
+        ''' <param name="path">File or folder path.</param>
+        ''' <param name="access">File access.</param>
+        ''' <param name="mode">Specifies how the operating system should open a file.</param>
+        ''' <param name="share">Sharing mode.</param>
+        ''' <returns>A wrapper for a file handle.</returns>
         Private Function GetSafeHandler(path As String, access As FileAccess, mode As FileMode, share As FileShare) As SafeFileHandle
             If mode = FileMode.Append Then
                 mode = FileMode.OpenOrCreate
@@ -121,6 +153,12 @@ Namespace ExtendedAttributes
             Return CreateFile(path, accessRights, share, IntPtr.Zero, mode, 0, IntPtr.Zero)
         End Function
 
+        ''' <summary>
+        ''' Gets file stream from file handler.
+        ''' </summary>
+        ''' <param name="fileHandler">File handler.</param>
+        ''' <param name="access">Read, write, or read/write access to a file.</param>
+        ''' <returns>A file stream.</returns>
         Private Function Open(fileHandler As SafeFileHandle, access As FileAccess) As FileStream
             If fileHandler.IsInvalid Then
                 ThrowLastError()
@@ -129,6 +167,11 @@ Namespace ExtendedAttributes
             Return New FileStream(fileHandler, access)
         End Function
 
+        ''' <summary>
+        ''' Gets file access rights.
+        ''' </summary>
+        ''' <param name="access">Read, write, or read/write access to a file.</param>
+        ''' <returns>An integer representing access rights.</returns>
         Private Function GetRights(access As FileAccess) As Integer
             Select Case access
                 Case FileAccess.Read
@@ -140,6 +183,10 @@ Namespace ExtendedAttributes
             End Select
         End Function
 
+        ''' <summary>
+        ''' Gets long path for win32.
+        ''' </summary>
+        ''' <param name="path">File or folder path.</param>
         Private Function GetWin32LongPath(path As String) As String
             If Not path.StartsWith("\\?\") Then
                 path = "\\?\" & path
@@ -156,6 +203,11 @@ Namespace ExtendedAttributes
         Private Shared Function CreateFile(lpFileName As String, dwDesiredAccess As Integer, dwShareMode As FileShare, lpSecurityAttributes As IntPtr, dwCreationDisposition As FileMode, dwFlagsAndAttributes As Integer, hTemplateFile As IntPtr) As SafeFileHandle
         End Function
 
+        ''' <summary>
+        ''' Deletes a file or a stream.
+        ''' </summary>
+        ''' <param name="path">File or stream path.</param>
+        ''' <returns>False if the function failed, nonzero otherwise.</returns>
         <DllImport("kernel32.dll", CharSet:=CharSet.Unicode, SetLastError:=True)>
         Private Shared Function DeleteFile(path As String) As <MarshalAs(UnmanagedType.Bool)> Boolean
         End Function

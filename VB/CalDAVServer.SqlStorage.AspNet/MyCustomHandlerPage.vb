@@ -23,6 +23,8 @@ Public Class MyCustomHandlerPage
     Public Async Function GetPageDataAsync() As Task
         Using context As DavContext = New DavContext(HttpContext.Current)
             Dim discovery As Discovery = New Discovery(context)
+            ' Get all user calendars Urls.
+            ' Get list of folders that contain user calendars and enumerate calendars in each folder.
             For Each folder As IItemCollectionAsync In Await discovery.GetCalendarHomeSetAsync()
                 Dim children As IEnumerable(Of IHierarchyItemAsync) = Await folder.GetChildrenAsync(New PropertyName(-1) {})
                 AllUserCalendars.AddRange(children.Where(Function(x) TypeOf x Is ICalendarFolderAsync))

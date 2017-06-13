@@ -78,21 +78,38 @@ Public Class DavContext
         End Get
     End Property
 
+    ''' <summary>
+    ''' Resolves path to instance of <see cref="IHierarchyItemAsync"/> .
+    ''' This method is called by WebDAV engine to resolve paths it encounters
+    ''' in request.
+    ''' </summary>
+    ''' <param name="path">Relative path to the item including query string.</param>
+    ''' <returns><see cref="IHierarchyItemAsync"/>  instance if item is found, <c>null</c> otherwise.</returns>
     Public Overrides Async Function GetHierarchyItemAsync(path As String) As Task(Of IHierarchyItemAsync)
         path = path.Trim({" "c, "/"c})
+        'remove query string.
         Dim ind As Integer = path.IndexOf("?"c)
         If ind > -1 Then
             path = path.Remove(ind)
         End If
 
         If path = "" Then
+            ' get root folder
             Return Await getRootFolderAsync()
         End If
 
+        ' find root
         Return Await getItemByPathAsync(path)
     End Function
 
+    ''' <summary>
+    ''' The method is called by WebDAV engine right before starting sending response to client.
+    ''' It is good point to either commit or rollback a transaction depending on whether
+    ''' and exception occurred.
+    ''' </summary>
     Public Overrides Async Function BeforeResponseAsync() As Task
+        'analyze Exception property to see if there was an exception during request execution.
+        'The property is set by engine.
         If Exception IsNot Nothing Then
             'rollback the transaction if something went wrong.
             RollBackTransaction()
@@ -136,6 +153,16 @@ Public Class DavContext
         End If
     End Sub
 
+    ''' <summary>
+    ''' Reads <see cref="DavFile"/>  or <see cref="DavFolder"/>  depending on type 
+    ''' <typeparamref name="T"/>  from database.
+    ''' </summary>
+    ''' <typeparam name="T">Type of hierarchy item to read(file or folder).</typeparam>
+    ''' <param name="parentPath">Path to parent hierarchy item.</param>
+    ''' <param name="command">SQL expression which returns hierachy item records.</param>
+    ''' <param name="prms">Sequence: sql parameter1 name, sql parameter1 value, sql parameter2 name,
+    ''' sql parameter2 value...</param>
+    ''' <returns>List of requested items.</returns>
     Public Async Function ExecuteItemAsync(Of T As {Class, IHierarchyItemAsync})(parentPath As String, command As String, ParamArray prms As Object()) As Task(Of IList(Of T))
         Dim children As IList(Of T) = New List(Of T)()
         Using reader As SqlDataReader = Await prepareCommand(command, prms).ExecuteReaderAsync()
@@ -171,6 +198,12 @@ Public Class DavContext
         Return children
     End Function
 
+    ''' <summary>
+    ''' Reads <see cref="PropertyValue"/>  from database by executing SQL command.
+    ''' </summary>
+    ''' <param name="command">Command text.</param>
+    ''' <param name="prms">SQL parameter pairs: SQL parameter name, SQL parameter value</param>
+    ''' <returns>List of <see cref="PropertyValue"/> .</returns>
     Public Async Function ExecutePropertyValueAsync(command As String, ParamArray prms As Object()) As Task(Of IList(Of PropertyValue))
         Dim l As List(Of PropertyValue) = New List(Of PropertyValue)()
         Using reader As SqlDataReader = Await prepareCommand(command, prms).ExecuteReaderAsync()
@@ -185,11 +218,25 @@ Public Class DavContext
         Return l
     End Function
 
+    ''' <summary>
+    ''' Executes SQL command which returns scalar result.
+    ''' </summary>
+    ''' <param name="command">Command text.</param>
+    ''' <param name="prms">SQL parameter pairs: SQL parameter name, SQL parameter value.</param>
+    ''' <typeparam name="T">Type of object SQL command returns.</typeparam>
+    ''' <returns>Command result of type <typeparamref name="T"/> .</returns>
     Public Function ExecuteScalar(Of T)(command As String, ParamArray prms As Object()) As T
         Dim o As Object = prepareCommand(command, prms).ExecuteScalar()
         Return If(TypeOf o Is DBNull, Nothing, CType(o, T))
     End Function
 
+    ''' <summary>
+    ''' Executes SQL command which returns scalar result.
+    ''' </summary>
+    ''' <param name="command">Command text.</param>
+    ''' <param name="prms">SQL parameter pairs: SQL parameter name, SQL parameter value.</param>
+    ''' <typeparam name="T">Type of object SQL command returns.</typeparam>
+    ''' <returns>Command result of type <typeparamref name="T"/> .</returns>
     Public Async Function ExecuteScalarAsync(Of T)(command As String, ParamArray prms As Object()) As Task(Of T)
         Dim o As Object = Await prepareCommand(command, prms).ExecuteScalarAsync()
         Return If(TypeOf o Is DBNull, Nothing, CType(o, T))
@@ -204,10 +251,20 @@ Public Class DavContext
         prepareCommand(command, prms).ExecuteNonQuery()
     End Sub
 
+    ''' <summary>
+    ''' Executes SQL command which returns no results.
+    ''' </summary>
+    ''' <param name="command">Command text.</param>
+    ''' <param name="prms">SQL parameter pairs: SQL parameter name, SQL parameter value.</param>
     Public Async Function ExecuteNonQueryAsync(command As String, ParamArray prms As Object()) As Task
         Await prepareCommand(command, prms).ExecuteNonQueryAsync()
     End Function
 
+    ''' <summary>
+    ''' Executes SQL command which returns no results.
+    ''' </summary>
+    ''' <param name="command">Command text.</param>
+    ''' <param name="prms">Command parameters as <see cref="SqlParameter"/>  instances.</param>
     Public Async Function ExecuteNonQueryAsync(command As String, ParamArray prms As SqlParameter()) As Task
         Dim cmd As SqlCommand = createNewCommand()
         cmd.CommandText = command
@@ -215,10 +272,24 @@ Public Class DavContext
         Await cmd.ExecuteNonQueryAsync()
     End Function
 
+    ''' <summary>
+    ''' Executes specified command and returns <see cref="SqlDataReader"/> .
+    ''' </summary>
+    ''' <param name="commandBehavior">Value of <see cref="CommandBehavior"/>  enumeration.</param>
+    ''' <param name="command">Command text.</param>
+    ''' <param name="prms">Parameter pairs: SQL param name, SQL param value</param>
+    ''' <returns>Instance of <see cref="SqlDataReader"/> .</returns>
     Public Async Function ExecuteReaderAsync(commandBehavior As CommandBehavior, command As String, ParamArray prms As Object()) As Task(Of SqlDataReader)
         Return Await prepareCommand(command, prms).ExecuteReaderAsync(commandBehavior)
     End Function
 
+    ''' <summary>
+    ''' Returns list of <see cref="LockInfo"/>  from database by executing specified command
+    ''' with specified parameters.
+    ''' </summary>
+    ''' <param name="command">Command text.</param>
+    ''' <param name="prms">Pairs of parameter name, parameter value.</param>
+    ''' <returns>List of <see cref="LockInfo"/> .</returns>
     Public Function ExecuteLockInfo(command As String, ParamArray prms As Object()) As List(Of LockInfo)
         Dim l As List(Of LockInfo) = New List(Of LockInfo)()
         Using reader As SqlDataReader = prepareCommand(command, prms).ExecuteReader()
@@ -242,6 +313,11 @@ Public Class DavContext
         Return l
     End Function
 
+    ''' <summary>
+    ''' Reads item from database by path.
+    ''' </summary>
+    ''' <param name="path">Item path.</param>
+    ''' <returns>Instance of <see cref="IHierarchyItemAsync"/> .</returns>
     Private Async Function getItemByPathAsync(path As String) As Task(Of IHierarchyItemAsync)
         Dim id As Guid = rootId
         Dim names As String() = path.Split("/"c)
@@ -266,6 +342,7 @@ Public Class DavContext
             End If
         Next
 
+        ' get item properties
         Dim command As String = "SELECT
                        ItemId
                      , ParentItemId
@@ -283,6 +360,11 @@ Public Class DavContext
         Return davHierarchyItems.FirstOrDefault()
     End Function
 
+    ''' <summary>
+    ''' Reads root folder.
+    ''' </summary>
+    ''' <param name="path">Root folder path.</param>
+    ''' <returns>Instance of <see cref="IHierarchyItemAsync"/> .</returns>
     Public Async Function getRootFolderAsync() As Task(Of IHierarchyItemAsync)
         Dim command As String = "SELECT 
                       ItemId
@@ -300,6 +382,10 @@ Public Class DavContext
         Return hierarchyItems.FirstOrDefault()
     End Function
 
+    ''' <summary>
+    ''' Creates <see cref="SqlCommand"/> .
+    ''' </summary>
+    ''' <returns>Instance of <see cref="SqlCommand"/> .</returns>
     Private Function createNewCommand() As SqlCommand
         If Me.connection Is Nothing Then
             Me.connection = New SqlConnection(connectionString)
@@ -312,6 +398,12 @@ Public Class DavContext
         Return newCmd
     End Function
 
+    ''' <summary>
+    ''' Creates <see cref="SqlCommand"/> .
+    ''' </summary>
+    ''' <param name="command">Command text.</param>
+    ''' <param name="prms">Command parameters in pairs: name, value</param>
+    ''' <returns>Instace of <see cref="SqlCommand"/> .</returns>
     Private Function prepareCommand(command As String, ParamArray prms As Object()) As SqlCommand
         If prms.Length Mod 2 <> 0 Then
             Throw New ArgumentException("Incorrect number of parameters")

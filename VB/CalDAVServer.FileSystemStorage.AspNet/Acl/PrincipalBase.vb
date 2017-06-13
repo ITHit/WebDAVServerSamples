@@ -92,19 +92,38 @@ Namespace Acl
         ''' </summary>
         Protected Property Context As DavContext
 
+        ''' <summary>
+        ''' Checks principal name for validity.
+        ''' </summary>
+        ''' <param name="name">Name to check.</param>
+        ''' <returns>Whether principal name is valid.</returns>
         Public Shared Function IsValidUserName(name As String) As Boolean
             Dim invChars As Char() = {""""c, "/"c, "\"c, "["c, "]"c, ":"c, ";"c, "|"c, "="c, ","c, "+"c, "*"c, "?"c, "<"c, ">"c}
             Return Not invChars.Where(Function(c) name.Contains(c)).Any()
         End Function
 
+        ''' <summary>
+        ''' Gets groups to which this principal belongs.
+        ''' </summary>
+        ''' <returns>Enumerable with groups.</returns>
         Public Async Function GetGroupMembershipAsync() As Task(Of IEnumerable(Of IPrincipal)) Implements IPrincipalAsync.GetGroupMembershipAsync
             Return Principal.GetGroups().Select(Function(group) CType(New Group(CType(group, GroupPrincipal), Context), IPrincipal))
         End Function
 
+        ''' <summary>
+        ''' Deletes the principal.
+        ''' </summary>
+        ''' <param name="multistatus">We don't use it currently as there are no child objects.</param>
         Public Async Function DeleteAsync(multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.DeleteAsync
             Context.PrincipalOperation(AddressOf Principal.Delete)
         End Function
 
+        ''' <summary>
+        ''' Renames principal.
+        ''' </summary>
+        ''' <param name="destFolder">We don't use it as moving groups to different folder is not supported.</param>
+        ''' <param name="destName">New name.</param>
+        ''' <param name="multistatus">We don't use it as there're no child objects.</param>
         Public Async Function MoveToAsync(destFolder As IItemCollectionAsync, destName As String, multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.MoveToAsync
             If destFolder.Path <> parentPath Then
                 Throw New DavException("Moving principals is only allowed into the same folder", DavStatus.CONFLICT)

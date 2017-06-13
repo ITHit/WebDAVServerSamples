@@ -224,7 +224,7 @@ Namespace Acl
                 Dim handle As SafeHGlobalHandle = New SafeHGlobalHandle()
                 RuntimeHelpers.PrepareConstrainedRegions()
                 Try
-                Finally
+                     Finally
                     Dim ptr As IntPtr = Marshal.AllocHGlobal(cb)
                     handle.SetHandle(ptr)
                 End Try

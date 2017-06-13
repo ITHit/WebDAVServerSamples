@@ -90,6 +90,12 @@ Public Class DavFile
     ''' </summary>
     Public Property Snippet As String
 
+    ''' <summary>
+    ''' Reads file's content from storage (to send to client).
+    ''' </summary>
+    ''' <param name="output">Stream to read body to.</param>
+    ''' <param name="byteStart">Number of first byte to write.</param>
+    ''' <param name="count">Number of bytes to be written.</param>
     Public Async Function ReadAsync(output As Stream, byteStart As Long, count As Long) As Task Implements IContentAsync.ReadAsync
         'Set timeout to maximum value to be able to download large files.
         HttpContext.Current.Server.ScriptTimeout = Integer.MaxValue
@@ -116,7 +122,8 @@ Public Class DavFile
                     count -= retval
                 End While
             Catch __unusedHttpException1__ As HttpException
-            End Try
+                ' The remote host closed the connection (for example Cancel or Pause pressed).
+                 End Try
         End Using
     End Function
 
@@ -139,6 +146,14 @@ Public Class DavFile
         End If
     End Sub
 
+    ''' <summary>
+    ''' Stores file contents to storage (when client updates it).
+    ''' </summary>
+    ''' <param name="segment">Stream with new file content.</param>
+    ''' <param name="contentType">New content type.</param>
+    ''' <param name="startIndex">Index of first byte in the file where update shall be applied.</param>
+    ''' <param name="totalContentLength">Length of the file after it will be updated with the new content.</param>
+    ''' <returns>Boolean value indicating if entire stream was written.</returns>
     Public Async Function WriteAsync(segment As Stream, contentType As String, startIndex As Long, totalContentLength As Long) As Task(Of Boolean) Implements IContentAsync.WriteAsync
         Await RequireHasTokenAsync()
         'Set timeout to maximum value to be able to upload large files.
@@ -182,11 +197,19 @@ Public Class DavFile
                 bytes += lastBytesRead
             End While
         Catch __unusedHttpException1__ As HttpException
-        End Try
+            ' The remote host closed the connection (for example Cancel or Pause pressed).
+             End Try
 
         Return True
     End Function
 
+    ''' <summary>
+    ''' Copies this file to another folder.
+    ''' </summary>
+    ''' <param name="destFolder">Destination folder.</param>
+    ''' <param name="destName">New file name in destination folder.</param>
+    ''' <param name="deep">Is not used.</param>
+    ''' <param name="multistatus">Container for errors with items other than this file.</param>
     Public Overrides Async Function CopyToAsync(destFolder As IItemCollectionAsync,
                                                destName As String,
                                                deep As Boolean,
@@ -214,6 +237,10 @@ Public Class DavFile
         Await Context.socketService.NotifyRefreshAsync(destDavFolder.Path)
     End Function
 
+    ''' <summary>
+    ''' Deletes this file.
+    ''' </summary>
+    ''' <param name="multistatus">Is not used.</param>
     Public Overrides Async Function DeleteAsync(multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.DeleteAsync
         Dim parent As DavFolder = Await GetParentAsync()
         If parent Is Nothing Then
@@ -232,6 +259,12 @@ Public Class DavFile
         Await Context.socketService.NotifyRefreshAsync(parent.Path)
     End Function
 
+    ''' <summary>
+    ''' Moves this file to different folder and renames it.
+    ''' </summary>
+    ''' <param name="destFolder">Destination folder.</param>
+    ''' <param name="destName">New file name.</param>
+    ''' <param name="multistatus">Container for errors with items other than this file.</param>
     Public Overrides Async Function MoveToAsync(destFolder As IItemCollectionAsync, destName As String, multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.MoveToAsync
         Dim destDavFolder As DavFolder = TryCast(destFolder, DavFolder)
         If destFolder Is Nothing Then
@@ -258,10 +291,14 @@ Public Class DavFile
         End If
 
         Await MoveThisItemAsync(destDavFolder, destName, parent)
+        ' Refresh client UI.
         Await Context.socketService.NotifyRefreshAsync(parent.Path)
         Await Context.socketService.NotifyRefreshAsync(destDavFolder.Path)
     End Function
 
+    ''' <summary>
+    ''' Cancels incomplete upload.
+    ''' </summary>
     Public Async Function CancelUploadAsync() As Task Implements IResumableUploadAsync.CancelUploadAsync
         Await DeleteAsync(Nothing)
     End Function
@@ -293,10 +330,21 @@ Public Class DavFile
         End Get
     End Property
 
+    ''' <summary>
+    ''' Returns instance of <see cref="IResumableUploadAsync"/>  interface for this item.
+    ''' </summary>
+    ''' <returns>Instance of <see cref="IResumableUploadAsync"/>  interface.</returns>
     Public Async Function GetUploadProgressAsync() As Task(Of IEnumerable(Of IResumableUploadAsync)) Implements IUploadProgressAsync.GetUploadProgressAsync
         Return {Me}
     End Function
 
+    ''' <summary>
+    ''' Returns database field of the file.
+    ''' </summary>
+    ''' <typeparam name="T">Type of field value.</typeparam>
+    ''' <param name="columnName">DB columen in which field is stored.</param>
+    ''' <param name="defaultValue">Default value to return.</param>
+    ''' <returns>Value from database or default value if it is null.</returns>
     Private Function getDbField(Of T)(columnName As String, defaultValue As T) As T
         Dim commandText As String = String.Format("SELECT {0} FROM Item WHERE ItemId = @ItemId", columnName)
         Dim obj As Object = Context.ExecuteScalar(Of Object)(commandText, "@ItemId", ItemId)

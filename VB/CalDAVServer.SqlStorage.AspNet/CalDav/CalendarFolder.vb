@@ -22,7 +22,15 @@ Namespace CalDav
         Inherits DavHierarchyItem
         Implements ICalendarFolderAsync, IAppleCalendarAsync, ICurrentUserPrincipalAsync, IAclHierarchyItemAsync
 
+        ''' <summary>
+        ''' Loads calendar folder by ID. Returns null if calendar folder was not found.
+        ''' </summary>
+        ''' <param name="context">Instance of <see cref="DavContext"/>  class.</param>
+        ''' <param name="calendarFolderId">ID of the calendar folder to load.</param>
+        ''' <returns><see cref="ICalendarFolderAsync"/>  instance.</returns>
         Public Shared Async Function LoadByIdAsync(context As DavContext, calendarFolderId As Guid) As Task(Of ICalendarFolderAsync)
+            ' Load only calendar that the use has access to. 
+            ' Also load complete ACL for this calendar.
             Dim sql As String = "SELECT * FROM [cal_CalendarFolder] 
                   WHERE [CalendarFolderId] = @CalendarFolderId
                   AND [CalendarFolderId] IN (SELECT [CalendarFolderId] FROM [cal_Access] WHERE [UserId]=@UserId)
@@ -36,7 +44,14 @@ Namespace CalDav
                                   )).FirstOrDefault()
         End Function
 
+        ''' <summary>
+        ''' Loads all calendars.
+        ''' </summary>
+        ''' <param name="context">Instance of <see cref="DavContext"/>  class.</param>
+        ''' <returns>List of <see cref="ICalendarFolderAsync"/>  items.</returns>
         Public Shared Async Function LoadAllAsync(context As DavContext) As Task(Of IEnumerable(Of ICalendarFolderAsync))
+            ' Load only calendars that the use has access to. 
+            ' Also load complete ACL for each calendar, but only if user has access to that calendar.
             Dim sql As String = "SELECT * FROM [cal_CalendarFolder] 
                   WHERE [CalendarFolderId] IN (SELECT [CalendarFolderId] FROM [cal_Access] WHERE [UserId]=@UserId)
 
@@ -45,6 +60,13 @@ Namespace CalDav
             Return Await LoadAsync(context, sql, "@UserId", context.UserId)
         End Function
 
+        ''' <summary>
+        ''' Loads calendars by SQL.
+        ''' </summary>
+        ''' <param name="context">Instance of <see cref="DavContext"/>  class.</param>
+        ''' <param name="sql">SQL that queries [cal_CalendarFolder] table.</param>
+        ''' <param name="prms">List of SQL parameters.</param>
+        ''' <returns>List of <see cref="ICalendarFolderAsync"/>  items.</returns>
         Private Shared Async Function LoadAsync(context As DavContext, sql As String, ParamArray prms As Object()) As Task(Of IEnumerable(Of ICalendarFolderAsync))
             Dim calendarFolders As IList(Of ICalendarFolderAsync) = New List(Of ICalendarFolderAsync)()
             Using reader As SqlDataReader = Await context.ExecuteReaderAsync(sql, prms)
@@ -63,7 +85,14 @@ Namespace CalDav
             Return calendarFolders
         End Function
 
+        ''' <summary>
+        ''' Creates a new calendar folder.
+        ''' </summary>
+        ''' <param name="context">Instance of <see cref="DavContext"/>  class.</param> 
+        ''' <param name="name">Calendar folder name.</param>
         Public Shared Async Function CreateCalendarFolderAsync(context As DavContext, name As String, description As String) As Task
+            ' 1. Create calendar.
+            ' 2. Grant owner privileges to the user on the created calendar.
             Dim sql As String = "INSERT INTO [cal_CalendarFolder] (
                           [CalendarFolderId]
                         , [Name]
@@ -143,12 +172,48 @@ Namespace CalDav
             Me.rowsAccess = rowsAccess
         End Sub
 
+        ''' <summary>
+        ''' Returns a list of calendar files that correspont to the specified list of item paths.
+        ''' </summary>
+        ''' <remarks>
+        ''' <para>
+        ''' This method is called by the Engine during <b>calendar-multiget</b> call.
+        ''' </para>
+        ''' <para>
+        ''' For each item from the <b>pathList</b> parameter return an item that corresponds to path or <b>null</b> if the item is not found.
+        ''' </para>
+        ''' </remarks>
+        ''' <param name="pathList">Calendar files path list.</param>
+        ''' <param name="propNames">
+        ''' Properties requested by the client. You can use this as a hint about what properties will be called by 
+        ''' the Engine for each item that are returned from this method.
+        ''' </param>
+        ''' <returns>List of calendar files. Returns <b>null</b> for any item that is not found.</returns>
         Public Async Function MultiGetAsync(pathList As IEnumerable(Of String), propNames As IEnumerable(Of PropertyName)) As Task(Of IEnumerable(Of ICalendarFileAsync)) Implements ICalendarReportAsync.MultiGetAsync
+            ' Get list of UIDs from path list.
             Dim uids As IEnumerable(Of String) = pathList.Select(Function(a) System.IO.Path.GetFileNameWithoutExtension(a))
             Return Await CalendarFile.LoadByUidsAsync(Context, uids, PropsToLoad.All)
         End Function
 
+        ''' <summary>
+        ''' Returns a list of calendar files that match specified filter. 
+        ''' </summary>
+        ''' <remarks>
+        ''' <para>
+        ''' This method is called by the Engine during <b>calendar-query</b> call.
+        ''' </para>
+        ''' </remarks>
+        ''' <param name="rawQuery">
+        ''' Raw query sent by the client.
+        ''' </param>
+        ''' <param name="propNames">
+        ''' Properties requested by the client. You can use this as a hint about what properties will be called by 
+        ''' the Engine for each item that are returned from this method.
+        ''' </param>
+        ''' <returns>List of calendar files. Returns <b>null</b> for any item that is not found.</returns>
         Public Async Function QueryAsync(rawQuery As String, propNames As IEnumerable(Of PropertyName)) As Task(Of IEnumerable(Of ICalendarFileAsync)) Implements ICalendarReportAsync.QueryAsync
+            ' For the sake of simplicity we just call GetChildren returning all items. 
+            ' Typically you will return only items that match the query.
             Return(Await GetChildrenAsync(propNames.ToList())).Cast(Of ICalendarFileAsync)()
         End Function
 
@@ -234,20 +299,53 @@ Namespace CalDav
             End Get
         End Property
 
+        ''' <summary>
+        ''' Retrieves children of this folder.
+        ''' </summary>
+        ''' <param name="propNames">List of properties to retrieve with the children. They will be queried by the engine later.</param>
+        ''' <returns>Children of the folder.</returns>
         Public Async Function GetChildrenAsync(propNames As IList(Of PropertyName)) As Task(Of IEnumerable(Of IHierarchyItemAsync)) Implements IItemCollectionAsync.GetChildrenAsync
+            ' Here we enumerate all events and to-dos contained in this calendar.
+            ' You can filter children items in this implementation and 
+            ' return only items that you want to be available for this 
+            ' particular user.
+            ' Typically only getcontenttype and getetag properties are requested in GetChildren call by CalDAV/CardDAV clients.
+            ' The iCalendar/vCard (calendar-data/address-data) is typically requested not in GetChildren, but in a separate multiget 
+            ' report, in MultiGetAsync, that follow this request.
+            ' Bynari submits PROPFIND without props - Engine will request getcontentlength
             Dim children As IList(Of IHierarchyItemAsync) = New List(Of IHierarchyItemAsync)()
             Return Await CalendarFile.LoadByCalendarFolderIdAsync(Context, calendarFolderId, PropsToLoad.Minimum)
         End Function
 
+        ''' <summary>
+        ''' Creates a file that contains event or to-do item in this calendar.
+        ''' </summary>
+        ''' <param name="name">Name of the file. Same as event/to-do UID but ending with '.ics'.</param>
+        ''' <returns>The newly created file.</returns>
+        ''' <remarks></remarks>
         Public Async Function CreateFileAsync(name As String) As Task(Of IFileAsync) Implements IFolderAsync.CreateFileAsync
+            ' The actual event or to-do object is created in datatbase in CardFile.Write call.
             Return CalendarFile.CreateCalendarFile(Context, calendarFolderId)
         End Function
 
+        ''' <summary>
+        ''' Creating new folders is not allowed in calendar folders.
+        ''' </summary>
+        ''' <param name="name">Name of the folder.</param>
         Public Async Function CreateFolderAsync(name As String) As Task Implements IFolderAsync.CreateFolderAsync
             Throw New DavException("Not allowed.", DavStatus.NOT_ALLOWED)
         End Function
 
+        ''' <summary>
+        ''' Move this folder to folder <paramref name="destFolder"/> .
+        ''' </summary>
+        ''' <param name="destFolder">Destination folder.</param>
+        ''' <param name="destName">Name for this folder at destination.</param>
+        ''' <param name="multistatus">Instance of <see cref="MultistatusException"/> 
+        ''' to fill with errors ocurred while moving child items.</param>
+        ''' <returns></returns>
         Public Overrides Async Function MoveToAsync(destFolder As IItemCollectionAsync, destName As String, multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.MoveToAsync
+            ' Here we support only calendars renaming. Check that user has permissions to write.
             Dim sql As String = "UPDATE [cal_CalendarFolder] SET Name=@Name
                 WHERE [CalendarFolderId]=@CalendarFolderId
                 AND [CalendarFolderId] IN (SELECT [CalendarFolderId] FROM [cal_Access] WHERE [UserId] = @UserId AND [Write] = 1)"
@@ -259,7 +357,12 @@ Namespace CalDav
             End If
         End Function
 
+        ''' <summary>
+        ''' Deletes this calendar.
+        ''' </summary>
+        ''' <param name="multistatus"><see cref="MultistatusException"/>  to populate with child files and folders failed to delete.</param>
         Public Overrides Async Function DeleteAsync(multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.DeleteAsync
+            ' Delete calendar and all events / to-dos associated with it. Check that user has permissions to delete.
             Dim sql As String = "DELETE FROM [cal_CalendarFolder] 
                 WHERE [CalendarFolderId]=@CalendarFolderId
                 AND [CalendarFolderId] IN (SELECT [CalendarFolderId] FROM [cal_Access] WHERE [UserId] = @UserId AND [Owner] = 1)"
@@ -270,6 +373,17 @@ Namespace CalDav
             End If
         End Function
 
+        ''' <summary>
+        ''' Gets values of all properties or selected properties for this item.
+        ''' </summary>
+        ''' <param name="names">Property names which values are
+        ''' requested by WebDAV client. If a property does not exist for this hierarchy item
+        ''' then the property value shall not be returned.
+        ''' </param>
+        ''' <param name="allprop">If it is true, besides properties listed in props you need to return
+        ''' all properties you think may be useful to client.
+        ''' </param>
+        ''' <returns></returns>
         Public Overrides Async Function GetPropertiesAsync(names As IList(Of PropertyName), allprop As Boolean) As Task(Of IEnumerable(Of PropertyValue)) Implements IHierarchyItemAsync.GetPropertiesAsync
             Dim propVals As IList(Of PropertyValue) = Await GetPropertyValuesAsync("SELECT [Name], [Namespace], [PropVal] FROM [cal_CalendarFolderProperty] WHERE [CalendarFolderId] = @CalendarFolderId",
                                                                                   "@CalendarFolderId", calendarFolderId)
@@ -287,6 +401,12 @@ Namespace CalDav
             End If
         End Function
 
+        ''' <summary>
+        ''' Adds, modifies and removes properties for this item.
+        ''' </summary>
+        ''' <param name="setProps">List of properties to be set.</param>
+        ''' <param name="delProps">List of property names to be removed. Properties that don't exist shall be skipped.</param>
+        ''' <param name="multistatus">Information about errors.</param>
         Public Overrides Async Function UpdatePropertiesAsync(setProps As IList(Of PropertyValue),
                                                              delProps As IList(Of PropertyName),
                                                              multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.UpdatePropertiesAsync
@@ -299,6 +419,12 @@ Namespace CalDav
             Next
         End Function
 
+        ''' <summary>
+        ''' Reads <see cref="PropertyValue"/>  from database by executing SQL command.
+        ''' </summary>
+        ''' <param name="command">Command text.</param>
+        ''' <param name="prms">SQL parameter pairs: SQL parameter name, SQL parameter value</param>
+        ''' <returns>List of <see cref="PropertyValue"/> .</returns>
         Private Async Function GetPropertyValuesAsync(command As String, ParamArray prms As Object()) As Task(Of IList(Of PropertyValue))
             Dim l As List(Of PropertyValue) = New List(Of PropertyValue)()
             Using reader As SqlDataReader = Await Context.ExecuteReaderAsync(command, prms)
@@ -320,6 +446,7 @@ Namespace CalDav
                                                                                "@CalendarFolderId", calendarFolderId,
                                                                                "@Name", prop.QualifiedName.Name,
                                                                                "@Namespace", prop.QualifiedName.Namespace)
+            ' insert
             If count = 0 Then
                 Dim insertCommand As String = "INSERT INTO [cal_CalendarFolderProperty] ([CalendarFolderId], [Name], [Namespace], [PropVal])
                                           VALUES(@CalendarFolderId, @Name, @Namespace, @PropVal)"
@@ -329,6 +456,7 @@ Namespace CalDav
                                                   "@Name", prop.QualifiedName.Name,
                                                   "@Namespace", prop.QualifiedName.Namespace)
             Else
+                ' update
                 Dim command As String = "UPDATE [cal_CalendarFolderProperty]
                       SET [PropVal] = @PropVal
                       WHERE [CalendarFolderId] = @CalendarFolderId AND [Name] = @Name AND [Namespace] = @Namespace"
@@ -362,30 +490,63 @@ Namespace CalDav
             End Get
         End Property
 
+        ''' <summary>
+        ''' This metod is called when user is granting or 
+        ''' withdrowing acces to the calendar. 
+        ''' </summary>
+        ''' <remarks>
+        ''' In this metod implementation you will grant 
+        ''' or withdraw acces to the calendar as well as you will send sharing invitation.
+        ''' </remarks>
+        ''' <param name="sharesToAddAndRemove">Each item in this list describes the share to 
+        ''' add or delete.</param>
         Public Async Function UpdateSharingAsync(sharesToAddAndRemove As IList(Of AppleShare)) As Task Implements IAppleCalendarAsync.UpdateSharingAsync
+            ' Drop all shares first regardless of operation order. When resending 
+            ' invitations Apple Calendar drops and adds shares for the user in one \
+            ' request.
             For Each share As AppleShare In sharesToAddAndRemove
                 If share.Operation = AppleSharingOperation.Withdraw Then
-                End If
+                    ' remove sharing here
+                    ' share.Address
+                    ' share.CommonName
+                     End If
             Next
 
+            ' Add new shares
             For Each share As AppleShare In sharesToAddAndRemove
                 If share.Operation <> AppleSharingOperation.Withdraw Then
-                End If
+                    ' enable sharing and send invitation here
+                    ' share.Address
+                    ' share.CommonName
+                     End If
             Next
         End Function
 
+        ''' <summary>
+        ''' Provides a list of users to whom the calendar has been shared.
+        ''' </summary>
+        ''' <remarks>
+        ''' http://svn.calendarserver.org/repository/calendarserver/CalendarServer/trunk/doc/Extensions/caldav-sharing.txt
+        ''' (Section 5.2.2)        
         Public Async Function GetInviteAsync() As Task(Of IEnumerable(Of SharingInvite)) Implements IAppleCalendarAsync.GetInviteAsync
             Dim invites As IList(Of SharingInvite) = New List(Of SharingInvite)()
             For Each rowAccess As DataRow In rowsAccess
                 If rowAccess.Field(Of Boolean)("Owner") Then Continue For
                 Dim userId As String = rowAccess.Field(Of String)("UserId")
                 Dim user As System.Web.Security.MembershipUser = System.Web.Security.Membership.GetUser(userId)
-                Dim ace As SharingInvite = New SharingInvite With {.Address = String.Format("email:{0}", user.Email), .Access = If(rowAccess.Field(Of Boolean)("Write"), SharingInviteAccess.ReadWrite, SharingInviteAccess.Read), .CommonName = user.UserName, .Status = SharingInviteStatus.Accepted}
+                Dim ace As SharingInvite = New SharingInvite With {.Address = String.Format("email:{0}", user.Email),
+                                                             .Access = If(rowAccess.Field(Of Boolean)("Write"), SharingInviteAccess.ReadWrite, SharingInviteAccess.Read),
+                                                             .CommonName = user.UserName,
+                                                             .Status = SharingInviteStatus.Accepted
+                                                             }
             Next
 
             Return invites
         End Function
 
+        ''' <summary>
+        ''' Indicates that the calendar is shared and if it is shared by the current user who is the owner of the calendar.
+        ''' </summary>
         Public Async Function GetSharedByAsync() As Task(Of CalendarSharedBy) Implements IAppleCalendarAsync.GetSharedByAsync
             If rowsAccess.Any(Function(x) Not x.Field(Of Boolean)("Owner")) Then
                 Return CalendarSharedBy.NotShared
@@ -403,25 +564,61 @@ Namespace CalDav
             Throw New DavException("Not implemented.", DavStatus.NOT_IMPLEMENTED)
         End Function
 
+        ''' <summary>
+        ''' Retrieves a particular principal as being the "owner" of the item. 
+        ''' </summary>
+        ''' <remarks>Required by OS X.</remarks>
+        ''' <returns>
+        ''' Item that represents owner of this item and implements <see cref="IPrincipalAsync"/> .
+        ''' </returns>
         Public Async Function GetOwnerAsync() As Task(Of IPrincipalAsync) Implements IAclHierarchyItemAsync.GetOwnerAsync
             Dim rowOwner As DataRow = rowsAccess.FirstOrDefault(Function(x) x.Field(Of Boolean)("Owner") = True)
             If rowOwner Is Nothing Then Return Nothing
             Return Await Acl.User.GetUserAsync(Context, rowOwner.Field(Of String)("UserId"))
         End Function
 
+        ''' <summary>
+        ''' Retrieves a particular principal as being the "group" of the item. This property is commonly
+        ''' found on repositories that implement the Unix privileges model.
+        ''' </summary>
+        ''' <param name="value">Identifies whether to search by owner or group.</param>
         Public Function SetGroupAsync(value As IPrincipalAsync) As Task Implements IAclHierarchyItemAsync.SetGroupAsync
             Throw New DavException("Group cannot be set", DavStatus.FORBIDDEN)
         End Function
 
+        ''' <summary>
+        ''' Retrieves a particular principal as being the "group" of the item. This property is commonly
+        ''' found on repositories that implement the Unix privileges model.
+        ''' </summary>
+        ''' <returns>
+        ''' Group principal that implements <see cref="IPrincipalAsync"/> .
+        ''' </returns>
+        ''' <remarks>
+        ''' Can return null if group is not assigned.
+        ''' </remarks>
         Public Async Function GetGroupAsync() As Task(Of IPrincipalAsync) Implements IAclHierarchyItemAsync.GetGroupAsync
             Return Nothing
         End Function
 
+        ''' <summary>
+        ''' Retrieves list of all privileges (permissions) which can be set for the item.
+        ''' </summary>
+        ''' <returns>Enumerable with supported permissions.</returns>
         Public Async Function GetSupportedPrivilegeSetAsync() As Task(Of IEnumerable(Of SupportedPrivilege)) Implements IAclHierarchyItemAsync.GetSupportedPrivilegeSetAsync
-            Return {New SupportedPrivilege With {.Privilege = Privilege.Read, .IsAbstract = False, .DescriptionLanguage = "en", .Description = "Allows or denies the user the ability to read content and properties of files/folders."},
-                   New SupportedPrivilege With {.Privilege = Privilege.Write, .IsAbstract = False, .DescriptionLanguage = "en", .Description = "Allows or denies locking an item or modifying the content, properties, or membership of a collection."}}
+            Return {New SupportedPrivilege With {.Privilege = Privilege.Read, .IsAbstract = False, .DescriptionLanguage = "en",
+                                           .Description = "Allows or denies the user the ability to read content and properties of files/folders."},
+                   New SupportedPrivilege With {.Privilege = Privilege.Write, .IsAbstract = False, .DescriptionLanguage = "en",
+                                                                                                                                                                                                                                                                 .Description = "Allows or denies locking an item or modifying the content, properties, or membership of a collection."}}
         End Function
 
+        ''' <summary>
+        ''' Retrieves the exact set of privileges (as computed by
+        ''' the server) granted to the currently authenticated HTTP user. Aggregate privileges and their contained
+        ''' privileges are listed.
+        ''' </summary>
+        ''' <returns>
+        ''' List of current user privileges.
+        ''' </returns>
         Public Async Function GetCurrentUserPrivilegeSetAsync() As Task(Of IEnumerable(Of Privilege)) Implements IAclHierarchyItemAsync.GetCurrentUserPrivilegeSetAsync
             Dim rowAccess As DataRow = rowsAccess.FirstOrDefault(Function(x) x.Field(Of String)("UserId") = Context.UserId)
             If rowAccess Is Nothing Then Return Nothing
@@ -431,6 +628,12 @@ Namespace CalDav
             Return privileges
         End Function
 
+        ''' <summary>
+        ''' Retrieves access control list for this file or folder.
+        ''' </summary>
+        ''' <param name="propertyNames">Properties which will be retrieved from users/groups specified in
+        ''' access control list returned.</param>
+        ''' <returns>Enumerable with access control entries.</returns>
         Public Async Function GetAclAsync(propertyNames As IList(Of PropertyName)) As Task(Of IEnumerable(Of ReadAce)) Implements IAclHierarchyItemAsync.GetAclAsync
             Dim aceList As IList(Of ReadAce) = New List(Of ReadAce)()
             For Each rowAccess As DataRow In rowsAccess
@@ -449,18 +652,39 @@ Namespace CalDav
             Throw New DavException("Not implemented.", DavStatus.NOT_IMPLEMENTED)
         End Function
 
+        ''' <summary>
+        ''' Retrieves list of restrictions for access control entries.
+        ''' We don't support WebDAV inverted permissions.
+        ''' </summary>
+        ''' <returns>ACL restrictions.</returns>
         Public Async Function GetAclRestrictionsAsync() As Task(Of AclRestriction) Implements IAclHierarchyItemAsync.GetAclRestrictionsAsync
             Return New AclRestriction With {.NoInvert = True, .GrantOnly = True}
         End Function
 
+        ''' <summary>
+        ''' Gets all folders, from which this file/folder has inherited access control entries.
+        ''' </summary>
+        ''' <returns>Enumerable with files/folders from which this file/folder has inherited
+        ''' access control entries.</returns>
         Public Async Function GetInheritedAclSetAsync() As Task(Of IEnumerable(Of IHierarchyItemAsync)) Implements IAclHierarchyItemAsync.GetInheritedAclSetAsync
             Return New IHierarchyItemAsync() {}
         End Function
 
+        ''' <summary>
+        ''' Gets collections which contain principals.
+        ''' </summary>
+        ''' <returns>Folders which contain users/groups.</returns>
         Public Async Function GetPrincipalCollectionSetAsync() As Task(Of IEnumerable(Of IPrincipalFolderAsync)) Implements IAclHierarchyItemAsync.GetPrincipalCollectionSetAsync
             Return New IPrincipalFolderAsync() {New Acl.UsersFolder(Context)}
         End Function
 
+        ''' <summary>
+        ''' Retrieves user or group which correspond to a well known principal
+        ''' (defined in <see cref="WellKnownPrincipal"/> .)
+        ''' </summary>
+        ''' <param name="wellKnownPrincipal">Well known principal type.</param>
+        ''' <returns>Instance of corresponding user/group or <c>null</c> if corresponding user/group
+        ''' is not supported.</returns>
         Public Async Function ResolveWellKnownPrincipalAsync(wellKnownPrincipal As WellKnownPrincipal) As Task(Of IPrincipalAsync) Implements IAclHierarchyItemAsync.ResolveWellKnownPrincipalAsync
             Return Nothing
         End Function

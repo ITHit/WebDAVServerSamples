@@ -35,11 +35,16 @@ Public Class Provisioning
         Dim httpContext As HttpContext = HttpContext.Current
         If(httpContext.User Is Nothing) OrElse Not httpContext.User.Identity.IsAuthenticated Then Return
         Dim context As DavContext = New DavContext(httpContext)
+        ' Create calendars for the user during first log-in.
         Await CreateCalendarFoldersAsync(context)
     End Function
 
+    ''' <summary>
+    ''' Creates initial calendars for user as well as inbox and outbox folders.
+    ''' </summary>
     Friend Shared Async Function CreateCalendarFoldersAsync(context As DavContext) As Task
         Dim physicalRepositoryPath As String = If(repositoryPath.StartsWith("~"), HttpContext.Current.Server.MapPath(repositoryPath), repositoryPath)
+        ' Get path to user folder /calendars/[user_name]/ and check if it exists.
         Dim calendarsUserFolder As String = String.Format("{0}{1}", CalendarsRootFolder.CalendarsRootFolderPath.Replace("/"c, Path.DirectorySeparatorChar), context.UserName)
         Dim pathCalendarsUserFolder As String = Path.Combine(physicalRepositoryPath, calendarsUserFolder.TrimStart(Path.DirectorySeparatorChar))
         If Not Directory.Exists(pathCalendarsUserFolder) Then
@@ -51,6 +56,7 @@ Public Class Provisioning
             context.FileOperation(Sub()
                 ' Make the loged-in user the owner of the new folder.
                 MakeOwner(pathCalendarsUserFolder, context)
+                ' Create user calendars, such as /calendars/[user_name]/Calendar/.
                 Dim pathCalendar As String = Path.Combine(pathCalendarsUserFolder, "Calendar1")
                 Directory.CreateDirectory(pathCalendar)
                 pathCalendar = Path.Combine(pathCalendarsUserFolder, "Home1")

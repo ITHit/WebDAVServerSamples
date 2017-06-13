@@ -26,12 +26,19 @@ Public Class Provisioning
         Dim httpContext As HttpContext = HttpContext.Current
         If(httpContext.User Is Nothing) OrElse Not httpContext.User.Identity.IsAuthenticated Then Return
         Using context As DavContext = New DavContext(httpContext)
+            ' Create addressboks for the user during first log-in.
             Await CreateAddressbookFoldersAsync(context)
+            ' Closes transaction. Calls DavContextBaseAsync.BeforeResponseAsync only first time this method is invoked.
+            ' This method must be called manually if DavContextBaseAsync is used outside of DavEngine. 
             Await context.EnsureBeforeResponseWasCalledAsync()
         End Using
     End Function
 
+    ''' <summary>
+    ''' Creates initial address books for user.
+    ''' </summary>
     Friend Shared Async Function CreateAddressbookFoldersAsync(context As DavContext) As Task
+        ' If user does not have access to any address books - create new address books.
         Dim sql As String = "SELECT ISNULL((SELECT TOP 1 1 FROM [card_Access] WHERE [UserId] = @UserId) , 0)"
         If Await context.ExecuteScalarAsync(Of Integer)(sql, "@UserId", context.UserId) < 1 Then
             Await AddressbookFolder.CreateAddressbookFolderAsync(context, "Book 1", "Address Book 1")

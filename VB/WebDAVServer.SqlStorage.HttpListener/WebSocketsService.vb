@@ -27,6 +27,11 @@ Public Class WebSocketsService
     ''' </summary>
     Private ReadOnly clients As ConcurrentDictionary(Of Guid, WebSocket) = New ConcurrentDictionary(Of Guid, WebSocket)()
 
+    ''' <summary>
+    ''' Adds client to connected clients dictionary.
+    ''' </summary>
+    ''' <param name="client">Current client.</param>
+    ''' <returns>Client guid in the dictionary.</returns>
     Public Function AddClient(client As WebSocket) As Guid
         Dim clientId As Guid = Guid.NewGuid()
         clients.TryAdd(clientId, client)
@@ -42,9 +47,16 @@ Public Class WebSocketsService
         clients.TryRemove(clientId, client)
     End Sub
 
+    ''' <summary>
+    ''' Notifies client that content in the specified folder has been changed. 
+    ''' Called when one of the following events occurs in the specified folder: file or folder created, file or folder updated, file deleted.
+    ''' </summary>
+    ''' <param name="folderPath">Content of this folder was modified.</param>
+    ''' <returns></returns>
     Public Async Function NotifyRefreshAsync(folderPath As String) As Task
-        folderPath = folderPath.TrimStart("/"c).TrimEnd("/"c)
-        Dim notifyObject As Notification = New Notification With {.FolderPath = folderPath, .EventType = "refresh"}
+        folderPath = folderPath.Trim("/"c)
+        Dim notifyObject As Notification = New Notification With {.FolderPath = folderPath,
+                                                            .EventType = "refresh"}
         For Each client As WebSocket In clients.Values
             If client.State = WebSocketState.Open Then
                 Await client.SendAsync(New ArraySegment(Of Byte)(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(notifyObject))), WebSocketMessageType.Text, True, CancellationToken.None)
@@ -52,9 +64,15 @@ Public Class WebSocketsService
         Next
     End Function
 
+    ''' <summary>
+    ''' Notifies client that folder was deleted.
+    ''' </summary>
+    ''' <param name="folderPath">Folder that was deleted.</param>
+    ''' <returns></returns>
     Public Async Function NotifyDeleteAsync(folderPath As String) As Task
-        folderPath = folderPath.TrimStart("/"c).TrimEnd("/"c)
-        Dim notifyObject As Notification = New Notification With {.FolderPath = folderPath, .EventType = "delete"}
+        folderPath = folderPath.Trim("/"c)
+        Dim notifyObject As Notification = New Notification With {.FolderPath = folderPath,
+                                                            .EventType = "delete"}
         For Each client As WebSocket In clients.Values
             If client.State = WebSocketState.Open Then
                 Await client.SendAsync(New ArraySegment(Of Byte)(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(notifyObject))), WebSocketMessageType.Text, True, CancellationToken.None)

@@ -54,7 +54,7 @@ Public MustInherit Class DavHierarchyItem
     End Sub
 
     Public Async Function GetParentAsync() As Task(Of DavFolder)
-        Dim parts As String() = Path.TrimEnd("/"c).Split("/"c)
+        Dim parts As String() = Path.Trim("/"c).Split("/"c)
         Dim parentParentPath As String = "/"
         If parts.Length >= 2 Then
             parentParentPath = String.Join("/", parts, 0, parts.Length - 2) & "/"
@@ -109,6 +109,13 @@ Public MustInherit Class DavHierarchyItem
                                                            multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.UpdatePropertiesAsync
         Await RequireHasTokenAsync()
         For Each p As PropertyValue In setProps
+            ' Microsoft Mini-redirector may update file creation date, modification date and access time passing properties:
+            ' <Win32CreationTime xmlns="urn:schemas-microsoft-com:">Thu, 28 Mar 2013 20:15:34 GMT</Win32CreationTime>
+            ' <Win32LastModifiedTime xmlns="urn:schemas-microsoft-com:">Thu, 28 Mar 2013 20:36:24 GMT</Win32LastModifiedTime>
+            ' <Win32LastAccessTime xmlns="urn:schemas-microsoft-com:">Thu, 28 Mar 2013 20:36:24 GMT</Win32LastAccessTime>
+            ' In this case update creation and modified date in your storage or do not save this properties at all, otherwise 
+            ' Windows Explorer will display creation and modification date from this props and it will differ from the values 
+            ' in the Created and Modified fields in your storage 
             If p.QualifiedName.Namespace = "urn:schemas-microsoft-com:" Then
                 If p.QualifiedName.Name = "Win32CreationTime" Then
                     Await SetDbFieldAsync("Created", DateTime.Parse(p.Value, New System.Globalization.CultureInfo("en-US")).ToUniversalTime())
@@ -124,6 +131,7 @@ Public MustInherit Class DavHierarchyItem
             Await RemovePropertyAsync(p.Name, p.Namespace)
         Next
 
+        ' You should not update modification date/time here. Mac OS X Finder expects that properties update do not change the file modification date.
         Await Context.socketService.NotifyRefreshAsync(GetParentPath(Path))
     End Function
 
@@ -148,6 +156,7 @@ Public MustInherit Class DavHierarchyItem
         End If
 
         If isDeep Then
+            ' check if no items are locked in this subtree
             Await FindLocksDownAsync(Me, level = LockLevel.Shared)
         End If
 
@@ -157,6 +166,8 @@ Public MustInherit Class DavHierarchyItem
             timeout = TimeSpan.FromMinutes(5)
         End If
 
+        ' We store expiration time in UTC. If server/database is moved 
+        ' to other time zone the locks expiration time is always correct.
         Dim expires As DateTime = DateTime.UtcNow + timeout.Value
         Dim token As String = Guid.NewGuid().ToString()
         Dim insertLockCommand As String = "INSERT INTO Lock (ItemID,Token,Shared,Deep,Expires,Owner)
@@ -202,6 +213,7 @@ Public MustInherit Class DavHierarchyItem
             Throw New DavException("This lock token doesn't correspond to any lock", DavStatus.PRECONDITION_FAILED)
         End If
 
+        ' remove lock from existing item
         Await Context.ExecuteNonQueryAsync("DELETE FROM Lock WHERE Token = @Token",
                                           "@Token", lockToken)
         Await Context.socketService.NotifyRefreshAsync(GetParentPath(Path))
@@ -231,6 +243,7 @@ Public MustInherit Class DavHierarchyItem
                                                                            "@ItemID", ItemId,
                                                                            "@Name", prop.QualifiedName.Name,
                                                                            "@Namespace", prop.QualifiedName.Namespace)
+        ' insert
         If count = 0 Then
             Dim insertCommand As String = "INSERT INTO Property(ItemID, Name, Namespace, PropVal)
                                           VALUES(@ItemID, @Name, @Namespace, @PropVal)"
@@ -240,6 +253,7 @@ Public MustInherit Class DavHierarchyItem
                                               "@Name", prop.QualifiedName.Name,
                                               "@Namespace", prop.QualifiedName.Namespace)
         Else
+            ' update
             Dim command As String = "UPDATE Property
                       SET PropVal = @PropVal
                       WHERE ItemID = @ItemID AND Name = @Name AND Namespace = @Namespace"
@@ -263,9 +277,11 @@ Public MustInherit Class DavHierarchyItem
     End Function
 
     Friend Async Function CopyThisItemAsync(destFolder As DavFolder, destItem As DavHierarchyItem, destName As String) As Task(Of DavFolder)
+        ' returns created folder, if any, otherwise null
         Dim createdFolder As DavFolder = Nothing
         Dim destID As Guid
         If destItem Is Nothing Then
+            ' copy item
             Dim commandText As String = "INSERT INTO Item(
                            ItemId
                          , Name
@@ -323,10 +339,12 @@ Public MustInherit Class DavHierarchyItem
             Await Context.ExecuteNonQueryAsync(commandText,
                                               "@SrcID", ItemId,
                                               "@DestID", destID)
+            ' remove old properties from the destination
             Await Context.ExecuteNonQueryAsync("DELETE FROM Property WHERE ItemID = @ItemID",
                                               "@ItemID", destID)
         End If
 
+        ' copy properties
         Dim command As String = "INSERT INTO Property(ItemID, Name, Namespace, PropVal)
                   SELECT @DestID, Name, Namespace, PropVal
                   FROM Property
@@ -449,6 +467,11 @@ Public MustInherit Class DavHierarchyItem
         Await SetDbFieldAsync("FileAttributes", CInt(value))
     End Function
 
+    ''' <summary>
+    ''' Gets element's parent path. 
+    ''' </summary>
+    ''' <param name="path">Element's path.</param>
+    ''' <returns>Path to parent element.</returns>
     Protected Shared Function GetParentPath(path As String) As String
         Dim parentPath As String = $"/{path.Trim("/"c)}"
         Dim index As Integer = parentPath.LastIndexOf("/")

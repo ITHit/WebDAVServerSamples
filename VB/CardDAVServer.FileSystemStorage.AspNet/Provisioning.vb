@@ -35,11 +35,16 @@ Public Class Provisioning
         Dim httpContext As HttpContext = HttpContext.Current
         If(httpContext.User Is Nothing) OrElse Not httpContext.User.Identity.IsAuthenticated Then Return
         Dim context As DavContext = New DavContext(httpContext)
+        ' Create addressboks for the user during first log-in.
         Await CreateAddressbookFoldersAsync(context)
     End Function
 
+    ''' <summary>
+    ''' Creates initial address books for user.
+    ''' </summary>
     Friend Shared Async Function CreateAddressbookFoldersAsync(context As DavContext) As Task
         Dim physicalRepositoryPath As String = If(repositoryPath.StartsWith("~"), HttpContext.Current.Server.MapPath(repositoryPath), repositoryPath)
+        ' Get path to user folder /addrsessbooks/[user_name]/ and check if it exists.
         Dim addressbooksUserFolder As String = String.Format("{0}{1}", AddressbooksRootFolder.AddressbooksRootFolderPath.Replace("/"c, Path.DirectorySeparatorChar), context.UserName)
         Dim pathAddressbooksUserFolder As String = Path.Combine(physicalRepositoryPath, addressbooksUserFolder.TrimStart(Path.DirectorySeparatorChar))
         If Not Directory.Exists(pathAddressbooksUserFolder) Then
@@ -51,6 +56,7 @@ Public Class Provisioning
             context.FileOperation(Sub()
                 ' Make the loged-in user the owner of the new folder.
                 MakeOwner(pathAddressbooksUserFolder, context)
+                ' Create user address books, such as /addressbooks/[user_name]/Addressbook/.
                 Dim pathAddressbook As String = Path.Combine(pathAddressbooksUserFolder, "Addressbook1")
                 Directory.CreateDirectory(pathAddressbook)
                 pathAddressbook = Path.Combine(pathAddressbooksUserFolder, "Business1")

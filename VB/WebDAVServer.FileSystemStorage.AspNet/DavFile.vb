@@ -66,9 +66,16 @@ Public Class DavFile
     ''' </summary>
     Public Property Snippet As String
 
+    ''' <summary>
+    ''' Returns file that corresponds to path.
+    ''' </summary>
+    ''' <param name="context">WebDAV Context.</param>
+    ''' <param name="path">Encoded path relative to WebDAV root folder.</param>
+    ''' <returns>File instance or null if physical file is not found in file system.</returns>
     Public Shared Async Function GetFileAsync(context As DavContext, path As String) As Task(Of DavFile)
         Dim filePath As String = context.MapPath(path)
         Dim file As FileInfo = New FileInfo(filePath)
+        ' This code blocks vulnerability when "%20" folder can be injected into path and file.Exists returns 'true'.
         If Not file.Exists OrElse String.Compare(file.FullName.TrimEnd(System.IO.Path.DirectorySeparatorChar), filePath, StringComparison.OrdinalIgnoreCase) <> 0 Then
             Return Nothing
         End If
@@ -90,6 +97,12 @@ Public Class DavFile
         Me.fileInfo = file
     End Sub
 
+    ''' <summary>
+    ''' Called when a client is downloading a file. Copies file contents to ouput stream.
+    ''' </summary>
+    ''' <param name="output">Stream to copy contents to.</param>
+    ''' <param name="startIndex">The zero-bazed byte offset in file content at which to begin copying bytes to the output stream.</param>
+    ''' <param name="count">The number of bytes to be written to the output stream.</param>
     Public Overridable Async Function ReadAsync(output As Stream, startIndex As Long, count As Long) As Task Implements IContentAsync.ReadAsync
         'Set timeout to maximum value to be able to download large files.
         HttpContext.Current.Server.ScriptTimeout = Integer.MaxValue
@@ -114,17 +127,28 @@ Public Class DavFile
                     bytesRead = Await fileStream.ReadAsync(buffer, 0, toRead)
                 End While
             Catch __unusedHttpException1__ As HttpException
-            End Try
+                ' The remote host closed the connection (for example Cancel or Pause pressed).
+                 End Try
         End Using
     End Function
 
+    ''' <summary>
+    ''' Called when a file or its part is being uploaded.
+    ''' </summary>
+    ''' <param name="content">Stream to read the content of the file from.</param>
+    ''' <param name="contentType">Indicates the media type of the file.</param>
+    ''' <param name="startIndex">Starting byte in target file
+    ''' for which data comes in <paramref name="content"/>  stream.</param>
+    ''' <param name="totalFileSize">Size of file as it will be after all parts are uploaded. -1 if unknown (in case of chunked upload).</param>
+    ''' <returns>Whether the whole stream has been written. This result is used by the engine to determine
+    ''' if auto checkin shall be performed (if auto versioning is used).</returns>
     Public Overridable Async Function WriteAsync(content As Stream, contentType As String, startIndex As Long, totalFileSize As Long) As Task(Of Boolean) Implements IContentAsync.WriteAsync
         Await RequireHasTokenAsync()
         'Set timeout to maximum value to be able to upload large files.
         HttpContext.Current.Server.ScriptTimeout = Integer.MaxValue
         If startIndex = 0 AndAlso fileInfo.Length > 0 Then
             Using filestream As FileStream = fileInfo.Open(FileMode.Truncate)
-            End Using
+                 End Using
         End If
 
         Await fileInfo.SetExtendedAttributeAsync("TotalContentLength", If(totalFileSize >= 0, CObj(totalFileSize), Nothing))
@@ -149,13 +173,21 @@ Public Class DavFile
                     lastBytesRead = Await content.ReadAsync(buffer, 0, bufSize)
                 End While
             Catch __unusedHttpException1__ As HttpException
-            End Try
+                ' The remote host closed the connection (for example Cancel or Pause pressed).
+                 End Try
         End Using
 
         Await context.socketService.NotifyRefreshAsync(GetParentPath(Path))
         Return True
     End Function
 
+    ''' <summary>
+    ''' Called when this file is being copied.
+    ''' </summary>
+    ''' <param name="destFolder">Destination folder.</param>
+    ''' <param name="destName">New file name.</param>
+    ''' <param name="deep">Whether children items shall be copied. Ignored for files.</param>
+    ''' <param name="multistatus">Information about items that failed to copy.</param>
     Public Overrides Async Function CopyToAsync(destFolder As IItemCollectionAsync, destName As String, deep As Boolean, multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.CopyToAsync
         Dim targetFolder As DavFolder = CType(destFolder, DavFolder)
         If targetFolder Is Nothing OrElse Not Directory.Exists(targetFolder.FullPath) Then
@@ -164,6 +196,7 @@ Public Class DavFile
 
         Dim newFilePath As String = System.IO.Path.Combine(targetFolder.FullPath, destName)
         Dim targetPath As String = targetFolder.Path & EncodeUtil.EncodeUrlPart(destName)
+        ' If an item with the same name exists - remove it.
         Try
             Dim item As IHierarchyItemAsync = Await context.GetHierarchyItemAsync(targetPath)
             If item IsNot Nothing Then Await item.DeleteAsync(multistatus)
@@ -173,10 +206,13 @@ Public Class DavFile
             Return
         End Try
 
+        ' Copy the file togather with all extended attributes (custom props and locks).
         Try
             File.Copy(fileSystemInfo.FullName, newFilePath)
+            ' Locks should not be copied, delete them.
             If Await fileSystemInfo.HasExtendedAttributeAsync("Locks") Then Await New FileInfo(newFilePath).DeleteExtendedAttributeAsync("Locks")
         Catch __unusedUnauthorizedAccessException1__ As UnauthorizedAccessException
+            ' Fail
             Dim ex As NeedPrivilegesException = New NeedPrivilegesException("Not enough privileges")
             Dim parentPath As String = System.IO.Path.GetDirectoryName(Path)
             ex.AddRequiredPrivilege(parentPath, Privilege.Bind)
@@ -186,6 +222,12 @@ Public Class DavFile
         Await context.socketService.NotifyRefreshAsync(targetFolder.Path)
     End Function
 
+    ''' <summary>
+    ''' Called when this file is being moved or renamed.
+    ''' </summary>
+    ''' <param name="destFolder">Destination folder.</param>
+    ''' <param name="destName">New name of this file.</param>
+    ''' <param name="multistatus">Information about items that failed to move.</param>
     Public Overrides Async Function MoveToAsync(destFolder As IItemCollectionAsync, destName As String, multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.MoveToAsync
         Await RequireHasTokenAsync()
         Dim targetFolder As DavFolder = CType(destFolder, DavFolder)
@@ -195,6 +237,7 @@ Public Class DavFile
 
         Dim newDirPath As String = System.IO.Path.Combine(targetFolder.FullPath, destName)
         Dim targetPath As String = targetFolder.Path & EncodeUtil.EncodeUrlPart(destName)
+        ' If an item with the same name exists in target directory - remove it.
         Try
             Dim item As IHierarchyItemAsync = Await context.GetHierarchyItemAsync(targetPath)
             If item IsNot Nothing Then
@@ -206,9 +249,11 @@ Public Class DavFile
             Return
         End Try
 
+        ' Move the file.
         Try
             File.Move(fileSystemInfo.FullName, newDirPath)
         Catch __unusedUnauthorizedAccessException1__ As UnauthorizedAccessException
+            ' Exception occurred with the item for which MoveTo was called - fail the operation.
             Dim ex As NeedPrivilegesException = New NeedPrivilegesException("Not enough privileges")
             ex.AddRequiredPrivilege(targetPath, Privilege.Bind)
             Dim parentPath As String = System.IO.Path.GetDirectoryName(Path)
@@ -216,16 +261,27 @@ Public Class DavFile
             Throw ex
         End Try
 
+        ' Refresh client UI.
         Await context.socketService.NotifyRefreshAsync(GetParentPath(Path))
         Await context.socketService.NotifyRefreshAsync(targetFolder.Path)
     End Function
 
+    ''' <summary>
+    ''' Called whan this file is being deleted.
+    ''' </summary>
+    ''' <param name="multistatus">Information about items that failed to delete.</param>
     Public Overrides Async Function DeleteAsync(multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.DeleteAsync
         Await RequireHasTokenAsync()
         fileSystemInfo.Delete()
         Await context.socketService.NotifyRefreshAsync(GetParentPath(Path))
     End Function
 
+    ''' <summary>
+    ''' Called when client cancels upload in Ajax client.
+    ''' </summary>
+    ''' <remarks>
+    ''' Client do not plan to restore upload. Remove any temporary files / cleanup resources here.
+    ''' </remarks>
     Public Async Function CancelUploadAsync() As Task Implements IResumableUploadAsync.CancelUploadAsync
         Await DeleteAsync(Nothing)
     End Function
@@ -253,6 +309,10 @@ Public Class DavFile
     ''' </summary>
     Public Property TotalContentLength As Long Implements IResumableUploadAsync.TotalContentLength
 
+    ''' <summary>
+    ''' Returns instance of <see cref="IUploadProgressAsync"/>  interface.
+    ''' </summary>
+    ''' <returns>Just returns this class.</returns>
     Public Async Function GetUploadProgressAsync() As Task(Of IEnumerable(Of IResumableUploadAsync)) Implements IUploadProgressAsync.GetUploadProgressAsync
         Return {Me}
     End Function
@@ -272,6 +332,7 @@ Public Class DavFile
     ''' </summary>
     ''' <param name="name">File name to specified in Content-Disposition header.</param>
     Private Sub AddContentDisposition(name As String)
+        ' Content-Disposition header must be generated differently in case if IE and other web browsers.
         If context.Request.UserAgent.Contains("MSIE") Then
             Dim fileName As String = EncodeUtil.EncodeUrlPart(name)
             Dim attachment As String = String.Format("attachment filename=""{0}""", fileName)

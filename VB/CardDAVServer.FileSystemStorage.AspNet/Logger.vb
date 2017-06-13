@@ -5,6 +5,10 @@ Imports System.Web
 Imports ITHit.WebDAV.Server
 Imports ITHit.WebDAV.Server.Logger
 
+''' <summary>
+''' Logger singleton.
+''' We need this singleton because logging is used in various modules, like authentication etc.
+''' </summary>
 Module Logger
 
     ''' <summary>
@@ -44,6 +48,10 @@ Module Logger
         End Get
     End Property
 
+    ''' <summary>
+    ''' Initializes logger.
+    ''' </summary>
+    ''' <returns>Instance of <see cref="ILogger"/> .</returns>
     Private Function initLogger() As ILogger
         Dim logger = New DefaultLoggerImpl()
         Dim context = HttpContext.Current

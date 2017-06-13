@@ -96,12 +96,44 @@ Public MustInherit Class DavHierarchyItem
         Me.Path = path
     End Sub
 
+    ''' <summary>
+    ''' Creates a copy of this item with a new name in the destination folder.
+    ''' </summary>
+    ''' <param name="destFolder">Destination folder.</param>
+    ''' <param name="destName">Name of the destination item.</param>
+    ''' <param name="deep">Indicates whether to copy entire subtree.</param>
+    ''' <param name="multistatus">If some items fail to copy but operation in whole shall be continued, add
+    ''' information about the error into <paramref name="multistatus"/>  using 
+    ''' <see cref="MultistatusException.AddInnerException(string, ITHit.WebDAV.Server.DavException)"/> .
+    ''' </param>
     Public MustOverride Function CopyToAsync(destFolder As IItemCollectionAsync, destName As String, deep As Boolean, multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.CopyToAsync
 
+    ''' <summary>
+    ''' Moves this item to the destination folder under a new name.
+    ''' </summary>
+    ''' <param name="destFolder">Destination folder.</param>
+    ''' <param name="destName">Name of the destination item.</param>
+    ''' <param name="multistatus">If some items fail to copy but operation in whole shall be continued, add
+    ''' information about the error into <paramref name="multistatus"/>  using 
+    ''' <see cref="MultistatusException.AddInnerException(string, ITHit.WebDAV.Server.DavException)"/> .
+    ''' </param>
     Public MustOverride Function MoveToAsync(destFolder As IItemCollectionAsync, destName As String, multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.MoveToAsync
 
+    ''' <summary>
+    ''' Deletes this item.
+    ''' </summary>
+    ''' <param name="multistatus">If some items fail to delete but operation in whole shall be continued, add
+    ''' information about the error into <paramref name="multistatus"/>  using
+    ''' <see cref="MultistatusException.AddInnerException(string, ITHit.WebDAV.Server.DavException)"/> .
+    ''' </param>
     Public MustOverride Function DeleteAsync(multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.DeleteAsync
 
+    ''' <summary>
+    ''' Retrieves user defined property values.
+    ''' </summary>
+    ''' <param name="names">Names of dead properties which values to retrieve.</param>
+    ''' <param name="allprop">Whether all properties shall be retrieved.</param>
+    ''' <returns>Property values.</returns>
     Public Async Function GetPropertiesAsync(props As IList(Of PropertyName), allprop As Boolean) As Task(Of IEnumerable(Of PropertyValue)) Implements IHierarchyItemAsync.GetPropertiesAsync
         Dim propertyValues As List(Of PropertyValue) = Await GetPropertyValuesAsync()
         If Not allprop Then
@@ -111,11 +143,19 @@ Public MustInherit Class DavHierarchyItem
         Return propertyValues
     End Function
 
+    ''' <summary>
+    ''' Retrieves names of all user defined properties.
+    ''' </summary>
+    ''' <returns>Property names.</returns>
     Public Async Function GetPropertyNamesAsync() As Task(Of IEnumerable(Of PropertyName)) Implements IHierarchyItemAsync.GetPropertyNamesAsync
         Dim propertyValues As IList(Of PropertyValue) = Await GetPropertyValuesAsync()
         Return propertyValues.Select(Function(p) p.QualifiedName)
     End Function
 
+    ''' <summary>
+    ''' Retrieves list of user defined propeties for this item.
+    ''' </summary>
+    ''' <returns>List of user defined properties.</returns>
     Private Async Function GetPropertyValuesAsync() As Task(Of List(Of PropertyValue))
         If propertyValues Is Nothing Then
             propertyValues = Await fileSystemInfo.GetExtendedAttributeAsync(Of List(Of PropertyValue))(propertiesAttributeName)
@@ -124,9 +164,22 @@ Public MustInherit Class DavHierarchyItem
         Return propertyValues
     End Function
 
+    ''' <summary>
+    ''' Saves property values to extended attribute.
+    ''' </summary>
+    ''' <param name="setProps">Properties to be set.</param>
+    ''' <param name="delProps">Properties to be deleted.</param>
+    ''' <param name="multistatus">Information about properties that failed to create, update or delate.</param>
     Public Async Function UpdatePropertiesAsync(setProps As IList(Of PropertyValue), delProps As IList(Of PropertyName), multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.UpdatePropertiesAsync
         Dim propertyValues As List(Of PropertyValue) = Await GetPropertyValuesAsync()
         For Each propToSet As PropertyValue In setProps
+            ' Microsoft Mini-redirector may update file creation date, modification date and access time passing properties:
+            ' <Win32CreationTime xmlns="urn:schemas-microsoft-com:">Thu, 28 Mar 2013 20:15:34 GMT</Win32CreationTime>
+            ' <Win32LastModifiedTime xmlns="urn:schemas-microsoft-com:">Thu, 28 Mar 2013 20:36:24 GMT</Win32LastModifiedTime>
+            ' <Win32LastAccessTime xmlns="urn:schemas-microsoft-com:">Thu, 28 Mar 2013 20:36:24 GMT</Win32LastAccessTime>
+            ' In this case update creation and modified date in your storage or do not save this properties at all, otherwise 
+            ' Windows Explorer will display creation and modification date from this props and it will differ from the values 
+            ' in the Created and Modified fields in your storage 
             If propToSet.QualifiedName.Namespace = "urn:schemas-microsoft-com:" Then
                 Select Case propToSet.QualifiedName.Name
                     Case "Win32CreationTime"
@@ -153,10 +206,25 @@ Public MustInherit Class DavHierarchyItem
         Await fileSystemInfo.SetExtendedAttributeAsync(propertiesAttributeName, propertyValues)
     End Function
 
+    ''' <summary>
+    ''' Returns instance of <see cref="IPrincipalAsync"/>  which represents current user.
+    ''' </summary>
+    ''' <returns>Current user.</returns>
+    ''' <remarks>
+    ''' This method is usually called by the Engine when CalDAV/CardDAV client 
+    ''' is trying to discover current user URL.
+    ''' </remarks>
     Public Async Function GetCurrentUserPrincipalAsync() As Task(Of IPrincipalAsync) Implements ICurrentUserPrincipalAsync.GetCurrentUserPrincipalAsync
+        ' Typically there is no need to load all user properties here, only current 
+        ' user ID (or name) is required to form the user URL: [DAVLocation]/acl/users/[UserID]
         Return AclFactory.GetPrincipalFromSid(context.WindowsIdentity.User.Value, context)
     End Function
 
+    ''' <summary>
+    ''' Gets element's parent path. 
+    ''' </summary>
+    ''' <param name="path">Element's path.</param>
+    ''' <returns>Path to parent element.</returns>
     Protected Shared Function GetParentPath(path As String) As String
         Dim parentPath As String = $"/{path.Trim("/"c)}"
         Dim index As Integer = parentPath.LastIndexOf("/")

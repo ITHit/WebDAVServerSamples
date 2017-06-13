@@ -26,12 +26,19 @@ Public Class Provisioning
         Dim httpContext As HttpContext = HttpContext.Current
         If(httpContext.User Is Nothing) OrElse Not httpContext.User.Identity.IsAuthenticated Then Return
         Using context As DavContext = New DavContext(httpContext)
+            ' Create calendars for the user during first log-in.
             Await CreateCalendarFoldersAsync(context)
+            ' Closes transaction. Calls DavContextBaseAsync.BeforeResponseAsync only first time this method is invoked.
+            ' This method must be called manually if DavContextBaseAsync is used outside of DavEngine. 
             Await context.EnsureBeforeResponseWasCalledAsync()
         End Using
     End Function
 
+    ''' <summary>
+    ''' Creates initial calendars for users.
+    ''' </summary>
     Friend Shared Async Function CreateCalendarFoldersAsync(context As DavContext) As Task
+        ' If user does not have access to any calendars - create new calendars.
         Dim sql As String = "SELECT ISNULL((SELECT TOP 1 1 FROM [cal_Access] WHERE [UserId] = @UserId) , 0)"
         If Await context.ExecuteScalarAsync(Of Integer)(sql, "@UserId", context.UserId) < 1 Then
             Await CalendarFolder.CreateCalendarFolderAsync(context, "Cal 1", "Calendar 1")

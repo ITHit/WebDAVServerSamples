@@ -30,9 +30,16 @@ Public Class DavFolder
     ''' </summary>
     Private ReadOnly dirInfo As DirectoryInfo
 
+    ''' <summary>
+    ''' Returns folder that corresponds to path.
+    ''' </summary>
+    ''' <param name="context">WebDAV Context.</param>
+    ''' <param name="path">Encoded path relative to WebDAV root folder.</param>
+    ''' <returns>Folder instance or null if physical folder not found in file system.</returns>
     Public Shared Async Function GetFolderAsync(context As DavContext, path As String) As Task(Of DavFolder)
         Dim folderPath As String = context.MapPath(path).TrimEnd(System.IO.Path.DirectorySeparatorChar)
         Dim folder As DirectoryInfo = New DirectoryInfo(folderPath)
+        ' This code blocks vulnerability when "%20" folder can be injected into path and folder.Exists returns 'true'.
         If Not folder.Exists OrElse String.Compare(folder.FullName.TrimEnd(System.IO.Path.DirectorySeparatorChar), folderPath, StringComparison.OrdinalIgnoreCase) <> 0 Then
             Return Nothing
         End If
@@ -51,7 +58,16 @@ Public Class DavFolder
         dirInfo = directory
     End Sub
 
+    ''' <summary>
+    ''' Called when children of this folder are being listed.
+    ''' </summary>
+    ''' <param name="propNames">List of properties to retrieve with the children. They will be queried by the engine later.</param>
+    ''' <returns>Children of this folder.</returns>
     Public Overridable Async Function GetChildrenAsync(propNames As IList(Of PropertyName)) As Task(Of IEnumerable(Of IHierarchyItemAsync)) Implements IItemCollectionAsync.GetChildrenAsync
+        ' Enumerates all child files and folders.
+        ' You can filter children items in this implementation and 
+        ' return only items that you want to be visible for this 
+        ' particular user.
         Dim children As IList(Of IHierarchyItemAsync) = New List(Of IHierarchyItemAsync)()
         Dim fileInfos As FileSystemInfo() = Nothing
         fileInfos = dirInfo.GetFileSystemInfos()
@@ -66,22 +82,38 @@ Public Class DavFolder
         Return children
     End Function
 
+    ''' <summary>
+    ''' Called when a new file is being created in this folder.
+    ''' </summary>
+    ''' <param name="name">Name of the new file.</param>
+    ''' <returns>The new file.</returns>
     Public Async Function CreateFileAsync(name As String) As Task(Of IFileAsync) Implements IFolderAsync.CreateFileAsync
         Await RequireHasTokenAsync()
         Dim fileName As String = System.IO.Path.Combine(fileSystemInfo.FullName, name)
         Using stream As FileStream = New FileStream(fileName, FileMode.CreateNew)
-        End Using
+             End Using
 
         Await context.socketService.NotifyRefreshAsync(Path)
         Return CType(Await context.GetHierarchyItemAsync(Path & EncodeUtil.EncodeUrlPart(name)), IFileAsync)
     End Function
 
+    ''' <summary>
+    ''' Called when a new folder is being created in this folder.
+    ''' </summary>
+    ''' <param name="name">Name of the new folder.</param>
     Overridable Public Async Function CreateFolderAsync(name As String) As Task Implements IFolderAsync.CreateFolderAsync
         Await RequireHasTokenAsync()
         dirInfo.CreateSubdirectory(name)
         Await context.socketService.NotifyRefreshAsync(Path)
     End Function
 
+    ''' <summary>
+    ''' Called when this folder is being copied.
+    ''' </summary>
+    ''' <param name="destFolder">Destination parent folder.</param>
+    ''' <param name="destName">New folder name.</param>
+    ''' <param name="deep">Whether children items shall be copied.</param>
+    ''' <param name="multistatus">Information about child items that failed to copy.</param>
     Public Overrides Async Function CopyToAsync(destFolder As IItemCollectionAsync, destName As String, deep As Boolean, multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.CopyToAsync
         Dim targetFolder As DavFolder = TryCast(destFolder, DavFolder)
         If targetFolder Is Nothing Then
@@ -94,6 +126,7 @@ Public Class DavFolder
 
         Dim newDirLocalPath As String = System.IO.Path.Combine(targetFolder.FullPath, destName)
         Dim targetPath As String = targetFolder.Path & EncodeUtil.EncodeUrlPart(destName)
+        ' Create folder at the destination.
         Try
             If Not Directory.Exists(newDirLocalPath) Then
                 Await targetFolder.CreateFolderAsync(destName)
@@ -103,6 +136,7 @@ Public Class DavFolder
             multistatus.AddInnerException(targetPath, ex)
         End Try
 
+        ' Copy children.
         Dim createdFolder As IFolderAsync = CType(Await context.GetHierarchyItemAsync(targetPath), IFolderAsync)
         For Each item As DavHierarchyItem In Await GetChildrenAsync(New PropertyName(-1) {})
             If Not deep AndAlso TypeOf item Is DavFolder Then
@@ -120,6 +154,12 @@ Public Class DavFolder
         Await context.socketService.NotifyRefreshAsync(targetFolder.Path)
     End Function
 
+    ''' <summary>
+    ''' Called when this folder is being moved or renamed.
+    ''' </summary>
+    ''' <param name="destFolder">Destination folder.</param>
+    ''' <param name="destName">New name of this folder.</param>
+    ''' <param name="multistatus">Information about child items that failed to move.</param>
     Public Overrides Async Function MoveToAsync(destFolder As IItemCollectionAsync, destName As String, multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.MoveToAsync
         Await RequireHasTokenAsync()
         Dim targetFolder As DavFolder = TryCast(destFolder, DavFolder)
@@ -134,6 +174,7 @@ Public Class DavFolder
         Dim newDirPath As String = System.IO.Path.Combine(targetFolder.FullPath, destName)
         Dim targetPath As String = targetFolder.Path & EncodeUtil.EncodeUrlPart(destName)
         Try
+            ' Remove item with the same name at destination if it exists.
             Dim item As IHierarchyItemAsync = Await context.GetHierarchyItemAsync(targetPath)
             If item IsNot Nothing Then Await item.DeleteAsync(multistatus)
             Await targetFolder.CreateFolderAsync(destName)
@@ -143,6 +184,7 @@ Public Class DavFolder
             Return
         End Try
 
+        ' Move child items.
         Dim movedSuccessfully As Boolean = True
         Dim createdFolder As IFolderAsync = CType(Await context.GetHierarchyItemAsync(targetPath), IFolderAsync)
         For Each item As DavHierarchyItem In Await GetChildrenAsync(New PropertyName(-1) {})
@@ -159,10 +201,15 @@ Public Class DavFolder
             Await DeleteAsync(multistatus)
         End If
 
+        ' Refresh client UI.
         Await context.socketService.NotifyDeleteAsync(Path)
         Await context.socketService.NotifyRefreshAsync(GetParentPath(targetPath))
     End Function
 
+    ''' <summary>
+    ''' Called whan this folder is being deleted.
+    ''' </summary>
+    ''' <param name="multistatus">Information about items that failed to delete.</param>
     Public Overrides Async Function DeleteAsync(multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.DeleteAsync
         Await RequireHasTokenAsync()
         Dim allChildrenDeleted As Boolean = True
@@ -182,17 +229,42 @@ Public Class DavFolder
         End If
     End Function
 
+    ''' <summary>
+    ''' Returns free bytes available to current user.
+    ''' </summary>
+    ''' <returns>Free bytes available.</returns>
     Public Async Function GetAvailableBytesAsync() As Task(Of Long) Implements IQuotaAsync.GetAvailableBytesAsync
+        ' Here you can return amount of bytes available for current user.
+        ' For the sake of simplicity we return entire available disk space.
+        ' Note: NTFS quotes retrieval for current user works very slowly.
         Return New DriveInfo(dirInfo.Root.FullName).AvailableFreeSpace
     End Function
 
+    ''' <summary>
+    ''' Returns used bytes by current user.
+    ''' </summary>
+    ''' <returns>Number of bytes used on disk.</returns>
     Public Async Function GetUsedBytesAsync() As Task(Of Long) Implements IQuotaAsync.GetUsedBytesAsync
+        ' Here you can return amount of bytes used by current user.
+        ' For the sake of simplicity we return entire used disk space.
+        'Note: NTFS quotes retrieval for current user works very slowly.
         Dim driveInfo As DriveInfo = New DriveInfo(dirInfo.Root.FullName)
         Return driveInfo.TotalSize - driveInfo.AvailableFreeSpace
     End Function
 
+    ''' <summary>
+    ''' Searches files and folders in current folder using search phrase and options.
+    ''' </summary>
+    ''' <param name="searchString">A phrase to search.</param>
+    ''' <param name="options">Search options.</param>
+    ''' <param name="propNames">
+    ''' List of properties to retrieve with each item returned by this method. They will be requested by the 
+    ''' Engine in <see cref="IHierarchyItemAsync.GetPropertiesAsync(IList{PropertyName}, bool)"/>  call.
+    ''' </param>
+    ''' <returns>List of <see cref="IHierarchyItemAsync"/>  satisfying search request.</returns>
     Public Async Function SearchAsync(searchString As String, options As SearchOptions, propNames As List(Of PropertyName)) As Task(Of IEnumerable(Of IHierarchyItemAsync)) Implements ISearchAsync.SearchAsync
         Dim includeSnippet As Boolean = propNames.Any(Function(s) s.Name = snippetProperty)
+        ' search both in file name and content
         Dim commandText As String = "SELECT System.ItemPathDisplay" & (If(includeSnippet, " ,System.Search.AutoSummary", String.Empty)) & " FROM SystemIndex " & "WHERE scope ='file:@Path' AND (System.ItemNameDisplay LIKE '@Name' OR FREETEXT('""@Content""')) " & "ORDER BY System.Search.Rank DESC"
         commandText = PrepareCommand(commandText,
                                     "@Path", Me.dirInfo.FullName,
@@ -233,6 +305,15 @@ Public Class DavFolder
         Return subtreeItems
     End Function
 
+    ''' <summary>
+    ''' Converts path on disk to encoded relative path.
+    ''' </summary>
+    ''' <param name="filePath">Path returned by Windows Search.</param>
+    ''' <remarks>
+    ''' The Search.CollatorDSO provider returns "documents" as "my documents". 
+    ''' There is no any real solution for this, so to build path we just replace "my documents" manually.
+    ''' </remarks>
+    ''' <returns>Returns relative encoded path for an item.</returns>
     Private Function GetRelativePath(filePath As String) As String
         Dim itemPath As String = filePath.ToLower().Replace("\my documents\", "\documents\")
         Dim repoPath As String = Me.fileSystemInfo.FullName.ToLower().Replace("\my documents\", "\documents\")
@@ -242,12 +323,26 @@ Public Class DavFolder
         Return Me.Path & [String].Join("/", encodedParts.ToArray())
     End Function
 
+    ''' <summary>
+    ''' Highlight the search terms in a text.
+    ''' </summary>
+    ''' <param name="keywords">Search keywords.</param>
+    ''' <param name="text">File content.</param>
     Private Shared Function HighlightKeywords(searchTerms As String, text As String) As String
         Dim exp As Regex = New Regex("\b(" & String.Join("|", searchTerms.Split(New Char() {","c, " "c}, StringSplitOptions.RemoveEmptyEntries)) & ")\b",
                                     RegexOptions.IgnoreCase Or RegexOptions.Multiline)
         Return exp.Replace(text, "<b>$0</b>")
     End Function
 
+    ''' <summary>
+    ''' Inserts parameters into the command text.
+    ''' </summary>
+    ''' <param name="commandText">Command text.</param>
+    ''' <param name="prms">Command parameters in pairs: name, value</param>
+    ''' <returns>Command text with values inserted.</returns>
+    ''' <remarks>
+    ''' The ICommandWithParameters interface is not supported by the 'Search.CollatorDSO' provider.
+    ''' </remarks>
     Private Function PrepareCommand(commandText As String, ParamArray prms As Object()) As String
         If prms.Length Mod 2 <> 0 Then Throw New ArgumentException("Incorrect number of parameters")
         For i As Integer = 0 To prms.Length - 1 Step 2
@@ -262,6 +357,11 @@ Public Class DavFolder
         Return commandText
     End Function
 
+    ''' <summary>
+    ''' Determines whether <paramref name="destFolder"/>  is inside this folder.
+    ''' </summary>
+    ''' <param name="destFolder">Folder to check.</param>
+    ''' <returns>Returns <c>true</c> if <paramref name="destFolder"/>  is inside thid folder.</returns>
     Private Function IsRecursive(destFolder As DavFolder) As Boolean
         Return destFolder.Path.StartsWith(Path)
     End Function

@@ -494,7 +494,7 @@ namespace CalDAVServer.SqlStorage.AspNet.CalDav
                 // Save alarms.
                 await WriteAlarmsAsync(Context, component.Alarms, eventComponentId, uid);
 
-                // Save attengees.
+                // Save attendees.
                 await WriteAttendeesAsync(Context, component.Attendees, eventComponentId, uid);
 
                 // Save attachments.

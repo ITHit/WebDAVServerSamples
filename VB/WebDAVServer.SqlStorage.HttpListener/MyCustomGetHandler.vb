@@ -63,8 +63,18 @@ Friend Class MyCustomGetHandler
         Me.htmlPath = contentRootPathFolder
     End Sub
 
+    ''' <summary>
+    ''' Handles GET and HEAD request.
+    ''' </summary>
+    ''' <param name="context">Instace of <see cref="DavContextBaseAsync"/> .</param>
+    ''' <param name="item">Instance of <see cref="IHierarchyItemAsync"/>  which was returned by
+    ''' <see cref="DavContextBaseAsync.GetHierarchyItemAsync"/>  for this request.</param>
     Public Async Function ProcessRequestAsync(context As DavContextBaseAsync, item As IHierarchyItemAsync) As Task Implements IMethodHandlerAsync.ProcessRequestAsync
         If TypeOf item Is IItemCollectionAsync Then
+            ' In case of GET requests to WebDAV folders we serve a web page to display 
+            ' any information about this server and how to use it.
+            ' Remember to call EnsureBeforeResponseWasCalledAsync here if your context implementation
+            ' makes some useful things in BeforeResponseAsync.
             Await context.EnsureBeforeResponseWasCalledAsync()
             Using reader As TextReader = File.OpenText(Path.Combine(htmlPath, "MyCustomHandlerPage.html"))
                 Dim html As String = Await reader.ReadToEndAsync()
@@ -74,8 +84,12 @@ Friend Class MyCustomGetHandler
                 Await WriteHtmlAsync(context, html)
             End Using
         ElseIf context.Request.RawUrl.StartsWith("/AjaxFileBrowser/") Then
+            ' The "/AjaxFileBrowser/" is not a WebDAV folder. It can be used to store client script files, 
+            ' images, static HTML files or any other files that does not require access via WebDAV.
+            ' Any request to the files in this folder will just serve them to client. 
             Await context.EnsureBeforeResponseWasCalledAsync()
             Dim filePath As String = Path.Combine(htmlPath, context.Request.RawUrl.TrimStart("/"c).Replace("/"c, Path.DirectorySeparatorChar))
+            ' Remove query string.
             Dim queryIndex As Integer = filePath.LastIndexOf("?"c)
             If queryIndex > -1 Then
                 filePath = filePath.Remove(queryIndex)
@@ -94,10 +108,17 @@ Friend Class MyCustomGetHandler
         End If
     End Function
 
+    ''' <summary>
+    ''' Writes HTML to the output stream in case of GET request using encoding specified in Engine. 
+    ''' Writes headers only in caes of HEAD request.
+    ''' </summary>
+    ''' <param name="context">Instace of <see cref="DavContextBaseAsync"/> .</param>
+    ''' <param name="html">HTML to write.</param>
     Private Async Function WriteHtmlAsync(context As DavContextBaseAsync, html As String) As Task
         Dim encoding As Encoding = context.Engine.ContentEncoding
         context.Response.ContentLength = encoding.GetByteCount(html)
         context.Response.ContentType = String.Format("text/html; charset={0}", encoding.WebName)
+        ' Return file content in case of GET request, in case of HEAD just return headers.
         If context.Request.HttpMethod = "GET" Then
             Using writer = New StreamWriter(context.Response.OutputStream, encoding)
                 Await writer.WriteAsync(html)
@@ -105,6 +126,13 @@ Friend Class MyCustomGetHandler
         End If
     End Function
 
+    ''' <summary>
+    ''' This handler shall only be invoked for <see cref="IFolderAsync"/>  items or if original handler (which
+    ''' this handler substitutes) shall be called for the item.
+    ''' </summary>
+    ''' <param name="item">Instance of <see cref="IHierarchyItemAsync"/>  which was returned by
+    ''' <see cref="DavContextBaseAsync.GetHierarchyItemAsync"/>  for this request.</param>
+    ''' <returns>Returns <c>true</c> if this handler can handler this item.</returns>
     Public Function AppliesTo(item As IHierarchyItemAsync) As Boolean Implements IMethodHandlerAsync.AppliesTo
         Return TypeOf item Is IFolderAsync OrElse OriginalHandler.AppliesTo(item)
     End Function

@@ -28,10 +28,14 @@ Public Class DavLocationFolder
             Dim davLocationsSection As NameValueCollection = CType(System.Configuration.ConfigurationManager.GetSection("davLocations"), NameValueCollection)
             If davLocationsSection IsNot Nothing Then
                 For Each path As String In davLocationsSection.AllKeys
+                    ' Typically you will enable WebDAV on site root ('/') to allow CalDAV/CardDAV 
+                    ' discovery. We skip site root WebDAV location to find first non-root location.
                     If Not String.IsNullOrEmpty(path.Trim("/"c)) Then Return path.TrimEnd("/"c) & "/"c
                 Next
             End If
 
+            ' If no davLocation section is found or no non-root WebDAV location is specified in 
+            ' configuration file asume the WebDAV is on web site root.
             Return "/"
         End Get
     End Property
@@ -44,7 +48,13 @@ Public Class DavLocationFolder
         MyBase.New(context, DavLocationFolderPath)
     End Sub
 
+    ''' <summary>
+    ''' Retrieves children of this folder: /acl/, /calendars/ and /addressbooks/ folders.
+    ''' </summary>
+    ''' <param name="propNames">Properties requested by client application for each child.</param>
+    ''' <returns>Children of this folder.</returns>
     Public Overrides Async Function GetChildrenAsync(propNames As IList(Of PropertyName)) As Task(Of IEnumerable(Of IHierarchyItemAsync))
+        ' In this samle we list users folder only. Groups and groups folder is not implemented.
         Return New IHierarchyItemAsync() {New AclFolder(Context), New AddressbooksRootFolder(Context)}
     End Function
 End Class

@@ -64,8 +64,16 @@ Public Class DavContext
         Logger = CalDAVServer.SqlStorage.AspNet.Logger.Instance
     End Sub
 
+    ''' <summary>
+    ''' Resolves path to instance of <see cref="IHierarchyItem"/> .
+    ''' This method is called by WebDAV engine to resolve paths it encounters
+    ''' in request.
+    ''' </summary>
+    ''' <param name="path">Relative path to the item including query string.</param>
+    ''' <returns><see cref="IHierarchyItem"/>  instance if item is found, <c>null</c> otherwise.</returns>
     Public Overrides Async Function GetHierarchyItemAsync(path As String) As Task(Of IHierarchyItemAsync)
         path = path.Trim({" "c, "/"c})
+        'remove query string.
         Dim ind As Integer = path.IndexOf("?"c)
         If ind > -1 Then
             path = path.Remove(ind)
@@ -78,11 +86,15 @@ Public Class DavContext
         ' Return items from [DAVLocation]/calendars/ folder and subfolders.
         item = Await CalDavFactory.GetCalDavItemAsync(Me, path)
         If item IsNot Nothing Then Return item
+        ' Return folder that corresponds to [DAVLocation] path. If no DavLocation section is defined in web.config/app.config [DAVLocation] is a website root.
         Dim davLocation As String = DavLocationFolder.DavLocationFolderPath.Trim("/"c)
         If davLocation.Equals(path, StringComparison.InvariantCultureIgnoreCase) Then
             Return New DavLocationFolder(Me)
         End If
 
+        ' Return any folders above [DAVLocation] path.
+        ' Root folder with ICalendarDiscovery/IAddressbookDiscovery implementation is required for calendars and address books discovery by CalDAV/CardDAV clients.
+        ' All other folders are returned just for folders structure browsing convenience using WebDAV clients during dev time, not required by CalDAV/CardDAV clients.
         If davLocation.StartsWith(path, StringComparison.InvariantCultureIgnoreCase) Then
             Dim childFolderPathLength As Integer =(davLocation & "/").IndexOf("/"c, path.Length + 1)
             Dim childFolderPath As String = davLocation.Substring(0, childFolderPathLength)
@@ -93,7 +105,14 @@ Public Class DavContext
         Return Nothing
     End Function
 
+    ''' <summary>
+    ''' The method is called by WebDAV engine right before starting sending response to client.
+    ''' It is good point to either commit or rollback a transaction depending on whether
+    ''' and exception occurred.
+    ''' </summary>
     Public Overrides Async Function BeforeResponseAsync() As Task
+        ' Analyze Exception property to see if there was an exception during request execution.
+        ' The property is set by engine.
         If Exception IsNot Nothing Then
             'rollback the transaction if something went wrong.
             RollBackTransaction()
@@ -137,12 +156,25 @@ Public Class DavContext
         End If
     End Sub
 
+    ''' <summary>
+    ''' Executes SQL command which returns scalar result.
+    ''' </summary>
+    ''' <param name="command">Command text.</param>
+    ''' <param name="prms">SQL parameter pairs: SQL parameter name, SQL parameter value.</param>
+    ''' <typeparam name="T">Type of object SQL command returns.</typeparam>
+    ''' <returns>Command result of type <typeparamref name="T"/> .</returns>
     Public Async Function ExecuteScalarAsync(Of T)(command As String, ParamArray prms As Object()) As Task(Of T)
         Dim sqlCommand As SqlCommand = Await prepareCommandAsync(command, prms)
         Dim o As Object = Await sqlCommand.ExecuteScalarAsync()
         Return If(TypeOf o Is DBNull, Nothing, CType(o, T))
     End Function
 
+    ''' <summary>
+    ''' Executes SQL command which returns no results.
+    ''' </summary>
+    ''' <param name="command">Command text.</param>
+    ''' <param name="prms">SQL parameter pairs: SQL parameter name, SQL parameter value.</param>
+    ''' <returns>The number of rows affected.</returns>
     Public Async Function ExecuteNonQueryAsync(command As String, ParamArray prms As Object()) As Task(Of Integer)
         Dim sqlCommand As SqlCommand = Await prepareCommandAsync(command, prms)
         Logger.LogDebug(String.Format("Executing SQL: {0}", sqlCommand.CommandText))
@@ -152,18 +184,36 @@ Public Class DavContext
         Return rowsAffected
     End Function
 
+    ''' <summary>
+    ''' Executes specified command and returns <see cref="SqlDataReader"/> .
+    ''' </summary>
+    ''' <param name="commandBehavior">Value of <see cref="CommandBehavior"/>  enumeration.</param>
+    ''' <param name="command">Command text.</param>
+    ''' <param name="prms">Parameter pairs: SQL param name, SQL param value</param>
+    ''' <returns>Instance of <see cref="SqlDataReader"/> .</returns>
     Public Async Function ExecuteReaderAsync(command As String, ParamArray prms As Object()) As Task(Of SqlDataReader)
         Dim sqlCommand As SqlCommand = Await prepareCommandAsync(command, prms)
         Logger.LogDebug(String.Format("Executing SQL: {0}", sqlCommand.CommandText))
         Return Await sqlCommand.ExecuteReaderAsync()
     End Function
 
+    ''' <summary>
+    ''' Executes specified command and returns <see cref="SqlDataReader"/> .
+    ''' </summary>
+    ''' <param name="commandBehavior">Value of <see cref="CommandBehavior"/>  enumeration.</param>
+    ''' <param name="command">Command text.</param>
+    ''' <param name="prms">Parameter pairs: SQL param name, SQL param value.</param>
+    ''' <returns>Instance of <see cref="SqlDataReader"/> .</returns>
     Public Async Function ExecuteReaderAsync(commandBehavior As CommandBehavior, command As String, ParamArray prms As Object()) As Task(Of SqlDataReader)
         Dim sqlCommand As SqlCommand = Await prepareCommandAsync(command, prms)
         Logger.LogDebug(String.Format("Executing SQL: {0}", sqlCommand.CommandText))
         Return Await sqlCommand.ExecuteReaderAsync(commandBehavior)
     End Function
 
+    ''' <summary>
+    ''' Creates <see cref="SqlCommand"/> .
+    ''' </summary>
+    ''' <returns>Instance of <see cref="SqlCommand"/> .</returns>
     Private Async Function createNewCommandAsync() As Task(Of SqlCommand)
         If Me.connection Is Nothing Then
             Me.connection = New SqlConnection(connectionString)
@@ -176,6 +226,12 @@ Public Class DavContext
         Return newCmd
     End Function
 
+    ''' <summary>
+    ''' Creates <see cref="SqlCommand"/> .
+    ''' </summary>
+    ''' <param name="command">Command text.</param>
+    ''' <param name="prms">Either list of SqlParameters or command parameters in pairs: name, value</param>
+    ''' <returns>Instace of <see cref="SqlCommand"/> .</returns>
     Private Async Function prepareCommandAsync(command As String, ParamArray prms As Object()) As Task(Of SqlCommand)
         Dim cmd As SqlCommand = Await createNewCommandAsync()
         cmd.CommandText = command

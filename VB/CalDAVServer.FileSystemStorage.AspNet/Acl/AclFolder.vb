@@ -34,6 +34,12 @@ Namespace Acl
             MyBase.New(context, "acl", PATH)
         End Sub
 
+        ''' <summary>
+        ''' Retrieves children of /acl folder.
+        ''' We have here 'user' and 'group' folder for holding users and groups respectively.
+        ''' </summary>
+        ''' <param name="propNames">Property names to be fetched lated.</param>
+        ''' <returns>Children of this folder.</returns>
         Public Overrides Async Function GetChildrenAsync(propNames As IList(Of PropertyName)) As Task(Of IEnumerable(Of IHierarchyItemAsync))
             Dim children As IList(Of IHierarchyItemAsync) = New List(Of IHierarchyItemAsync)()
             children.Add(New UserFolder(Context))

@@ -32,6 +32,9 @@ Partial Class ServiceInstaller
         Me.serviceProcessInstaller.Account = CType([Enum].Parse(GetType(ServiceAccount), "LocalSystem"), ServiceAccount)
         Me.serviceProcessInstaller.Password = Nothing
         Me.serviceProcessInstaller.Username = Nothing
+        ' 
+        ' ServiceInstaller
+        ' 
         Me.Installers.AddRange(New System.Configuration.Install.Installer() {Me.serviceInstaller1,
                                                                             Me.serviceProcessInstaller})
     End Sub

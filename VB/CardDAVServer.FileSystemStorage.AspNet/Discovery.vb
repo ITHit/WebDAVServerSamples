@@ -20,6 +20,10 @@ Public Class Discovery
         Me.context = context
     End Sub
 
+    ''' <summary>
+    ''' Returns list of folders that contain address books owned by this principal.
+    ''' </summary>
+    ''' <remarks>This enables address books discovery owned by current loged-in principal.</remarks>
     Public Async Function GetAddressbookHomeSetAsync() As Task(Of IEnumerable(Of IItemCollectionAsync)) Implements IAddressbookDiscoveryAsync.GetAddressbookHomeSetAsync
         Dim addressbooksUserFolder As String = String.Format("{0}{1}/", AddressbooksRootFolder.AddressbooksRootFolderPath, context.UserName)
         Return {Await DavFolder.GetFolderAsync(context, addressbooksUserFolder)}

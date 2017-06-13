@@ -79,9 +79,18 @@ Friend Class Program
         Dim logPath As String = Path.Combine(contentRootPath, "App_Data\WebDav\Logs")
         logger.LogFile = Path.Combine(logPath, "WebDAVlog.txt")
         logger.IsDebugEnabled = debugLoggingEnabled
-        engine = New DavEngineAsync With {.Logger = logger, .OutputXmlFormatting = True}
+        engine = New DavEngineAsync With {.Logger = logger,
+                                    .OutputXmlFormatting = True}
+        ''' This license lile is used to activate:
+        '''  - IT Hit WebDAV Server Engine for .NET
+        '''  - IT Hit iCalendar and vCard Library if used in a project
         Dim license As String = File.ReadAllText(Path.Combine(contentRootPath, "License.lic"))
         engine.License = license
+        ' Set custom handler to process GET and HEAD requests to folders and display 
+        ' info about how to connect to server. We are using the same custom handler 
+        ' class (but different instances) here to process both GET and HEAD because 
+        ' these requests are very similar. Some WebDAV clients may fail to connect if HEAD 
+        ' request is not processed.
         Dim handlerGet As MyCustomGetHandler = New MyCustomGetHandler(contentRootPath)
         Dim handlerHead As MyCustomGetHandler = New MyCustomGetHandler(contentRootPath)
         handlerGet.OriginalHandler = engine.RegisterMethodHandler("GET", handlerGet)
@@ -94,6 +103,8 @@ Friend Class Program
             listener.Prefixes.Add(uriPrefix)
             listener.AuthenticationSchemes = AuthenticationSchemes.Anonymous
             listener.IgnoreWriteExceptions = True
+            ' For the sake of the development convenience, this code opens default web browser
+            ' with this server url when project is started in the debug mode as a console app.
             If Not IsServiceMode Then
                 System.Diagnostics.Process.Start(uriPrefix.Replace("+", "localhost"), Nothing)
             End If
@@ -112,6 +123,7 @@ Friend Class Program
         Dim socketService As WebSocketsService = WebSocketsService.Service
         Dim webSocketContext As WebSocketContext = Await context.AcceptWebSocketAsync(Nothing)
         Dim client As WebSocket = webSocketContext.WebSocket
+        ' Adding client to connected clients collection.
         Dim clientId As Guid = socketService.AddClient(client)
         Dim buffer As Byte() = New Byte(4095) {}
         Dim result As WebSocketReceiveResult = Await client.ReceiveAsync(New ArraySegment(Of Byte)(buffer), CancellationToken.None)
@@ -130,6 +142,7 @@ Friend Class Program
             MacOsXPreprocessor.Process(context.Request)
             Dim principal As IPrincipal = Nothing
             If context.Request.IsWebSocketRequest Then
+                ' If current request is web socket request.
                 Await ProcessWebSocketRequestAsync(context)
                 Return
             End If
@@ -143,7 +156,8 @@ Friend Class Program
                 Try
                     context.Response.Close()
                 Catch
-                End Try
+                    ' client closed connection before the content was sent
+                     End Try
             End If
         End Try
     End Function

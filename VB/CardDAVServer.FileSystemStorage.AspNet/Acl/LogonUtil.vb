@@ -6,8 +6,19 @@ Imports Microsoft.Win32.SafeHandles
 
 Namespace Acl
 
+    ''' <summary>
+    ''' Contains helper Win32 methods.
+    ''' </summary>
     Module LogonUtil
 
+        ''' <summary>
+        ''' Retrieves user by username and password.
+        ''' </summary>
+        ''' <param name="username">User name.</param>
+        ''' <param name="domain">Domain.</param>
+        ''' <param name="password">Password.</param>
+        ''' <exception cref="Exception">If user cannot be authenticated.</exception>
+        ''' <returns>Authenticated user.</returns>
         Function GetUser(username As String, domain As String, password As String) As WindowsIdentity
             Dim existingTokenHandle As SafeTokenHandle = SafeTokenHandle.InvalidHandle
             If String.IsNullOrEmpty(domain) Then

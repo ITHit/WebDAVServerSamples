@@ -35,6 +35,13 @@ Public Class DavFolder
         MyBase.New(context, itemId, parentId, name, path, created, modified)
     End Sub
 
+    ''' <summary>
+    ''' Gets child items of this folder (files or folders).
+    ''' </summary>
+    ''' <param name="props">
+    ''' List of properties which will be requested from children later. We don't use it here.
+    ''' </param>
+    ''' <returns>Enumerable with files and folders.</returns>
     Public Async Function GetChildrenAsync(props As IList(Of PropertyName)) As Task(Of IEnumerable(Of IHierarchyItemAsync)) Implements IItemCollectionAsync.GetChildrenAsync
         Dim command As String = "SELECT 
                       ItemId
@@ -49,6 +56,11 @@ Public Class DavFolder
                                                                      "@Parent", ItemId)
     End Function
 
+    ''' <summary>
+    ''' Creates file with specified name in this folder.
+    ''' </summary>
+    ''' <param name="name">File name.</param>
+    ''' <returns>Instance of <see cref="File"/>  referring to newly created file.</returns>
     Public Async Function CreateFileAsync(name As String) As Task(Of IFileAsync) Implements IFolderAsync.CreateFileAsync
         If Not Await ClientHasTokenAsync() Then
             Throw New LockedException()
@@ -59,6 +71,10 @@ Public Class DavFolder
         Return CType(child, IFileAsync)
     End Function
 
+    ''' <summary>
+    ''' Creates folder with specified name in this folder.
+    ''' </summary>
+    ''' <param name="name">Name of folder to be created.</param>
     Public Async Function CreateFolderAsync(name As String) As Task Implements IFolderAsync.CreateFolderAsync
         If Not Await ClientHasTokenAsync() Then
             Throw New LockedException()
@@ -68,6 +84,14 @@ Public Class DavFolder
         Await Context.socketService.NotifyRefreshAsync(Path)
     End Function
 
+    ''' <summary>
+    ''' Copies this folder to another folder with option to rename it.
+    ''' </summary>
+    ''' <param name="destFolder">Folder to copy this folder to.</param>
+    ''' <param name="destName">New name of this folder.</param>
+    ''' <param name="deep">Whether children shall be copied.</param>
+    ''' <param name="multistatus">Container for errors. We put here errors which occur with
+    ''' individual items being copied.</param>
     Public Overrides Async Function CopyToAsync(destFolder As IItemCollectionAsync,
                                                destName As String,
                                                deep As Boolean,
@@ -96,6 +120,7 @@ Public Class DavFolder
         End If
 
         Dim newDestFolder As DavFolder = Await CopyThisItemAsync(destDavFolder, Nothing, destName)
+        ' copy children
         If deep Then
             For Each child As IHierarchyItemAsync In Await GetChildrenAsync(New PropertyName(-1) {})
                 Dim dbchild = TryCast(child, DavHierarchyItem)
@@ -110,6 +135,13 @@ Public Class DavFolder
         Await Context.socketService.NotifyRefreshAsync(newDestFolder.Path)
     End Function
 
+    ''' <summary>
+    ''' Moves this folder to destination folder with option to rename.
+    ''' </summary>
+    ''' <param name="destFolder">Folder to copy this folder to.</param>
+    ''' <param name="destName">New name of this folder.</param>
+    ''' <param name="multistatus">Container for errors. We put here errors occurring while moving
+    ''' individual files/folders.</param>
     Public Overrides Async Function MoveToAsync(destFolder As IItemCollectionAsync, destName As String, multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.MoveToAsync
         Dim destDavFolder As DavFolder = TryCast(destFolder, DavFolder)
         If destFolder Is Nothing Then
@@ -131,6 +163,7 @@ Public Class DavFolder
 
         Dim destItem As DavHierarchyItem = Await destDavFolder.FindChildAsync(destName)
         Dim newDestFolder As DavFolder
+        ' copy this folder
         If destItem IsNot Nothing Then
             If TypeOf destItem Is IFileAsync Then
                 Try
@@ -152,6 +185,7 @@ Public Class DavFolder
             newDestFolder = Await CopyThisItemAsync(destDavFolder, Nothing, destName)
         End If
 
+        ' move children
         Dim movedAllChildren As Boolean = True
         For Each child As IHierarchyItemAsync In Await GetChildrenAsync(New PropertyName(-1) {})
             Dim dbchild As DavHierarchyItem = TryCast(child, DavHierarchyItem)
@@ -167,10 +201,16 @@ Public Class DavFolder
             Await DeleteThisItemAsync(parent)
         End If
 
+        ' Refresh client UI.
         Await Context.socketService.NotifyDeleteAsync(Path)
         Await Context.socketService.NotifyRefreshAsync(GetParentPath(newDestFolder.Path))
     End Function
 
+    ''' <summary>
+    ''' Deletes this folder.
+    ''' </summary>
+    ''' <param name="multistatus">Container for errors.
+    ''' If some child file/folder fails to remove we report error in this container.</param>
     Public Overrides Async Function DeleteAsync(multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.DeleteAsync
         Dim parent As DavFolder = Await GetParentAsync()
         If parent Is Nothing Then
@@ -202,9 +242,21 @@ Public Class DavFolder
         End If
     End Function
 
+    ''' <summary>
+    ''' Searches files and folders in current folder using search phrase and options.
+    ''' </summary>
+    ''' <param name="searchString">A phrase to search.</param>
+    ''' <param name="options">Search options.</param>
+    ''' <param name="propNames">
+    ''' List of properties to retrieve with each item returned by this method. They will be requested by the 
+    ''' Engine in <see cref="IHierarchyItemAsync.GetPropertiesAsync(IList{PropertyName}, bool)"/>  call.
+    ''' </param>
+    ''' <returns>List of <see cref="IHierarchyItemAsync"/>  satisfying search request.</returns>
     Public Async Function SearchAsync(searchString As String, options As SearchOptions, propNames As List(Of PropertyName)) As Task(Of IEnumerable(Of IHierarchyItemAsync)) Implements ISearchAsync.SearchAsync
         Dim includeSnippet As Boolean = propNames.Any(Function(s) s.Name = SNIPPET)
         Dim condition As String = "Name LIKE @Name"
+        ' To enable full-text search, uncoment the code below and follow instructions 
+        ' in DB.sql to enable full-text indexing
         Dim commandText As String = [String].Format("SELECT 
                       ItemId
                     , ParentItemId
@@ -220,7 +272,14 @@ Public Class DavFolder
         Return result
     End Function
 
+    ''' <summary>
+    ''' Produces recursive search in current folder.
+    ''' </summary>
+    ''' <param name="result">A list to add search results to.</param>
+    ''' <param name="commandText">SQL command text for search in a folder.</param>
+    ''' <param name="searchString">A phrase to search.</param>
     Private Async Function GetSearchResultsAsync(result As List(Of IHierarchyItemAsync), commandText As String, searchString As String, includeSnippet As Boolean) As Task
+        ' search this folder
         Dim folderSearchResults As IEnumerable(Of IHierarchyItemAsync) = Await Context.ExecuteItemAsync(Of IHierarchyItemAsync)(Path,
                                                                                                                                commandText,
                                                                                                                                "@Parent", ItemId,
@@ -231,12 +290,17 @@ Public Class DavFolder
         Next
 
         result.AddRange(folderSearchResults)
+        ' search children
         For Each item As IHierarchyItemAsync In Await GetChildrenFoldersAsync()
             Dim folder As DavFolder = TryCast(item, DavFolder)
             If folder IsNot Nothing Then Await folder.GetSearchResultsAsync(result, commandText, searchString, includeSnippet)
         Next
     End Function
 
+    ''' <summary>
+    ''' Gets the children of current folder (non-recursive).
+    ''' </summary>
+    ''' <returns>The children folders of current folder.</returns>
     Public Async Function GetChildrenFoldersAsync() As Task(Of IEnumerable(Of IHierarchyItemAsync))
         Dim command As String = "SELECT 
                       ItemId
@@ -253,6 +317,11 @@ Public Class DavFolder
                                                                      "@Parent", ItemId)
     End Function
 
+    ''' <summary>
+    ''' Finds file or folder with specified name inside this folder.
+    ''' </summary>
+    ''' <param name="childName">Name of child to find.</param>
+    ''' <returns>Instance of <see cref="DavHierarchyItem"/>  or <c>null</c>.</returns>
     Friend Async Function FindChildAsync(childName As String) As Task(Of DavHierarchyItem)
         Dim commandText As String = "SELECT
                      ItemId
@@ -271,6 +340,10 @@ Public Class DavFolder
         Return davHierarchyItems.FirstOrDefault()
     End Function
 
+    ''' <summary>
+    ''' Determines whether the client has submitted lock tokens for all locked files in the subtree.
+    ''' </summary>
+    ''' <returns>Returns <c>true</c> if lock tockens for all locked files in the subtree are submitted.</returns>
     Friend Async Function ClientHasTokenForTreeAsync() As Task(Of Boolean)
         If Not Await ClientHasTokenAsync() Then
             Return False
@@ -293,10 +366,21 @@ Public Class DavFolder
         Return True
     End Function
 
+    ''' <summary>
+    ''' Determines whether <paramref name="destFolder"/>  is inside this folder.
+    ''' </summary>
+    ''' <param name="destFolder">Folder to test.</param>
+    ''' <returns>Returns <c>true</c>if <paramref name="destFolder"/>  is inside this folder.</returns>
     Private Function isRecursive(destFolder As DavFolder) As Boolean
         Return destFolder.Path.StartsWith(Path)
     End Function
 
+    ''' <summary>
+    ''' Creates file or folder with specified name inside this folder.
+    ''' </summary>
+    ''' <param name="name">File/folder name.</param>
+    ''' <param name="itemType">Type of item: file or folder.</param>
+    ''' <returns>Newly created item.</returns>
     Private Async Function createChildAsync(name As String, itemType As ItemType) As Task(Of DavHierarchyItem)
         Dim newID As Guid = Guid.NewGuid()
         Dim commandText As String = "INSERT INTO Item(
@@ -322,6 +406,7 @@ Public Class DavFolder
                                           "@Parent", ItemId,
                                           "@ItemType", itemType,
                                           "@Identity", newID)
+        'UpdateModified(); do not update time for folder as transaction will block concurrent files upload
         Select Case itemType
             Case ItemType.File
                 Return New DavFile(Context,
@@ -332,6 +417,7 @@ Public Class DavFolder
                                   DateTime.UtcNow,
                                   DateTime.UtcNow)
             Case ItemType.Folder
+                ' do not need to return created folder
                 Return Nothing
             Case Else
                 Return Nothing

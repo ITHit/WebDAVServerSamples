@@ -817,7 +817,12 @@
     <script>
 
         // Setting up web socket connection.
-        var socketSource = new WebSocket("ws://" + location.host);
+        if(location.protocol === "https:") {
+            var socketSource = new WebSocket("wss://" + location.host);
+        } else {
+            var socketSource = new WebSocket("ws://" + location.host);
+        }
+        
 
         socketSource.addEventListener('message', function (e) {
             var notifyObject = JSON.parse(e.data);

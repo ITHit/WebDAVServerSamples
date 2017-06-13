@@ -56,7 +56,17 @@ Public MustInherit Class DavHierarchyItem
         MyBase.New(context)
     End Sub
 
+    ''' <summary>
+    ''' Returns instance of <see cref="IPrincipal"/>  which represents current user.
+    ''' </summary>
+    ''' <returns>Current user.</returns>
+    ''' <remarks>
+    ''' This method is usually called by the Engine when CalDAV/CardDAV client 
+    ''' is trying to discover current user URL.
+    ''' </remarks>
     Public Async Function GetCurrentUserPrincipalAsync() As Task(Of IPrincipalAsync) Implements ICurrentUserPrincipalAsync.GetCurrentUserPrincipalAsync
+        ' Typically there is no need to load all user properties here, only current 
+        ' user ID (or name) is required to form the user URL: [DAVLocation]/acl/users/[UserID]
         Return New User(Context, Context.UserId)
     End Function
 

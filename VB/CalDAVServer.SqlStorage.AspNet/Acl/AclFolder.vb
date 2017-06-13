@@ -32,7 +32,13 @@ Namespace Acl
             MyBase.New(context, AclFolderPath)
         End Sub
 
+        ''' <summary>
+        ''' Retrieves children of this folder.
+        ''' </summary>
+        ''' <param name="propNames">Properties requested by client application for each child.</param>
+        ''' <returns>Children of this folder.</returns>
         Public Overrides Async Function GetChildrenAsync(propNames As IList(Of PropertyName)) As Task(Of IEnumerable(Of IHierarchyItemAsync))
+            ' In this samle we list users folder only. Groups and groups folder is not implemented.
             Return {New UsersFolder(Context)}
         End Function
     End Class
