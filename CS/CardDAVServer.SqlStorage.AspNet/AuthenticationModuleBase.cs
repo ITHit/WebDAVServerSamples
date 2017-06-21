@@ -23,13 +23,13 @@ namespace CardDAVServer.SqlStorage.AspNet
         {
         }
 
-        
+
         protected abstract IPrincipal AuthenticateRequest(HttpRequest request);
-        
+
         protected abstract string GetChallenge();
 
         protected abstract bool IsAuthorizationPresent(HttpRequest request);
-        
+
         private void App_OnAuthenticateRequest(object source, EventArgs eventArgs)
         {
             if (IsAuthorizationPresent(HttpContext.Current.Request))
@@ -48,13 +48,14 @@ namespace CardDAVServer.SqlStorage.AspNet
             {
                 // To support Miniredirector/Web Folders on XP and Server 2003 as well as 
                 // Firefox CORS requests, OPTIONS must be processed without authorization.
-                if (HttpContext.Current.Request.HttpMethod == "OPTIONS")
+                if (HttpContext.Current.Request.HttpMethod == "OPTIONS" &&
+                    !(HttpContext.Current.Request.UserAgent != null && HttpContext.Current.Request.UserAgent.StartsWith("Microsoft Office")))
                     return;
 
                 unauthorized();
             }
         }
-        
+
         private void App_OnEndRequest(object source, EventArgs eventArgs)
         {
 

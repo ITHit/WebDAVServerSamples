@@ -59,7 +59,8 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
             {
                 // To support Miniredirector/Web Folders on XP and Server 2003 as well as 
                 // Firefox CORS requests, OPTIONS must be processed without authorization.
-                if (context.Request.Method == "OPTIONS")
+                if (context.Request.Method == "OPTIONS" &&
+                    !(context.Request.Headers["User-Agent"].ToString().StartsWith("Microsoft Office")))
                 {
                     await next(context);
                 } 

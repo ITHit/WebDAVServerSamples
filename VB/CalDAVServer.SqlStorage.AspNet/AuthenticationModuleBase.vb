@@ -38,7 +38,7 @@ Public MustInherit Class AuthenticationModuleBase
         Else
             ' To support Miniredirector/Web Folders on XP and Server 2003 as well as 
             ' Firefox CORS requests, OPTIONS must be processed without authorization.
-            If HttpContext.Current.Request.HttpMethod = "OPTIONS" Then Return
+            If HttpContext.Current.Request.HttpMethod = "OPTIONS" AndAlso Not(HttpContext.Current.Request.UserAgent IsNot Nothing AndAlso HttpContext.Current.Request.UserAgent.StartsWith("Microsoft Office")) Then Return
             unauthorized()
         End If
     End Sub
