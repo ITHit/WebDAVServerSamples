@@ -202,6 +202,22 @@
         .table-responsive {
             border: none;
         }
+
+        table td.ellipsis {
+            position: relative;
+        }
+        table td.ellipsis:before {
+            content: '&nbsp;';
+            visibility: hidden;
+        }
+        table td.ellipsis span, table td.ellipsis a {
+            position: absolute;
+            left: 0;
+            right: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
     </style>
 </head>
 <body>
@@ -232,7 +248,7 @@
                     <table class="table table-hover ithit-grid-container">
                         <colgroup>
                             <col width="40" class="hidden-xs" />
-                            <col width="32" class="hidden-xs" />
+                            <col width="32" />
                             <col />
                             <col width="100" class="hidden-xs" />
                             <col width="180" class="hidden-xs" />
@@ -242,7 +258,7 @@
                         <thead>
                             <tr>
                                 <th class="hidden-xs">#</th>
-                                <th class="hidden-xs"></th>
+                                <th></th>
                                 <th>Display Name</th>
                                 <th>Size</th>
                                 <th class="hidden-xs">Modified</th>
@@ -433,7 +449,7 @@
                             /** @type {ITHit.WebDAV.Client.HierarchyItem} oItem */
                             return $('<div/>').html([$('<tr />').html([
                                 $('<td class="hidden-xs" />').text(i + 1),
-                                $('<td class="hidden-xs" />').html(oItem.IsFolder() ? '<span class="glyphicon glyphicon-folder-open">' + locked + '</span>' : locked),
+                                $('<td />').html(oItem.IsFolder() ? '<span class="glyphicon glyphicon-folder-open">' + locked + '</span>' : locked),
                                 this._RenderDisplayName(oItem),
                                 $('<td />').text(!oItem.IsFolder() ? Formatters.FileSize(oItem.ContentLength) : '').css('text-align', 'right'),
                                 $('<td class="hidden-xs" />').text(Formatters.Date(oItem.LastModified)),
@@ -452,8 +468,8 @@
                  **/
                 _RenderDisplayName: function (oItem) {
                     var oElement = oItem.IsFolder() ?
-                            $('<td />').html($('<a />').text(oItem.DisplayName).attr('href', oItem.Href)) :
-                            $('<td />').text(oItem.DisplayName);
+                            $('<td class="ellipsis" />').html($('<a />').text(oItem.DisplayName).attr('href', oItem.Href)) :
+                            $('<td class="ellipsis" />').html($('<span />').text(oItem.DisplayName));
 
                     return oElement;
                 },
