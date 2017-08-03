@@ -52,11 +52,11 @@
     <BundleAssemblies>false</BundleAssemblies>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ITHit.WebDAV.Server, Version=5.7.3602.0, Culture=neutral, PublicKeyToken=d057f7b1134051b5, processorArchitecture=MSIL">
-      <HintPath>..\packages\ITHit.WebDAV.Server.5.7.3602\lib\netstandard1.6\ITHit.WebDAV.Server.dll</HintPath>
+    <Reference Include="ITHit.WebDAV.Server, Version=5.7.3609.0, Culture=neutral, PublicKeyToken=d057f7b1134051b5, processorArchitecture=MSIL">
+      <HintPath>..\packages\ITHit.WebDAV.Server.5.7.3609\lib\netstandard1.6\ITHit.WebDAV.Server.dll</HintPath>
     </Reference>
-    <Reference Include="ITHit.WebDAV.Server.HttpListener, Version=5.7.3602.0, Culture=neutral, PublicKeyToken=d057f7b1134051b5, processorArchitecture=MSIL">
-      <HintPath>..\packages\ITHit.WebDAV.Server.HttpListener.5.7.3602\lib\netstandard2.0\ITHit.WebDAV.Server.HttpListener.dll</HintPath>
+    <Reference Include="ITHit.WebDAV.Server.HttpListener, Version=5.7.3609.0, Culture=neutral, PublicKeyToken=d057f7b1134051b5, processorArchitecture=MSIL">
+      <HintPath>..\packages\ITHit.WebDAV.Server.HttpListener.5.7.3609\lib\netstandard2.0\ITHit.WebDAV.Server.HttpListener.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNetCore.Hosting.Abstractions.2.0.0-preview2-final\lib\netstandard2.0\Microsoft.AspNetCore.Hosting.Abstractions.dll</HintPath>
