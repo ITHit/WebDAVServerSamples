@@ -3,8 +3,9 @@ using UIKit;
 
 namespace HttpListener.iOS
 {
-    // The UIApplicationDelegate for the application. This class is responsible for launching the
-    // User Interface of the application, as well as listening (and optionally responding) to application events from iOS.
+    // The UIApplicationDelegate for the application. This class is responsible for launching the 
+    // User Interface of the application, as well as listening (and optionally responding) to 
+    // application events from iOS.
     [Register("AppDelegate")]
     public class AppDelegate : UIApplicationDelegate
     {
@@ -18,6 +19,8 @@ namespace HttpListener.iOS
 
         public override bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
         {
+            // Override point for customization after application launch.
+            // If not required for your application you can safely delete this method
 
             return true;
         }
@@ -54,5 +57,3 @@ namespace HttpListener.iOS
         }
     }
 }
-
-

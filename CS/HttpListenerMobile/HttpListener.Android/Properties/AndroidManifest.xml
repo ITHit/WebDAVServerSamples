@@ -4,5 +4,5 @@
 	<uses-permission android:name="android.permission.ACCESS_CHECKIN_PROPERTIES" />
 	<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 	<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-	<application android:label="HttpListener.Android"></application>
+	<application android:label="WebDAV Server" android:icon="@drawable/Icon"></application>
 </manifest>

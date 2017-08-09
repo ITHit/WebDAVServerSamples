@@ -70,6 +70,10 @@ namespace HttpListenerLibrary
             if(!string.IsNullOrEmpty(configurationModel.DavLoggerOptions.LogFile))
             {
                 configurationModel.DavLoggerOptions.LogFile = Path.Combine(contentRootPath, configurationModel.DavLoggerOptions.LogFile);
+                if(!Directory.Exists(Path.GetDirectoryName(configurationModel.DavLoggerOptions.LogFile)))
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(configurationModel.DavLoggerOptions.LogFile));
+                }
             }
         }
     }

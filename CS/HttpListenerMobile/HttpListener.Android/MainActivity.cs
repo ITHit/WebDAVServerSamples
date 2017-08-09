@@ -1,116 +1,62 @@
 ﻿using Android.App;
 using Android.OS;
-using System.IO;
-using HttpListenerLibrary;
-using Microsoft.Extensions.DependencyInjection;
-using System.Linq;
-using ITHit.WebDAV.Server;
-using System.Threading.Tasks;
+using Android.Widget;
+using Android.Content;
+using Android.Content.PM;
 
 namespace HttpListener.Android
 {
-    [Activity(Label = "HttpListener.Android", MainLauncher = true, Icon = "@drawable/icon")]
+    [Activity(Label = "HttpListener.Android", MainLauncher = true, Icon = "@drawable/icon", ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize)]
     public class MainActivity : Activity
     {
+        /// <summary>
+        /// BroadcastReceiver instance, which outputs logs on the view.
+        /// </summary>
+        private ListenerBroadcastReceiver receiver;
+
         protected override void OnCreate(Bundle bundle)
         {
             base.OnCreate(bundle);
 
             // Set our view from the "main" layout resource
-            // SetContentView (Resource.Layout.Main);
+            SetContentView(Resource.Layout.Main);
 
-            string documentsFolderPath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments);
+            Intent listenerIntent = new Intent(this, typeof(ListenerIntentService));
+            StartService(listenerIntent);
+        }
 
-            JsonConfigurationModel jsonConfiguration = JsonConfigurationReader.ReadConfiguration(Assets.Open("appsettings.webdav.json"));
+        protected override void OnResume()
+        {
+            base.OnResume();
 
-            // Copy storage files directory from application assets to application files folder.
-            InitUserStorage(jsonConfiguration.DavContextOptions.RepositoryPath, "StorageTemplate", documentsFolderPath);
+            RegisterBroadcastReceiver();
+        }
 
-            JsonConfigurationReader.ValidateConfiguration(jsonConfiguration, documentsFolderPath);
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
 
-            jsonConfiguration.DavContextOptions.GetFileContentFunc = GetFileFromAssets;
-
-            // Create collection of services, which will be available in DI Container.
-            ServiceCollection serviceCollection = new ServiceCollection();
-            serviceCollection.AddConfiguration(jsonConfiguration);
-            serviceCollection.AddLogger();
-            serviceCollection.AddTransient<WebDAVHttpListener>();
-            ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
-
-            serviceProvider.GetService<WebDAVHttpListener>().RunListener();
+            UnregisterReceiver(receiver);
         }
 
         /// <summary>
-        /// Initializes user files. Copies storage content from assets to application files folder.
+        /// Registers <see cref="ListenerBroadcastReceiver"/> in the application.
         /// </summary>
-        /// <param name="storageFolderRelativePath">Relative path to item in application files folder.</param>
-        /// <param name="assetsFolderRelativePath">Relative path to item in Assets folder.</param>
-        /// <param name="destPath">Destination folder.</param>
-        /// <param name="replaceExisting">If set to true - replaces old directory. Defaults is false.</param>
-        private void InitUserStorage(string storageFolderRelativePath, string assetsFolderRelativePath, string destPath, bool replaceExisting = false)
+        private void RegisterBroadcastReceiver()
         {
-            string internalFolderPath = Path.Combine(destPath, storageFolderRelativePath);
-            if (replaceExisting && Directory.Exists(internalFolderPath))
-            {
-                Directory.Delete(internalFolderPath, true);
-            }
-            if (!Directory.Exists(internalFolderPath))
-            {
-                Directory.CreateDirectory(internalFolderPath);
-                string[] subElements = Assets.List(assetsFolderRelativePath);
-                if (subElements.Any())
-                {
-                    foreach (string element in subElements)
-                    {
-                        string newFolderRelativePath = Path.Combine(storageFolderRelativePath, element);
-                        string newAssetRelativePath = Path.Combine(assetsFolderRelativePath, element);
-                        try
-                        {
-                            TryCopyFileFromAssets(newFolderRelativePath, newAssetRelativePath, destPath);
-                        }
-                        catch (Java.IO.FileNotFoundException)
-                        {
-                            InitUserStorage(newFolderRelativePath, newAssetRelativePath, destPath);
-                        }
-                    }
-                }
-            }
+            IntentFilter filter = new IntentFilter(ListenerBroadcastReceiver.LOG_OUTPUT);
+            filter.AddCategory(Intent.CategoryDefault);
+            receiver = new ListenerBroadcastReceiver(this);
+            RegisterReceiver(receiver, filter);
         }
 
         /// <summary>
-        /// Copies file from assets to destination.
+        /// Outputs message to the view.
         /// </summary>
-        /// <param name="filePath">Relative path to item in application files folder.</param>
-        /// <param name="assetPath">Relative path to item in Assets folder.</param>
-        /// <param name="destPath">Destination path.</param>
-        private void TryCopyFileFromAssets(string filePath, string assetPath, string destPath)
+        /// <param name="message">Text for output.</param>
+        public void Output(string message)
         {
-            Stream fileStream = Assets.Open(assetPath);
-            using (FileStream output = new FileStream(Path.Combine(destPath, filePath), FileMode.Create))
-            {
-                fileStream.CopyTo(output);
-            }
-        }
-
-        /// <summary>
-        /// Retrieves file content by relative file path in Assets.
-        /// </summary>
-        /// <param name="filePath">Relative file path in Assets.</param>
-        /// <returns>File content in string representation.</returns>
-        /// <exception cref="DavException">If file with specified path does not exist.</exception>
-        private async Task<string> GetFileFromAssets(string filePath)
-        {
-            try
-            {
-                using (StreamReader streamReader = new StreamReader(Assets.Open(filePath)))
-                {
-                    return await streamReader.ReadToEndAsync();
-                }
-            }
-            catch(Java.IO.FileNotFoundException exception)
-            {
-                throw new DavException("File not found in assets: " + filePath, exception, DavStatus.NOT_FOUND);
-            }
+            FindViewById<TextView>(Resource.Id.LogOutput).Append($"{message}\n");
         }
     }
 }

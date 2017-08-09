@@ -1,11 +1,6 @@
 ﻿using HttpListenerLibrary;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.Internal;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using UIKit;
@@ -14,6 +9,11 @@ namespace HttpListener.iOS
 {
     public class Application
     {
+        /// <summary>
+        /// Dependency injection container instance.
+        /// </summary>
+        public static ServiceProvider serviceProvider;
+
         // This is the main entry point of the application.
         static void Main(string[] args)
         {
@@ -23,7 +23,7 @@ namespace HttpListener.iOS
             JsonConfigurationModel jsonConfiguration = JsonConfigurationReader.ReadConfiguration(Path.Combine(contentRootPath, "appsettings.webdav.json"));
 
             // Copy storage files from iOS application bundle to Documents directory. (iOS does not allow to modify application bundle in runtime)
-            InitUserStorage(Path.Combine(contentRootPath, "StorageTemplate"), Path.Combine(documentsFolderPath, jsonConfiguration.DavContextOptions.RepositoryPath));
+            InitUserStorage(Path.Combine(contentRootPath, "App_Data"), Path.Combine(documentsFolderPath, "App_Data"));
 
             JsonConfigurationReader.ValidateConfiguration(jsonConfiguration, documentsFolderPath);
 
@@ -34,9 +34,7 @@ namespace HttpListener.iOS
             serviceCollection.AddConfiguration(jsonConfiguration);
             serviceCollection.AddLogger();
             serviceCollection.AddTransient<WebDAVHttpListener>();
-            ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
-
-            serviceProvider.GetService<WebDAVHttpListener>().RunListener();
+            serviceProvider = serviceCollection.BuildServiceProvider();
 
             // if you want to use a different Application Delegate class from "AppDelegate"
             // you can specify it here.
