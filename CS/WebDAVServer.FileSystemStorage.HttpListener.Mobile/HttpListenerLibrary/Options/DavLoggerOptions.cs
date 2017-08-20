@@ -19,10 +19,5 @@ namespace HttpListenerLibrary.Options
         /// In case you experience any issues with WebDAV, examine this log file first and search for exceptions and errors.
         /// </summary>
         public string LogFile { get; set; }
-
-        /// <summary>
-        /// Function, which logs errors on user screen (application window in case of mobile devices or console in case of desktop).
-        /// </summary>
-        public Action<string> LogOutput { get; set; }
     }
 }

@@ -13,10 +13,10 @@
     </style>
     <!--
 	    JavaScript file, styles and images required to run Ajax File Browser are loaded from IT Hit website. 
-	    To load files from your website download them here: http://www.webdavsystem.com/ajaxfilebrowser/download, 
-	    deploy them to your website and replace the 'http://www.ajaxbrowser.com/ITHitService/' path in this file.
+	    To load files from your website download them here: https://www.webdavsystem.com/ajaxfilebrowser/download, 
+	    deploy them to your website and replace the 'https://www.ajaxbrowser.com/ITHitService/' path in this file.
     -->
-    <script src="http://www.ajaxbrowser.com/ITHitService/AjaxFileBrowser/ITHitAJAXFileBrowserLoader.js" type="text/javascript"></script>
+    <script src="https://www.ajaxbrowser.com/ITHitService/AjaxFileBrowser/ITHitAJAXFileBrowserLoader.js" type="text/javascript"></script>
 	<script type="text/javascript">
 
 	    // This function creates Ajax File Browser
@@ -28,7 +28,7 @@
 	        // Customize the look of Ajax File Browser below
 	        // http://www.webdavsystem.com/ajaxfilebrowser/programming/settings_reference
 	        var settings = {
-	            BasePath: 'http://www.ajaxbrowser.com/ITHitService/AjaxFileBrowser/',   // (required) path to ajax file browser files (this folder contains ITHitAJAXFileBrowser.js)
+	            BasePath: 'https://www.ajaxbrowser.com/ITHitService/AjaxFileBrowser/',   // (required) path to ajax file browser files (this folder contains ITHitAJAXFileBrowser.js)
 	            Id: 'AjaxFileBrowserContainer',                                         // (required) ID of the HTML control in which Ajax File Browser will be created
 	            Url: webDavFolderUrl,                                                   // (required) the root folder to be displyed in Ajax File browser
 	            Style: 'height: 100%; width: 100%',                                     // (required) always provide size of the control

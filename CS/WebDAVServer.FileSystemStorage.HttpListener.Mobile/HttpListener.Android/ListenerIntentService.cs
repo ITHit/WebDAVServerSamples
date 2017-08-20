@@ -3,6 +3,7 @@ using Android.Content;
 using HttpListenerLibrary;
 using ITHit.WebDAV.Server;
 using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -24,25 +25,33 @@ namespace HttpListener.Android
 
         protected override void OnHandleIntent(Intent intent)
         {
-            string documentsFolderPath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments);
+            var logger = new ApplicationViewLogger(SendBroadcast);
 
-            JsonConfigurationModel jsonConfiguration = JsonConfigurationReader.ReadConfiguration(Assets.Open("appsettings.webdav.json"));
+            try
+            {
+                string documentsFolderPath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments);
 
-            // Copy storage files directory from application assets to application files folder.
-            InitUserStorage("App_Data", documentsFolderPath);
+                JsonConfigurationModel jsonConfiguration = JsonConfigurationReader.ReadConfiguration(Assets.Open("appsettings.webdav.json"));
 
-            JsonConfigurationReader.ValidateConfiguration(jsonConfiguration, documentsFolderPath);
+                // Copy storage files directory from application assets to application files folder.
+                InitUserStorage("App_Data", documentsFolderPath);
 
-            jsonConfiguration.DavContextOptions.GetFileContentFunc = GetFileFromAssets;
-            jsonConfiguration.DavLoggerOptions.LogOutput = SendBroadcast;
+                JsonConfigurationReader.ValidateConfiguration(jsonConfiguration, documentsFolderPath);
 
-            // Create collection of services, which will be available in DI Container.
-            ServiceCollection serviceCollection = new ServiceCollection();
-            serviceCollection.AddConfiguration(jsonConfiguration);
-            serviceCollection.AddLogger();
-            serviceCollection.AddTransient<WebDAVHttpListener>();
-            ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
-            serviceProvider.GetService<WebDAVHttpListener>().RunListener();
+                jsonConfiguration.DavContextOptions.GetFileContentFunc = GetFileFromAssets;
+
+                // Create collection of services, which will be available in DI Container.
+                ServiceCollection serviceCollection = new ServiceCollection();
+                serviceCollection.AddConfiguration(jsonConfiguration);
+                serviceCollection.AddSingleton(logger);
+                serviceCollection.AddTransient<WebDAVHttpListener>();
+                ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
+                serviceProvider.GetService<WebDAVHttpListener>().RunListener();
+            }
+            catch(Exception ex)
+            {
+                logger.LogError(ex.Message, ex);
+            }
         }
 
         /// <summary>

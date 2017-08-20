@@ -20,12 +20,12 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="ITHit.WebDAV.Server.Core" Version="5.7.3625" />
+    <PackageReference Include="ITHit.WebDAV.Server.Core" Version="5.7.3670" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="1.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="1.0.2" />
-    <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="1.0.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="1.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="1.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="1.0.3" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="1.0.2" />
@@ -36,7 +36,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging" Version="1.0.2" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="1.0.2" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="1.0.2" />
-	<PackageReference Include="System.Data.SqlClient" Version="4.1.0" />
+	  <PackageReference Include="System.Data.SqlClient" Version="4.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="1.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.WebSockets" Version="1.0.1" />
   </ItemGroup>

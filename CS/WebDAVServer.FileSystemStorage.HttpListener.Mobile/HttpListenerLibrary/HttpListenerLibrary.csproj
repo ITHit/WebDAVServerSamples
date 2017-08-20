@@ -5,8 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ITHit.WebDAV.Server.HttpListener" Version="5.7.3625" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.0.0-preview2-final" />
+    <PackageReference Include="ITHit.WebDAV.Server.HttpListener" Version="5.7.3670" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
     <PackageReference Include="System.Runtime.InteropServices" Version="4.3.0" />
     <PackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Version="4.3.0" />

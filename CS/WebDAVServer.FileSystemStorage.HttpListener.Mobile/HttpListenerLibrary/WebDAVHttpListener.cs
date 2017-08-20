@@ -1,6 +1,5 @@
 ﻿using HttpListenerLibrary.Options;
 using ITHit.WebDAV.Server;
-using ITHit.WebDAV.Server.Logger;
 using System;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -33,7 +32,7 @@ namespace HttpListenerLibrary
         /// <summary>
         /// Logger instance.
         /// </summary>
-        private DefaultLoggerImpl logger;
+        private ApplicationViewLogger logger;
 
         /// <summary>
         /// Contains HttpListener configuration.
@@ -47,7 +46,7 @@ namespace HttpListenerLibrary
         /// <param name="logger">Logger implementation instance.</param>
         public WebDAVHttpListener(
             JsonConfigurationModel configuration,
-            DefaultLoggerImpl logger
+            ApplicationViewLogger logger
             )
         {
             this.configuration = configuration;
@@ -68,8 +67,7 @@ namespace HttpListenerLibrary
             }
             catch (Exception ex)
             {
-                configuration.DavLoggerOptions.LogOutput(ex.Message);
-                configuration.DavLoggerOptions.LogOutput(ex.StackTrace);
+                logger.LogError(ex.Message, ex);
             }
         }
 
@@ -125,7 +123,7 @@ namespace HttpListenerLibrary
                     listener.Start();
 
                     string listenerPrefix = configuration.DavContextOptions.ListenerPrefix.Replace("+", LocalIPAddress().ToString());
-                    configuration.DavLoggerOptions.LogOutput($"Started listening on {configuration.DavContextOptions.ListenerPrefix}.\n\n" +
+                    logger.LogMessage($"Started listening on {configuration.DavContextOptions.ListenerPrefix}.\n\n" +
                         $"To access your files go to {listenerPrefix} in a web browser. Or just connect to the above address using WebDAV client.");
 
                     while (Listening)
@@ -139,8 +137,7 @@ namespace HttpListenerLibrary
             }
             catch(Exception ex)
             {
-                configuration.DavLoggerOptions.LogOutput(ex.Message);
-                configuration.DavLoggerOptions.LogOutput(ex.StackTrace);
+                logger.LogError(ex.Message, ex);
             }
         }
 
@@ -156,7 +153,7 @@ namespace HttpListenerLibrary
             {
                 IPrincipal principal = null;
 
-                // Uncomment code below to allow digest authentication mechanism.
+                // Uncomment the code below to enable Digest authentication.
                 /*ListenerAuthentication listenerAuthentication = new ListenerAuthentication(digestProvider);
                 principal = listenerAuthentication.PerformAuthentication(context);
                 if(context.Response.StatusCode == 401)

@@ -69,8 +69,12 @@
             width: 100%;
         }
 
+            .ithit-grid-container .column-open-with-action {
+                width: 115px;
+            }
+
             .ithit-grid-container .column-action {
-                width: 180px;
+                width: 85px;
             }
 
             .ithit-grid-container .column-action a {
@@ -253,7 +257,7 @@
                             <col width="100" class="hidden-xs" />
                             <col width="180" class="hidden-xs" />
                             <col width="50" class="visible-xs hidden-sm hidden-md hidden-lg" />
-                            <col />
+                            <col width="50" class="hidden-xs" />                           
                         </colgroup>
                         <thead>
                             <tr>
@@ -310,6 +314,14 @@
                 folder and open the default OS file manager.
                 </p>
                 <a href="javascript:void(0)" onclick="WebDAVController && WebDAVController.OpenCurrentFolderInOsFileManager()" class="btn btn-default">Browse Using OS File Manager</a>
+                
+                <hr />
+
+                <h3>Client Version</h3>
+
+                <p>                 
+                    IT Hit WebDAV AJAX Library version: <span class="ithit-version-value"></span>
+                </p>
 
                 <br />
                 <br />
@@ -453,7 +465,8 @@
                                 this._RenderDisplayName(oItem),
                                 $('<td />').text(!oItem.IsFolder() ? Formatters.FileSize(oItem.ContentLength) : '').css('text-align', 'right'),
                                 $('<td class="hidden-xs" />').text(Formatters.Date(oItem.LastModified)),
-                                $('<td class="column-action" />').html(this._RenderActions(oItem))
+                                $('<td class="column-action" />').html(this._RenderActions(oItem)),
+                                $('<td class="column-open-with-action hidden-xs" />').html(this._RenderOpenWithAction(oItem))
                             ]),
                                 $('<tr class="tr-snippet-url"/>').html([
                                     $('<td class="hidden-xs" />'),
@@ -508,6 +521,28 @@
                             .attr('title', 'Edit in associated application')
                             .on('click', function () {
                                 oWebDAV.EditDoc(oItem.Href);
+                            }));
+                    }
+
+                    return actions;
+                },
+
+
+
+                /**
+                 * @param {ITHit.WebDAV.Client.HierarchyItem} oItem
+                 * @returns string
+                 **/
+                _RenderOpenWithAction: function (oItem) {
+                    var actions = [];
+
+                    if (!oItem.IsFolder()) {
+                        actions.push($('<a />')
+                            .html('<span class="glyphicon glyphicon-modal-window" title="Open With"></span> <span class="hidden-xs">Open With...</span>')
+                            .attr('href', 'javascript:void(0)')
+                            .attr('title', 'Open Document with...')
+                            .on('click', function () {
+                                oWebDAV.OpenDocWith(oItem.Href);
                             }));
                     }
 
@@ -770,6 +805,15 @@
                  */
                 EditDoc: function (sDocumentUrl) {
                     ITHit.WebDAV.Client.DocManager.EditDocument(sDocumentUrl, this.GetMountUrl(), this._ProtocolInstallMessage.bind(this));
+                },
+
+
+                /**
+                 * Opens document with.
+                 * @param {string} sDocumentUrl Must be full path including domain name: https://webdavserver.com/path/file.ext
+                 */
+                OpenDocWith: function (sDocumentUrl) {
+                    ITHit.WebDAV.Client.DocManager.DavProtocolEditDocument(sDocumentUrl, this.GetMountUrl(), this._ProtocolInstallMessage.bind(this), null, null, null, null, 'OpenWith');
                 },
 
                 /**

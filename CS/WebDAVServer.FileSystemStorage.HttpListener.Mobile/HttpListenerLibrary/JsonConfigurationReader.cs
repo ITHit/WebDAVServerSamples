@@ -64,7 +64,7 @@ namespace HttpListenerLibrary
             configurationModel.DavContextOptions.RepositoryPath = Path.Combine(contentRootPath, configurationModel.DavContextOptions.RepositoryPath);
             if (!Directory.Exists(configurationModel.DavContextOptions.RepositoryPath))
             {
-                throw new FileNotFoundException("Storage folder hasn't been found.");
+                throw new DirectoryNotFoundException("Storage folder hasn't been found.");
             }
 
             if(!string.IsNullOrEmpty(configurationModel.DavLoggerOptions.LogFile))

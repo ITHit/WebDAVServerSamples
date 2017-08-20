@@ -103,21 +103,23 @@
     <InterfaceDefinition Include="Main.storyboard">
       <SubType>Designer</SubType>
     </InterfaceDefinition>
-    <InterfaceDefinition Include="Resources\LaunchScreen.xib" />
+    <InterfaceDefinition Include="Resources\LaunchScreen.xib">
+      <SubType>Designer</SubType>
+    </InterfaceDefinition>
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="ITHit.WebDAV.Server, Version=5.7.3625.0, Culture=neutral, PublicKeyToken=d057f7b1134051b5, processorArchitecture=MSIL">
-      <HintPath>..\packages\ITHit.WebDAV.Server.5.7.3625\lib\netstandard1.6\ITHit.WebDAV.Server.dll</HintPath>
+    <Reference Include="ITHit.WebDAV.Server, Version=5.7.3670.0, Culture=neutral, PublicKeyToken=d057f7b1134051b5, processorArchitecture=MSIL">
+      <HintPath>..\packages\ITHit.WebDAV.Server.5.7.3670\lib\netstandard1.6\ITHit.WebDAV.Server.dll</HintPath>
     </Reference>
-    <Reference Include="ITHit.WebDAV.Server.HttpListener, Version=5.7.3625.0, Culture=neutral, PublicKeyToken=d057f7b1134051b5, processorArchitecture=MSIL">
-      <HintPath>..\packages\ITHit.WebDAV.Server.HttpListener.5.7.3625\lib\netstandard2.0\ITHit.WebDAV.Server.HttpListener.dll</HintPath>
+    <Reference Include="ITHit.WebDAV.Server.HttpListener, Version=5.7.3670.0, Culture=neutral, PublicKeyToken=d057f7b1134051b5, processorArchitecture=MSIL">
+      <HintPath>..\packages\ITHit.WebDAV.Server.HttpListener.5.7.3670\lib\netstandard2.0\ITHit.WebDAV.Server.HttpListener.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Extensions.DependencyInjection, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.2.0.0-preview2-final\lib\netstandard1.1\Microsoft.Extensions.DependencyInjection.dll</HintPath>
+      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.2.0.0\lib\netstandard2.0\Microsoft.Extensions.DependencyInjection.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.Abstractions.2.0.0-preview2-final\lib\netstandard1.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
+      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.Abstractions.2.0.0\lib\netstandard2.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\netstandard1.3\Newtonsoft.Json.dll</HintPath>
@@ -186,7 +188,7 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Microsoft.Packaging.Tools.1.0.0-preview2-25401-01\build\Microsoft.Packaging.Tools.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Packaging.Tools.1.0.0-preview2-25401-01\build\Microsoft.Packaging.Tools.targets'))" />
-    <Error Condition="!Exists('..\packages\NETStandard.Library.2.0.0-preview2-25401-01\build\netstandard2.0\NETStandard.Library.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NETStandard.Library.2.0.0-preview2-25401-01\build\netstandard2.0\NETStandard.Library.targets'))" />
+    <Error Condition="!Exists('..\packages\NETStandard.Library.2.0.0\build\netstandard2.0\NETStandard.Library.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NETStandard.Library.2.0.0\build\netstandard2.0\NETStandard.Library.targets'))" />
   </Target>
-  <Import Project="..\packages\NETStandard.Library.2.0.0-preview2-25401-01\build\netstandard2.0\NETStandard.Library.targets" Condition="Exists('..\packages\NETStandard.Library.2.0.0-preview2-25401-01\build\netstandard2.0\NETStandard.Library.targets')" />
+  <Import Project="..\packages\NETStandard.Library.2.0.0\build\netstandard2.0\NETStandard.Library.targets" Condition="Exists('..\packages\NETStandard.Library.2.0.0\build\netstandard2.0\NETStandard.Library.targets')" />
 </Project>

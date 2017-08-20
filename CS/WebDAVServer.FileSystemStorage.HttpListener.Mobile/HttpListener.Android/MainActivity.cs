@@ -6,7 +6,7 @@ using Android.Content.PM;
 
 namespace HttpListener.Android
 {
-    [Activity(Label = "HttpListener.Android", MainLauncher = true, Icon = "@drawable/icon", ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize)]
+    [Activity(Label = "WebDAV Server", MainLauncher = true, Icon = "@drawable/icon", ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize)]
     public class MainActivity : Activity
     {
         /// <summary>
@@ -56,7 +56,7 @@ namespace HttpListener.Android
         /// <param name="message">Text for output.</param>
         public void Output(string message)
         {
-            FindViewById<TextView>(Resource.Id.LogOutput).Append($"{message}\n");
+            RunOnUiThread(() => FindViewById<TextView>(Resource.Id.LogOutput).Append($"{message}\n"));
         }
     }
 }

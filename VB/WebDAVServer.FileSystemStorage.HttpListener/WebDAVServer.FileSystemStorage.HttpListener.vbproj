@@ -6,7 +6,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>99F300CE-CC76-4F20-9F9E-6CF72129A6F9</ProjectGuid>
+    <ProjectGuid>99A5DF97-FA57-47AF-93DD-924499811A02</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>WebDAVServer.FileSystemStorage.HttpListener</RootNamespace>
@@ -142,10 +142,10 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="ITHit.WebDAV.Server">
-      <HintPath>..\packages\ITHit.WebDAV.Server.5.7.3625\lib\net451\ITHit.WebDAV.Server.dll</HintPath>
+      <HintPath>..\packages\ITHit.WebDAV.Server.5.7.3670\lib\net451\ITHit.WebDAV.Server.dll</HintPath>
     </Reference>
     <Reference Include="ITHit.WebDAV.Server.HttpListener">
-      <HintPath>..\packages\ITHit.WebDAV.Server.HttpListener.5.7.3625\lib\net451\ITHit.WebDAV.Server.HttpListener.dll</HintPath>
+      <HintPath>..\packages\ITHit.WebDAV.Server.HttpListener.5.7.3670\lib\net451\ITHit.WebDAV.Server.HttpListener.dll</HintPath>
     </Reference>
   </ItemGroup>
   <PropertyGroup>

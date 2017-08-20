@@ -22,7 +22,7 @@ namespace HttpListenerLibrary
         /// Adds default logger implementation to DI container.
         /// </summary>
         /// <param name="serviceCollection">Services collection.</param>
-        public static void AddLogger(this IServiceCollection serviceCollection)
+        public static void AddDefaultLogger(this IServiceCollection serviceCollection)
         {
             serviceCollection.AddSingleton<DefaultLoggerImpl>();
         }

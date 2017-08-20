@@ -6,7 +6,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>3B6AF769-E745-406F-8F17-7C5CE27FCD6F</ProjectGuid>
+    <ProjectGuid>AC8D8BDA-3413-4881-B9EC-116F7AC6CC3A</ProjectGuid>
     <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{f184b08f-c81c-45f6-a57f-5abd9991f28f}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
@@ -132,10 +132,10 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="ITHit.WebDAV.Server">
-      <HintPath>..\packages\ITHit.WebDAV.Server.5.7.3625\lib\net451\ITHit.WebDAV.Server.dll</HintPath>
+      <HintPath>..\packages\ITHit.WebDAV.Server.5.7.3670\lib\net451\ITHit.WebDAV.Server.dll</HintPath>
     </Reference>
     <Reference Include="ITHit.WebDAV.Server.Web">
-      <HintPath>..\packages\ITHit.WebDAV.Server.Web.5.7.3625\lib\net451\ITHit.WebDAV.Server.Web.dll</HintPath>
+      <HintPath>..\packages\ITHit.WebDAV.Server.Web.5.7.3670\lib\net451\ITHit.WebDAV.Server.Web.dll</HintPath>
     </Reference>
   </ItemGroup>
   <PropertyGroup>
@@ -153,7 +153,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>9658</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:46904/</IISUrl>
+          <IISUrl>http://localhost:17446/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>
