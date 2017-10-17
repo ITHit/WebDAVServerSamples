@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ITHit.WebDAV.Server.HttpListener" Version="6.0.3890-Beta" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="2.0.0" />
+    <PackageReference Include="System.Runtime.InteropServices" Version="4.3.0" />
+    <PackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Version="4.3.0" />
+  </ItemGroup>
+
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="&quot;$(DevEnvDir)..\..\Web\External\npm.cmd&quot; install webdav.client --prefix ../HttpListenerShared/wwwroot" ContinueOnError="true" StdOutEncoding="utf-8">
+      <Output TaskParameter="ExitCode" PropertyName="ErrorCode" />
+    </Exec>
+    <Exec Command="npm install webdav.client --prefix ../HttpListenerShared/wwwroot" ContinueOnError="true" Condition="'$(ErrorCode)' == '127' OR '$(ErrorCode)' == '3'" StdOutEncoding="utf-8">
+      <Output TaskParameter="ExitCode" PropertyName="ErrorCode" />
+    </Exec>
+    <Error Text="Node.js Package Manager (NPM) is required to download IT Hit WebDAV Ajax Library package. Install NPM from https://npmjs.com and run build again." Condition="'$(ErrorCode)' == '127' OR '$(ErrorCode)' == '9009'" />
+  </Target>
+
+</Project>

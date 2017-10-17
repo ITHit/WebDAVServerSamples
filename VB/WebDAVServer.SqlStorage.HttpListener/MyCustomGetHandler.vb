@@ -4,6 +4,7 @@ Imports System.IO
 Imports System.Reflection
 Imports System.Linq
 Imports System.Text
+Imports Microsoft.Win32
 Imports System.Threading.Tasks
 Imports ITHit.WebDAV.Server
 Imports ITHit.WebDAV.Server.Class1
@@ -76,14 +77,15 @@ Friend Class MyCustomGetHandler
             ' Remember to call EnsureBeforeResponseWasCalledAsync here if your context implementation
             ' makes some useful things in BeforeResponseAsync.
             Await context.EnsureBeforeResponseWasCalledAsync()
-            Using reader As TextReader = File.OpenText(Path.Combine(htmlPath, "MyCustomHandlerPage.html"))
+            Dim htmlName As String = "MyCustomHandlerPage.html"
+            Using reader As TextReader = File.OpenText(Path.Combine(htmlPath, htmlName))
                 Dim html As String = Await reader.ReadToEndAsync()
                 html = html.Replace("_webDavServerRoot_", context.Request.ApplicationPath.TrimEnd("/"c))
                 html = html.Replace("_webDavServerVersion_",
                                    GetType(DavEngineAsync).GetTypeInfo().Assembly.GetName().Version.ToString())
-                Await WriteHtmlAsync(context, html)
+                Await WriteFileContentAsync(context, html, htmlName)
             End Using
-        ElseIf context.Request.RawUrl.StartsWith("/AjaxFileBrowser/") Then
+        ElseIf context.Request.RawUrl.StartsWith("/AjaxFileBrowser/") OrElse context.Request.RawUrl.StartsWith("/wwwroot/") Then
             ' The "/AjaxFileBrowser/" is not a WebDAV folder. It can be used to store client script files, 
             ' images, static HTML files or any other files that does not require access via WebDAV.
             ' Any request to the files in this folder will just serve them to client. 
@@ -101,7 +103,7 @@ Friend Class MyCustomGetHandler
 
             Using reader As TextReader = File.OpenText(filePath)
                 Dim html As String = Await reader.ReadToEndAsync()
-                Await WriteHtmlAsync(context, html)
+                Await WriteFileContentAsync(context, html, filePath)
             End Using
         Else
             Await OriginalHandler.ProcessRequestAsync(context, item)
@@ -113,15 +115,21 @@ Friend Class MyCustomGetHandler
     ''' Writes headers only in caes of HEAD request.
     ''' </summary>
     ''' <param name="context">Instace of <see cref="DavContextBaseAsync"/> .</param>
-    ''' <param name="html">HTML to write.</param>
-    Private Async Function WriteHtmlAsync(context As DavContextBaseAsync, html As String) As Task
+    ''' <param name="content">String representation of the content to write.</param>
+    ''' <param name="filePath">Relative file path, which holds the content.</param>
+    Private Async Function WriteFileContentAsync(context As DavContextBaseAsync, content As String, filePath As String) As Task
+        Dim contentType As String = Nothing
         Dim encoding As Encoding = context.Engine.ContentEncoding
-        context.Response.ContentLength = encoding.GetByteCount(html)
-        context.Response.ContentType = String.Format("text/html; charset={0}", encoding.WebName)
+        context.Response.ContentLength = encoding.GetByteCount(content)
+        Dim key As RegistryKey = Registry.ClassesRoot.OpenSubKey(Path.GetExtension(filePath).ToLower())
+        If key IsNot Nothing AndAlso key.GetValue("Content Type") IsNot Nothing Then
+            context.Response.ContentType = key.GetValue("Content Type").ToString()
+        End If
+
         ' Return file content in case of GET request, in case of HEAD just return headers.
         If context.Request.HttpMethod = "GET" Then
             Using writer = New StreamWriter(context.Response.OutputStream, encoding)
-                Await writer.WriteAsync(html)
+                Await writer.WriteAsync(content)
             End Using
         End If
     End Function

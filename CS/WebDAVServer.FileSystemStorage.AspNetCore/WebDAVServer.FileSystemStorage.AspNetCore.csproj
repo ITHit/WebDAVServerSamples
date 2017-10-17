@@ -20,7 +20,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="ITHit.WebDAV.Server.Core" Version="5.7.3670" />
+    <PackageReference Include="ITHit.WebDAV.Server.Core" Version="6.0.3890-Beta" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="1.0.2" />
@@ -28,6 +28,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="1.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="1.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="1.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="1.0.4" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="1.0.2" />
     <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="1.1.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="1.0.2" />
@@ -42,4 +43,13 @@
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="1.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.WebSockets" Version="1.0.1" />
   </ItemGroup>
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="&quot;$(VsInstallRoot)\Web\External\npm.cmd&quot; install webdav.client --prefix wwwroot/js" ContinueOnError="true" StdOutEncoding="utf-8">
+      <Output TaskParameter="ExitCode" PropertyName="ErrorCode" />
+    </Exec>
+    <Exec Command="npm install webdav.client --prefix wwwroot/js" ContinueOnError="true" Condition="'$(ErrorCode)' == '127' OR '$(ErrorCode)' == '3'" StdOutEncoding="utf-8">
+      <Output TaskParameter="ExitCode" PropertyName="ErrorCode" />
+    </Exec>
+    <Error Text="Node.js Package Manager (NPM) is required to download IT Hit WebDAV Ajax Library package. Install NPM from https://npmjs.com and run build again." Condition="'$(ErrorCode)' == '127' OR '$(ErrorCode)' == '9009'" />
+  </Target>
 </Project>

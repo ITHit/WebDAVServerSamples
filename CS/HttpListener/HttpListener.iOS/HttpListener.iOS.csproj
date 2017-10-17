@@ -1,0 +1,299 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">iPhoneSimulator</Platform>
+    <ProjectGuid>{C1C27D02-6D9B-4987-9542-995314D91234}</ProjectGuid>
+    <ProjectTypeGuids>{FEACFBD2-3405-455C-9665-78FE426C6842};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>HttpListener.iOS</RootNamespace>
+    <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
+    <AssemblyName>HttpListener.iOS</AssemblyName>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhoneSimulator' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\iPhoneSimulator\Debug</OutputPath>
+    <DefineConstants>DEBUG</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+    <MtouchArch>x86_64</MtouchArch>
+    <MtouchLink>None</MtouchLink>
+    <MtouchDebug>true</MtouchDebug>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhoneSimulator' ">
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\iPhoneSimulator\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <MtouchLink>None</MtouchLink>
+    <MtouchArch>x86_64</MtouchArch>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhone' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\iPhone\Debug</OutputPath>
+    <DefineConstants>DEBUG</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+    <MtouchArch>ARMv7, ARM64</MtouchArch>
+    <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
+    <CodesignKey>iPhone Developer</CodesignKey>
+    <MtouchDebug>true</MtouchDebug>
+    <MtouchSdkVersion>11.0</MtouchSdkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhone' ">
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\iPhone\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
+    <MtouchArch>ARMv7, ARM64</MtouchArch>
+    <ConsolePause>false</ConsolePause>
+    <CodesignKey>iPhone Developer</CodesignKey>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Ad-Hoc|iPhone' ">
+    <DebugType>none</DebugType>
+    <Optimize>True</Optimize>
+    <OutputPath>bin\iPhone\Ad-Hoc</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>False</ConsolePause>
+    <MtouchArch>ARMv7, ARM64</MtouchArch>
+    <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
+    <BuildIpa>True</BuildIpa>
+    <CodesignProvision>Automatic:AdHoc</CodesignProvision>
+    <CodesignKey>iPhone Distribution</CodesignKey>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'AppStore|iPhone' ">
+    <DebugType>none</DebugType>
+    <Optimize>True</Optimize>
+    <OutputPath>bin\iPhone\AppStore</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>False</ConsolePause>
+    <MtouchArch>ARMv7, ARM64</MtouchArch>
+    <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
+    <CodesignProvision>Automatic:AppStore</CodesignProvision>
+    <CodesignKey>iPhone Distribution</CodesignKey>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(RunConfiguration)' == 'Default' ">
+    <AppExtensionDebugBundleId />
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="iOSConfigurationHelper.cs" />
+    <Compile Include="iOSLogMethod.cs" />
+    <Compile Include="Main.cs" />
+    <Compile Include="AppDelegate.cs" />
+    <None Include="GettingStarted.Xamarin" />
+    <None Include="Info.plist" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <ITunesArtwork Include="iTunesArtwork" />
+    <ITunesArtwork Include="iTunesArtwork%402x" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ViewController.designer.cs">
+      <DependentUpon>ViewController.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ViewController.cs" />
+    <InterfaceDefinition Include="Main.storyboard">
+      <SubType>Designer</SubType>
+    </InterfaceDefinition>
+    <InterfaceDefinition Include="Resources\LaunchScreen.xib">
+      <SubType>Designer</SubType>
+    </InterfaceDefinition>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="ITHit.WebDAV.Server, Version=6.0.3890, Culture=neutral, PublicKeyToken=d057f7b1134051b5, processorArchitecture=MSIL">
+      <HintPath>..\packages\ITHit.WebDAV.Server.6.0.3890-Beta\lib\netstandard1.6\ITHit.WebDAV.Server.dll</HintPath>
+    </Reference>
+    <Reference Include="ITHit.WebDAV.Server.HttpListener, Version=6.0.3890, Culture=neutral, PublicKeyToken=d057f7b1134051b5, processorArchitecture=MSIL">
+      <HintPath>..\packages\ITHit.WebDAV.Server.HttpListener.6.0.3890-Beta\lib\netstandard2.0\ITHit.WebDAV.Server.HttpListener.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AspNetCore.Hosting, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNetCore.Hosting.2.0.0\lib\netstandard2.0\Microsoft.AspNetCore.Hosting.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNetCore.Hosting.Abstractions.2.0.0\lib\netstandard2.0\Microsoft.AspNetCore.Hosting.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNetCore.Hosting.Server.Abstractions.2.0.0\lib\netstandard2.0\Microsoft.AspNetCore.Hosting.Server.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AspNetCore.Http, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNetCore.Http.2.0.0\lib\netstandard2.0\Microsoft.AspNetCore.Http.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNetCore.Http.Abstractions.2.0.0\lib\netstandard2.0\Microsoft.AspNetCore.Http.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AspNetCore.Http.Extensions, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNetCore.Http.Extensions.2.0.0\lib\netstandard2.0\Microsoft.AspNetCore.Http.Extensions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AspNetCore.Http.Features, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNetCore.Http.Features.2.0.0\lib\netstandard2.0\Microsoft.AspNetCore.Http.Features.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AspNetCore.StaticFiles, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNetCore.StaticFiles.2.0.0\lib\netstandard2.0\Microsoft.AspNetCore.StaticFiles.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AspNetCore.WebUtilities, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNetCore.WebUtilities.2.0.0\lib\netstandard2.0\Microsoft.AspNetCore.WebUtilities.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.Extensions.Configuration, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Configuration.2.0.0\lib\netstandard2.0\Microsoft.Extensions.Configuration.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Configuration.Abstractions, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Configuration.Abstractions.2.0.0\lib\netstandard2.0\Microsoft.Extensions.Configuration.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Configuration.Binder, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Configuration.Binder.2.0.0\lib\netstandard2.0\Microsoft.Extensions.Configuration.Binder.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Configuration.EnvironmentVariables, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Configuration.EnvironmentVariables.2.0.0\lib\netstandard2.0\Microsoft.Extensions.Configuration.EnvironmentVariables.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Configuration.FileExtensions, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Configuration.FileExtensions.2.0.0\lib\netstandard2.0\Microsoft.Extensions.Configuration.FileExtensions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.DependencyInjection, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.2.0.0\lib\netstandard2.0\Microsoft.Extensions.DependencyInjection.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.Abstractions.2.0.0\lib\netstandard2.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.FileProviders.Abstractions, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.FileProviders.Abstractions.2.0.0\lib\netstandard2.0\Microsoft.Extensions.FileProviders.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.FileProviders.Physical, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.FileProviders.Physical.2.0.0\lib\netstandard2.0\Microsoft.Extensions.FileProviders.Physical.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.FileSystemGlobbing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.FileSystemGlobbing.2.0.0\lib\netstandard2.0\Microsoft.Extensions.FileSystemGlobbing.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Hosting.Abstractions, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Hosting.Abstractions.2.0.0\lib\netstandard2.0\Microsoft.Extensions.Hosting.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Logging, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Logging.2.0.0\lib\netstandard2.0\Microsoft.Extensions.Logging.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Logging.Abstractions.2.0.0\lib\netstandard2.0\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.ObjectPool, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.ObjectPool.2.0.0\lib\netstandard2.0\Microsoft.Extensions.ObjectPool.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Options, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Options.2.0.0\lib\netstandard2.0\Microsoft.Extensions.Options.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Primitives, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Primitives.2.0.0\lib\netstandard2.0\Microsoft.Extensions.Primitives.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.WebEncoders, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.WebEncoders.2.0.0\lib\netstandard2.0\Microsoft.Extensions.WebEncoders.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Net.Http.Headers, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Net.Http.Headers.2.0.0\lib\netstandard2.0\Microsoft.Net.Http.Headers.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\netstandard1.3\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Buffers, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Buffers.4.4.0\lib\netstandard2.0\System.Buffers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Collections.Immutable, Version=1.2.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Collections.Immutable.1.4.0\lib\netstandard2.0\System.Collections.Immutable.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Diagnostics.DiagnosticSource, Version=4.0.2.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Diagnostics.DiagnosticSource.4.4.1\lib\netstandard1.3\System.Diagnostics.DiagnosticSource.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reflection.Metadata, Version=1.4.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Reflection.Metadata.1.5.0\lib\netstandard2.0\System.Reflection.Metadata.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.4.4.0\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Text.Encodings.Web, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Text.Encodings.Web.4.4.0\lib\netstandard2.0\System.Text.Encodings.Web.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Core" />
+    <Reference Include="Xamarin.iOS" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Entitlements.plist" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\HttpListenerShared\**\*.*">
+      <Link>Assets\%(RecursiveDir)%(FileName)%(Extension)</Link>
+    </Content>
+    <Content Remove="..\HttpListenerShared\App_Data\WebDAV\Logs\**\*.*" />
+    <Content Remove="..\HttpListenerShared\wwwroot\node_modules\webdav.client\Help\**\*.*" />
+  </ItemGroup>
+  <ItemGroup>
+    <ImageAsset Include="Resources\Media.xcassets\AppIcons.appiconset\Contents.json">
+      <InProject>false</InProject>
+    </ImageAsset>
+    <ImageAsset Include="Resources\Media.xcassets\AppIcons.appiconset\wheel_120x120.png">
+      <InProject>false</InProject>
+    </ImageAsset>
+    <ImageAsset Include="Resources\Media.xcassets\AppIcons.appiconset\wheel_152x152.png">
+      <InProject>false</InProject>
+    </ImageAsset>
+    <ImageAsset Include="Resources\Media.xcassets\AppIcons.appiconset\wheel_167x167.png">
+      <InProject>false</InProject>
+    </ImageAsset>
+    <ImageAsset Include="Resources\Media.xcassets\AppIcons.appiconset\wheel_180x180.png">
+      <InProject>false</InProject>
+    </ImageAsset>
+    <ImageAsset Include="Resources\Media.xcassets\AppIcons.appiconset\wheel_29x29.png">
+      <InProject>false</InProject>
+    </ImageAsset>
+    <ImageAsset Include="Resources\Media.xcassets\AppIcons.appiconset\wheel_40x40.png">
+      <InProject>false</InProject>
+    </ImageAsset>
+    <ImageAsset Include="Resources\Media.xcassets\AppIcons.appiconset\wheel_58x58.png">
+      <InProject>false</InProject>
+    </ImageAsset>
+    <ImageAsset Include="Resources\Media.xcassets\AppIcons.appiconset\wheel_76x76.png">
+      <InProject>false</InProject>
+    </ImageAsset>
+    <ImageAsset Include="Resources\Media.xcassets\AppIcons.appiconset\wheel_80x80.png">
+      <InProject>false</InProject>
+    </ImageAsset>
+    <ImageAsset Include="Resources\Media.xcassets\AppIcons.appiconset\wheel_87x87.png">
+      <InProject>false</InProject>
+    </ImageAsset>
+    <ImageAsset Include="Resources\Media.xcassets\LaunchImages.launchimage\Contents.json">
+      <InProject>false</InProject>
+    </ImageAsset>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\HttpListenerLibrary\HttpListenerLibrary.csproj">
+      <Project>{63738EF0-E945-498D-9D18-63E74D0BE69C}</Project>
+      <Name>HttpListenerLibrary</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SharedMobile\SharedMobile.csproj">
+      <Project>{a6d40a6e-1aca-4100-849c-0193f3654985}</Project>
+      <Name>SharedMobile</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
+  <Import Project="..\packages\Microsoft.Packaging.Tools.1.0.0-preview2-25401-01\build\Microsoft.Packaging.Tools.targets" Condition="Exists('..\packages\Microsoft.Packaging.Tools.1.0.0-preview2-25401-01\build\Microsoft.Packaging.Tools.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Microsoft.Packaging.Tools.1.0.0-preview2-25401-01\build\Microsoft.Packaging.Tools.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Packaging.Tools.1.0.0-preview2-25401-01\build\Microsoft.Packaging.Tools.targets'))" />
+    <Error Condition="!Exists('..\packages\NETStandard.Library.2.0.0\build\netstandard2.0\NETStandard.Library.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NETStandard.Library.2.0.0\build\netstandard2.0\NETStandard.Library.targets'))" />
+  </Target>
+  <Import Project="..\packages\NETStandard.Library.2.0.0\build\netstandard2.0\NETStandard.Library.targets" Condition="Exists('..\packages\NETStandard.Library.2.0.0\build\netstandard2.0\NETStandard.Library.targets')" />
+</Project>

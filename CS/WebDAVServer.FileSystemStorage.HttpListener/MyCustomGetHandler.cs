@@ -4,6 +4,7 @@ using System.IO;
 using System.Reflection;
 using System.Linq;
 using System.Text;
+using Microsoft.Win32;
 using System.Threading.Tasks;
 
 using ITHit.WebDAV.Server;
@@ -80,17 +81,18 @@ namespace WebDAVServer.FileSystemStorage.HttpListener
                 // makes some useful things in BeforeResponseAsync.
                 await context.EnsureBeforeResponseWasCalledAsync();
 
-                using (TextReader reader = File.OpenText(Path.Combine(htmlPath, "MyCustomHandlerPage.html")))
+                string htmlName = "MyCustomHandlerPage.html";
+                using (TextReader reader = File.OpenText(Path.Combine(htmlPath, htmlName)))
                 {
                     string html = await reader.ReadToEndAsync();
                     html = html.Replace("_webDavServerRoot_", context.Request.ApplicationPath.TrimEnd('/'));
                     html = html.Replace("_webDavServerVersion_",
                         typeof(DavEngineAsync).GetTypeInfo().Assembly.GetName().Version.ToString());
 
-                    await WriteHtmlAsync(context, html);
+                    await WriteFileContentAsync(context, html, htmlName);
                 }
             }
-            else if (context.Request.RawUrl.StartsWith("/AjaxFileBrowser/"))
+            else if (context.Request.RawUrl.StartsWith("/AjaxFileBrowser/") || context.Request.RawUrl.StartsWith("/wwwroot/"))
             {
                 // The "/AjaxFileBrowser/" is not a WebDAV folder. It can be used to store client script files, 
                 // images, static HTML files or any other files that does not require access via WebDAV.
@@ -114,7 +116,7 @@ namespace WebDAVServer.FileSystemStorage.HttpListener
                 using (TextReader reader = File.OpenText(filePath))
                 {
                     string html = await reader.ReadToEndAsync();
-                    await WriteHtmlAsync(context, html);
+                    await WriteFileContentAsync(context, html, filePath);
                 }
             }
             else
@@ -128,19 +130,25 @@ namespace WebDAVServer.FileSystemStorage.HttpListener
         /// Writes headers only in caes of HEAD request.
         /// </summary>
         /// <param name="context">Instace of <see cref="DavContextBaseAsync"/>.</param>
-        /// <param name="html">HTML to write.</param>
-        private async Task WriteHtmlAsync(DavContextBaseAsync context, string html)
+        /// <param name="content">String representation of the content to write.</param>
+        /// <param name="filePath">Relative file path, which holds the content.</param>
+        private async Task WriteFileContentAsync(DavContextBaseAsync context, string content, string filePath)
         {
+            string contentType = null;
             Encoding encoding = context.Engine.ContentEncoding; // UTF-8 by default
-            context.Response.ContentLength = encoding.GetByteCount(html);
-            context.Response.ContentType = string.Format("text/html; charset={0}", encoding.WebName);
+            context.Response.ContentLength = encoding.GetByteCount(content);
+            RegistryKey key = Registry.ClassesRoot.OpenSubKey(Path.GetExtension(filePath).ToLower());
+            if (key != null && key.GetValue("Content Type") != null)
+            {
+                context.Response.ContentType = key.GetValue("Content Type").ToString();
+            }
 
             // Return file content in case of GET request, in case of HEAD just return headers.
             if (context.Request.HttpMethod == "GET")
             {
                 using (var writer = new StreamWriter(context.Response.OutputStream, encoding))
                 {
-                    await writer.WriteAsync(html);
+                    await writer.WriteAsync(content);
                 }
             }
         }

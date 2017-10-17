@@ -6,7 +6,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>AC8D8BDA-3413-4881-B9EC-116F7AC6CC3A</ProjectGuid>
+    <ProjectGuid>8B2401F6-6B62-4584-ABA3-C70F336CE770</ProjectGuid>
     <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{f184b08f-c81c-45f6-a57f-5abd9991f28f}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
@@ -41,8 +41,8 @@
     <NoWarn>1998,42356</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.WebSockets, Version=0.2.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.WebSockets.0.2.3.1\lib\net45\Microsoft.WebSockets.dll</HintPath>
+    <Reference Include="System.Net.WebSockets, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Net.WebSockets.4.3.0\lib\net46\System.Net.WebSockets.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
@@ -79,7 +79,6 @@
     <Compile Include="DavHandler.vb" />
     <Compile Include="MyCustomGetHandler.vb" />
     <Compile Include="WebSocketsService.vb" />
-    <Compile Include="NotifyWebSocketsHandler.vb" />
     <Compile Include="WebSocketsHttpModule.vb" />
     <Compile Include="Properties\AssemblyInfo.vb" />
     <Compile Include="DateLockInfo.vb" />
@@ -132,10 +131,10 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="ITHit.WebDAV.Server">
-      <HintPath>..\packages\ITHit.WebDAV.Server.5.7.3670\lib\net451\ITHit.WebDAV.Server.dll</HintPath>
+      <HintPath>..\packages\ITHit.WebDAV.Server.6.0.3890-Beta\lib\net451\ITHit.WebDAV.Server.dll</HintPath>
     </Reference>
     <Reference Include="ITHit.WebDAV.Server.Web">
-      <HintPath>..\packages\ITHit.WebDAV.Server.Web.5.7.3670\lib\net451\ITHit.WebDAV.Server.Web.dll</HintPath>
+      <HintPath>..\packages\ITHit.WebDAV.Server.Web.6.0.3890-Beta\lib\net451\ITHit.WebDAV.Server.Web.dll</HintPath>
     </Reference>
   </ItemGroup>
   <PropertyGroup>
@@ -153,7 +152,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>9658</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:17446/</IISUrl>
+          <IISUrl>http://localhost:7641/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>
@@ -163,6 +162,15 @@
       </FlavorProperties>
     </VisualStudio>
   </ProjectExtensions>
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="&quot;$(DevEnvDir)..\..\Web\External\npm.cmd&quot; install webdav.client --prefix wwwroot/js" ContinueOnError="true" StdOutEncoding="utf-8">
+      <Output TaskParameter="ExitCode" PropertyName="ErrorCode" />
+    </Exec>
+    <Exec Command="npm install webdav.client --prefix wwwroot/js" ContinueOnError="true" Condition="'$(ErrorCode)' == '127' OR '$(ErrorCode)' == '3'" StdOutEncoding="utf-8">
+      <Output TaskParameter="ExitCode" PropertyName="ErrorCode" />
+    </Exec>
+    <Error Text="Node.js Package Manager (NPM) is required to download IT Hit WebDAV Ajax Library package. Install NPM from https://npmjs.com and run build again." Condition="'$(ErrorCode)' == '127' OR '$(ErrorCode)' == '9009'" />
+  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

@@ -1,6 +1,8 @@
 using System;
+using System.Net.WebSockets;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Web;
-using Microsoft.Web.WebSockets;
 
 namespace WebDAVServer.FileSystemStorage.AspNet
 {
@@ -13,6 +15,19 @@ namespace WebDAVServer.FileSystemStorage.AspNet
     /// </summary>
     public class WebSocketsHttpModule : IHttpModule
     {
+        /// <summary>
+        /// Instance of service, which implements notifications and handling connections dictionary.
+        /// </summary>
+        private WebSocketsService socketService;
+
+        /// <summary>
+        /// Initializes new instance of this class.
+        /// </summary>
+        public WebSocketsHttpModule()
+        {
+            socketService = WebSocketsService.Service;
+        }
+
         public void Dispose()
         {  }
 
@@ -21,15 +36,46 @@ namespace WebDAVServer.FileSystemStorage.AspNet
             context.AcquireRequestState += new EventHandler(CheckState);
         }
 
+        /// <summary>
+        /// Checks if current request is web socket request.
+        /// </summary>
+        /// <param name="sender">Event sender.</param>
+        /// <param name="e">Event arguments.</param>
         private void CheckState(object sender, EventArgs e)
         {
             HttpContext context = ((HttpApplication)sender).Context;
             if(context.IsWebSocketRequest)
             {
                 // Handle request if it is web socket request and end pipeline.
-                context.AcceptWebSocketRequest(new NotifyWebSocketsHandler());
+                context.AcceptWebSocketRequest(HandleWebSocketRequest);
                 context.ApplicationInstance.CompleteRequest();
             }
+        }
+
+        /// <summary>
+        /// Handles websocket connection logic.
+        /// </summary>
+        /// <param name="webSocketContext">Instance of <see cref="WebSocketContext"/>.</param>
+        private async Task HandleWebSocketRequest(WebSocketContext webSocketContext)
+        {
+            WebSocket client = webSocketContext.WebSocket;
+
+            // Adding client to connected clients dictionary.
+            Guid clientId = socketService.AddClient(client);
+
+            byte[] buffer = new byte[1024 * 4];
+            WebSocketReceiveResult result = await client.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+
+            while (!result.CloseStatus.HasValue)
+            {
+                // Must receive client results to update client state and detect disconnecting.
+                result = await client.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+            }
+
+            // Remove client from connected clients dictionary after disconnecting.
+            socketService.RemoveClient(clientId);
+
+            await client.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
         }
     }
 }

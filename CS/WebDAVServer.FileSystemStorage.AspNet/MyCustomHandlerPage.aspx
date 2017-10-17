@@ -330,11 +330,11 @@
     </div>
 
     <!--
-    JavaScript file required to run WebDAV Ajax library is loaded from IT Hit website.
+    JavaScript file required to run WebDAV Ajax library is loaded from Node.js Package Manager.
     To load files from your website download them here: https://www.webdavsystem.com/ajax/download,
-    deploy them to your website and replace the 'https://www.ajaxbrowser.com/ITHitService/' path in this file.
+    deploy them to your website and replace the path below in this file.
 -->
-    <script src="https://www.ajaxbrowser.com/ITHitService/WebDAVAJAXLibrary/ITHitWebDAVClient.js"
+    <script src="/wwwroot/js/node_modules/webdav.client/ITHitWebDAVClient.js"
         type="text/javascript"></script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
@@ -851,7 +851,7 @@
                            // IT Hit WebDAV Ajax Library protocol installers path.
                            // Used to open non-MS Office documents or if MS Office is
                            // not installed as well as to open OS File Manager.
-                           var installersFolderPath = 'https://www.ajaxbrowser.com/ITHitService/WebDAVAJAXLibrary/Plugins/';
+                           var installersFolderPath = '/wwwroot/js/node_modules/webdav.client/Plugins/';
 
                            var installerFilePath = installersFolderPath + ITHit.WebDAV.Client.DocManager.GetInstallFileName();
                            window.open(installerFilePath);
