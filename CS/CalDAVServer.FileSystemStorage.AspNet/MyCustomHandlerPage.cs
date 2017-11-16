@@ -25,6 +25,7 @@ namespace CalDAVServer.FileSystemStorage.AspNet
         {
             RegisterAsyncTask(new PageAsyncTask(GetPageDataAsync));
         }
+
         public async Task GetPageDataAsync()
         {
                 DavContext context = new DavContext(HttpContext.Current);

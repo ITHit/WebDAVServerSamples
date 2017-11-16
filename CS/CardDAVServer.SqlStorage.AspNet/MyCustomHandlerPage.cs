@@ -25,6 +25,7 @@ namespace CardDAVServer.SqlStorage.AspNet
         {
             RegisterAsyncTask(new PageAsyncTask(GetPageDataAsync));
         }
+
         public async Task GetPageDataAsync()
         {
             using (DavContext context = new DavContext(HttpContext.Current))

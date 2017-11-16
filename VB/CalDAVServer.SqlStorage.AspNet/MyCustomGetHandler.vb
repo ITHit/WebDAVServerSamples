@@ -95,9 +95,9 @@ Friend Class MyCustomGetHandler
                 Await Task.Factory.FromAsync(AddressOf page.BeginProcessRequest, AddressOf page.EndProcessRequest, HttpContext.Current, Nothing)
             End If
         ElseIf context.Request.RawUrl.StartsWith("/AjaxFileBrowser/") OrElse context.Request.RawUrl.StartsWith("/wwwroot/") Then
-            ' The "/AjaxFileBrowser/" is not a WebDAV folder. It can be used to store client script files, 
+            ' The "/AjaxFileBrowser/" and "/wwwroot/" are not a WebDAV folders. They can be used to store client script files, 
             ' images, static HTML files or any other files that does not require access via WebDAV.
-            ' Any request to the files in this folder will just serve them to client. 
+            ' Any request to the files in this folder will just serve them to the client. 
             Await context.EnsureBeforeResponseWasCalledAsync()
             Dim filePath As String = Path.Combine(htmlPath, context.Request.RawUrl.TrimStart("/"c).Replace("/"c, Path.DirectorySeparatorChar))
             ' Remove query string.
@@ -121,16 +121,15 @@ Friend Class MyCustomGetHandler
 
     ''' <summary>
     ''' Writes HTML to the output stream in case of GET request using encoding specified in Engine. 
-    ''' Writes headers only in caes of HEAD request.
+    ''' Writes headers only in case of HEAD request.
     ''' </summary>
     ''' <param name="context">Instace of <see cref="DavContextBaseAsync"/> .</param>
     ''' <param name="content">String representation of the content to write.</param>
     ''' <param name="filePath">Relative file path, which holds the content.</param>
     Private Async Function WriteFileContentAsync(context As DavContextBaseAsync, content As String, filePath As String) As Task
-        Dim contentType As String = Nothing
         Dim encoding As Encoding = context.Engine.ContentEncoding
         context.Response.ContentLength = encoding.GetByteCount(content)
-        context.Response.ContentType = $"{MimeMapping.GetMimeMapping(filePath)}; charset={encoding.WebName}"
+        context.Response.ContentType = $"{If(MimeType.GetMimeType(Path.GetExtension(filePath)), "application/octet-stream")}; charset={encoding.WebName}"
         ' Return file content in case of GET request, in case of HEAD just return headers.
         If context.Request.HttpMethod = "GET" Then
             Using writer = New StreamWriter(context.Response.OutputStream, encoding)

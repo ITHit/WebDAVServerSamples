@@ -24,6 +24,7 @@ namespace WebDAVServer.FileSystemStorage.AspNet
         {
             RegisterAsyncTask(new PageAsyncTask(GetPageDataAsync));
         }
+
         public async Task GetPageDataAsync()
         {
         }

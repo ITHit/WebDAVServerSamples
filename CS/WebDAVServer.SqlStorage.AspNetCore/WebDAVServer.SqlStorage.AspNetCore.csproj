@@ -15,12 +15,33 @@
     <None Remove="MyCustomHandlerPage.html" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="AjaxFileBrowser\AjaxFileBrowser.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AjaxFileBrowser\AjaxIntegrationTests.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="MyCustomHandlerPage.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\ITHitWebDAVClient.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Plugins\ITHitEditDocumentOpener.deb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Plugins\ITHitEditDocumentOpener.msi">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Plugins\ITHitEditDocumentOpener.pkg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Plugins\ITHitEditDocumentOpener.rpm">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="ITHit.WebDAV.Server.Core" Version="6.0.3896-Beta" />
+    <PackageReference Include="ITHit.WebDAV.Server.Core" Version="6.0.4012" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="1.0.2" />

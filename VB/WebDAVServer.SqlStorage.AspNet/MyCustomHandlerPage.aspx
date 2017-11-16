@@ -728,6 +728,10 @@
 
             var WebDAVController = function () {
                 this.CurrentFolder = null;
+                // In case of a trial version: license is not required. The product will stop working when your trial period expires.
+                // In case of a Subscribtion License: set your license ID before using any product functions.
+                // In case of a Perpetual License: download a non-trial version in the product download area https://www.webdavsystem.com/ajax/download/. License is not required.
+                // ITHit.WebDAV.Client.LicenseId = 'XXXXXXXX-XXXX-XXXX-XXXXXXXXXXXX';
                 this.WebDavSession = new ITHit.WebDAV.Client.WebDavSession();
                 this.SnippetPropertyName = new ITHit.WebDAV.Client.PropertyName('snippet', 'ithit');
             };
