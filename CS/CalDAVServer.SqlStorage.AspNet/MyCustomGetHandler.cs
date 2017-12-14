@@ -75,6 +75,8 @@ namespace CalDAVServer.SqlStorage.AspNet
         /// <see cref="DavContextBaseAsync.GetHierarchyItemAsync"/> for this request.</param>
         public async Task ProcessRequestAsync(DavContextBaseAsync context, IHierarchyItemAsync item)
         {
+            string urlPath = context.Request.RawUrl.Substring(context.Request.ApplicationPath.TrimEnd('/').Length);
+
             if (item is IItemCollectionAsync)
             {
                 // In case of GET requests to WebDAV folders we serve a web page to display 
@@ -104,14 +106,14 @@ namespace CalDAVServer.SqlStorage.AspNet
                     await Task.Factory.FromAsync(page.BeginProcessRequest, page.EndProcessRequest, HttpContext.Current, null);
                 }
             }
-            else if (context.Request.RawUrl.StartsWith("/AjaxFileBrowser/") || context.Request.RawUrl.StartsWith("/wwwroot/"))
+            else if (urlPath.StartsWith("/AjaxFileBrowser/") || urlPath.StartsWith("/wwwroot/"))
             {
                 // The "/AjaxFileBrowser/" and "/wwwroot/" are not a WebDAV folders. They can be used to store client script files, 
                 // images, static HTML files or any other files that does not require access via WebDAV.
                 // Any request to the files in this folder will just serve them to the client. 
 
                 await context.EnsureBeforeResponseWasCalledAsync();
-                string filePath = Path.Combine(htmlPath, context.Request.RawUrl.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+                string filePath = Path.Combine(htmlPath, urlPath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
 
                 // Remove query string.
                 int queryIndex = filePath.LastIndexOf('?');
@@ -148,7 +150,7 @@ namespace CalDAVServer.SqlStorage.AspNet
         {
             Encoding encoding = context.Engine.ContentEncoding; // UTF-8 by default
             context.Response.ContentLength = encoding.GetByteCount(content);     
-            context.Response.ContentType = $"{MimeType.GetMimeType(Path.GetExtension(filePath)) ?? "application/octet-stream"}; charset={encoding.WebName}";
+            context.Response.ContentType = string.Format("{0}; charset={1}", MimeType.GetMimeType(Path.GetExtension(filePath)) ?? "application/octet-stream", encoding.WebName);
 
             // Return file content in case of GET request, in case of HEAD just return headers.
             if (context.Request.HttpMethod == "GET")

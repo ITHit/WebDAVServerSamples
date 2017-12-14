@@ -21,6 +21,7 @@
     <Content Include="AjaxFileBrowser\AjaxIntegrationTests.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="DB.sql" />
     <Content Include="MyCustomHandlerPage.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -41,7 +42,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="ITHit.WebDAV.Server.Core" Version="6.0.4012" />
+    <PackageReference Include="ITHit.WebDAV.Server.Core" Version="6.0.4108" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="1.0.2" />

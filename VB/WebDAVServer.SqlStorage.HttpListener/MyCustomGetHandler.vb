@@ -71,6 +71,7 @@ Friend Class MyCustomGetHandler
     ''' <param name="item">Instance of <see cref="IHierarchyItemAsync"/>  which was returned by
     ''' <see cref="DavContextBaseAsync.GetHierarchyItemAsync"/>  for this request.</param>
     Public Async Function ProcessRequestAsync(context As DavContextBaseAsync, item As IHierarchyItemAsync) As Task Implements IMethodHandlerAsync.ProcessRequestAsync
+        Dim urlPath As String = context.Request.RawUrl.Substring(context.Request.ApplicationPath.TrimEnd("/"c).Length)
         If TypeOf item Is IItemCollectionAsync Then
             ' In case of GET requests to WebDAV folders we serve a web page to display 
             ' any information about this server and how to use it.
@@ -85,12 +86,12 @@ Friend Class MyCustomGetHandler
                                    GetType(DavEngineAsync).GetTypeInfo().Assembly.GetName().Version.ToString())
                 Await WriteFileContentAsync(context, html, htmlName)
             End Using
-        ElseIf context.Request.RawUrl.StartsWith("/AjaxFileBrowser/") OrElse context.Request.RawUrl.StartsWith("/wwwroot/") Then
+        ElseIf urlPath.StartsWith("/AjaxFileBrowser/") OrElse urlPath.StartsWith("/wwwroot/") Then
             ' The "/AjaxFileBrowser/" and "/wwwroot/" are not a WebDAV folders. They can be used to store client script files, 
             ' images, static HTML files or any other files that does not require access via WebDAV.
             ' Any request to the files in this folder will just serve them to the client. 
             Await context.EnsureBeforeResponseWasCalledAsync()
-            Dim filePath As String = Path.Combine(htmlPath, context.Request.RawUrl.TrimStart("/"c).Replace("/"c, Path.DirectorySeparatorChar))
+            Dim filePath As String = Path.Combine(htmlPath, urlPath.TrimStart("/"c).Replace("/"c, Path.DirectorySeparatorChar))
             ' Remove query string.
             Dim queryIndex As Integer = filePath.LastIndexOf("?"c)
             If queryIndex > -1 Then
@@ -120,7 +121,7 @@ Friend Class MyCustomGetHandler
     Private Async Function WriteFileContentAsync(context As DavContextBaseAsync, content As String, filePath As String) As Task
         Dim encoding As Encoding = context.Engine.ContentEncoding
         context.Response.ContentLength = encoding.GetByteCount(content)
-        context.Response.ContentType = $"{If(MimeType.GetMimeType(Path.GetExtension(filePath)), "application/octet-stream")}; charset={encoding.WebName}"
+        context.Response.ContentType = String.Format("{0}; charset={1}", If(MimeType.GetMimeType(Path.GetExtension(filePath)), "application/octet-stream"), encoding.WebName)
         ' Return file content in case of GET request, in case of HEAD just return headers.
         If context.Request.HttpMethod = "GET" Then
             Using writer = New StreamWriter(context.Response.OutputStream, encoding)
