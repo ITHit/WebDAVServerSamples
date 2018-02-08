@@ -87,7 +87,7 @@ Friend Class MyCustomGetHandler
                 Await WriteFileContentAsync(context, html, htmlName)
             End Using
         ElseIf urlPath.StartsWith("/AjaxFileBrowser/") OrElse urlPath.StartsWith("/wwwroot/") Then
-            ' The "/AjaxFileBrowser/" and "/wwwroot/" are not a WebDAV folders. They can be used to store client script files, 
+            ' The "/AjaxFileBrowser/" are not a WebDAV folders. They can be used to store client script files, 
             ' images, static HTML files or any other files that does not require access via WebDAV.
             ' Any request to the files in this folder will just serve them to the client. 
             Await context.EnsureBeforeResponseWasCalledAsync()
@@ -102,10 +102,15 @@ Friend Class MyCustomGetHandler
                 Throw New DavException("File not found: " & filePath, DavStatus.NOT_FOUND)
             End If
 
-            Using reader As TextReader = File.OpenText(filePath)
-                Dim html As String = Await reader.ReadToEndAsync()
-                Await WriteFileContentAsync(context, html, filePath)
-            End Using
+            Dim encoding As Encoding = context.Engine.ContentEncoding
+            context.Response.ContentType = String.Format("{0}; charset={1}", If(MimeType.GetMimeType(Path.GetExtension(filePath)), "application/octet-stream"), encoding.WebName)
+            ' Return file content in case of GET request, in case of HEAD just return headers.
+            If context.Request.HttpMethod = "GET" Then
+                Using fileStream As FileStream = File.OpenRead(filePath)
+                    context.Response.ContentLength = fileStream.Length
+                    Await fileStream.CopyToAsync(context.Response.OutputStream)
+                End Using
+            End If
         Else
             Await OriginalHandler.ProcessRequestAsync(context, item)
         End If

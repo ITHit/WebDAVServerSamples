@@ -56,14 +56,21 @@ Public Class WebSocketsHttpModule
         ' Adding client to connected clients dictionary.
         Dim clientId As Guid = socketService.AddClient(client)
         Dim buffer As Byte() = New Byte(4095) {}
-        Dim result As WebSocketReceiveResult = Await client.ReceiveAsync(New ArraySegment(Of Byte)(buffer), CancellationToken.None)
-        While Not result.CloseStatus.HasValue
-            ' Must receive client results to update client state and detect disconnecting.
-            result = Await client.ReceiveAsync(New ArraySegment(Of Byte)(buffer), CancellationToken.None)
+        Dim result As WebSocketReceiveResult = Nothing
+        While client.State = WebSocketState.Open
+            Try
+                ' Must receive client results.
+                result = Await client.ReceiveAsync(New ArraySegment(Of Byte)(buffer), CancellationToken.None)
+            Catch __unusedWebSocketException1__ As WebSocketException
+                Exit While
+            End Try
+
+            If result.MessageType = WebSocketMessageType.Close Then
+                Await client.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None)
+            End If
         End While
 
         ' Remove client from connected clients dictionary after disconnecting.
         socketService.RemoveClient(clientId)
-        Await client.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None)
     End Function
 End Class

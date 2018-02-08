@@ -96,7 +96,7 @@ namespace WebDAVServer.SqlStorage.HttpListener
             }
             else if (urlPath.StartsWith("/AjaxFileBrowser/") || urlPath.StartsWith("/wwwroot/"))
             {
-                // The "/AjaxFileBrowser/" and "/wwwroot/" are not a WebDAV folders. They can be used to store client script files, 
+                // The "/AjaxFileBrowser/" are not a WebDAV folders. They can be used to store client script files, 
                 // images, static HTML files or any other files that does not require access via WebDAV.
                 // Any request to the files in this folder will just serve them to the client. 
 
@@ -115,10 +115,17 @@ namespace WebDAVServer.SqlStorage.HttpListener
                     throw new DavException("File not found: " + filePath, DavStatus.NOT_FOUND);
                 }
 
-                using (TextReader reader = File.OpenText(filePath))
+                Encoding encoding = context.Engine.ContentEncoding; // UTF-8 by default
+                context.Response.ContentType = string.Format("{0}; charset={1}", MimeType.GetMimeType(Path.GetExtension(filePath)) ?? "application/octet-stream", encoding.WebName);
+
+                // Return file content in case of GET request, in case of HEAD just return headers.
+                if (context.Request.HttpMethod == "GET")
                 {
-                    string html = await reader.ReadToEndAsync();
-                    await WriteFileContentAsync(context, html, filePath);
+                    using (FileStream fileStream = File.OpenRead(filePath))
+                    {
+                        context.Response.ContentLength = fileStream.Length;
+                        await fileStream.CopyToAsync(context.Response.OutputStream);
+                    }
                 }
             }
             else

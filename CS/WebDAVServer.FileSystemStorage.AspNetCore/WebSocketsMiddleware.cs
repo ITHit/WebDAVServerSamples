@@ -52,18 +52,28 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
                 Guid clientId = socketService.AddClient(client);
 
                 byte[] buffer = new byte[1024 * 4];
-                WebSocketReceiveResult result = await client.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+                WebSocketReceiveResult result = null;
 
-                while (!result.CloseStatus.HasValue)
+                while (client.State == WebSocketState.Open)
                 {
-                    // Must receive client results to update client state and detect disconnecting.
-                    result = await client.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+                    try
+                    {
+                        // Must receive client results.
+                        result = await client.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+                    }
+                    catch (WebSocketException)
+                    {
+                        break;
+                    }
+
+                    if (result.MessageType == WebSocketMessageType.Close)
+                    {
+                        await client.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
+                    }
                 }
 
                 // Remove client from connected clients dictionary after disconnecting.
                 socketService.RemoveClient(clientId);
-
-                await client.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
             }
             else
             {

@@ -87,47 +87,8 @@ Friend Class MyCustomGetHandler
                 ' To call APM method (Begin/End) from TAP method (Task/async/await) the Task.FromAsync must be used.
                 Await Task.Factory.FromAsync(AddressOf page.BeginProcessRequest, AddressOf page.EndProcessRequest, HttpContext.Current, Nothing)
             End If
-        ElseIf urlPath.StartsWith("/AjaxFileBrowser/") OrElse urlPath.StartsWith("/wwwroot/") Then
-            ' The "/AjaxFileBrowser/" and "/wwwroot/" are not a WebDAV folders. They can be used to store client script files, 
-            ' images, static HTML files or any other files that does not require access via WebDAV.
-            ' Any request to the files in this folder will just serve them to the client. 
-            Await context.EnsureBeforeResponseWasCalledAsync()
-            Dim filePath As String = Path.Combine(htmlPath, urlPath.TrimStart("/"c).Replace("/"c, Path.DirectorySeparatorChar))
-            ' Remove query string.
-            Dim queryIndex As Integer = filePath.LastIndexOf("?"c)
-            If queryIndex > -1 Then
-                filePath = filePath.Remove(queryIndex)
-            End If
-
-            If Not File.Exists(filePath) Then
-                Throw New DavException("File not found: " & filePath, DavStatus.NOT_FOUND)
-            End If
-
-            Using reader As TextReader = File.OpenText(filePath)
-                Dim html As String = Await reader.ReadToEndAsync()
-                Await WriteFileContentAsync(context, html, filePath)
-            End Using
         Else
             Await OriginalHandler.ProcessRequestAsync(context, item)
-        End If
-    End Function
-
-    ''' <summary>
-    ''' Writes HTML to the output stream in case of GET request using encoding specified in Engine. 
-    ''' Writes headers only in case of HEAD request.
-    ''' </summary>
-    ''' <param name="context">Instace of <see cref="DavContextBaseAsync"/> .</param>
-    ''' <param name="content">String representation of the content to write.</param>
-    ''' <param name="filePath">Relative file path, which holds the content.</param>
-    Private Async Function WriteFileContentAsync(context As DavContextBaseAsync, content As String, filePath As String) As Task
-        Dim encoding As Encoding = context.Engine.ContentEncoding
-        context.Response.ContentLength = encoding.GetByteCount(content)
-        context.Response.ContentType = String.Format("{0}; charset={1}", If(MimeType.GetMimeType(Path.GetExtension(filePath)), "application/octet-stream"), encoding.WebName)
-        ' Return file content in case of GET request, in case of HEAD just return headers.
-        If context.Request.HttpMethod = "GET" Then
-            Using writer = New StreamWriter(context.Response.OutputStream, encoding)
-                Await writer.WriteAsync(content)
-            End Using
         End If
     End Function
 

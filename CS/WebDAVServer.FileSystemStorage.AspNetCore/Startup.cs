@@ -45,6 +45,8 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
+            app.UseStaticFiles();
+
             if (env.IsDevelopment())
                 app.UseDeveloperExceptionPage();
             // Basic auth requires SSL connection. To enable non - SSL connection for testing purposes read the following articles:

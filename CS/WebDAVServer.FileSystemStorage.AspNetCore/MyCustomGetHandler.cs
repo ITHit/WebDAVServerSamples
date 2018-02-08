@@ -94,33 +94,6 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
                     await WriteFileContentAsync(context, html, htmlName);
                 }
             }
-            else if (urlPath.StartsWith("/AjaxFileBrowser/") || urlPath.StartsWith("/wwwroot/"))
-            {
-                // The "/AjaxFileBrowser/" and "/wwwroot/" are not a WebDAV folders. They can be used to store client script files, 
-                // images, static HTML files or any other files that does not require access via WebDAV.
-                // Any request to the files in this folder will just serve them to the client. 
-
-                await context.EnsureBeforeResponseWasCalledAsync();
-                string filePath = Path.Combine(htmlPath, urlPath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
-
-                // Remove query string.
-                int queryIndex = filePath.LastIndexOf('?');
-                if (queryIndex > -1)
-                {
-                    filePath = filePath.Remove(queryIndex);
-                }
-
-                if (!File.Exists(filePath))
-                {
-                    throw new DavException("File not found: " + filePath, DavStatus.NOT_FOUND);
-                }
-
-                using (TextReader reader = File.OpenText(filePath))
-                {
-                    string html = await reader.ReadToEndAsync();
-                    await WriteFileContentAsync(context, html, filePath);
-                }
-            }
             else
             {
                 await OriginalHandler.ProcessRequestAsync(context, item);

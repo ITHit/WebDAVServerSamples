@@ -97,59 +97,9 @@ namespace WebDAVServer.SqlStorage.AspNet
                     await Task.Factory.FromAsync(page.BeginProcessRequest, page.EndProcessRequest, HttpContext.Current, null);
                 }
             }
-            else if (urlPath.StartsWith("/AjaxFileBrowser/") || urlPath.StartsWith("/wwwroot/"))
-            {
-                // The "/AjaxFileBrowser/" and "/wwwroot/" are not a WebDAV folders. They can be used to store client script files, 
-                // images, static HTML files or any other files that does not require access via WebDAV.
-                // Any request to the files in this folder will just serve them to the client. 
-
-                await context.EnsureBeforeResponseWasCalledAsync();
-                string filePath = Path.Combine(htmlPath, urlPath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
-
-                // Remove query string.
-                int queryIndex = filePath.LastIndexOf('?');
-                if (queryIndex > -1)
-                {
-                    filePath = filePath.Remove(queryIndex);
-                }
-
-                if (!File.Exists(filePath))
-                {
-                    throw new DavException("File not found: " + filePath, DavStatus.NOT_FOUND);
-                }
-
-                using (TextReader reader = File.OpenText(filePath))
-                {
-                    string html = await reader.ReadToEndAsync();
-                    await WriteFileContentAsync(context, html, filePath);
-                }
-            }
             else
             {
                 await OriginalHandler.ProcessRequestAsync(context, item);
-            }
-        }
-
-        /// <summary>
-        /// Writes HTML to the output stream in case of GET request using encoding specified in Engine. 
-        /// Writes headers only in case of HEAD request.
-        /// </summary>
-        /// <param name="context">Instace of <see cref="DavContextBaseAsync"/>.</param>
-        /// <param name="content">String representation of the content to write.</param>
-        /// <param name="filePath">Relative file path, which holds the content.</param>
-        private async Task WriteFileContentAsync(DavContextBaseAsync context, string content, string filePath)
-        {
-            Encoding encoding = context.Engine.ContentEncoding; // UTF-8 by default
-            context.Response.ContentLength = encoding.GetByteCount(content);     
-            context.Response.ContentType = string.Format("{0}; charset={1}", MimeType.GetMimeType(Path.GetExtension(filePath)) ?? "application/octet-stream", encoding.WebName);
-
-            // Return file content in case of GET request, in case of HEAD just return headers.
-            if (context.Request.HttpMethod == "GET")
-            {
-                using (var writer = new StreamWriter(context.Response.OutputStream, encoding))
-                {
-                    await writer.WriteAsync(content);
-                }
             }
         }
 
