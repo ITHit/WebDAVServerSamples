@@ -9,13 +9,14 @@ using ITHit.WebDAV.Server.Class1;
 using ITHit.WebDAV.Server.Class2;
 using ITHit.WebDAV.Server.Quota;
 using ITHit.WebDAV.Server.Search;
+using ITHit.WebDAV.Server.ResumableUpload;
 
 namespace WebDAVServer.SqlStorage.AspNet
 {
     /// <summary>
     /// Represents folder in webdav repository.
     /// </summary>
-    public class DavFolder : DavHierarchyItem, IFolderAsync, IQuotaAsync, ISearchAsync
+    public class DavFolder : DavHierarchyItem, IFolderAsync, IQuotaAsync, ISearchAsync, IResumableUploadBase
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="DavFolder"/> class.

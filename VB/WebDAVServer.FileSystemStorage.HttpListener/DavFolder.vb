@@ -11,13 +11,14 @@ Imports ITHit.WebDAV.Server.Acl
 Imports ITHit.WebDAV.Server.Class1
 Imports WebDAVServer.FileSystemStorage.HttpListener.ExtendedAttributes
 Imports ITHit.WebDAV.Server.Search
+Imports ITHit.WebDAV.Server.ResumableUpload
 
 ''' <summary>
 ''' Folder in WebDAV repository.
 ''' </summary>
 Public Class DavFolder
     Inherits DavHierarchyItem
-    Implements IFolderAsync, ISearchAsync
+    Implements IFolderAsync, ISearchAsync, IResumableUploadBase
 
     ''' <summary>
     ''' Windows Search Provider string.
@@ -307,7 +308,7 @@ Public Class DavFolder
     Private Shared Function HighlightKeywords(searchTerms As String, text As String) As String
         Dim exp As Regex = New Regex("\b(" & String.Join("|", searchTerms.Split(New Char() {","c, " "c}, StringSplitOptions.RemoveEmptyEntries)) & ")\b",
                                     RegexOptions.IgnoreCase Or RegexOptions.Multiline)
-        Return exp.Replace(text, "<b>$0</b>")
+        Return If(Not String.IsNullOrEmpty(text), exp.Replace(text, "<b>$0</b>"), text)
     End Function
 
     ''' <summary>

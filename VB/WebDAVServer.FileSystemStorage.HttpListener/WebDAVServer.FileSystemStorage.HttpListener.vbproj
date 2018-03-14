@@ -6,7 +6,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>CF5766F4-AE53-40D8-A6E5-E64EE05C81F1</ProjectGuid>
+    <ProjectGuid>87480818-471D-4AE3-873A-39595F9B2007</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>WebDAVServer.FileSystemStorage.HttpListener</RootNamespace>
@@ -87,6 +87,10 @@
     <Compile Include="DavFile.vb" />
     <Compile Include="DavFolder.vb" />
     <Compile Include="DavHierarchyItem.vb" />
+    <Content Include="wwwroot\css\webdav-layout.css" />
+    <Content Include="wwwroot\js\webdav-gridview.js" />
+    <Content Include="wwwroot\js\webdav-uploader.js" />
+    <Content Include="wwwroot\js\webdav-websocket.js" />
     <Content Include="wwwroot\js\node_modules\webdav.client\ITHitWebDAVClient.js" />
     <Content Include="wwwroot\js\node_modules\webdav.client\Plugins\*.*" />
     <Content Include="wwwroot\js\node_modules\webdav.client\Tests\**\*.*" />
@@ -146,10 +150,10 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="ITHit.WebDAV.Server">
-      <HintPath>..\packages\ITHit.WebDAV.Server.6.0.4185\lib\net451\ITHit.WebDAV.Server.dll</HintPath>
+      <HintPath>..\packages\ITHit.WebDAV.Server.6.1.4235\lib\net451\ITHit.WebDAV.Server.dll</HintPath>
     </Reference>
     <Reference Include="ITHit.WebDAV.Server.HttpListener">
-      <HintPath>..\packages\ITHit.WebDAV.Server.HttpListener.6.0.4185\lib\net451\ITHit.WebDAV.Server.HttpListener.dll</HintPath>
+      <HintPath>..\packages\ITHit.WebDAV.Server.HttpListener.6.1.4235\lib\net451\ITHit.WebDAV.Server.HttpListener.dll</HintPath>
     </Reference>
   </ItemGroup>
   <PropertyGroup>

@@ -13,13 +13,14 @@ using ITHit.WebDAV.Server.Acl;
 using ITHit.WebDAV.Server.Class1;
 using WebDAVServer.FileSystemStorage.HttpListener.ExtendedAttributes;
 using ITHit.WebDAV.Server.Search;
+using ITHit.WebDAV.Server.ResumableUpload;
 
 namespace WebDAVServer.FileSystemStorage.HttpListener
 {
     /// <summary>
     /// Folder in WebDAV repository.
     /// </summary>
-    public class DavFolder : DavHierarchyItem, IFolderAsync, ISearchAsync
+    public class DavFolder : DavHierarchyItem, IFolderAsync, ISearchAsync, IResumableUploadBase
     {
         /// <summary>
         /// Windows Search Provider string.
@@ -376,7 +377,7 @@ namespace WebDAVServer.FileSystemStorage.HttpListener
         {
             Regex exp = new Regex(@"\b(" + string.Join("|", searchTerms.Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)) + @")\b",
                 RegexOptions.IgnoreCase | RegexOptions.Multiline);
-            return exp.Replace(text, "<b>$0</b>");
+            return !string.IsNullOrEmpty(text) ? exp.Replace(text, "<b>$0</b>") : text;
         }
 
         /// <summary>

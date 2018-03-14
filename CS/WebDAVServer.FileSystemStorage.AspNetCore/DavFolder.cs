@@ -12,13 +12,14 @@ using ITHit.WebDAV.Server.Class1;
 using ITHit.WebDAV.Server.Quota;
 using WebDAVServer.FileSystemStorage.AspNetCore.ExtendedAttributes;
 using ITHit.WebDAV.Server.Search;
+using ITHit.WebDAV.Server.ResumableUpload;
 
 namespace WebDAVServer.FileSystemStorage.AspNetCore
 {
     /// <summary>
     /// Folder in WebDAV repository.
     /// </summary>
-    public class DavFolder : DavHierarchyItem, IFolderAsync, IQuotaAsync, ISearchAsync
+    public class DavFolder : DavHierarchyItem, IFolderAsync, IQuotaAsync, ISearchAsync, IResumableUploadBase
     {
 
         /// <summary>

@@ -6,7 +6,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>934667E6-BD5B-4D48-A22B-E0FDD9303E7D</ProjectGuid>
+    <ProjectGuid>C3316FE7-BF22-4F3B-B2F3-7E47C4ADC92C</ProjectGuid>
     <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{f184b08f-c81c-45f6-a57f-5abd9991f28f}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
@@ -81,6 +81,10 @@
     <Compile Include="DavFolder.vb" />
     <Compile Include="DavHierarchyItem.vb" />
     <Compile Include="ItemType.vb" />
+    <Content Include="wwwroot\css\webdav-layout.css" />
+    <Content Include="wwwroot\js\webdav-gridview.js" />
+    <Content Include="wwwroot\js\webdav-uploader.js" />
+    <Content Include="wwwroot\js\webdav-websocket.js" />
     <Content Include="wwwroot\js\node_modules\webdav.client\ITHitWebDAVClient.js" />
     <Content Include="wwwroot\js\node_modules\webdav.client\Plugins\*.*" />
     <Content Include="wwwroot\js\node_modules\webdav.client\Tests\**\*.*" />
@@ -102,10 +106,10 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="ITHit.WebDAV.Server">
-      <HintPath>..\packages\ITHit.WebDAV.Server.6.0.4185\lib\net451\ITHit.WebDAV.Server.dll</HintPath>
+      <HintPath>..\packages\ITHit.WebDAV.Server.6.1.4235\lib\net451\ITHit.WebDAV.Server.dll</HintPath>
     </Reference>
     <Reference Include="ITHit.WebDAV.Server.Web">
-      <HintPath>..\packages\ITHit.WebDAV.Server.Web.6.0.4185\lib\net451\ITHit.WebDAV.Server.Web.dll</HintPath>
+      <HintPath>..\packages\ITHit.WebDAV.Server.Web.6.1.4235\lib\net451\ITHit.WebDAV.Server.Web.dll</HintPath>
     </Reference>
   </ItemGroup>
   <PropertyGroup>
@@ -123,7 +127,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>9658</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:21097/</IISUrl>
+          <IISUrl>http://localhost:26829/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

@@ -7,13 +7,14 @@ using ITHit.WebDAV.Server;
 using ITHit.WebDAV.Server.Class1;
 using ITHit.WebDAV.Server.Class2;
 using ITHit.WebDAV.Server.Search;
+using ITHit.WebDAV.Server.ResumableUpload;
 
 namespace WebDAVServer.SqlStorage.HttpListener
 {
     /// <summary>
     /// Represents folder in webdav repository.
     /// </summary>
-    public class DavFolder : DavHierarchyItem, IFolderAsync, ISearchAsync
+    public class DavFolder : DavHierarchyItem, IFolderAsync, ISearchAsync, IResumableUploadBase
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="DavFolder"/> class.

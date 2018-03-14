@@ -8,13 +8,14 @@ Imports ITHit.WebDAV.Server.Class1
 Imports ITHit.WebDAV.Server.Class2
 Imports ITHit.WebDAV.Server.Quota
 Imports ITHit.WebDAV.Server.Search
+Imports ITHit.WebDAV.Server.ResumableUpload
 
 ''' <summary>
 ''' Represents folder in webdav repository.
 ''' </summary>
 Public Class DavFolder
     Inherits DavHierarchyItem
-    Implements IFolderAsync, IQuotaAsync, ISearchAsync
+    Implements IFolderAsync, IQuotaAsync, ISearchAsync, IResumableUploadBase
 
     ''' <summary>
     ''' Initializes a new instance of the <see cref="DavFolder"/>  class.
