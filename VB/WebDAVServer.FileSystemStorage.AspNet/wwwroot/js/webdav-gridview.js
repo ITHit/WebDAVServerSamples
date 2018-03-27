@@ -34,7 +34,7 @@
                 ' ' +
                 (oDate.getHours() > 12 ? 'PM' : 'AM');
         },
-        
+
 
         /**
          *
@@ -154,7 +154,7 @@
          **/
         _RenderActions: function (oItem) {
             var actions = [];
-            var isDavProtocoSupported = ITHit.WebDAV.Client.DocManager.IsDavProtocoSupported();
+            var isDavProtocolSupported = ITHit.WebDAV.Client.DocManager.IsDavProtocolSupported();
             var isMicrosoftOfficeDocument = ITHit.WebDAV.Client.DocManager.IsMicrosoftOfficeDocument(oItem.Href);
 
             if (oItem.IsFolder()) {
@@ -163,20 +163,20 @@
                     attr('title', 'Open this folder in Operating System file manager.').
                     on('click', function () {
                         oWebDAV.OpenFolderInOsFileManager(oItem.Href);
-                    }).prop("disabled", !isDavProtocoSupported));
+                    }).prop("disabled", !isDavProtocolSupported));
             } else {
                 actions.push($('<button class="btn btn-transparent"/>').
                     html('<span class="glyphicon glyphicon-edit"></span> <span class="hidden-xs">Edit</span>').
                     attr('title', 'Edit document in associated application.').
                     on('click', function () {
                         oWebDAV.EditDoc(oItem.Href);
-                    }).prop("disabled", !isDavProtocoSupported && !isMicrosoftOfficeDocument));
+                    }).prop("disabled", !isDavProtocolSupported && !isMicrosoftOfficeDocument));
                 actions.push($('<button class="btn btn-transparent"/>')
                     .html('<span class="glyphicon glyphicon-modal-window"></span>')
                     .attr('title', 'Select application to open this file with.')
                     .on('click', function () {
                         oWebDAV.OpenDocWith(oItem.Href);
-                    }).prop("disabled", !isDavProtocoSupported));
+                    }).prop("disabled", !isDavProtocolSupported));
             }
 
             actions.push($('<button class="btn btn-transparent"/>')
@@ -415,7 +415,7 @@
             }
             return false;
         });
-    }   
+    }
 
     var WebDAVController = function () {
         this.CurrentFolder = null;
@@ -496,7 +496,8 @@
          * @param {string} sDocumentUrl Must be full path including domain name: https://webdavserver.com/path/file.ext
          */
         EditDoc: function (sDocumentUrl) {
-            ITHit.WebDAV.Client.DocManager.EditDocument(sDocumentUrl, this.GetMountUrl(), this._ProtocolInstallMessage.bind(this));
+            ITHit.WebDAV.Client.DocManager.DavProtocolEditDocument(sDocumentUrl, this.GetMountUrl(), this._ProtocolInstallMessage.bind(this), null, webDavSettings.EditDocAuth.SearchIn,
+                webDavSettings.EditDocAuth.CookieNames, webDavSettings.EditDocAuth.LoginUrl);
         },
 
         /**
@@ -504,7 +505,8 @@
            * @param {string} sDocumentUrl Must be full path including domain name: https://webdavserver.com/path/file.ext
            */
         OpenDocWith: function (sDocumentUrl) {
-            ITHit.WebDAV.Client.DocManager.DavProtocolEditDocument(sDocumentUrl, this.GetMountUrl(), this._ProtocolInstallMessage.bind(this), null, null, null, null, 'OpenWith');
+            ITHit.WebDAV.Client.DocManager.DavProtocolEditDocument(sDocumentUrl, this.GetMountUrl(), this._ProtocolInstallMessage.bind(this), null, webDavSettings.EditDocAuth.SearchIn,
+                webDavSettings.EditDocAuth.CookieNames, webDavSettings.EditDocAuth.LoginUrl, 'OpenWith');
         },
 
         /**
@@ -529,7 +531,8 @@
          * @param {string} sFolderUrl Must be full path including domain name: https://webdavserver.com/path/
          */
         OpenFolderInOsFileManager: function (sFolderUrl) {
-            ITHit.WebDAV.Client.DocManager.OpenFolderInOsFileManager(sFolderUrl, this.GetMountUrl(), this._ProtocolInstallMessage.bind(this));
+            ITHit.WebDAV.Client.DocManager.OpenFolderInOsFileManager(sFolderUrl, this.GetMountUrl(), this._ProtocolInstallMessage.bind(this), null, webDavSettings.EditDocAuth.SearchIn,
+                webDavSettings.EditDocAuth.CookieNames, webDavSettings.EditDocAuth.LoginUrl);
         },
 
         /**
@@ -556,14 +559,13 @@
          * @private
          */
         _ProtocolInstallMessage: function () {
-            if (ITHit.WebDAV.Client.DocManager.IsDavProtocoSupported()) {
+            if (ITHit.WebDAV.Client.DocManager.IsDavProtocolSupported()) {
                 oConfirmModal.Confirm('This action requires a protocol installation. Select OK to download the protocol installer.', function () {
                     // IT Hit WebDAV Ajax Library protocol installers path.
                     // Used to open non-MS Office documents or if MS Office is
-                    // not installed as well as to open OS File Manager.
-                    var installersFolderPath = webDavSettings.ApplicationPath + '/wwwroot/node_modules/webdav.client/Plugins/';
+                    // not installed as well as to open OS File Manager.      
 
-                    var installerFilePath = installersFolderPath + ITHit.WebDAV.Client.DocManager.GetInstallFileName();
+                    var installerFilePath = webDavSettings.ApplicationProtocolsPath + ITHit.WebDAV.Client.DocManager.GetInstallFileName();
                     window.open(installerFilePath);
                 });
             }
@@ -575,14 +577,14 @@
     var oSearchForm = new SearchFormView('.ithit-search-container');
     var oBreadcrumbs = new BreadcrumbsView('.ithit-breadcrumb-container');
     var oHistoryApi = new HistoryApiController('.ithit-grid-container, .ithit-breadcrumb-container');
-    var oWebDAV = window.WebDAVController = new WebDAVController();  
+    var oWebDAV = window.WebDAVController = new WebDAVController();
     var oConfirmModal = new ConfirmModal('#ConfirmModal');
     var oCreateFolderModal = new CreateFolderModal('#CreateFolderModal', '.btn-create-folder');
     // List files on a WebDAV server using WebDAV Ajax Library
     oWebDAV.NavigateFolder(location.href);
 
     // Set Ajax lib version
-    $('.ithit-version-value').text(ITHit.WebDAV.Client.WebDavSession.Version);
+    $('.ithit-version-value').text('v' + ITHit.WebDAV.Client.WebDavSession.Version + ' (Protocol v' + ITHit.WebDAV.Client.WebDavSession.ProtocolVersion + ')');
     $('.ithit-current-folder-value').text(oWebDAV.GetMountUrl());
 
 })();

@@ -162,7 +162,7 @@
                 <h3>Client Version</h3>
 
                 <p>                 
-                    IT Hit WebDAV AJAX Library version: <span class="ithit-version-value"></span>
+                    IT Hit WebDAV AJAX Library: <span class="ithit-version-value"></span>
                 </p>
 
                 <br />
@@ -172,7 +172,13 @@
     </div>
     <script>
         var webDavSettings = {
-            ApplicationPath: '<%=Request.ApplicationPath.TrimEnd('/')%>' 
+            ApplicationPath: '<%=Request.ApplicationPath.TrimEnd('/')%>',
+            ApplicationProtocolsPath: '<%=Request.ApplicationPath.TrimEnd('/')%>/wwwroot/js/node_modules/webdav.client/Plugins/',
+        EditDocAuth: {                                  
+                    CookieNames: null,                                 // Coma separated list of cookie names to search for.
+                    SearchIn: null,                                 // Web browsers to search and copy permanent cookies from: 'сurrent', 'none', 'all'.
+                    LoginUrl: null                                     // Login URL to redirect to in case any cookies specified in CookieNames parameter are not found.
+           }
         }
 
         function OpenAjaxFileBrowserWindow() {

@@ -5,9 +5,6 @@
     <AssemblyName>WebDAVServer.SqlStorage.AspNetCore</AssemblyName>
     <TargetFramework>netcoreapp2.0</TargetFramework>
   </PropertyGroup>
-  <PropertyGroup>
-    <PackageTargetFallback>$(PackageTargetFallback);portable-net45+win8+wp8+wpa81;</PackageTargetFallback>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <NoWarn>1701;1702;1705;1998</NoWarn>
   </PropertyGroup>
@@ -41,7 +38,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="ITHit.WebDAV.Server.Core" Version="6.1.4235" />
+    <PackageReference Include="ITHit.WebDAV.Server.Core" Version="6.1.4279" />
   </ItemGroup>  
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.0.1" />
