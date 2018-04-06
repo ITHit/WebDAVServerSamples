@@ -170,10 +170,11 @@
         var webDavSettings = {
             ApplicationPath: '_webDavServerRoot_',
             ApplicationProtocolsPath: '_webDavServerRoot_/wwwroot/js/node_modules/webdav.client/Plugins/',
-        EditDocAuth: {                                  
-                    CookieNames: null,                                 // Coma separated list of cookie names to search for.
-                    SearchIn: null,                                 // Web browsers to search and copy permanent cookies from: 'сurrent', 'none', 'all'.
-                    LoginUrl: null                                     // Login URL to redirect to in case any cookies specified in CookieNames parameter are not found.
+			EditDocAuth: {
+			    Authentication: 'anonymous',                       // Authentication to use when opening documents for editing: 'anonymous', 'challenge', 'cookies'
+                CookieNames: null,                                 // Coma separated list of cookie names to search for.
+                SearchIn: null,                                    // Web browsers to search and copy permanent cookies from: 'current', 'none', 'all'.
+                LoginUrl: null                                     // Login URL to redirect to in case any cookies specified in CookieNames parameter are not found.
            }
         }
 

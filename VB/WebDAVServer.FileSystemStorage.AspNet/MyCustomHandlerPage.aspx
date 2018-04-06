@@ -1,5 +1,4 @@
 
-
 <%@ Page Async="true" Title="WebDAV" Language="C#" AutoEventWireup="true" Inherits="WebDAVServer.FileSystemStorage.AspNet.MyCustomHandlerPage" %>
 
 <%@ Import Namespace="ITHit.WebDAV.Server.Class1" %>
@@ -174,10 +173,11 @@
         var webDavSettings = {
             ApplicationPath: '<%=Request.ApplicationPath.TrimEnd('/')%>',
             ApplicationProtocolsPath: '<%=Request.ApplicationPath.TrimEnd('/')%>/wwwroot/js/node_modules/webdav.client/Plugins/',
-        EditDocAuth: {                                  
-                    CookieNames: null,                                 // Coma separated list of cookie names to search for.
-                    SearchIn: null,                                 // Web browsers to search and copy permanent cookies from: 'сurrent', 'none', 'all'.
-                    LoginUrl: null                                     // Login URL to redirect to in case any cookies specified in CookieNames parameter are not found.
+			EditDocAuth: {
+			    Authentication: 'anonymous',                       // Authentication to use when opening documents for editing: 'anonymous', 'challenge', 'cookies'
+                CookieNames: null,                                 // Coma separated list of cookie names to search for.
+                SearchIn: null,                                    // Web browsers to search and copy permanent cookies from: 'current', 'none', 'all'.
+                LoginUrl: null                                     // Login URL to redirect to in case any cookies specified in CookieNames parameter are not found.
            }
         }
 

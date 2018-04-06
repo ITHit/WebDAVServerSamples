@@ -1,0 +1,207 @@
+
+<%@ Page Async="true" Title="WebDAV" Language="C#" AutoEventWireup="true" Inherits="WebDAVServer.FileSystemStorage.AspNet.Cookies.MyCustomHandlerPage" %>
+
+<%@ Import Namespace="ITHit.WebDAV.Server.Class1" %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>IT Hit WebDAV Server Engine</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <link href="<%=Request.ApplicationPath.TrimEnd('/')%>/wwwroot/css/webdav-layout.css" rel="stylesheet"/>
+</head>
+<body>
+    <nav class="navbar navbar-inverse navbar-static-top">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <h1>
+                    IT Hit WebDAV Server Engine v<%=System.Reflection.Assembly.GetAssembly(typeof(ITHit.WebDAV.Server.DavEngineAsync)).GetName().Version%>
+                </h1>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+           <div class="col-md-8 col-sm-12">
+                <ul class="breadcrumb ithit-breadcrumb-container"></ul>
+                <div class="ithit-search-container">
+                    <input class="form-control" type="text" />
+                    <button type="button" class="btn btn-primary">
+                        <span class="glyphicon glyphicon-search visible-xs"></span>
+                        <span class="hidden-xs">Search</span>
+                    </button>
+                </div>
+                <div id="ithit-dropzone" class="">
+                    <div class="text-center boxtitle">
+                        Drop files or folders to upload
+                    </div>
+                </div>
+                <input id="ithit-hidden-input" class="hidden" type="file" multiple>
+                <div class="table-responsive">
+                    <table class="table ithit-grid-uploads hidden">
+                        <thead>
+                            <tr>
+                                <th class="ellipsis"><span>Display Name</span></th>
+                                <th class="hidden-xs text-right">Size</th>
+                                <th class="hidden-xs text-right">Uploaded</th>
+                                <th class="hidden-xs text-right">%</th>
+                                <th class="hidden-xs hidden-sm custom-hidden text-right">Elapsed</th>
+                                <th class="text-right">Remaining</th>
+                                <th class="hidden-xs hidden-sm text-right">Speed</th>
+                                <th class="hidden-xs hidden-sm custom-hidden">State</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <button class="btn btn-primary btn-create-folder">Create Folder</button>
+                <div class="table-responsive">
+                    <table class="table table-hover ithit-grid-container">
+                        <thead>
+                            <tr>
+                                <th class="hidden-xs">#</th>
+                                <th></th>
+                                <th class="ellipsis"><span>Display Name</span></th>
+                                <th class="text-right">Size</th>
+                                <th class="hidden-xs">Modified</th>
+                                <th class="column-action"></th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div id="ConfirmModal" class="modal" tabindex="-1" role="dialog" aria-labelledby="ConfirmModalLabel">
+                        <div class="modal-dialog modal-sm" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    <h4 class="modal-title" id="ConfirmModalLabel">Confirm</h4>
+                                </div>
+                                <div class="modal-body">
+                                    <p class="message"></p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-primary btn-ok">OK</button>
+                                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="CreateFolderModal" class="modal" tabindex="-1" role="dialog" aria-labelledby="CreateFolderModalLabel">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <form action="/" method="post">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        <h4 class="modal-title" id="CreateFolderModalLabel">Create Folder</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="form-group">
+                                            <input type="text" class="form-control" id="NameFolder" placeholder="Folder Name" />
+                                            <div class="alert alert-danger hidden">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="submit" class="btn btn-primary btn-submit">OK</button>
+                                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                                    </div>
+                                </form>
+                            </div>
+                      </div>
+                 </div>
+            </div>
+            <div class="col-md-4 col-sm-12">
+                <p>
+                    This page is displayed when user accesses any folder on your WebDAV server in a web browser.
+                You can customize this page to your needs.
+                </p>
+
+                <p>
+                    Examine the MyCustomHandlerPage.html/aspx in your project to see how to <a href="https://www.webdavsystem.com/ajax/programming/" target="_blank">list folder content</a>
+                    and to use IT Hit WebDAV Ajax Library to <a href="https://www.webdavsystem.com/ajax/programming/opening_ms_office_docs" target="_blank">open documents for editing</a>.
+                </p>
+
+                <hr />
+
+                <h3>Test Your Server</h3>
+
+                <p>
+                    To test your WebDAV server you can run Ajax integration tests right from this page.
+                </p>
+                <a href="javascript:void(0)" onclick="OpenTestsWindow()" class="btn btn-default">Run Integration Tests</a>
+
+                <hr />
+
+                <h3>Manage Docs with Ajax File Browser</h3>
+
+                <p>
+                    Use the <a href="https://www.webdavsystem.com/ajaxfilebrowser/programming/">IT Hit Ajax File Browser</a> to browse your documents, open for editing from a web page and
+                uploading with pause/resume and auto-restore upload.
+                </p>
+                <a href="javascript:void(0)" onclick="OpenAjaxFileBrowserWindow()" class="btn btn-default">Browse Using Ajax File Browser</a>
+
+                <hr />
+
+                <h3>Connect with WebDAV Client</h3>
+
+                <p>
+                    Use a WebDAV client provided with almost any OS. Refer to <a href="https://www.webdavsystem.com/server/access">Accessing WebDAV Server</a> page for
+                detailed instructions. The button below is using <a href="https://www.webdavsystem.com/ajax/">IT Hit WebDAV Ajax Library</a> to mount WebDAV
+                folder and open the default OS file manager.
+                </p>
+                <a href="javascript:void(0)" onclick="WebDAVController && WebDAVController.OpenCurrentFolderInOsFileManager()" class="btn btn-default">Browse Using OS File Manager</a>
+                
+                <hr />
+
+                <h3>Client Version</h3>
+
+                <p>                 
+                    IT Hit WebDAV AJAX Library: <span class="ithit-version-value"></span>
+                </p>
+
+                <br />
+                <br />
+            </div>
+        </div>
+    </div>
+    <script>
+        var webDavSettings = {
+            ApplicationPath: '<%=Request.ApplicationPath.TrimEnd('/')%>',
+            ApplicationProtocolsPath: '<%=Request.ApplicationPath.TrimEnd('/')%>/wwwroot/js/node_modules/webdav.client/Plugins/',
+            EditDocAuth: {
+				Authentication: 'cookies',                           // Authentication to use when opening documents for editing: 'anonymous', 'challenge', 'cookies'
+                CookieNames: '.AspNet.ApplicationCookie',            // Coma separated list of cookie names to search for.
+                SearchIn: 'current',                                 // Web browsers to search and copy permanent cookies from: 'current', 'none', 'all'.
+                LoginUrl: '/Account/login/'                          // Login URL to redirect to in case any cookies specified in CookieNames parameter are not found.
+           }
+        }
+
+        function OpenAjaxFileBrowserWindow() {
+            window.open("<%=Request.ApplicationPath.TrimEnd('/')%>/AjaxFileBrowser/AjaxFileBrowser.aspx", "", "menubar=1,location=1,status=1,scrollbars=1,resizable=1,width=900,height=600");
+        }
+
+        function OpenTestsWindow() {
+            var width = Math.round(screen.width * 0.5);
+            var height = Math.round(screen.height * 0.8);
+            window.open("<%=Request.ApplicationPath.TrimEnd('/')%>/AjaxFileBrowser/AjaxIntegrationTests.aspx", "", "menubar=1,location=1,status=1,scrollbars=1,resizable=1,width=" + width + ",height=" + height);
+        }
+    </script>
+    <!--
+    JavaScript file required to run WebDAV Ajax library is loaded from Node.js Package Manager.
+    To load files from your website download them here: https://www.webdavsystem.com/ajax/download,
+    deploy them to your website and replace the path below in this file.
+    -->
+    <script src="<%=Request.ApplicationPath.TrimEnd('/')%>/wwwroot/js/node_modules/webdav.client/ITHitWebDAVClient.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.11.1/typeahead.jquery.min.js"></script>  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="<%=Request.ApplicationPath.TrimEnd('/')%>/wwwroot/js/webdav-gridview.js"></script>
+    <script src="<%=Request.ApplicationPath.TrimEnd('/')%>/wwwroot/js/webdav-uploader.js"></script>
+    <script src="<%=Request.ApplicationPath.TrimEnd('/')%>/wwwroot/js/webdav-websocket.js"></script>
+</body>
+</html>

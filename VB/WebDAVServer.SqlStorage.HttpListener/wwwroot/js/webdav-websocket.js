@@ -1,3 +1,4 @@
+
 if (location.protocol === "https:") {
     var socketSource = new WebSocket("wss://" + location.host);
 } else {

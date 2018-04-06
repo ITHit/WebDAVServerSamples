@@ -1,3 +1,4 @@
+
 (function () {
     var Formatters = {
 
@@ -370,9 +371,15 @@
         });
     }
     ConfirmModal.prototype = {
-        Confirm: function (message, successfulCallback) {
+        Confirm: function (htmlMessage, successfulCallback, options) {
+            var $modalDialog = this.$el.find('.modal-dialog');
             this.successfulCallback = successfulCallback;
-            this.$el.find('.message').text(message);
+            this.$el.find('.message').html(htmlMessage);
+            if (options && options.size == 'lg')
+                $modalDialog.removeClass('modal-sm');
+            else
+                $modalDialog.addClass('modal-sm');
+
             this.$el.modal('show');
         }
     }
@@ -496,8 +503,13 @@
          * @param {string} sDocumentUrl Must be full path including domain name: https://webdavserver.com/path/file.ext
          */
         EditDoc: function (sDocumentUrl) {
-            ITHit.WebDAV.Client.DocManager.DavProtocolEditDocument(sDocumentUrl, this.GetMountUrl(), this._ProtocolInstallMessage.bind(this), null, webDavSettings.EditDocAuth.SearchIn,
-                webDavSettings.EditDocAuth.CookieNames, webDavSettings.EditDocAuth.LoginUrl);
+            if (webDavSettings.EditDocAuth.Authentication.toLowerCase() == 'cookies') {
+                ITHit.WebDAV.Client.DocManager.DavProtocolEditDocument(sDocumentUrl, this.GetMountUrl(), this._ProtocolInstallMessage.bind(this), null, webDavSettings.EditDocAuth.SearchIn,
+                    webDavSettings.EditDocAuth.CookieNames, webDavSettings.EditDocAuth.LoginUrl);
+            }
+            else {
+                ITHit.WebDAV.Client.DocManager.EditDocument(sDocumentUrl, this.GetMountUrl(), this._ProtocolInstallMessage.bind(this));
+            }
         },
 
         /**
@@ -560,14 +572,19 @@
          */
         _ProtocolInstallMessage: function () {
             if (ITHit.WebDAV.Client.DocManager.IsDavProtocolSupported()) {
-                oConfirmModal.Confirm('This action requires a protocol installation. Select OK to download the protocol installer.', function () {
-                    // IT Hit WebDAV Ajax Library protocol installers path.
-                    // Used to open non-MS Office documents or if MS Office is
-                    // not installed as well as to open OS File Manager.      
+                oConfirmModal.Confirm('This action requires a protocol installation. <br/><br/>' +
+                    'Make sure a web browser extension is enabled after protocol installation.<br/>' +
+                    '<a href="https://www.webdavsystem.com/ajax/programming/open-doc-webpage/install/' +
+                    (ITHit.DetectBrowser.Browser ? ('#' + ITHit.DetectBrowser.Browser.toLowerCase()) : '') +
+                    '">How to check that the web browser extension is enabled.</a><br/><br/>' +
+                    'Select OK to download the protocol installer.', function () {
+                        // IT Hit WebDAV Ajax Library protocol installers path.
+                        // Used to open non-MS Office documents or if MS Office is
+                        // not installed as well as to open OS File Manager.      
 
-                    var installerFilePath = webDavSettings.ApplicationProtocolsPath + ITHit.WebDAV.Client.DocManager.GetInstallFileName();
-                    window.open(installerFilePath);
-                });
+                        var installerFilePath = webDavSettings.ApplicationProtocolsPath + ITHit.WebDAV.Client.DocManager.GetInstallFileName();
+                        window.open(installerFilePath);
+                    }, { size: 'lg' });
             }
         }
 
