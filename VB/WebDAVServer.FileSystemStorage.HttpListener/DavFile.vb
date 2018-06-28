@@ -247,6 +247,9 @@ Public Class DavFile
         ' Move the file.
         Try
             File.Move(fileSystemInfo.FullName, newDirPath)
+            ' Locks should not be copied, delete them.
+            Dim newFileInfo = New FileInfo(newDirPath)
+            If Await newFileInfo.HasExtendedAttributeAsync("Locks") Then Await newFileInfo.DeleteExtendedAttributeAsync("Locks")
         Catch __unusedUnauthorizedAccessException1__ As UnauthorizedAccessException
             ' Exception occurred with the item for which MoveTo was called - fail the operation.
             Dim ex As NeedPrivilegesException = New NeedPrivilegesException("Not enough privileges")

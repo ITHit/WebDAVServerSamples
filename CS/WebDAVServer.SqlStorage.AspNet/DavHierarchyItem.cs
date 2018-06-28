@@ -464,6 +464,12 @@ namespace WebDAVServer.SqlStorage.AspNet
                 "@Name", destName,
                 "@Parent", destFolder.ItemId);
 
+            command = @"DELETE FROM Lock WHERE ItemID = @ItemID";
+
+            await Context.ExecuteNonQueryAsync(
+                command,
+                "@ItemID", ItemId);
+
             await parent.UpdateModifiedAsync();
             await destFolder.UpdateModifiedAsync();
         }
@@ -600,7 +606,7 @@ namespace WebDAVServer.SqlStorage.AspNet
         /// <returns>Path to parent element.</returns>
         protected static string GetParentPath(string path)
         {
-            string parentPath = $"/{path.Trim('/')}";
+            string parentPath = string.Format("/{0}", path.Trim('/'));
             int index = parentPath.LastIndexOf("/");
             parentPath = parentPath.Substring(0, index);
             return parentPath;

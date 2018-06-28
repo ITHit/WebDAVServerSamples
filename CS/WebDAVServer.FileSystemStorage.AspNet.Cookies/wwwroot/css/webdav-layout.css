@@ -31,7 +31,6 @@
         top: 0;
         right: 0;
         width: 85px;
-        height: 34px;
     }
 
 @media (max-width: 767px) {
@@ -40,12 +39,8 @@
     }
 
     .ithit-search-container button {
-        width: 38px;
+        width: 50px;
     }
-}
-
-.ithit-breadcrumb-container {
-    height: 36px;
 }
 
 .ithit-grid-container {
@@ -72,6 +67,10 @@
             margin-right: 10px;
         }
 
+        .ithit-grid-container .column-action button span {
+            vertical-align: middle;
+        }
+
 table.ithit-grid-container > tbody > tr > td {
     vertical-align: middle;
     white-space: nowrap;
@@ -94,7 +93,7 @@ table.ithit-grid-container > tbody > tr > td {
     top: -1px;
 }
 
-.glyphicon .ithit-grid-icon-locked {
+.fas .ithit-grid-icon-locked {
     left: -4px;
     top: 3px;
     text-shadow: -1px -1px 0px #fff;
@@ -108,7 +107,6 @@ table.ithit-grid-container > tbody > tr > td {
 }
 
 .tt-suggestion .snippet, .ithit-grid-container .snippet {
-    height: 30px;
     overflow: hidden;
     font-size: 12px;
     line-height: 18px;
@@ -121,33 +119,33 @@ table.ithit-grid-container > tbody > tr > td {
     word-break: break-word;
 }
 
-.ithit-grid-container ul.breadcrumb, .tt-suggestion ul.breadcrumb {
+.ithit-grid-container ol.breadcrumb, .tt-suggestion ol.breadcrumb {
     list-style: none;
     background-color: transparent;
     padding: 0 0 0 8px;
     margin: 0;
 }
 
-.tt-suggestion ul.breadcrumb {
+.tt-suggestion ol.breadcrumb {
     padding: 0;
 }
 
-    .tt-suggestion ul.breadcrumb li:first-child, .ithit-grid-container ul.breadcrumb li:first-child {
+    .tt-suggestion ol.breadcrumb li:first-child, .ithit-grid-container ol.breadcrumb li:first-child {
         display: none;
     }
 
-    .ithit-grid-container ul.breadcrumb li, .tt-suggestion ul.breadcrumb li {
+    .ithit-grid-container ol.breadcrumb li, .tt-suggestion ol.breadcrumb li {
         display: inline-block;
-        margin-right: 5px;
     }
 
-        .ithit-grid-container ul.breadcrumb li .glyphicon, .ithit-grid-container ul.breadcrumb li:nth-of-type(2):before,
-        .tt-suggestion ul.breadcrumb li .glyphicon, .tt-suggestion ul.breadcrumb li:nth-of-type(2):before {
+        .ithit-grid-container ol.breadcrumb li .fas, .ithit-grid-container ol.breadcrumb li:nth-of-type(2):before,
+        .tt-suggestion ol.breadcrumb li .fas, .tt-suggestion ol.breadcrumb li:nth-of-type(2):before {
             display: none;
         }
 
-        .ithit-grid-container ul.breadcrumb li:before, .tt-suggestion ul.breadcrumb li:before {
-            padding: 0;
+        .ithit-grid-container ol.breadcrumb li:before, .tt-suggestion ol.breadcrumb li:before {
+            padding-right: .3rem;
+            padding-left: .3rem;
         }
 
 .tt-suggestion .snippet b, .ithit-grid-container .snippet b {
@@ -203,6 +201,10 @@ table tr.hover {
     background-color: #f5f5f5;
 }
 
+.table td, .table th {
+    padding: 0.5rem;
+}
+
 .table-responsive {
     border: none;
 }
@@ -225,16 +227,16 @@ table td.ellipsis, table th.ellipsis {
         text-overflow: ellipsis;
     }
 
-table .glyphicon {
+table .fas {
     vertical-align: middle;
     top: -3px;
 }
 
-    table .glyphicon > span {
+    table .fas > span {
         vertical-align: middle;
     }
 
-    table .glyphicon:before {
+    table .fas:before {
         font-size: 18px;
     }
 
@@ -282,9 +284,12 @@ table .glyphicon {
         width: 60px;
     }
 
-.ithit-grid-uploads td.progress {
-    padding: 0;
+.ithit-grid-uploads td.progress-container {
     border-top: none;
+    padding: 0;
+}
+
+.ithit-grid-uploads td .progress {
     background-color: transparent;
     border-radius: 0;
     height: 3px;
@@ -327,8 +332,4 @@ button.btn.btn-transparent {
 
 .alert-danger {
     margin-top: 15px;
-}
-
-.btn {
-    min-width: 70px;
 }

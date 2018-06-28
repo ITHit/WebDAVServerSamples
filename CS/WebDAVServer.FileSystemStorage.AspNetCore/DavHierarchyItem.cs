@@ -503,7 +503,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
         /// <returns>Path to parent element.</returns>
         protected static string GetParentPath(string path)
         {
-            string parentPath = $"/{path.Trim('/')}";
+            string parentPath = string.Format("/{0}", path.Trim('/'));
             int index = parentPath.LastIndexOf("/");
             parentPath = parentPath.Substring(0, index);
             return parentPath;

@@ -9,29 +9,27 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://use.fontawesome.com/releases/v5.0.10/css/all.css" rel="stylesheet">
     <link href="<%=Request.ApplicationPath.TrimEnd('/')%>/wwwroot/css/webdav-layout.css" rel="stylesheet"/>
 </head>
 <body>
-    <nav class="navbar navbar-inverse navbar-static-top">
-        <div class="container-fluid">
-            <div class="navbar-header">
-                <h1>
-                    IT Hit WebDAV Server Engine v<%=System.Reflection.Assembly.GetAssembly(typeof(ITHit.WebDAV.Server.DavEngineAsync)).GetName().Version%>
-                </h1>
-            </div>
-        </div>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark mb-4">
+        <a class="navbar-brand" href="/">
+         IT Hit WebDAV Server Engine v<%=System.Reflection.Assembly.GetAssembly(typeof(ITHit.WebDAV.Server.DavEngineAsync)).GetName().Version%>        
+        </a>
     </nav>
-
-    <div class="container-fluid">
+    <main role="main" class="container-fluid">
         <div class="row">
-           <div class="col-md-8 col-sm-12">
-                <ul class="breadcrumb ithit-breadcrumb-container"></ul>
+           <div class="col-lg-8 col-md-12">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb ithit-breadcrumb-container"></ol>
+                </nav>
                 <div class="ithit-search-container">
                     <input class="form-control" type="text" />
                     <button type="button" class="btn btn-primary">
-                        <span class="glyphicon glyphicon-search visible-xs"></span>
-                        <span class="hidden-xs">Search</span>
+                        <span class="fas fa-search d-md-none"></span>
+                        <span class="d-none d-md-block">Search</span>
                     </button>
                 </div>
                 <div id="ithit-dropzone" class="">
@@ -39,19 +37,19 @@
                         Drop files or folders to upload
                     </div>
                 </div>
-                <input id="ithit-hidden-input" class="hidden" type="file" multiple>
+                <input id="ithit-hidden-input" class="d-none" type="file" multiple>
                 <div class="table-responsive">
-                    <table class="table ithit-grid-uploads hidden">
+                    <table class="table ithit-grid-uploads d-none">
                         <thead>
                             <tr>
-                                <th class="ellipsis"><span>Display Name</span></th>
-                                <th class="hidden-xs text-right">Size</th>
-                                <th class="hidden-xs text-right">Uploaded</th>
-                                <th class="hidden-xs text-right">%</th>
-                                <th class="hidden-xs hidden-sm custom-hidden text-right">Elapsed</th>
-                                <th class="text-right">Remaining</th>
-                                <th class="hidden-xs hidden-sm text-right">Speed</th>
-                                <th class="hidden-xs hidden-sm custom-hidden">State</th>
+                                <th class="ellipsis" scope="col"><span>Display Name</span></th>
+                                <th class="d-none d-sm-table-cell text-right" scope="col">Size</th>
+                                <th class="d-none d-sm-table-cell text-right" scope="col">Uploaded</th>
+                                <th class="d-none d-sm-table-cell text-right" scope="col">%</th>
+                                <th class="d-none d-md-table-cell d-lg-block custom-hidden text-right" scope="col">Elapsed</th>
+                                <th class="text-right" scope="col">Remaining</th>
+                                <th class="d-none d-md-table-cell text-right" scope="col">Speed</th>
+                                <th class="d-none d-md-table-cell custom-hidden" scope="col">State</th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -63,59 +61,63 @@
                     <table class="table table-hover ithit-grid-container">
                         <thead>
                             <tr>
-                                <th class="hidden-xs">#</th>
-                                <th></th>
-                                <th class="ellipsis"><span>Display Name</span></th>
-                                <th class="text-right">Size</th>
-                                <th class="hidden-xs">Modified</th>
-                                <th class="column-action"></th>
+                                <th class="d-none d-sm-table-cell" scope="col">#</th>
+                                <th scope="col"></th>
+                                <th class="ellipsis" scope="col"><span>Display Name</span></th>
+                                <th class="text-right" scope="col">Size</th>
+                                <th class="d-none d-sm-table-cell" scope="col">Modified</th>
+                                <th class="column-action" scope="col"></th>
                             </tr>
                         </thead>
                         <tbody></tbody>
                     </table>
                 </div>
                 <div id="ConfirmModal" class="modal" tabindex="-1" role="dialog" aria-labelledby="ConfirmModalLabel">
-                        <div class="modal-dialog modal-sm" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                                    <h4 class="modal-title" id="ConfirmModalLabel">Confirm</h4>
-                                </div>
-                                <div class="modal-body">
-                                    <p class="message"></p>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-primary btn-ok">OK</button>
-                                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                                </div>
+                    <div class="modal-dialog modal-sm" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Confirm</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <p class="message"></p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary btn-ok">OK</button>
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
                             </div>
                         </div>
                     </div>
-                    <div id="CreateFolderModal" class="modal" tabindex="-1" role="dialog" aria-labelledby="CreateFolderModalLabel">
-                        <div class="modal-dialog" role="document">
-                            <div class="modal-content">
-                                <form action="/" method="post">
-                                    <div class="modal-header">
-                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                                        <h4 class="modal-title" id="CreateFolderModalLabel">Create Folder</h4>
-                                    </div>
-                                    <div class="modal-body">
-                                        <div class="form-group">
-                                            <input type="text" class="form-control" id="NameFolder" placeholder="Folder Name" />
-                                            <div class="alert alert-danger hidden">
-                                            </div>
+                </div>
+                <div id="CreateFolderModal" class="modal" tabindex="-1" role="dialog" aria-labelledby="CreateFolderModalLabel">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <form action="/" method="post">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Create Folder</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" id="NameFolder" placeholder="Folder Name" />
+                                        <div class="alert alert-danger d-none">
                                         </div>
                                     </div>
-                                    <div class="modal-footer">
-                                        <button type="submit" class="btn btn-primary btn-submit">OK</button>
-                                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                                    </div>
-                                </form>
-                            </div>
-                      </div>
-                 </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="submit" class="btn btn-primary btn-submit">OK</button>
+                                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="col-md-4 col-sm-12">
+            <div class="col-lg-4 col-md-12">
                 <p>
                     This page is displayed when user accesses any folder on your WebDAV server in a web browser.
                 You can customize this page to your needs.
@@ -133,7 +135,7 @@
                 <p>
                     To test your WebDAV server you can run Ajax integration tests right from this page.
                 </p>
-                <a href="javascript:void(0)" onclick="OpenTestsWindow()" class="btn btn-default">Run Integration Tests</a>
+                <a href="javascript:void(0)" onclick="OpenTestsWindow()" class="btn btn-secondary" role="button">Run Integration Tests</a>
 
                 <hr />
 
@@ -143,7 +145,7 @@
                     Use the <a href="https://www.webdavsystem.com/ajaxfilebrowser/programming/">IT Hit Ajax File Browser</a> to browse your documents, open for editing from a web page and
                 uploading with pause/resume and auto-restore upload.
                 </p>
-                <a href="javascript:void(0)" onclick="OpenAjaxFileBrowserWindow()" class="btn btn-default">Browse Using Ajax File Browser</a>
+                <a href="javascript:void(0)" onclick="OpenAjaxFileBrowserWindow()" class="btn btn-secondary" role="button">Browse Using Ajax File Browser</a>
 
                 <hr />
 
@@ -154,13 +156,13 @@
                 detailed instructions. The button below is using <a href="https://www.webdavsystem.com/ajax/">IT Hit WebDAV Ajax Library</a> to mount WebDAV
                 folder and open the default OS file manager.
                 </p>
-                <a href="javascript:void(0)" onclick="WebDAVController && WebDAVController.OpenCurrentFolderInOsFileManager()" class="btn btn-default">Browse Using OS File Manager</a>
-                
+                <a href="javascript:void(0)" onclick="WebDAVController && WebDAVController.OpenCurrentFolderInOsFileManager()" class="btn btn-secondary" role="button">Browse Using OS File Manager</a>
+
                 <hr />
 
                 <h3>Client Version</h3>
 
-                <p>                 
+                <p>
                     IT Hit WebDAV AJAX Library: <span class="ithit-version-value"></span>
                 </p>
 
@@ -168,13 +170,13 @@
                 <br />
             </div>
         </div>
-    </div>
+    </main>
     <script>
         var webDavSettings = {
             ApplicationPath: '<%=Request.ApplicationPath.TrimEnd('/')%>',
             ApplicationProtocolsPath: '<%=Request.ApplicationPath.TrimEnd('/')%>/wwwroot/js/node_modules/webdav.client/Plugins/',
             EditDocAuth: {
-				Authentication: 'cookies',                           // Authentication to use when opening documents for editing: 'anonymous', 'challenge', 'cookies'
+				Authentication: 'cookies',                           // Authentication to use when opening documents for editing: 'anonymous', 'challenge', 'ms-ofba', 'cookies'
                 CookieNames: '.AspNet.ApplicationCookie',            // Coma separated list of cookie names to search for.
                 SearchIn: 'current',                                 // Web browsers to search and copy permanent cookies from: 'current', 'none', 'all'.
                 LoginUrl: '/Account/login/'                          // Login URL to redirect to in case any cookies specified in CookieNames parameter are not found.
@@ -199,7 +201,7 @@
     <script src="<%=Request.ApplicationPath.TrimEnd('/')%>/wwwroot/js/node_modules/webdav.client/ITHitWebDAVClient.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.11.1/typeahead.jquery.min.js"></script>  
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0/js/bootstrap.min.js"></script>
     <script src="<%=Request.ApplicationPath.TrimEnd('/')%>/wwwroot/js/webdav-gridview.js"></script>
     <script src="<%=Request.ApplicationPath.TrimEnd('/')%>/wwwroot/js/webdav-uploader.js"></script>
     <script src="<%=Request.ApplicationPath.TrimEnd('/')%>/wwwroot/js/webdav-websocket.js"></script>

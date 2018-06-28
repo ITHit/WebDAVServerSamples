@@ -290,6 +290,11 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
             try
             {
                 File.Move(fileSystemInfo.FullName, newDirPath);
+
+                // Locks should not be copied, delete them.
+                var newFileInfo = new FileInfo(newDirPath);
+                if (await newFileInfo.HasExtendedAttributeAsync("Locks"))
+                    await newFileInfo.DeleteExtendedAttributeAsync("Locks");
             }
             catch (UnauthorizedAccessException)
             {

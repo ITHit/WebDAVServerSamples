@@ -1,4 +1,5 @@
 
+﻿
 (function () {
     var Formatters = {
 
@@ -102,25 +103,25 @@
             this.$el.find('tbody').html(
                 aItems.map(function (oItem, i) {
                     var locked = oItem.ActiveLocks.length > 0
-                        ? '<span class="ithit-grid-icon-locked glyphicon glyphicon-lock"></span>'
+                        ? '<span class="ithit-grid-icon-locked fas fa-lock"></span>'
                         : '';
                     /** @type {ITHit.WebDAV.Client.HierarchyItem} oItem */
                     return $('<div/>').html([
                         $('<tr />').html([
-                            $('<td class="hidden-xs" />').text(i + 1),
+                            $('<td class="d-none d-sm-table-cell" />').text(i + 1),
                             $('<td />').
-                                html(oItem.IsFolder() ? '<span class="glyphicon glyphicon-folder-open">' + locked +
+                                html(oItem.IsFolder() ? '<span class="fas fa-folder">' + locked +
                                     '</span>' : locked),
                             this._RenderDisplayName(oItem),
                             $('<td />').
                                 text(!oItem.IsFolder() ? Formatters.FileSize(oItem.ContentLength) : '').
                                 css('text-align', 'right'),
-                            $('<td class="hidden-xs" />').text(Formatters.Date(oItem.LastModified)),
+                            $('<td class="d-none d-sm-table-cell" />').text(Formatters.Date(oItem.LastModified)),
                             $('<td class="column-action" />').html(this._RenderActions(oItem))
                         ]),
                         $('<tr class="tr-snippet-url"/>').html([
-                            $('<td class="hidden-xs" />'),
-                            $('<td class="hidden-xs" />'),
+                            $('<td class="d-none d-sm-table-cell" />'),
+                            $('<td class="d-none d-sm-table-cell" />'),
                             this._RenderSnippetAndUrl(oItem)])]).children();
                 }.bind(this))
             );
@@ -140,7 +141,7 @@
             var oElement = $('<td colspan="10"/>');
             // Append path on search mode
             if (this.IsSearchMode) {
-                new BreadcrumbsView($('<ul />').addClass('breadcrumb').appendTo(oElement)).SetHierarchyItem(oItem);
+                new BreadcrumbsView($('<ol />').addClass('breadcrumb').appendTo(oElement)).SetHierarchyItem(oItem);
 
                 // Append snippet to name
                 oElement.append(Formatters.Snippet(oItem.Properties.Find(oWebDAV.SnippetPropertyName)));
@@ -160,20 +161,20 @@
 
             if (oItem.IsFolder()) {
                 actions.push($('<button class="btn btn-transparent browse-lnk" type="button"/>').
-                    html('<span class="glyphicon glyphicon-hdd"></span> <span class="hidden-xs">Browse</span>').
+                    html('<span class="fas fa-hdd"></span> <span class="d-none d-md-inline">Browse</span>').
                     attr('title', 'Open this folder in Operating System file manager.').
                     on('click', function () {
                         oWebDAV.OpenFolderInOsFileManager(oItem.Href);
                     }).prop("disabled", !isDavProtocolSupported));
             } else {
                 actions.push($('<button class="btn btn-transparent"/>').
-                    html('<span class="glyphicon glyphicon-edit"></span> <span class="hidden-xs">Edit</span>').
+                    html('<span class="fas fa-edit"></span> <span class="d-none d-md-inline">Edit</span>').
                     attr('title', 'Edit document in associated application.').
                     on('click', function () {
                         oWebDAV.EditDoc(oItem.Href);
                     }).prop("disabled", !isDavProtocolSupported && !isMicrosoftOfficeDocument));
                 actions.push($('<button class="btn btn-transparent"/>')
-                    .html('<span class="glyphicon glyphicon-modal-window"></span>')
+                    .html('<span class="fas fa-window-maximize"></span>')
                     .attr('title', 'Select application to open this file with.')
                     .on('click', function () {
                         oWebDAV.OpenDocWith(oItem.Href);
@@ -181,7 +182,7 @@
             }
 
             actions.push($('<button class="btn btn-transparent"/>')
-                .html('<span class="glyphicon glyphicon glyphicon-remove"></span>')
+                .html('<span class="fas fa-trash-alt"></span>')
                 .attr('title', 'Delete Document')
                 .on('click', function () {
                     oWebDAV.DeleteHierarchyItem(oItem);
@@ -259,7 +260,7 @@
             var oElement = $('<div />').text(oItem.DisplayName);
 
             // Append path
-            new BreadcrumbsView($('<ul />').addClass('breadcrumb').appendTo(oElement)).SetHierarchyItem(oItem);
+            new BreadcrumbsView($('<ol />').addClass('breadcrumb').appendTo(oElement)).SetHierarchyItem(oItem);
 
             // Append snippet
             oElement.append(Formatters.Snippet(oItem.Properties.Find(oWebDAV.SnippetPropertyName)));
@@ -303,8 +304,8 @@
 
             this.$el.html(aParts.map(function (sPart, i) {
                 var bIsLast = aParts.length === i + 1;
-                var oLabel = i === 0 ? $('<span />').addClass('glyphicon glyphicon-home') : $('<span />').text(decodeURIComponent(sPart));
-                return $('<li />').toggleClass('active', bIsLast).append(
+                var oLabel = i === 0 ? $('<span />').addClass('fas fa-home') : $('<span />').text(decodeURIComponent(sPart));
+                return $('<li class="breadcrumb-item"/>').toggleClass('active', bIsLast).append(
                     bIsLast ?
                         $('<span />').html(oLabel) :
                         $('<a />').attr('href', location.protocol + '//' + aParts.slice(0, i + 1).join('/') + '/').html(oLabel)
@@ -395,7 +396,7 @@
 
         $(buttonSelector).click(function () {
             self.$txt.val('');
-            self.$alert.addClass('hidden');
+            self.$alert.addClass('d-none');
             self.$modal.modal('show');
         });
 
@@ -403,13 +404,13 @@
             self.$txt.focus();
         })
         this.$modal.find('form').submit(function () {
-            self.$alert.addClass('hidden');
+            self.$alert.addClass('d-none');
             if (self.$txt.val() !== null && self.$txt.val().match(/^ *$/) === null) {
                 self.$txt.blur();
                 self.$submitButton.attr('disabled', 'disabled');
                 oWebDAV.CreateFolder(self.$txt.val().trim(), function (oAsyncResult) {
                     if (oAsyncResult.Error instanceof ITHit.WebDAV.Client.Exceptions.MethodNotAllowedException) {
-                        self.$alert.removeClass('hidden').text(oAsyncResult.Error.Error.Description ? oAsyncResult.Error.Error.Description : 'Folder already exists.');
+                        self.$alert.removeClass('d-none').text(oAsyncResult.Error.Error.Description ? oAsyncResult.Error.Error.Description : 'Folder already exists.');
                     }
                     else {
                         self.$modal.modal('hide');
@@ -418,7 +419,7 @@
                 })
             }
             else {
-                self.$alert.removeClass('hidden').text('Name is required!');
+                self.$alert.removeClass('d-none').text('Name is required!');
             }
             return false;
         });

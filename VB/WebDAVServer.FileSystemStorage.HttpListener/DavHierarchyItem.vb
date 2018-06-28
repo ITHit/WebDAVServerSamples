@@ -439,7 +439,7 @@ Public MustInherit Class DavHierarchyItem
     ''' <param name="path">Element's path.</param>
     ''' <returns>Path to parent element.</returns>
     Protected Shared Function GetParentPath(path As String) As String
-        Dim parentPath As String = $"/{path.Trim("/"c)}"
+        Dim parentPath As String = String.Format("/{0}", path.Trim("/"c))
         Dim index As Integer = parentPath.LastIndexOf("/")
         parentPath = parentPath.Substring(0, index)
         Return parentPath

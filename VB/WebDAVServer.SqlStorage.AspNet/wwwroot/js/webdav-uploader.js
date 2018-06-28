@@ -14,7 +14,7 @@
             var i = Math.floor(Math.log(iSize) / Math.log(1024));
             return (iSize / Math.pow(1024, i)).toFixed(2) + ' ' + ['B', 'kB', 'MB', 'GB', 'TB'][i];
         },
-      
+
 
         /**
          *
@@ -56,7 +56,7 @@
         this.rows = [];
         this.fileLoadCompleted = function () {
             if (this.$table.find('td').length == 0)
-                this.$table.addClass('hidden');
+                this.$table.addClass('d-none');
             window.WebDAVController.Reload();
         }
     };
@@ -80,9 +80,9 @@
         }.bind(this));
 
         if (this.rows.length == 0) {
-            this.$table.addClass('hidden');
+            this.$table.addClass('d-none');
         } else {
-            this.$table.removeClass('hidden');
+            this.$table.removeClass('d-none');
         }
     };
 
@@ -125,13 +125,13 @@
         var oProgress = oUploadItem.GetProgress();
         var columns = [
             'ellipsis',
-            'hidden-xs text-right',
-            'hidden-xs text-right',
-            'hidden-xs text-right',
-            'hidden-xs hidden-sm custom-hidden text-right',
+            'd-none d-sm-table-cell text-right',
+            'd-none d-sm-table-cell text-right',
+            'd-none d-sm-table-cell text-right',
+            'd-none d-md-table-cell custom-hidden text-right',
             'text-right',
-            'hidden-xs hidden-sm text-right',
-            'hidden-xs hidden-sm custom-hidden'
+            'd-none d-md-table-cell text-right',
+            'd-none d-md-table-cell custom-hidden'
         ];
 
         var $columns = [];
@@ -156,15 +156,15 @@
     UploaderGridRow.prototype._RenderActions = function (oUploadItem) {
         var actions = [];
         actions.push($('<button class="btn btn-transparent" />').
-            html('<span class="glyphicon glyphicon-play text-primary"></span>').
+            html('<span class="fas fa-play text-primary"></span>').
             click(this._StartClickHandler.bind(this)));
 
         actions.push($('<button class="btn btn-transparent" />').
-            html('<span class="glyphicon glyphicon-pause text-primary"></span>').
+            html('<span class="fas fa-pause text-primary"></span>').
             click(this._PauseClickHandler.bind(this)));
 
         actions.push($('<button class="btn btn-transparent .lnk-cancel" />').
-            html('<span class="glyphicon glyphicon-remove text-primary"></span>').
+            html('<span class="fas fa-trash-alt text-primary"></span>').
             click(this._CancelClickHandler.bind(this)));
 
         return actions;
@@ -208,8 +208,8 @@
     };
 
     UploaderGridRow.prototype._RenderProgressRow = function () {
-        var $td = $('<td colspan="9" class="progress"></td>');
-        var $progressBar = $('<div class="progress-bar" role="progressbar" aria-valuenow="2" aria-valuemin="0" aria-valuemax="100"></div>');
+        var $td = $('<td colspan="9" class="progress-container"></td>');
+        var $progressBar = $('<div class="progress"><div class="progress-bar" role="progressbar" aria-valuenow="2" aria-valuemin="0" aria-valuemax="100"></div></div>');
         $td.append($progressBar);
 
         this.$progressBarRow.empty();
