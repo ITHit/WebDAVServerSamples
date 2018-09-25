@@ -111,7 +111,7 @@ Namespace CardDav
         Public Async Function QueryAsync(rawQuery As String, propNames As IEnumerable(Of PropertyName)) As Task(Of IEnumerable(Of ICardFileAsync)) Implements IAddressbookReportAsync.QueryAsync
             ' For the sake of simplicity we just call GetChildren returning all items. 
             ' Typically you will return only items that match the query.
-            Return(Await GetChildrenAsync(propNames.ToList())).Cast(Of ICardFileAsync)()
+            Return(Await GetChildrenAsync(propNames.ToList(), Nothing, Nothing, Nothing)).Page.Cast(Of ICardFileAsync)()
         End Function
 
         Public Function SetOwnerAsync(value As IPrincipalAsync) As Task Implements IAclHierarchyItemAsync.SetOwnerAsync

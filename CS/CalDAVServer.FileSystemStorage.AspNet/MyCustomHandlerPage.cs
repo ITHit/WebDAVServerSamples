@@ -36,7 +36,7 @@ namespace CalDAVServer.FileSystemStorage.AspNet
                 // Get list of folders that contain user calendars and enumerate calendars in each folder.
                 foreach (IItemCollectionAsync folder in await discovery.GetCalendarHomeSetAsync())
                 {
-                    IEnumerable<IHierarchyItemAsync> children = await folder.GetChildrenAsync(new PropertyName[0]);
+                    IEnumerable<IHierarchyItemAsync> children = (await folder.GetChildrenAsync(new PropertyName[0], null, null, null)).Page;
                     AllUserCalendars.AddRange(children.Where(x => x is ICalendarFolderAsync));
                 }
         }

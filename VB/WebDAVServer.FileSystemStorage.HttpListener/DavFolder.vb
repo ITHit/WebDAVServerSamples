@@ -4,6 +4,7 @@ Imports System.Configuration
 Imports System.Data.OleDb
 Imports System.IO
 Imports System.Linq
+Imports System.Reflection
 Imports System.Text.RegularExpressions
 Imports System.Threading.Tasks
 Imports ITHit.WebDAV.Server
@@ -12,6 +13,7 @@ Imports ITHit.WebDAV.Server.Class1
 Imports WebDAVServer.FileSystemStorage.HttpListener.ExtendedAttributes
 Imports ITHit.WebDAV.Server.Search
 Imports ITHit.WebDAV.Server.ResumableUpload
+Imports ITHit.WebDAV.Server.Paging
 
 ''' <summary>
 ''' Folder in WebDAV repository.
@@ -59,18 +61,30 @@ Public Class DavFolder
     End Sub
 
     ''' <summary>
-    ''' Called when children of this folder are being listed.
+    ''' Called when children of this folder with paging information are being listed.
     ''' </summary>
     ''' <param name="propNames">List of properties to retrieve with the children. They will be queried by the engine later.</param>
-    ''' <returns>Children of this folder.</returns>
-    Public Overridable Async Function GetChildrenAsync(propNames As IList(Of PropertyName)) As Task(Of IEnumerable(Of IHierarchyItemAsync)) Implements IItemCollectionAsync.GetChildrenAsync
+    ''' <param name="offset">The number of children to skip before returning the remaining items. Start listing from from next item.</param>
+    ''' <param name="nResults">The number of items to return.</param>
+    ''' <param name="orderProps">List of order properties requested by the client.</param>
+    ''' <returns>Items requested by the client and a total number of items in this folder.</returns>
+    Public Overridable Async Function GetChildrenAsync(propNames As IList(Of PropertyName), offset As Long?, nResults As Long?, orderProps As IList(Of OrderProperty)) As Task(Of PageResults) Implements IItemCollectionAsync.GetChildrenAsync
         ' Enumerates all child files and folders.
         ' You can filter children items in this implementation and 
         ' return only items that you want to be visible for this 
         ' particular user.
         Dim children As IList(Of IHierarchyItemAsync) = New List(Of IHierarchyItemAsync)()
         Dim fileInfos As FileSystemInfo() = Nothing
+        Dim totalItems As Long = 0
         fileInfos = dirInfo.GetFileSystemInfos()
+        totalItems = fileInfos.Length
+        ' Apply sorting.
+        fileInfos = SortChildren(fileInfos, orderProps)
+        ' Apply paging.
+        If offset.HasValue AndAlso nResults.HasValue Then
+            fileInfos = fileInfos.Skip(CInt(offset.Value)).Take(CInt(nResults.Value)).ToArray()
+        End If
+
         For Each fileInfo As FileSystemInfo In fileInfos
             Dim childPath As String = Path & EncodeUtil.EncodeUrlPart(fileInfo.Name)
             Dim child As IHierarchyItemAsync = Await context.GetHierarchyItemAsync(childPath)
@@ -79,7 +93,7 @@ Public Class DavFolder
             End If
         Next
 
-        Return children
+        Return New PageResults(children, totalItems)
     End Function
 
     ''' <summary>
@@ -138,7 +152,7 @@ Public Class DavFolder
 
         ' Copy children.
         Dim createdFolder As IFolderAsync = CType(Await context.GetHierarchyItemAsync(targetPath), IFolderAsync)
-        For Each item As DavHierarchyItem In Await GetChildrenAsync(New PropertyName(-1) {})
+        For Each item As DavHierarchyItem In(Await GetChildrenAsync(New PropertyName(-1) {}, Nothing, Nothing, Nothing)).Page
             If Not deep AndAlso TypeOf item Is DavFolder Then
                 Continue For
             End If
@@ -187,7 +201,7 @@ Public Class DavFolder
         ' Move child items.
         Dim movedSuccessfully As Boolean = True
         Dim createdFolder As IFolderAsync = CType(Await context.GetHierarchyItemAsync(targetPath), IFolderAsync)
-        For Each item As DavHierarchyItem In Await GetChildrenAsync(New PropertyName(-1) {})
+        For Each item As DavHierarchyItem In(Await GetChildrenAsync(New PropertyName(-1) {}, Nothing, Nothing, Nothing)).Page
             Try
                 Await item.MoveToAsync(createdFolder, item.Name, multistatus)
             Catch ex As DavException
@@ -213,7 +227,7 @@ Public Class DavFolder
     Public Overrides Async Function DeleteAsync(multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.DeleteAsync
         Await RequireHasTokenAsync()
         Dim allChildrenDeleted As Boolean = True
-        For Each child As IHierarchyItemAsync In Await GetChildrenAsync(New PropertyName(-1) {})
+        For Each child As IHierarchyItemAsync In(Await GetChildrenAsync(New PropertyName(-1) {}, Nothing, Nothing, Nothing)).Page
             Try
                 Await child.DeleteAsync(multistatus)
             Catch ex As DavException
@@ -230,7 +244,7 @@ Public Class DavFolder
     End Function
 
     ''' <summary>
-    ''' Searches files and folders in current folder using search phrase and options.
+    ''' Searches files and folders in current folder using search phrase, offset, nResults and options.
     ''' </summary>
     ''' <param name="searchString">A phrase to search.</param>
     ''' <param name="options">Search options.</param>
@@ -238,8 +252,11 @@ Public Class DavFolder
     ''' List of properties to retrieve with each item returned by this method. They will be requested by the 
     ''' Engine in <see cref="IHierarchyItemAsync.GetPropertiesAsync(IList{PropertyName}, bool)"/>  call.
     ''' </param>
-    ''' <returns>List of <see cref="IHierarchyItemAsync"/>  satisfying search request.</returns>
-    Public Async Function SearchAsync(searchString As String, options As SearchOptions, propNames As List(Of PropertyName)) As Task(Of IEnumerable(Of IHierarchyItemAsync)) Implements ISearchAsync.SearchAsync
+    ''' <param name="offset">The number of children to skip before returning the remaining items. Start listing from from next item.</param>
+    ''' <param name="nResults">The number of items to return.</param>
+    ''' <returns>List of <see cref="IHierarchyItemAsync"/>  satisfying search request.</returns>1
+    ''' <returns>Items satisfying search request and a total number.</returns>
+    Public Async Function SearchAsync(searchString As String, options As SearchOptions, propNames As List(Of PropertyName), offset As Long?, nResults As Long?) As Task(Of PageResults) Implements ISearchAsync.SearchAsync
         Dim includeSnippet As Boolean = propNames.Any(Function(s) s.Name = snippetProperty)
         ' search both in file name and content
         Dim commandText As String = "SELECT System.ItemPathDisplay" & (If(includeSnippet, " ,System.Search.AutoSummary", String.Empty)) & " FROM SystemIndex " & "WHERE scope ='file:@Path' AND (System.ItemNameDisplay LIKE '@Name' OR FREETEXT('""@Content""')) " & "ORDER BY System.Search.Rank DESC"
@@ -279,7 +296,7 @@ Public Class DavFolder
             subtreeItems.Add(item)
         Next
 
-        Return subtreeItems
+        Return New PageResults(If(offset.HasValue AndAlso nResults.HasValue, subtreeItems.Skip(CInt(offset.Value)).Take(CInt(nResults.Value)), subtreeItems), subtreeItems.Count)
     End Function
 
     ''' <summary>
@@ -341,5 +358,47 @@ Public Class DavFolder
     ''' <returns>Returns <c>true</c> if <paramref name="destFolder"/>  is inside thid folder.</returns>
     Private Function IsRecursive(destFolder As DavFolder) As Boolean
         Return destFolder.Path.StartsWith(Path)
+    End Function
+
+    ''' <summary>
+    ''' Sorts array of FileSystemInfo according to the specified order.
+    ''' </summary>
+    ''' <param name="fileInfos">Array of files and folders to sort.</param>
+    ''' <param name="orderProps">Sorting order.</param>
+    ''' <returns>Sorted list of files and folders.</returns>
+    Private Function SortChildren(fileInfos As FileSystemInfo(), orderProps As IList(Of OrderProperty)) As FileSystemInfo()
+        If orderProps IsNot Nothing AndAlso orderProps.Count() <> 0 Then
+            ' map DAV properties to FileSystemInfo 
+            Dim mappedProperties As Dictionary(Of String, String) = New Dictionary(Of String, String)() From {{"displayname", "Name"}, {"getlastmodified", "LastWriteTime"}, {"getcontenttype", "Extension"},
+                                                                                                             {"quota-used-bytes", "ContentLength"}, {"is-directory", "IsDirectory"}}
+            Dim orderedFileInfos As IOrderedEnumerable(Of FileSystemInfo) = Nothing
+            Dim index As Integer = 0
+            For Each ordProp As OrderProperty In orderProps
+                Dim propertyName As String = mappedProperties(ordProp.Property.Name)
+                Dim sortFunc As Func(Of FileSystemInfo, Object) = Nothing
+                Dim propertyInfo As PropertyInfo =(GetType(FileSystemInfo)).GetProperties().FirstOrDefault(Function(p) p.Name.Equals(propertyName, StringComparison.InvariantCultureIgnoreCase))
+                If propertyInfo IsNot Nothing Then
+                    sortFunc = Function(p) p.GetType().GetProperty(propertyInfo.Name).GetValue(p)
+                ElseIf propertyName = "IsDirectory" Then
+                    sortFunc = Function(p) p.IsDirectory()
+                ElseIf propertyName = "ContentLength" Then
+                    sortFunc = Function(p) If(TypeOf p Is FileInfo, TryCast(p, FileInfo).Length, 0)
+                End If
+
+                If sortFunc IsNot Nothing Then
+                    If Math.Min(System.Threading.Interlocked.Increment(index), index - 1) = 0 Then
+                        If ordProp.Ascending Then orderedFileInfos = fileInfos.OrderBy(sortFunc) Else orderedFileInfos = fileInfos.OrderByDescending(sortFunc)
+                    Else
+                        If ordProp.Ascending Then orderedFileInfos = orderedFileInfos.ThenBy(sortFunc) Else orderedFileInfos = orderedFileInfos.ThenByDescending(sortFunc)
+                    End If
+                End If
+            Next
+
+            If orderedFileInfos IsNot Nothing Then
+                fileInfos = orderedFileInfos.ToArray()
+            End If
+        End If
+
+        Return fileInfos
     End Function
 End Class

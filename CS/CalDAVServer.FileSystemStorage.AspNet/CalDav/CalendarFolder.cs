@@ -119,7 +119,7 @@ namespace CalDAVServer.FileSystemStorage.AspNet.CalDav
         {
             // For the sake of simplicity we just call GetChildren returning all items. 
             // Typically you will return only items that match the query.
-            return (await GetChildrenAsync(propNames.ToList())).Cast<ICalendarFileAsync>();
+            return (await GetChildrenAsync(propNames.ToList(), null, null, null)).Page.Cast<ICalendarFileAsync>();
         }
 
         /// <summary>

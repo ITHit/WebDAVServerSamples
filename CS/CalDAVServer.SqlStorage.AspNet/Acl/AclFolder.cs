@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using ITHit.WebDAV.Server;
-
+using ITHit.WebDAV.Server.Paging;
 
 namespace CalDAVServer.SqlStorage.AspNet.Acl
 {
@@ -37,11 +37,14 @@ namespace CalDAVServer.SqlStorage.AspNet.Acl
         /// Retrieves children of this folder.
         /// </summary>
         /// <param name="propNames">Properties requested by client application for each child.</param>
+        /// <param name="offset">The number of children to skip before returning the remaining items. Start listing from from next item.</param>
+        /// <param name="nResults">The number of items to return.</param>
+        /// <param name="orderProps">List of order properties requested by the client.</param>
         /// <returns>Children of this folder.</returns>
-        public override async Task<IEnumerable<IHierarchyItemAsync>> GetChildrenAsync(IList<PropertyName> propNames)
+        public override async Task<PageResults> GetChildrenAsync(IList<PropertyName> propNames, long? offset, long? nResults, IList<OrderProperty> orderProps)
         {
             // In this samle we list users folder only. Groups and groups folder is not implemented.
-            return new[] {new UsersFolder(Context)};
+            return new PageResults(new[] {new UsersFolder(Context)}, null);
         }
     }
 }

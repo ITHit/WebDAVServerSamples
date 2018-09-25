@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using ITHit.WebDAV.Server;
+using ITHit.WebDAV.Server.Paging;
 
 namespace CardDAVServer.SqlStorage.AspNet
 {
@@ -37,10 +38,10 @@ namespace CardDAVServer.SqlStorage.AspNet
         {
             throw new DavException("Not implemented.", DavStatus.NOT_IMPLEMENTED);
         }
-
-        public virtual async Task<IEnumerable<IHierarchyItemAsync>> GetChildrenAsync(IList<PropertyName> propNames)
+  
+        public virtual async Task<PageResults> GetChildrenAsync(IList<PropertyName> propNames, long? offset, long? nResults, IList<OrderProperty> orderProps)
         {
-            return children;
+            return new PageResults(children, null);
         }
     }
 }

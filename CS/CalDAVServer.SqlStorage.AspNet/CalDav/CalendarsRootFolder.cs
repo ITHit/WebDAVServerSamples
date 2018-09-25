@@ -10,8 +10,7 @@ using System.Threading.Tasks;
 using ITHit.WebDAV.Server;
 using ITHit.WebDAV.Server.CalDav;
 using ITHit.WebDAV.Server.Class1;
-
-
+using ITHit.WebDAV.Server.Paging;
 
 namespace CalDAVServer.SqlStorage.AspNet.CalDav
 {
@@ -40,12 +39,15 @@ namespace CalDAVServer.SqlStorage.AspNet.CalDav
         /// Retrieves children of this folder.
         /// </summary>
         /// <param name="propNames">Properties requested by client application for each child.</param>
+        /// <param name="offset">The number of children to skip before returning the remaining items. Start listing from from next item.</param>
+        /// <param name="nResults">The number of items to return.</param>
+        /// <param name="orderProps">List of order properties requested by the client.</param>
         /// <returns>Children of this folder.</returns>
-        public override async Task<IEnumerable<IHierarchyItemAsync>> GetChildrenAsync(IList<PropertyName> propNames)
+        public override async Task<PageResults> GetChildrenAsync(IList<PropertyName> propNames, long? offset, long? nResults, IList<OrderProperty> orderProps)
         {           
             // Here we list calendars from back-end storage. 
             // You can filter calendars if requied and return only calendars that user has access to.
-            return (await CalendarFolder.LoadAllAsync(Context)).OrderBy(x => x.Name);
+            return new PageResults((await CalendarFolder.LoadAllAsync(Context)).OrderBy(x => x.Name), null);
         }
 
         public Task<IFileAsync> CreateFileAsync(string name)

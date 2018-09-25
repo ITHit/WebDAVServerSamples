@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 
 using ITHit.WebDAV.Server;
 using ITHit.WebDAV.Server.Acl;
+using ITHit.WebDAV.Server.Paging;
 
 namespace CalDAVServer.FileSystemStorage.AspNet.Acl
 {
@@ -38,11 +39,14 @@ namespace CalDAVServer.FileSystemStorage.AspNet.Acl
         /// <summary>
         /// Retrieves users.
         /// </summary>
-        /// <param name="properties">List of properties which will be retrieved by the engine later.</param>
-        /// <returns>Enumerable with users.</returns>
-        public override async Task<IEnumerable<IHierarchyItemAsync>> GetChildrenAsync(IList<PropertyName> properties)
+        /// <param name="properties">List of properties which will be retrieved by the engine later.</param>      
+        /// <param name="offset">The number of children to skip before returning the remaining items. Start listing from from next item.</param>
+        /// <param name="nResults">The number of items to return.</param>
+        /// <param name="orderProps">List of order properties requested by the client.</param>
+        /// <returns>Enumerable with users and a total number of users.</returns>
+        public override async Task<PageResults> GetChildrenAsync(IList<PropertyName> propNames, long? offset, long? nResults, IList<OrderProperty> orderProps)
         {
-            return Context.PrincipalOperation<IEnumerable<IHierarchyItemAsync>>(getUsers);
+            return new PageResults(Context.PrincipalOperation<IEnumerable<IHierarchyItemAsync>>(getUsers), null);
         }
 
         /// <summary>

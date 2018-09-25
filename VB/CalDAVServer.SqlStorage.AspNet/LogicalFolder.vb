@@ -2,6 +2,7 @@ Imports System
 Imports System.Collections.Generic
 Imports System.Threading.Tasks
 Imports ITHit.WebDAV.Server
+Imports ITHit.WebDAV.Server.Paging
 
 ''' <summary>
 ''' Base class for logical folders which are not present in your 
@@ -33,7 +34,7 @@ Public Class LogicalFolder
         Throw New DavException("Not implemented.", DavStatus.NOT_IMPLEMENTED)
     End Function
 
-    Public Overridable Async Function GetChildrenAsync(propNames As IList(Of PropertyName)) As Task(Of IEnumerable(Of IHierarchyItemAsync)) Implements IItemCollectionAsync.GetChildrenAsync
-        Return children
+    Public Overridable Async Function GetChildrenAsync(propNames As IList(Of PropertyName), offset As Long?, nResults As Long?, orderProps As IList(Of OrderProperty)) As Task(Of PageResults) Implements IItemCollectionAsync.GetChildrenAsync
+        Return New PageResults(children, Nothing)
     End Function
 End Class

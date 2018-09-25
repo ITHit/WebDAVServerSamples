@@ -10,6 +10,7 @@ using ITHit.WebDAV.Server.Class2;
 using ITHit.WebDAV.Server.Quota;
 using ITHit.WebDAV.Server.Search;
 using ITHit.WebDAV.Server.ResumableUpload;
+using ITHit.WebDAV.Server.Paging;
 
 namespace WebDAVServer.SqlStorage.AspNetCore
 {
@@ -42,13 +43,14 @@ namespace WebDAVServer.SqlStorage.AspNetCore
         }
 
         /// <summary>
-        /// Gets child items of this folder (files or folders).
+        /// Called when children of this folder with paging information are being listed.
         /// </summary>
-        /// <param name="props">
-        /// List of properties which will be requested from children later. We don't use it here.
-        /// </param>
-        /// <returns>Enumerable with files and folders.</returns>
-        public async Task<IEnumerable<IHierarchyItemAsync>> GetChildrenAsync(IList<PropertyName> props)
+        /// <param name="propNames">List of properties to retrieve with the children. They will be queried by the engine later.</param>
+        /// <param name="offset">The number of children to skip before returning the remaining items. Start listing from from next item.</param>
+        /// <param name="nResults">The number of items to return.</param>
+        /// <param name="orderProps">List of order properties requested by the client.</param>
+        /// <returns>Items requested by the client and a total number of items in this folder.</returns>
+        public virtual async Task<PageResults> GetChildrenAsync(IList<PropertyName> propNames, long? offset, long? nResults, IList<OrderProperty> orderProps)
         {
             string command =
                 @"SELECT 
@@ -60,10 +62,12 @@ namespace WebDAVServer.SqlStorage.AspNetCore
                     , Modified                    , FileAttributes                   FROM Item
                    WHERE ParentItemId = @Parent";
 
-            return await Context.ExecuteItemAsync<IHierarchyItemAsync>(
+            IList<IHierarchyItemAsync> children = await Context.ExecuteItemAsync<IHierarchyItemAsync>(
                 Path,
                 command,
                 "@Parent", ItemId);
+
+            return new PageResults(children, null);
         }
 
         /// <summary>
@@ -147,7 +151,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
             // copy children
             if (deep)
             {
-                foreach (IHierarchyItemAsync child in await GetChildrenAsync(new PropertyName[0]))
+                foreach (IHierarchyItemAsync child in (await GetChildrenAsync(new PropertyName[0], null, null, null)).Page)
                 {
                     var dbchild = child as DavHierarchyItem;
                     try
@@ -231,7 +235,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
 
             // move children
             bool movedAllChildren = true;
-            foreach (IHierarchyItemAsync child in await GetChildrenAsync(new PropertyName[0]))
+            foreach (IHierarchyItemAsync child in (await GetChildrenAsync(new PropertyName[0], null, null, null)).Page)
             {
                 DavHierarchyItem dbchild = child as DavHierarchyItem;
                 try
@@ -277,7 +281,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
             }
 
             bool deletedAllChildren = true;
-            foreach (IHierarchyItemAsync child in await GetChildrenAsync(new PropertyName[0]))
+            foreach (IHierarchyItemAsync child in (await GetChildrenAsync(new PropertyName[0], null, null, null)).Page)
             {
                 DavHierarchyItem dbchild = child as DavHierarchyItem;
                 try
@@ -316,7 +320,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
             return await Context.ExecuteScalarAsync<long>("SELECT SUM(DATALENGTH(Content)) FROM Item");
         }
         /// <summary>
-        /// Searches files and folders in current folder using search phrase and options.
+        /// Searches files and folders in current folder using search phrase, offset, nResults and options.
         /// </summary>
         /// <param name="searchString">A phrase to search.</param>
         /// <param name="options">Search options.</param>
@@ -324,8 +328,11 @@ namespace WebDAVServer.SqlStorage.AspNetCore
         /// List of properties to retrieve with each item returned by this method. They will be requested by the 
         /// Engine in <see cref="IHierarchyItemAsync.GetPropertiesAsync(IList{PropertyName}, bool)"/> call.
         /// </param>
-        /// <returns>List of <see cref="IHierarchyItemAsync"/> satisfying search request.</returns>
-        public async Task<IEnumerable<IHierarchyItemAsync>> SearchAsync(string searchString, SearchOptions options, List<PropertyName> propNames)
+        /// <param name="offset">The number of children to skip before returning the remaining items. Start listing from from next item.</param>
+        /// <param name="nResults">The number of items to return.</param>
+        /// <returns>List of <see cref="IHierarchyItemAsync"/> satisfying search request.</returns>1
+        /// <returns>Items satisfying search request and a total number.</returns>
+        public async Task<PageResults> SearchAsync(string searchString, SearchOptions options, List<PropertyName> propNames, long? offset, long? nResults)
         {
             bool includeSnippet = propNames.Any(s => s.Name == SNIPPET);
             string condition = "Name LIKE @Name";
@@ -354,7 +361,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
             List<IHierarchyItemAsync> result = new List<IHierarchyItemAsync>();
             await GetSearchResultsAsync(result, commandText, searchString, includeSnippet);
 
-            return result;
+            return new PageResults(result, null);
         }
 
         /// <summary>
@@ -450,7 +457,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
                 return false;
             }
 
-            foreach (IHierarchyItemAsync child in await GetChildrenAsync(new PropertyName[0]))
+            foreach (IHierarchyItemAsync child in (await GetChildrenAsync(new PropertyName[0], null, null, null)).Page)
             {
                 DavFolder childFolder = child as DavFolder;
                 if (childFolder != null)

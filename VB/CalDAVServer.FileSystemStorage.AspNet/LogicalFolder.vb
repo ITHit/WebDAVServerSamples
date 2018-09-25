@@ -2,6 +2,7 @@ Imports System
 Imports System.Collections.Generic
 Imports System.Threading.Tasks
 Imports ITHit.WebDAV.Server
+Imports ITHit.WebDAV.Server.Paging
 
 ''' <summary>
 ''' Base class for logical folders which are not present in file system, like '/acl/,
@@ -60,5 +61,5 @@ Public MustInherit Class LogicalFolder
         Throw New NotImplementedException()
     End Function
 
-    Public MustOverride Function GetChildrenAsync(propNames As IList(Of PropertyName)) As Task(Of IEnumerable(Of IHierarchyItemAsync)) Implements IItemCollectionAsync.GetChildrenAsync
+    Public MustOverride Function GetChildrenAsync(propNames As IList(Of PropertyName), offset As Long?, nResults As Long?, orderProps As IList(Of OrderProperty)) As Task(Of PageResults) Implements IItemCollectionAsync.GetChildrenAsync
 End Class

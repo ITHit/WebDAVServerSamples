@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using ITHit.WebDAV.Server;
+using ITHit.WebDAV.Server.Paging;
 
 namespace CardDAVServer.FileSystemStorage.AspNet
 {
@@ -65,6 +66,6 @@ namespace CardDAVServer.FileSystemStorage.AspNet
             throw new NotImplementedException();
         }
 
-        public abstract Task<IEnumerable<IHierarchyItemAsync>> GetChildrenAsync(IList<PropertyName> propNames);
+        public abstract Task<PageResults> GetChildrenAsync(IList<PropertyName> propNames, long? offset, long? nResults, IList<OrderProperty> orderProps);
     }
 }

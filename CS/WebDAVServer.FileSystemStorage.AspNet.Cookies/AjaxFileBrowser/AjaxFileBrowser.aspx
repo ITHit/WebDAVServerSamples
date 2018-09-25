@@ -23,7 +23,7 @@
 	    function InitAjaxFileBrowser() {
 
 	        var webDavFolderUrl = window.opener != null ? window.opener.webDavFolderUrl : '/';
-	        var selectedFolder = window.opener != null ? window.opener.location.href : '/';
+	        var selectedFolder = window.opener != null ? window.opener.location.href.replace(window.opener.location.hash, '') : '/';
 
 	        // Customize the look of Ajax File Browser below
 	        // http://www.webdavsystem.com/ajaxfilebrowser/programming/settings_reference

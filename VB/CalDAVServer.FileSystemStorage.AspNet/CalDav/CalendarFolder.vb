@@ -110,7 +110,7 @@ Namespace CalDav
         Public Async Function QueryAsync(rawQuery As String, propNames As IEnumerable(Of PropertyName)) As Task(Of IEnumerable(Of ICalendarFileAsync)) Implements ICalendarReportAsync.QueryAsync
             ' For the sake of simplicity we just call GetChildren returning all items. 
             ' Typically you will return only items that match the query.
-            Return(Await GetChildrenAsync(propNames.ToList())).Cast(Of ICalendarFileAsync)()
+            Return(Await GetChildrenAsync(propNames.ToList(), Nothing, Nothing, Nothing)).Page.Cast(Of ICalendarFileAsync)()
         End Function
 
         ''' <summary>

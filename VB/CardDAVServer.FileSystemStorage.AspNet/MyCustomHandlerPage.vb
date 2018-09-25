@@ -26,7 +26,7 @@ Public Class MyCustomHandlerPage
         ' Get all user address books Urls.
         ' Get list of folders that contain user address books and enumerate address books in each folder.
         For Each folder As IItemCollectionAsync In Await discovery.GetAddressbookHomeSetAsync()
-            Dim children As IEnumerable(Of IHierarchyItemAsync) = Await folder.GetChildrenAsync(New PropertyName(-1) {})
+            Dim children As IEnumerable(Of IHierarchyItemAsync) =(Await folder.GetChildrenAsync(New PropertyName(-1) {}, Nothing, Nothing, Nothing)).Page
             AllUserAddressbooks.AddRange(children.Where(Function(x) TypeOf x Is IAddressbookFolderAsync))
         Next
     End Function

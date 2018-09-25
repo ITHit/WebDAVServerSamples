@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -13,6 +14,7 @@ using ITHit.WebDAV.Server.Quota;
 using WebDAVServer.FileSystemStorage.AspNetCore.ExtendedAttributes;
 using ITHit.WebDAV.Server.Search;
 using ITHit.WebDAV.Server.ResumableUpload;
+using ITHit.WebDAV.Server.Paging;
 
 namespace WebDAVServer.FileSystemStorage.AspNetCore
 {
@@ -57,14 +59,17 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
             : base(directory, context, path.TrimEnd('/') + "/")
         {
             dirInfo = directory;
-        }
+        }   
 
         /// <summary>
-        /// Called when children of this folder are being listed.
+        /// Called when children of this folder with paging information are being listed.
         /// </summary>
         /// <param name="propNames">List of properties to retrieve with the children. They will be queried by the engine later.</param>
-        /// <returns>Children of this folder.</returns>
-        public virtual async Task<IEnumerable<IHierarchyItemAsync>> GetChildrenAsync(IList<PropertyName> propNames)
+        /// <param name="offset">The number of children to skip before returning the remaining items. Start listing from from next item.</param>
+        /// <param name="nResults">The number of items to return.</param>
+        /// <param name="orderProps">List of order properties requested by the client.</param>
+        /// <returns>Items requested by the client and a total number of items in this folder.</returns>
+        public virtual async Task<PageResults> GetChildrenAsync(IList<PropertyName> propNames, long? offset, long? nResults, IList<OrderProperty> orderProps)
         {
             // Enumerates all child files and folders.
             // You can filter children items in this implementation and 
@@ -74,7 +79,18 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
             IList<IHierarchyItemAsync> children = new List<IHierarchyItemAsync>();
 
             FileSystemInfo[] fileInfos = null;
+            long totalItems = 0;
             fileInfos = dirInfo.GetFileSystemInfos();
+            totalItems = fileInfos.Length;
+
+            // Apply sorting.
+            fileInfos = SortChildren(fileInfos, orderProps);
+
+            // Apply paging.
+            if (offset.HasValue && nResults.HasValue)
+            {
+                fileInfos = fileInfos.Skip((int)offset.Value).Take((int)nResults.Value).ToArray();
+            }
 
             foreach (FileSystemInfo fileInfo in fileInfos)
             {
@@ -86,7 +102,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
                 }
             }
 
-            return children;
+            return new PageResults(children, totalItems);
         }
 
         /// <summary>
@@ -157,7 +173,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
 
             // Copy children.
             IFolderAsync createdFolder = (IFolderAsync)await context.GetHierarchyItemAsync(targetPath);
-            foreach (DavHierarchyItem item in await GetChildrenAsync(new PropertyName[0]))
+            foreach (DavHierarchyItem item in (await GetChildrenAsync(new PropertyName[0], null, null, null)).Page)
             {
                 if (!deep && item is DavFolder)
                 {
@@ -219,7 +235,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
             // Move child items.
             bool movedSuccessfully = true;
             IFolderAsync createdFolder = (IFolderAsync)await context.GetHierarchyItemAsync(targetPath);
-            foreach (DavHierarchyItem item in await GetChildrenAsync(new PropertyName[0]))
+            foreach (DavHierarchyItem item in (await GetChildrenAsync(new PropertyName[0], null, null, null)).Page)
             {
                 try
                 {
@@ -256,7 +272,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
             */
             await RequireHasTokenAsync();
             bool allChildrenDeleted = true;
-            foreach (IHierarchyItemAsync child in await GetChildrenAsync(new PropertyName[0]))
+            foreach (IHierarchyItemAsync child in (await GetChildrenAsync(new PropertyName[0], null, null, null)).Page)
             {
                 try
                 {
@@ -307,7 +323,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
         }
 
         /// <summary>
-        /// Searches files and folders in current folder using search phrase and options.
+        /// Searches files and folders in current folder using search phrase, offset, nResults and options.
         /// </summary>
         /// <param name="searchString">A phrase to search.</param>
         /// <param name="options">Search options.</param>
@@ -315,12 +331,15 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
         /// List of properties to retrieve with each item returned by this method. They will be requested by the 
         /// Engine in <see cref="IHierarchyItemAsync.GetPropertiesAsync(IList{PropertyName}, bool)"/> call.
         /// </param>
-        /// <returns>List of <see cref="IHierarchyItemAsync"/> satisfying search request.</returns>
-        public async Task<IEnumerable<IHierarchyItemAsync>> SearchAsync(string searchString, SearchOptions options, List<PropertyName> propNames)
+        /// <param name="offset">The number of children to skip before returning the remaining items. Start listing from from next item.</param>
+        /// <param name="nResults">The number of items to return.</param>
+        /// <returns>List of <see cref="IHierarchyItemAsync"/> satisfying search request.</returns>1
+        /// <returns>Items satisfying search request and a total number.</returns>
+        public async Task<PageResults> SearchAsync(string searchString, SearchOptions options, List<PropertyName> propNames, long? offset, long? nResults)
         {
             // Not implemented currently. .NET Core on Mac OS X does not provide a OLEDB driver at this time.
             // To generate a Windows-specific search code use the 'ASP.NET WebDAV Server Application' wizard for Visual Studio.
-            return new List<IHierarchyItemAsync>();
+            return new PageResults(null, 0);
         }
 
         /// <summary>
@@ -331,6 +350,70 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
         private bool IsRecursive(DavFolder destFolder)
         {
             return destFolder.Path.StartsWith(Path);
+        }
+
+        /// <summary>
+        /// Sorts array of FileSystemInfo according to the specified order.
+        /// </summary>
+        /// <param name="fileInfos">Array of files and folders to sort.</param>
+        /// <param name="orderProps">Sorting order.</param>
+        /// <returns>Sorted list of files and folders.</returns>
+        private FileSystemInfo[] SortChildren(FileSystemInfo[] fileInfos, IList<OrderProperty> orderProps)
+        {
+            if (orderProps != null && orderProps.Count() != 0)
+            {
+                // map DAV properties to FileSystemInfo 
+                Dictionary<string, string> mappedProperties = new Dictionary<string, string>()
+                { { "displayname", "Name" }, { "getlastmodified", "LastWriteTime" }, { "getcontenttype", "Extension" },
+                  { "quota-used-bytes", "ContentLength" }, { "is-directory", "IsDirectory" } };
+                IOrderedEnumerable<FileSystemInfo> orderedFileInfos = null;
+                int index = 0;
+
+                foreach (OrderProperty ordProp in orderProps)
+                {
+                    string propertyName = mappedProperties[ordProp.Property.Name];
+                    Func<FileSystemInfo, object> sortFunc = null;
+                    PropertyInfo propertyInfo = (typeof(FileSystemInfo)).GetProperties().FirstOrDefault(p => p.Name.Equals(propertyName, StringComparison.InvariantCultureIgnoreCase));
+                    if (propertyInfo != null)
+                    {
+                        sortFunc = p => p.GetType().GetProperty(propertyInfo.Name).GetValue(p);
+                    }
+                    else if (propertyName == "IsDirectory")
+                    {
+                        sortFunc = p => p.IsDirectory();
+                    }
+                    else if (propertyName == "ContentLength")
+                    {
+                        sortFunc = p => p is FileInfo ? (p as FileInfo).Length : 0;
+                    }
+
+                    if (sortFunc != null)
+                    {
+                        if (index++ == 0)
+                        {
+                            if (ordProp.Ascending)
+                                orderedFileInfos = fileInfos.OrderBy(sortFunc);
+                            else
+                                orderedFileInfos = fileInfos.OrderByDescending(sortFunc);
+                        }
+                        else
+                        {
+                            if (ordProp.Ascending)
+                                orderedFileInfos = orderedFileInfos.ThenBy(sortFunc);
+                            else
+                                orderedFileInfos = orderedFileInfos.ThenByDescending(sortFunc);
+                        }
+                    }
+
+                }
+
+                if (orderedFileInfos != null)
+                {
+                    fileInfos = orderedFileInfos.ToArray();
+                }
+            }
+
+            return fileInfos;
         }
     }
 }

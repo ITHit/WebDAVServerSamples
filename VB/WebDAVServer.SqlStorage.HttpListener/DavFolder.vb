@@ -7,6 +7,7 @@ Imports ITHit.WebDAV.Server.Class1
 Imports ITHit.WebDAV.Server.Class2
 Imports ITHit.WebDAV.Server.Search
 Imports ITHit.WebDAV.Server.ResumableUpload
+Imports ITHit.WebDAV.Server.Paging
 
 ''' <summary>
 ''' Represents folder in webdav repository.
@@ -37,13 +38,14 @@ Public Class DavFolder
     End Sub
 
     ''' <summary>
-    ''' Gets child items of this folder (files or folders).
+    ''' Called when children of this folder with paging information are being listed.
     ''' </summary>
-    ''' <param name="props">
-    ''' List of properties which will be requested from children later. We don't use it here.
-    ''' </param>
-    ''' <returns>Enumerable with files and folders.</returns>
-    Public Async Function GetChildrenAsync(props As IList(Of PropertyName)) As Task(Of IEnumerable(Of IHierarchyItemAsync)) Implements IItemCollectionAsync.GetChildrenAsync
+    ''' <param name="propNames">List of properties to retrieve with the children. They will be queried by the engine later.</param>
+    ''' <param name="offset">The number of children to skip before returning the remaining items. Start listing from from next item.</param>
+    ''' <param name="nResults">The number of items to return.</param>
+    ''' <param name="orderProps">List of order properties requested by the client.</param>
+    ''' <returns>Items requested by the client and a total number of items in this folder.</returns>
+    Public Overridable Async Function GetChildrenAsync(propNames As IList(Of PropertyName), offset As Long?, nResults As Long?, orderProps As IList(Of OrderProperty)) As Task(Of PageResults) Implements IItemCollectionAsync.GetChildrenAsync
         Dim command As String = "SELECT 
                       ItemId
                     , ParentItemId
@@ -52,9 +54,10 @@ Public Class DavFolder
                     , Created
                     , Modified                  FROM Item
                    WHERE ParentItemId = @Parent"
-        Return Await Context.ExecuteItemAsync(Of IHierarchyItemAsync)(Path,
-                                                                     command,
-                                                                     "@Parent", ItemId)
+        Dim children As IList(Of IHierarchyItemAsync) = Await Context.ExecuteItemAsync(Of IHierarchyItemAsync)(Path,
+                                                                                                              command,
+                                                                                                              "@Parent", ItemId)
+        Return New PageResults(children, Nothing)
     End Function
 
     ''' <summary>
@@ -123,7 +126,7 @@ Public Class DavFolder
         Dim newDestFolder As DavFolder = Await CopyThisItemAsync(destDavFolder, Nothing, destName)
         ' copy children
         If deep Then
-            For Each child As IHierarchyItemAsync In Await GetChildrenAsync(New PropertyName(-1) {})
+            For Each child As IHierarchyItemAsync In(Await GetChildrenAsync(New PropertyName(-1) {}, Nothing, Nothing, Nothing)).Page
                 Dim dbchild = TryCast(child, DavHierarchyItem)
                 Try
                     Await dbchild.CopyToAsync(newDestFolder, child.Name, deep, multistatus)
@@ -188,7 +191,7 @@ Public Class DavFolder
 
         ' move children
         Dim movedAllChildren As Boolean = True
-        For Each child As IHierarchyItemAsync In Await GetChildrenAsync(New PropertyName(-1) {})
+        For Each child As IHierarchyItemAsync In(Await GetChildrenAsync(New PropertyName(-1) {}, Nothing, Nothing, Nothing)).Page
             Dim dbchild As DavHierarchyItem = TryCast(child, DavHierarchyItem)
             Try
                 Await dbchild.MoveToAsync(newDestFolder, child.Name, multistatus)
@@ -227,7 +230,7 @@ Public Class DavFolder
         End If
 
         Dim deletedAllChildren As Boolean = True
-        For Each child As IHierarchyItemAsync In Await GetChildrenAsync(New PropertyName(-1) {})
+        For Each child As IHierarchyItemAsync In(Await GetChildrenAsync(New PropertyName(-1) {}, Nothing, Nothing, Nothing)).Page
             Dim dbchild As DavHierarchyItem = TryCast(child, DavHierarchyItem)
             Try
                 Await dbchild.DeleteAsync(multistatus)
@@ -244,7 +247,7 @@ Public Class DavFolder
     End Function
 
     ''' <summary>
-    ''' Searches files and folders in current folder using search phrase and options.
+    ''' Searches files and folders in current folder using search phrase, offset, nResults and options.
     ''' </summary>
     ''' <param name="searchString">A phrase to search.</param>
     ''' <param name="options">Search options.</param>
@@ -252,8 +255,11 @@ Public Class DavFolder
     ''' List of properties to retrieve with each item returned by this method. They will be requested by the 
     ''' Engine in <see cref="IHierarchyItemAsync.GetPropertiesAsync(IList{PropertyName}, bool)"/>  call.
     ''' </param>
-    ''' <returns>List of <see cref="IHierarchyItemAsync"/>  satisfying search request.</returns>
-    Public Async Function SearchAsync(searchString As String, options As SearchOptions, propNames As List(Of PropertyName)) As Task(Of IEnumerable(Of IHierarchyItemAsync)) Implements ISearchAsync.SearchAsync
+    ''' <param name="offset">The number of children to skip before returning the remaining items. Start listing from from next item.</param>
+    ''' <param name="nResults">The number of items to return.</param>
+    ''' <returns>List of <see cref="IHierarchyItemAsync"/>  satisfying search request.</returns>1
+    ''' <returns>Items satisfying search request and a total number.</returns>
+    Public Async Function SearchAsync(searchString As String, options As SearchOptions, propNames As List(Of PropertyName), offset As Long?, nResults As Long?) As Task(Of PageResults) Implements ISearchAsync.SearchAsync
         Dim includeSnippet As Boolean = propNames.Any(Function(s) s.Name = SNIPPET)
         Dim condition As String = "Name LIKE @Name"
         ' To enable full-text search, uncoment the code below and follow instructions 
@@ -270,7 +276,7 @@ Public Class DavFolder
                    WHERE ParentItemId = @Parent AND ({0})", condition)
         Dim result As List(Of IHierarchyItemAsync) = New List(Of IHierarchyItemAsync)()
         Await GetSearchResultsAsync(result, commandText, searchString, includeSnippet)
-        Return result
+        Return New PageResults(result, Nothing)
     End Function
 
     ''' <summary>
@@ -350,7 +356,7 @@ Public Class DavFolder
             Return False
         End If
 
-        For Each child As IHierarchyItemAsync In Await GetChildrenAsync(New PropertyName(-1) {})
+        For Each child As IHierarchyItemAsync In(Await GetChildrenAsync(New PropertyName(-1) {}, Nothing, Nothing, Nothing)).Page
             Dim childFolder As DavFolder = TryCast(child, DavFolder)
             If childFolder IsNot Nothing Then
                 If Not Await childFolder.ClientHasTokenForTreeAsync() Then

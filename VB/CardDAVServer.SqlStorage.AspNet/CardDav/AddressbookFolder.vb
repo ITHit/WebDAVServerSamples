@@ -8,6 +8,7 @@ Imports ITHit.WebDAV.Server
 Imports ITHit.WebDAV.Server.CardDav
 Imports ITHit.WebDAV.Server.Acl
 Imports ITHit.WebDAV.Server.Class1
+Imports ITHit.WebDAV.Server.Paging
 
 Namespace CardDav
 
@@ -212,7 +213,7 @@ Namespace CardDav
         Public Async Function QueryAsync(rawQuery As String, propNames As IEnumerable(Of PropertyName)) As Task(Of IEnumerable(Of ICardFileAsync)) Implements IAddressbookReportAsync.QueryAsync
             ' For the sake of simplicity we just call GetChildren returning all items. 
             ' Typically you will return only items that match the query.
-            Return(Await GetChildrenAsync(propNames.ToList())).Cast(Of ICardFileAsync)()
+            Return(Await GetChildrenAsync(propNames.ToList(), Nothing, Nothing, Nothing)).Page.Cast(Of ICardFileAsync)()
         End Function
 
         ''' <summary>
@@ -228,8 +229,11 @@ Namespace CardDav
         ''' Retrieves children of this folder.
         ''' </summary>
         ''' <param name="propNames">List of properties to retrieve with the children. They will be queried by the engine later.</param>
+        ''' <param name="offset">The number of children to skip before returning the remaining items. Start listing from from next item.</param>
+        ''' <param name="nResults">The number of items to return.</param>
+        ''' <param name="orderProps">List of order properties requested by the client.</param>
         ''' <returns>Children of the folder.</returns>
-        Public Async Function GetChildrenAsync(propNames As IList(Of PropertyName)) As Task(Of IEnumerable(Of IHierarchyItemAsync)) Implements IItemCollectionAsync.GetChildrenAsync
+        Public Async Function GetChildrenAsync(propNames As IList(Of PropertyName), offset As Long?, nResults As Long?, orderProps As IList(Of OrderProperty)) As Task(Of PageResults) Implements IItemCollectionAsync.GetChildrenAsync
             ' Here we enumerate all business cards contained in this address book.
             ' You can filter children items in this implementation and 
             ' return only items that you want to be available for this 
@@ -239,7 +243,7 @@ Namespace CardDav
             ' report, in MultiGetAsync() method call, that follows this request.
             ' Bynari submits PROPFIND without props - Engine will request getcontentlength
             Dim children As IList(Of IHierarchyItemAsync) = New List(Of IHierarchyItemAsync)()
-            Return Await CardFile.LoadByAddressbookFolderIdAsync(Context, addressbookFolderId, PropsToLoad.Minimum)
+            Return New PageResults((Await CardFile.LoadByAddressbookFolderIdAsync(Context, addressbookFolderId, PropsToLoad.Minimum)), Nothing)
         End Function
 
         ''' <summary>

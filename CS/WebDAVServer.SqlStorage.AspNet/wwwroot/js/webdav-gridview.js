@@ -1,5 +1,4 @@
-
-﻿
+﻿﻿
 (function () {
     var Formatters = {
 
@@ -52,8 +51,17 @@
                     replace(new RegExp(safePrefix + '_1', 'g'), '</b>');
             }
             return $('<div />').addClass('snippet').html(html);
-        }
+        },
 
+        /**
+         *
+         * @param {string} fileName
+         * @returns {string}
+         */
+        GetFileExtension: function (fileName) {
+            var index = fileName.lastIndexOf('.');
+            return index !== -1 ? fileName.substr(index + 1).toLowerCase() : '';
+        }
     };
 
     ///////////////////
@@ -82,24 +90,6 @@
         Render: function (aItems, bIsSearchMode) {
             this.IsSearchMode = bIsSearchMode || false;
 
-            // Sort by display name
-            if (''.localeCompare) {
-                aItems.sort(function (a, b) {
-                    return a.DisplayName.localeCompare(b.DisplayName);
-                });
-            } else {
-                aItems.sort(function (a, b) {
-                    return a.DisplayName < b.DisplayName ? -1 : (a.DisplayName > b.DisplayName ? 1 : 0);
-                });
-            }
-
-            // Folders at first
-            aItems = [].concat(aItems.filter(function (oItem) {
-                return oItem.IsFolder();
-            })).concat(aItems.filter(function (oItem) {
-                return !oItem.IsFolder();
-            }));
-
             this.$el.find('tbody').html(
                 aItems.map(function (oItem, i) {
                     var locked = oItem.ActiveLocks.length > 0
@@ -113,6 +103,7 @@
                                 html(oItem.IsFolder() ? '<span class="fas fa-folder">' + locked +
                                     '</span>' : locked),
                             this._RenderDisplayName(oItem),
+                            $('<td class="d-none d-sm-table-cell" />').text(oItem.IsFolder() ? 'Folder' : ('File ' + Formatters.GetFileExtension(oItem.DisplayName))),
                             $('<td />').
                                 text(!oItem.IsFolder() ? Formatters.FileSize(oItem.ContentLength) : '').
                                 css('text-align', 'right'),
@@ -227,17 +218,20 @@
             return this.$el.find('input.tt-input').val();
         },
 
+        LoadFromHash: function () {
+            this.$el.find('input.tt-input').val(oWebDAV.GetHashValue('search'));
+            this._RenderFolderGrid(oWebDAV.GetHashValue('search'), oWebDAV.GetHashValue('page'));
+        },
+
         _Source: function (sPhrase, c, fCallback) {
-            oWebDAV.NavigateSearch(sPhrase, false, function (aItems) {
-                fCallback(aItems);
+            oWebDAV.NavigateSearch(sPhrase, false, 1, false, function (oResult) {
+                fCallback(oResult.Result);
             });
         },
 
         _OnKeyUp: function (oEvent) {
             if (oEvent.keyCode === 13) {
-                oWebDAV.NavigateSearch(oSearchForm.GetValue(), false, function (aItems) {
-                    oFolderGrid.Render(aItems, true);
-                });
+                this._RenderFolderGrid(oSearchForm.GetValue(), 1);
                 this.$el.find('input').typeahead('close');
                 this._HideKeyboard(this.$el.find('input'));
             }
@@ -245,11 +239,24 @@
 
         _OnSelect: function (oEvent, oItem) {
             oFolderGrid.Render([oItem], true);
+            oPagination.Hide();
         },
 
         _OnSubmit: function () {
-            oWebDAV.NavigateSearch(oSearchForm.GetValue(), false, function (aItems) {
-                oFolderGrid.Render(aItems, true);
+            this._RenderFolderGrid(oSearchForm.GetValue(), 1);
+        },
+
+        _RenderFolderGrid: function (oSearchQuery, nPageNumber) {
+            var oSearchFormView = this;
+            oWebDAV.NavigateSearch(oSearchForm.GetValue(), false, nPageNumber, true, function (oResult) {
+                oFolderGrid.Render(oResult.Result, true);
+                oPagination.Render(nPageNumber, Math.ceil(oResult.PagingTotal / oWebDAV.PageSize), function (pageNumber) {
+                    oSearchFormView._RenderFolderGrid(oSearchQuery, pageNumber);
+                });
+
+                if (oResult.Result.length == 0 && nPageNumber != 1) {
+                    oSearchFormView._RenderFolderGrid(oSearchQuery, 1);
+                }
             });
         },
 
@@ -315,6 +322,109 @@
 
     };
 
+    ///////////////////
+    // Pagination View
+    var PaginationView = function (selector) {
+        this.$el = $(selector);
+        this.maxItems = 5;
+    };
+    PaginationView.prototype = {
+        Render: function (pageNumber, countPages, changePageCallback) {
+            this.$el.empty();
+
+            if (countPages && countPages > 1) {
+                // render Previous link
+                $('<a />').addClass('page-link').appendTo($('<li/>').addClass('page-item ' + (pageNumber == 1 ? 'disabled' : '')).appendTo(this.$el)).text('<<').click(function () {
+                    if (pageNumber != 1)
+                        changePageCallback(pageNumber - 1);
+                    return false;
+                });
+
+                // render pages
+                var firstPage = countPages > this.maxItems && (pageNumber - Math.floor(this.maxItems / 2)) > 0 ? (pageNumber - Math.floor(this.maxItems / 2)) : 1;
+                var lastPage = (firstPage + this.maxItems - 1) <= countPages ? (firstPage + this.maxItems - 1) : countPages;
+
+                if (countPages > this.maxItems && lastPage - firstPage < this.maxItems) {
+                    firstPage = lastPage - this.maxItems + 1;
+                }
+
+                if (firstPage > 1 && countPages > this.maxItems) {
+                    $('<a />').addClass('page-link').data('page-number', 1).appendTo($('<li/>').addClass('page-item ' + (1 == pageNumber ? 'active' : '')).appendTo(this.$el)).text(1).click(function () {
+                        if (pageNumber != $(this).data('page-number')) {
+                            changePageCallback($(this).data('page-number'));
+                        }
+                        return false;
+                    });
+                    if (firstPage - 1 > 1) {
+                        $('<a />').addClass('page-link').data('page-number', i).appendTo($('<li/>').addClass('page-item disabled').appendTo(this.$el)).text('...');
+                    }
+                }
+
+                for (var i = firstPage; i <= lastPage; i++) {
+                    $('<a />').addClass('page-link').data('page-number', i).appendTo($('<li/>').addClass('page-item ' + (i == pageNumber ? 'active' : '')).appendTo(this.$el)).text(i).click(function () {
+                        if (pageNumber != $(this).data('page-number')) {
+                            changePageCallback($(this).data('page-number'));
+                        }
+                        return false;
+                    });
+                }
+
+                if (lastPage != countPages && countPages > this.maxItems) {
+                    if (lastPage != countPages - 1) {
+                        $('<a />').addClass('page-link').data('page-number', i).appendTo($('<li/>').addClass('page-item disabled').appendTo(this.$el)).text('...');
+                    }
+                    $('<a />').addClass('page-link').data('page-number', countPages).appendTo($('<li/>').addClass('page-item ' + (countPages == pageNumber ? 'active' : '')).appendTo(this.$el)).text(countPages).click(function () {
+                        if (pageNumber != $(this).data('page-number'))
+                            changePageCallback($(this).data('page-number'));
+                        return false;
+                    });
+                }
+
+                // render Next link
+                $('<a />').addClass('page-link').appendTo($('<li/>').addClass('page-item ' + (countPages == pageNumber ? 'disabled' : '')).appendTo(this.$el)).text('>>').click(function () {
+                    if (pageNumber != countPages)
+                        changePageCallback(pageNumber + 1);
+                    return false;
+                });
+            }
+        },
+
+        Hide: function () {
+            this.$el.empty();
+        }
+    }
+
+    ///////////////////
+    // Table sorting View
+    var TableSortingView = function (selector) {
+        this.$headerCols = $(selector);
+        this.Init();
+    };
+    TableSortingView.prototype = {
+        Init: function () {
+            var $cols = this.$headerCols;
+            $cols.click(function () {
+                var className = 'ascending'
+                if ($(this).hasClass('ascending')) {
+                    className = 'descending';
+                }
+                $cols.removeClass('ascending descending');
+                $(this).addClass(className);
+
+                oWebDAV.Sort($(this).data('sort-column'), className == 'ascending');
+            })
+        },
+
+        Set: function (sortColumn, sortAscending) {
+            var $col = this.$headerCols.filter('[data-sort-column="' + sortColumn + '"]');
+            if (sortAscending) {
+                $col.removeClass('descending').addClass('ascending');
+            } else {
+                $col.removeClass('ascending').addClass('descending');
+            }
+        }
+    }
+
     /////////////////////////
     // History Api Controller
     var HistoryApiController = function (selector) {
@@ -333,8 +443,10 @@
         },
 
         _OnPopState: function (oEvent) {
-            var sUrl = oEvent.state && oEvent.state.Url || location.href;
-            oWebDAV.NavigateFolder(sUrl);
+            if (!oWebDAV.GetHashValue('search')) {
+                var sUrl = oEvent.state && oEvent.state.Url || window.location.href.split("#")[0];
+                oWebDAV.NavigateFolder(sUrl);
+            }
         },
 
         _OnLinkClick: function (oEvent) {
@@ -343,7 +455,7 @@
                 return;
             }
 
-            if (sUrl.indexOf((location.origin || location.href.replace(location.pathname, ''))) !== 0) {
+            if (sUrl.indexOf((location.origin || window.location.href.split("#")[0].replace(location.pathname, ''))) !== 0) {
                 return;
             }
 
@@ -377,9 +489,9 @@
             this.successfulCallback = successfulCallback;
             this.$el.find('.message').html(htmlMessage);
             if (options && options.size == 'lg')
-                $modalDialog.removeClass('modal-sm');
+                $modalDialog.removeClass('modal-sm').addClass('modal-lg');
             else
-                $modalDialog.addClass('modal-sm');
+                $modalDialog.removeClass('modal-lg').addClass('modal-sm');
 
             this.$el.modal('show');
         }
@@ -426,6 +538,7 @@
     }
 
     var WebDAVController = function () {
+        this.PageSize = 10; // set size items of page
         this.CurrentFolder = null;
         this.WebDavSession = new ITHit.WebDAV.Client.WebDavSession();
         this.SnippetPropertyName = new ITHit.WebDAV.Client.PropertyName('snippet', 'ithit');
@@ -435,12 +548,58 @@
 
         Reload: function () {
             if (this.CurrentFolder) {
-                this.NavigateFolder(this.CurrentFolder.Href);
+                if (this.GetHashValue('search')) {
+                    oSearchForm.LoadFromHash();
+                }
+                else {
+                    this.NavigateFolder(this.CurrentFolder.Href);
+                }
             }
         },
 
-        NavigateFolder: function (sPath) {
+        NavigateFolder: function (sPath, pageNumber, sortColumn, sortAscending, fCallback) {
+            var pageSize = this.PageSize;
+            // add default sorting by file type
+            var sortColumns = [new ITHit.WebDAV.Client.OrderProperty(new ITHit.WebDAV.Client.PropertyName('is-directory', ITHit.WebDAV.Client.DavConstants.NamespaceUri), this.CurrentSortColumnAscending)];
+            if (!sPath && this.CurrentFolder) {
+                sPath = this.CurrentFolder.Href;
+            }
+
+            if (!this.CurrentPageNumber) {
+                this.CurrentPageNumber = 1;
+            }
+
+            if (sortColumn) {
+                this.CurrentSortColumn = sortColumn;
+                this.CurrentSortAscending = sortAscending;
+                this.SetHashValue('sortcolumn', sortColumn);
+                this.SetHashValue('sortascending', sortAscending.toString());
+            } else if (this.GetHashValue('sortcolumn')) {
+                this.CurrentSortColumn = this.GetHashValue('sortcolumn');
+                this.CurrentSortAscending = this.GetHashValue('sortascending') == 'true';
+                oTableSorting.Set(this.CurrentSortColumn, this.CurrentSortAscending);
+            } else if (!this.CurrentSortColumn) {
+                this.CurrentSortColumn = 'displayname';
+                this.CurrentSortAscending = true;
+                oTableSorting.Set(this.CurrentSortColumn, this.CurrentSortAscending);
+            }
+
+            // apply sorting by table column
+            if (this.CurrentSortColumn) {
+                sortColumns.push(new ITHit.WebDAV.Client.OrderProperty(new ITHit.WebDAV.Client.PropertyName(this.CurrentSortColumn, ITHit.WebDAV.Client.DavConstants.NamespaceUri), this.CurrentSortAscending));
+            }
+
+            // update page number
+            if (pageNumber) {
+                this.CurrentPageNumber = pageNumber;
+            } else if (this.GetHashValue('page')) {
+                this.CurrentPageNumber = parseInt(this.GetHashValue('page'));
+            }
+            this.SetHashValue('page', this.CurrentPageNumber);
+
+
             this.WebDavSession.OpenFolderAsync(sPath, [], function (oResponse) {
+                pageNumber = this.CurrentPageNumber;
                 this.CurrentFolder = oResponse.Result;
                 oBreadcrumbs.SetHierarchyItem(this.CurrentFolder);
 
@@ -452,24 +611,52 @@
                     oSearchForm.SetDisabled(!(oOptionsInfo.Features & ITHit.WebDAV.Client.Features.Dasl));
                 });
 
-                this.CurrentFolder.GetChildrenAsync(false, [], function (oResult) {
+                this.CurrentFolder.GetPageAsync(false, [], (this.CurrentPageNumber - 1) * pageSize, pageSize, sortColumns, function (oResult) {
                     /** @type {ITHit.WebDAV.Client.HierarchyItem[]} aItems */
                     var aItems = oResult.Result;
+                    var aCountPages = Math.ceil(oResult.PagingTotal / pageSize);
 
                     oFolderGrid.Render(aItems, false);
-                })
+                    oPagination.Render(pageNumber, aCountPages, function (pageNumber) {
+                        oWebDAV.NavigateFolder(null, pageNumber);
+                    });
+
+                    if (aItems.length == 0 && pageNumber != 1) {
+                        oWebDAV.NavigateFolder(null, 1);
+                    }
+
+                    if (fCallback)
+                        fCallback(aItems);
+                });
             }.bind(this));
         },
 
-        NavigateSearch: function (sPhrase, bIsDynamic, fCallback) {
+        NavigateSearch: function (sPhrase, bIsDynamic, pageNumber, updateUrlHash, fCallback) {
+            var pageSize = this.PageSize;
+
             if (!this.CurrentFolder) {
-                fCallback && fCallback([]);
+                fCallback && fCallback({ Items: [], PagingTotal: 0 });
                 return;
+            }
+
+            if (updateUrlHash) {
+                this.SetHashValue('search', sPhrase);
             }
 
             if (sPhrase === '') {
                 this.Reload();
                 return;
+            }
+
+            // update page number
+            if (pageNumber) {
+                this.CurrentPageNumber = pageNumber;
+            } else if (this.GetHashValue('page')) {
+                this.CurrentPageNumber = parseInt(this.GetHashValue('page'));
+            }
+
+            if (updateUrlHash) {
+                this.SetHashValue('page', this.CurrentPageNumber);
             }
 
             // The DASL search phrase can contain wildcard characters and escape according to DASL rules:
@@ -489,14 +676,17 @@
                 this.SnippetPropertyName
             ];
 
-            this.CurrentFolder.SearchByQueryAsync(searchQuery, function (oResult) {
+            this.CurrentFolder.PageSearchByQueryAsync(searchQuery, (this.CurrentPageNumber - 1) * pageSize, pageSize, function (oResult) {
                 /** @type {ITHit.WebDAV.Client.AsyncResult} oResult */
 
                 /** @type {ITHit.WebDAV.Client.HierarchyItem[]} aItems */
-                var aItems = oResult.Result;
 
-                fCallback && fCallback(aItems);
+                fCallback && fCallback(oResult);
             });
+        },
+
+        Sort: function (columnName, sortAscending) {
+            this.NavigateFolder(null, null, columnName, sortAscending)
         },
 
         /**
@@ -568,6 +758,65 @@
         },
 
         /**
+         * Returns value from hash
+         * @return {string}
+         */
+        GetHashValue: function (key) {
+            var hashConfig = this._parseUrlHash();
+
+            return hashConfig.hasOwnProperty(key) ? hashConfig[key] : null;
+        },
+
+        /**
+         * Sets value to hash       
+         */
+        SetHashValue: function (name, value) {
+            var nameExist = false;
+            var hashValue = null;
+            var hashConfig = this._parseUrlHash();
+            var params = [];
+
+            for (var key in hashConfig) {
+                if (hashConfig.hasOwnProperty(key)) {
+                    if (key == name) {
+                        nameExist = true;
+                        hashConfig[key] = value;
+                    }
+
+                    if (!hashConfig[key]) {
+                        continue;
+                    }
+
+                    params.push(key + '=' + hashConfig[key]);
+                }
+            }
+
+            if (!nameExist) {
+                params.push(name + '=' + value);
+            }
+
+            location.hash = params.length > 0 ? ('#' + params.join('&')) : null;
+        },
+
+        /**
+         * Parses hash
+         * @return {string}
+         */
+        _parseUrlHash: function () {
+            // Parse hash
+            var hash = {};
+            if (location.hash.length > 0) {
+                var hashParts = location.hash.substr(1).split('&');
+                for (var i = 0, l = hashParts.length; i < l; i++) {
+                    var param = hashParts[i].split('=');
+                    hash[param[0]] = param[1];
+                }
+            }
+
+            return hash;
+        },
+
+        /**
          * Function to be called when document or OS file manager failed to open.
          * @private
          */
@@ -588,21 +837,29 @@
                     }, { size: 'lg' });
             }
         }
-
     };
 
     var oFolderGrid = new FolderGridView('.ithit-grid-container');
     var oSearchForm = new SearchFormView('.ithit-search-container');
     var oBreadcrumbs = new BreadcrumbsView('.ithit-breadcrumb-container');
+    var oPagination = new PaginationView('.ithit-pagination-container');
+    var oTableSorting = new TableSortingView('.ithit-grid-container th.sort');
     var oHistoryApi = new HistoryApiController('.ithit-grid-container, .ithit-breadcrumb-container');
     var oWebDAV = window.WebDAVController = new WebDAVController();
     var oConfirmModal = new ConfirmModal('#ConfirmModal');
     var oCreateFolderModal = new CreateFolderModal('#CreateFolderModal', '.btn-create-folder');
     // List files on a WebDAV server using WebDAV Ajax Library
-    oWebDAV.NavigateFolder(location.href);
+    if (oWebDAV.GetHashValue('search')) {
+        oWebDAV.NavigateFolder(window.location.href.split("#")[0], null, null, null, function () {
+            oSearchForm.LoadFromHash();
+        });
+    }
+    else {
+        oWebDAV.NavigateFolder(window.location.href.split("#")[0]);
+    }
 
     // Set Ajax lib version
     $('.ithit-version-value').text('v' + ITHit.WebDAV.Client.WebDavSession.Version + ' (Protocol v' + ITHit.WebDAV.Client.WebDavSession.ProtocolVersion + ')');
     $('.ithit-current-folder-value').text(oWebDAV.GetMountUrl());
 
-})();
+})();

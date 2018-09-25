@@ -5,6 +5,7 @@ Imports System.Web.Security
 Imports System.Threading.Tasks
 Imports ITHit.WebDAV.Server
 Imports ITHit.WebDAV.Server.Acl
+Imports ITHit.WebDAV.Server.Paging
 
 Namespace Acl
 
@@ -38,15 +39,18 @@ Namespace Acl
         ''' Retrieves users.
         ''' </summary>
         ''' <param name="propNames">Properties requested by client application for each child.</param>
+        ''' <param name="offset">The number of children to skip before returning the remaining items. Start listing from from next item.</param>
+        ''' <param name="nResults">The number of items to return.</param>
+        ''' <param name="orderProps">List of order properties requested by the client.</param>
         ''' <returns>Children of this folder - list of user principals.</returns>
-        Public Overrides Async Function GetChildrenAsync(propNames As IList(Of PropertyName)) As Task(Of IEnumerable(Of IHierarchyItemAsync)) Implements IItemCollectionAsync.GetChildrenAsync
+        Public Overrides Async Function GetChildrenAsync(propNames As IList(Of PropertyName), offset As Long?, nResults As Long?, orderProps As IList(Of OrderProperty)) As Task(Of PageResults) Implements IItemCollectionAsync.GetChildrenAsync
             ' Here you will list users from OWIN Identity or from membership provider, 
             ' you can replace it with your own users source.
             ' In this implementation we return only one user - current user, for demo purposes.
             ' We also do not populate user e-mail to avoid any queries to back-end storage.
             Dim children As IList(Of IHierarchyItemAsync) = New List(Of IHierarchyItemAsync)()
             children.Add(New User(Context, Context.UserId, Context.Identity.Name, Nothing, New DateTime(2000, 1, 1), New DateTime(2000, 1, 1)))
-            Return children
+            Return New PageResults(children, Nothing)
         End Function
 
         ''' <summary>

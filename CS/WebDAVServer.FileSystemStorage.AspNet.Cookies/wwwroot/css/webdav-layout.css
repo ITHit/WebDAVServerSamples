@@ -1,4 +1,4 @@
-
+﻿﻿
 .navbar-header h1 {
     height: auto;
     padding: 15px;
@@ -32,6 +32,29 @@
         right: 0;
         width: 85px;
     }
+
+th.sort {
+    position: relative;
+    cursor: pointer;
+}
+
+    th.sort.ascending, th.sort.descending {
+        padding-right: 15px;
+    }
+
+        th.sort.ascending:after, th.sort.descending:after {
+            content: "\f0de";
+            font-family: "Font Awesome 5 Free";
+            display: inline-block;
+            position: absolute;
+            right: 0;
+        }
+
+        th.sort.descending:after {
+            content: "\f0dd";
+            right: 0;
+            bottom: 8px;
+        }
 
 @media (max-width: 767px) {
     .ithit-search-container .twitter-typeahead {
@@ -333,3 +356,17 @@ button.btn.btn-transparent {
 .alert-danger {
     margin-top: 15px;
 }
+
+p.error-message {
+    margin: 0;
+}
+
+.btn-info {
+    padding: 0px 5px !important;
+    line-height: 1.2;
+    margin-top: -3px;
+}
+
+    .btn-info .fas {
+        vertical-align: initial;
+    }

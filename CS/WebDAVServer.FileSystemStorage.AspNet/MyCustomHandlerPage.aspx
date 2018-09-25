@@ -63,15 +63,20 @@
                             <tr>
                                 <th class="d-none d-sm-table-cell" scope="col">#</th>
                                 <th scope="col"></th>
-                                <th class="ellipsis" scope="col"><span>Display Name</span></th>
-                                <th class="text-right" scope="col">Size</th>
-                                <th class="d-none d-sm-table-cell" scope="col">Modified</th>
+                                <th class="ellipsis sort" scope="col" data-sort-column="displayname"><span>Display Name</span></th>
+                                <th class="d-none d-sm-table-cell sort" scope="col" data-sort-column="getcontenttype">Type</th>
+                                <th class="text-right sort" scope="col" data-sort-column="quota-used-bytes">Size</th>
+                                <th class="d-none d-sm-table-cell sort" scope="col" data-sort-column="getlastmodified">Modified</th>
                                 <th class="column-action" scope="col"></th>
                             </tr>
                         </thead>
                         <tbody></tbody>
                     </table>
                 </div>
+                <nav aria-label="Page navigation">
+                    <ul class="pagination flex-wrap justify-content-end ithit-pagination-container">                      
+                    </ul>
+                </nav>
                 <div id="ConfirmModal" class="modal" tabindex="-1" role="dialog" aria-labelledby="ConfirmModalLabel">
                     <div class="modal-dialog modal-sm" role="document">
                         <div class="modal-content">
@@ -201,6 +206,7 @@
     <script src="<%=Request.ApplicationPath.TrimEnd('/')%>/wwwroot/js/node_modules/webdav.client/ITHitWebDAVClient.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.11.1/typeahead.jquery.min.js"></script>  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0/js/bootstrap.min.js"></script>
     <script src="<%=Request.ApplicationPath.TrimEnd('/')%>/wwwroot/js/webdav-gridview.js"></script>
     <script src="<%=Request.ApplicationPath.TrimEnd('/')%>/wwwroot/js/webdav-uploader.js"></script>

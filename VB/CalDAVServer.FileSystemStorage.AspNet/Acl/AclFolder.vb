@@ -2,6 +2,7 @@ Imports System
 Imports System.Collections.Generic
 Imports System.Threading.Tasks
 Imports ITHit.WebDAV.Server
+Imports ITHit.WebDAV.Server.Paging
 
 Namespace Acl
 
@@ -40,11 +41,11 @@ Namespace Acl
         ''' </summary>
         ''' <param name="propNames">Property names to be fetched lated.</param>
         ''' <returns>Children of this folder.</returns>
-        Public Overrides Async Function GetChildrenAsync(propNames As IList(Of PropertyName)) As Task(Of IEnumerable(Of IHierarchyItemAsync))
+        Public Overrides Async Function GetChildrenAsync(propNames As IList(Of PropertyName), offset As Long?, nResults As Long?, orderProps As IList(Of OrderProperty)) As Task(Of PageResults)
             Dim children As IList(Of IHierarchyItemAsync) = New List(Of IHierarchyItemAsync)()
             children.Add(New UserFolder(Context))
             children.Add(New GroupFolder(Context))
-            Return children
+            Return New PageResults(children, Nothing)
         End Function
     End Class
 End Namespace

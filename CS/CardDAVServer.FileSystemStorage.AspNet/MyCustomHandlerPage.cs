@@ -36,7 +36,7 @@ namespace CardDAVServer.FileSystemStorage.AspNet
                 // Get list of folders that contain user address books and enumerate address books in each folder.
                 foreach (IItemCollectionAsync folder in await discovery.GetAddressbookHomeSetAsync())
                 {
-                    IEnumerable<IHierarchyItemAsync> children = await folder.GetChildrenAsync(new PropertyName[0]);
+                    IEnumerable<IHierarchyItemAsync> children = (await folder.GetChildrenAsync(new PropertyName[0], null, null, null)).Page;
                     AllUserAddressbooks.AddRange(children.Where(x => x is IAddressbookFolderAsync));
                 }
         }

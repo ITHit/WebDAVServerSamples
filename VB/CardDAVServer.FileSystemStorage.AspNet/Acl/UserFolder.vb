@@ -4,6 +4,7 @@ Imports System.Linq
 Imports System.Threading.Tasks
 Imports ITHit.WebDAV.Server
 Imports ITHit.WebDAV.Server.Acl
+Imports ITHit.WebDAV.Server.Paging
 
 Namespace Acl
 
@@ -40,10 +41,13 @@ Namespace Acl
         ''' <summary>
         ''' Retrieves users.
         ''' </summary>
-        ''' <param name="properties">List of properties which will be retrieved by the engine later.</param>
-        ''' <returns>Enumerable with users.</returns>
-        Public Overrides Async Function GetChildrenAsync(properties As IList(Of PropertyName)) As Task(Of IEnumerable(Of IHierarchyItemAsync)) Implements IItemCollectionAsync.GetChildrenAsync
-            Return Context.PrincipalOperation(Of IEnumerable(Of IHierarchyItemAsync))(AddressOf getUsers)
+        ''' <param name="properties">List of properties which will be retrieved by the engine later.</param>      
+        ''' <param name="offset">The number of children to skip before returning the remaining items. Start listing from from next item.</param>
+        ''' <param name="nResults">The number of items to return.</param>
+        ''' <param name="orderProps">List of order properties requested by the client.</param>
+        ''' <returns>Enumerable with users and a total number of users.</returns>
+        Public Overrides Async Function GetChildrenAsync(propNames As IList(Of PropertyName), offset As Long?, nResults As Long?, orderProps As IList(Of OrderProperty)) As Task(Of PageResults) Implements IItemCollectionAsync.GetChildrenAsync
+            Return New PageResults(Context.PrincipalOperation(Of IEnumerable(Of IHierarchyItemAsync))(AddressOf getUsers), Nothing)
         End Function
 
         ''' <summary>

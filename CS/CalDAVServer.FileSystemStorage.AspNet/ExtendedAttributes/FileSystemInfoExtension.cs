@@ -57,6 +57,28 @@ namespace CalDAVServer.FileSystemStorage.AspNet.ExtendedAttributes
         }
 
         /// <summary>
+        /// Checks whether a FileInfo or DirectoryInfo object is a directory, or intended to be a directory.
+        /// </summary>
+        /// <param name="fileSystemInfo"></param>
+        /// <returns></returns>
+        public static bool IsDirectory(this FileSystemInfo fileSystemInfo)
+        {
+            if (fileSystemInfo == null)
+            {
+                return false;
+            }
+
+            if ((int)fileSystemInfo.Attributes != -1)
+            {
+                // if attributes are initialized check the directory flag
+                return fileSystemInfo.Attributes.HasFlag(FileAttributes.Directory);
+            }
+
+            return fileSystemInfo is DirectoryInfo;
+        }
+
+
+        /// <summary>
         /// Checks extended attribute existence.
         /// </summary>  
         /// <param name="info"><see cref="FileSystemInfo"/> instance.</param>

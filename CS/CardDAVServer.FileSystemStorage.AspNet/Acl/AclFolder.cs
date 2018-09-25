@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using ITHit.WebDAV.Server;
+using ITHit.WebDAV.Server.Paging;
 
 namespace CardDAVServer.FileSystemStorage.AspNet.Acl
 {
@@ -38,12 +39,12 @@ namespace CardDAVServer.FileSystemStorage.AspNet.Acl
         /// </summary>
         /// <param name="propNames">Property names to be fetched lated.</param>
         /// <returns>Children of this folder.</returns>
-        public override async Task<IEnumerable<IHierarchyItemAsync>> GetChildrenAsync(IList<PropertyName> propNames)
+        public override async Task<PageResults> GetChildrenAsync(IList<PropertyName> propNames, long? offset, long? nResults, IList<OrderProperty> orderProps)
         {
             IList<IHierarchyItemAsync> children = new List<IHierarchyItemAsync>();
             children.Add(new UserFolder(Context));
             children.Add(new GroupFolder(Context));
-            return children;
+            return new PageResults(children, null);
         }
     }
 }

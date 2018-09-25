@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -12,6 +13,7 @@ using ITHit.WebDAV.Server.Class1;
 using CalDAVServer.FileSystemStorage.AspNet.Acl;
 using CalDAVServer.FileSystemStorage.AspNet.ExtendedAttributes;
 using ITHit.WebDAV.Server.Search;
+using ITHit.WebDAV.Server.Paging;
 
 namespace CalDAVServer.FileSystemStorage.AspNet
 {
@@ -56,14 +58,17 @@ namespace CalDAVServer.FileSystemStorage.AspNet
             : base(directory, context, path.TrimEnd('/') + "/")
         {
             dirInfo = directory;
-        }
+        }   
 
         /// <summary>
-        /// Called when children of this folder are being listed.
+        /// Called when children of this folder with paging information are being listed.
         /// </summary>
         /// <param name="propNames">List of properties to retrieve with the children. They will be queried by the engine later.</param>
-        /// <returns>Children of this folder.</returns>
-        public virtual async Task<IEnumerable<IHierarchyItemAsync>> GetChildrenAsync(IList<PropertyName> propNames)
+        /// <param name="offset">The number of children to skip before returning the remaining items. Start listing from from next item.</param>
+        /// <param name="nResults">The number of items to return.</param>
+        /// <param name="orderProps">List of order properties requested by the client.</param>
+        /// <returns>Items requested by the client and a total number of items in this folder.</returns>
+        public virtual async Task<PageResults> GetChildrenAsync(IList<PropertyName> propNames, long? offset, long? nResults, IList<OrderProperty> orderProps)
         {
             // Enumerates all child files and folders.
             // You can filter children items in this implementation and 
@@ -73,7 +78,18 @@ namespace CalDAVServer.FileSystemStorage.AspNet
             IList<IHierarchyItemAsync> children = new List<IHierarchyItemAsync>();
 
             FileSystemInfo[] fileInfos = null;
+            long totalItems = 0;
             fileInfos = dirInfo.GetFileSystemInfos();
+            totalItems = fileInfos.Length;
+
+            // Apply sorting.
+            fileInfos = SortChildren(fileInfos, orderProps);
+
+            // Apply paging.
+            if (offset.HasValue && nResults.HasValue)
+            {
+                fileInfos = fileInfos.Skip((int)offset.Value).Take((int)nResults.Value).ToArray();
+            }
 
             foreach (FileSystemInfo fileInfo in fileInfos)
             {
@@ -85,7 +101,7 @@ namespace CalDAVServer.FileSystemStorage.AspNet
                 }
             }
 
-            return children;
+            return new PageResults(children, totalItems);
         }
 
         /// <summary>
@@ -152,7 +168,7 @@ namespace CalDAVServer.FileSystemStorage.AspNet
 
             // Copy children.
             IFolderAsync createdFolder = (IFolderAsync)await context.GetHierarchyItemAsync(targetPath);
-            foreach (DavHierarchyItem item in await GetChildrenAsync(new PropertyName[0]))
+            foreach (DavHierarchyItem item in (await GetChildrenAsync(new PropertyName[0], null, null, null)).Page)
             {
                 if (!deep && item is DavFolder)
                 {
@@ -212,7 +228,7 @@ namespace CalDAVServer.FileSystemStorage.AspNet
             // Move child items.
             bool movedSuccessfully = true;
             IFolderAsync createdFolder = (IFolderAsync)await context.GetHierarchyItemAsync(targetPath);
-            foreach (DavHierarchyItem item in await GetChildrenAsync(new PropertyName[0]))
+            foreach (DavHierarchyItem item in (await GetChildrenAsync(new PropertyName[0], null, null, null)).Page)
             {
                 try
                 {
@@ -245,7 +261,7 @@ namespace CalDAVServer.FileSystemStorage.AspNet
             }
             */
             bool allChildrenDeleted = true;
-            foreach (IHierarchyItemAsync child in await GetChildrenAsync(new PropertyName[0]))
+            foreach (IHierarchyItemAsync child in (await GetChildrenAsync(new PropertyName[0], null, null, null)).Page)
             {
                 try
                 {
@@ -273,6 +289,70 @@ namespace CalDAVServer.FileSystemStorage.AspNet
         private bool IsRecursive(DavFolder destFolder)
         {
             return destFolder.Path.StartsWith(Path);
+        }
+
+        /// <summary>
+        /// Sorts array of FileSystemInfo according to the specified order.
+        /// </summary>
+        /// <param name="fileInfos">Array of files and folders to sort.</param>
+        /// <param name="orderProps">Sorting order.</param>
+        /// <returns>Sorted list of files and folders.</returns>
+        private FileSystemInfo[] SortChildren(FileSystemInfo[] fileInfos, IList<OrderProperty> orderProps)
+        {
+            if (orderProps != null && orderProps.Count() != 0)
+            {
+                // map DAV properties to FileSystemInfo 
+                Dictionary<string, string> mappedProperties = new Dictionary<string, string>()
+                { { "displayname", "Name" }, { "getlastmodified", "LastWriteTime" }, { "getcontenttype", "Extension" },
+                  { "quota-used-bytes", "ContentLength" }, { "is-directory", "IsDirectory" } };
+                IOrderedEnumerable<FileSystemInfo> orderedFileInfos = null;
+                int index = 0;
+
+                foreach (OrderProperty ordProp in orderProps)
+                {
+                    string propertyName = mappedProperties[ordProp.Property.Name];
+                    Func<FileSystemInfo, object> sortFunc = null;
+                    PropertyInfo propertyInfo = (typeof(FileSystemInfo)).GetProperties().FirstOrDefault(p => p.Name.Equals(propertyName, StringComparison.InvariantCultureIgnoreCase));
+                    if (propertyInfo != null)
+                    {
+                        sortFunc = p => p.GetType().GetProperty(propertyInfo.Name).GetValue(p);
+                    }
+                    else if (propertyName == "IsDirectory")
+                    {
+                        sortFunc = p => p.IsDirectory();
+                    }
+                    else if (propertyName == "ContentLength")
+                    {
+                        sortFunc = p => p is FileInfo ? (p as FileInfo).Length : 0;
+                    }
+
+                    if (sortFunc != null)
+                    {
+                        if (index++ == 0)
+                        {
+                            if (ordProp.Ascending)
+                                orderedFileInfos = fileInfos.OrderBy(sortFunc);
+                            else
+                                orderedFileInfos = fileInfos.OrderByDescending(sortFunc);
+                        }
+                        else
+                        {
+                            if (ordProp.Ascending)
+                                orderedFileInfos = orderedFileInfos.ThenBy(sortFunc);
+                            else
+                                orderedFileInfos = orderedFileInfos.ThenByDescending(sortFunc);
+                        }
+                    }
+
+                }
+
+                if (orderedFileInfos != null)
+                {
+                    fileInfos = orderedFileInfos.ToArray();
+                }
+            }
+
+            return fileInfos;
         }
     }
 }

@@ -545,7 +545,7 @@ namespace WebDAVServer.SqlStorage.AspNet
             IFolderAsync folder = root as IFolderAsync;
             if (folder != null)
             {
-                foreach (IHierarchyItemAsync child in await folder.GetChildrenAsync(new PropertyName[0]))
+                foreach (IHierarchyItemAsync child in (await folder.GetChildrenAsync(new PropertyName[0], null, null, null)).Page)
                 {
                     DavHierarchyItem dbchild = child as DavHierarchyItem;
                     if (await dbchild.ItemHasLockAsync(skipShared))

@@ -3,6 +3,7 @@ Imports System.Collections.Generic
 Imports System.Collections.Specialized
 Imports System.Threading.Tasks
 Imports ITHit.WebDAV.Server
+Imports ITHit.WebDAV.Server.Paging
 Imports CardDAVServer.SqlStorage.AspNet.Acl
 Imports CardDAVServer.SqlStorage.AspNet.CardDav
 
@@ -52,9 +53,12 @@ Public Class DavLocationFolder
     ''' Retrieves children of this folder: /acl/, /calendars/ and /addressbooks/ folders.
     ''' </summary>
     ''' <param name="propNames">Properties requested by client application for each child.</param>
+    ''' <param name="offset">The number of children to skip before returning the remaining items. Start listing from from next item.</param>
+    ''' <param name="nResults">The number of items to return.</param>
+    ''' <param name="orderProps">List of order properties requested by the client.</param>
     ''' <returns>Children of this folder.</returns>
-    Public Overrides Async Function GetChildrenAsync(propNames As IList(Of PropertyName)) As Task(Of IEnumerable(Of IHierarchyItemAsync))
+    Public Overrides Async Function GetChildrenAsync(propNames As IList(Of PropertyName), offset As Long?, nResults As Long?, orderProps As IList(Of OrderProperty)) As Task(Of PageResults)
         ' In this samle we list users folder only. Groups and groups folder is not implemented.
-        Return New IHierarchyItemAsync() {New AclFolder(Context), New AddressbooksRootFolder(Context)}
+        Return New PageResults(New IHierarchyItemAsync() {New AclFolder(Context), New AddressbooksRootFolder(Context)}, Nothing)
     End Function
 End Class

@@ -49,6 +49,25 @@ Namespace ExtendedAttributes
         End Function
 
         ''' <summary>
+        ''' Checks whether a FileInfo or DirectoryInfo object is a directory, or intended to be a directory.
+        ''' </summary>
+        ''' <param name="fileSystemInfo"></param>
+        ''' <returns></returns>
+        <Extension()>
+        Function IsDirectory(fileSystemInfo As FileSystemInfo) As Boolean
+            If fileSystemInfo Is Nothing Then
+                Return False
+            End If
+
+            If CInt(fileSystemInfo.Attributes) <> -1 Then
+                ' if attributes are initialized check the directory flag
+                Return fileSystemInfo.Attributes.HasFlag(FileAttributes.Directory)
+            End If
+
+            Return TypeOf fileSystemInfo Is DirectoryInfo
+        End Function
+
+        ''' <summary>
         ''' Checks extended attribute existence.
         ''' </summary>  
         ''' <param name="info"><see cref="FileSystemInfo"/>  instance.</param>

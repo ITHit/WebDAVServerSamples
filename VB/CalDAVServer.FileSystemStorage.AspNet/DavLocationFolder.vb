@@ -4,6 +4,7 @@ Imports System.Collections.Specialized
 Imports System.IO
 Imports System.Threading.Tasks
 Imports ITHit.WebDAV.Server
+Imports ITHit.WebDAV.Server.Paging
 
 ''' <summary>
 ''' Logical folder which contains /acl/, /calendars/ and /addressbooks/ folders.
@@ -68,14 +69,17 @@ Public Class DavLocationFolder
     ''' Retrieves children of this folder: /acl/, /calendars/ and /addressbooks/ folders.
     ''' </summary>
     ''' <param name="propNames">Properties requested by client application for each child.</param>
+    ''' <param name="offset">The number of children to skip before returning the remaining items. Start listing from from next item.</param>
+    ''' <param name="nResults">The number of items to return.</param>
+    ''' <param name="orderProps">List of order properties requested by the client.</param>
     ''' <returns>Children of this folder.</returns>
-    Public Overrides Async Function GetChildrenAsync(propNames As IList(Of PropertyName)) As Task(Of IEnumerable(Of IHierarchyItemAsync))
+    Public Overrides Async Function GetChildrenAsync(propNames As IList(Of PropertyName), offset As Long?, nResults As Long?, orderProps As IList(Of OrderProperty)) As Task(Of PageResults)
         Dim children As List(Of IHierarchyItemAsync) = New List(Of IHierarchyItemAsync)()
         ' At the upper level we have folder named [DavLocation]/acl/ which stores users and groups.
         ' This is a 'virtual' folder, it does not exist in file system.
         children.Add(New Acl.AclFolder(context))
         ' Get [DavLocation]/calendars/ and [DavLocation]/addressbooks/ folders.
-        children.AddRange(Await MyBase.GetChildrenAsync(propNames))
-        Return children
+        children.AddRange((Await MyBase.GetChildrenAsync(propNames, Nothing, Nothing, Nothing)).Page)
+        Return New PageResults(children, Nothing)
     End Function
 End Class

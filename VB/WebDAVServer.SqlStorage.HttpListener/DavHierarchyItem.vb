@@ -417,7 +417,7 @@ Public MustInherit Class DavHierarchyItem
     Protected Shared Async Function FindLocksDownAsync(root As IHierarchyItemAsync, skipShared As Boolean) As Task
         Dim folder As IFolderAsync = TryCast(root, IFolderAsync)
         If folder IsNot Nothing Then
-            For Each child As IHierarchyItemAsync In Await folder.GetChildrenAsync(New PropertyName(-1) {})
+            For Each child As IHierarchyItemAsync In(Await folder.GetChildrenAsync(New PropertyName(-1) {}, Nothing, Nothing, Nothing)).Page
                 Dim dbchild As DavHierarchyItem = TryCast(child, DavHierarchyItem)
                 If Await dbchild.ItemHasLockAsync(skipShared) Then
                     Dim mex As MultistatusException = New MultistatusException()

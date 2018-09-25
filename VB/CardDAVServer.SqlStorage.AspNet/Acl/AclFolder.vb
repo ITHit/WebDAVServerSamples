@@ -2,6 +2,7 @@ Imports System
 Imports System.Collections.Generic
 Imports System.Threading.Tasks
 Imports ITHit.WebDAV.Server
+Imports ITHit.WebDAV.Server.Paging
 
 Namespace Acl
 
@@ -36,10 +37,13 @@ Namespace Acl
         ''' Retrieves children of this folder.
         ''' </summary>
         ''' <param name="propNames">Properties requested by client application for each child.</param>
+        ''' <param name="offset">The number of children to skip before returning the remaining items. Start listing from from next item.</param>
+        ''' <param name="nResults">The number of items to return.</param>
+        ''' <param name="orderProps">List of order properties requested by the client.</param>
         ''' <returns>Children of this folder.</returns>
-        Public Overrides Async Function GetChildrenAsync(propNames As IList(Of PropertyName)) As Task(Of IEnumerable(Of IHierarchyItemAsync))
+        Public Overrides Async Function GetChildrenAsync(propNames As IList(Of PropertyName), offset As Long?, nResults As Long?, orderProps As IList(Of OrderProperty)) As Task(Of PageResults)
             ' In this samle we list users folder only. Groups and groups folder is not implemented.
-            Return {New UsersFolder(Context)}
+            Return New PageResults({New UsersFolder(Context)}, Nothing)
         End Function
     End Class
 End Namespace

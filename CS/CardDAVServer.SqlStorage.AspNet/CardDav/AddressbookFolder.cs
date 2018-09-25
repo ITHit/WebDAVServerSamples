@@ -9,7 +9,7 @@ using ITHit.WebDAV.Server;
 using ITHit.WebDAV.Server.CardDav;
 using ITHit.WebDAV.Server.Acl;
 using ITHit.WebDAV.Server.Class1;
-
+using ITHit.WebDAV.Server.Paging;
 
 namespace CardDAVServer.SqlStorage.AspNet.CardDav
 {
@@ -237,7 +237,7 @@ namespace CardDAVServer.SqlStorage.AspNet.CardDav
         {
             // For the sake of simplicity we just call GetChildren returning all items. 
             // Typically you will return only items that match the query.
-            return (await GetChildrenAsync(propNames.ToList())).Cast<ICardFileAsync>();
+            return (await GetChildrenAsync(propNames.ToList(), null, null, null)).Page.Cast<ICardFileAsync>();
         }
 
         /// <summary>
@@ -252,8 +252,11 @@ namespace CardDAVServer.SqlStorage.AspNet.CardDav
         /// Retrieves children of this folder.
         /// </summary>
         /// <param name="propNames">List of properties to retrieve with the children. They will be queried by the engine later.</param>
+        /// <param name="offset">The number of children to skip before returning the remaining items. Start listing from from next item.</param>
+        /// <param name="nResults">The number of items to return.</param>
+        /// <param name="orderProps">List of order properties requested by the client.</param>
         /// <returns>Children of the folder.</returns>
-        public async Task<IEnumerable<IHierarchyItemAsync>> GetChildrenAsync(IList<PropertyName> propNames)
+        public async Task<PageResults> GetChildrenAsync(IList<PropertyName> propNames, long? offset, long? nResults, IList<OrderProperty> orderProps)
         {
             // Here we enumerate all business cards contained in this address book.
             // You can filter children items in this implementation and 
@@ -267,7 +270,7 @@ namespace CardDAVServer.SqlStorage.AspNet.CardDav
             // Bynari submits PROPFIND without props - Engine will request getcontentlength
 
             IList<IHierarchyItemAsync> children = new List<IHierarchyItemAsync>();
-            return await CardFile.LoadByAddressbookFolderIdAsync(Context, addressbookFolderId, PropsToLoad.Minimum);
+            return new PageResults((await CardFile.LoadByAddressbookFolderIdAsync(Context, addressbookFolderId, PropsToLoad.Minimum)), null);
         }
 
         /// <summary>

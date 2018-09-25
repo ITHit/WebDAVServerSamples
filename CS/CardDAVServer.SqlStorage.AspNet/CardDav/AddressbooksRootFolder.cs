@@ -10,8 +10,7 @@ using System.Threading.Tasks;
 using ITHit.WebDAV.Server;
 using ITHit.WebDAV.Server.CardDav;
 using ITHit.WebDAV.Server.Class1;
-
-
+using ITHit.WebDAV.Server.Paging;
 
 namespace CardDAVServer.SqlStorage.AspNet.CardDav
 {
@@ -40,12 +39,15 @@ namespace CardDAVServer.SqlStorage.AspNet.CardDav
         /// Retrieves children of this folder.
         /// </summary>
         /// <param name="propNames">Properties requested by client application for each child.</param>
+        /// <param name="offset">The number of children to skip before returning the remaining items. Start listing from from next item.</param>
+        /// <param name="nResults">The number of items to return.</param>
+        /// <param name="orderProps">List of order properties requested by the client.</param>
         /// <returns>Children of this folder.</returns>
-        public override async Task<IEnumerable<IHierarchyItemAsync>> GetChildrenAsync(IList<PropertyName> propNames)
+        public override async Task<PageResults> GetChildrenAsync(IList<PropertyName> propNames, long? offset, long? nResults, IList<OrderProperty> orderProps)
         {
             // Here we list addressbooks from back-end storage. 
             // You can filter addressbooks if requied and return only addressbooks that user has access to.
-            return (await AddressbookFolder.LoadAllAsync(Context)).OrderBy(x => x.Name);
+            return new PageResults((await AddressbookFolder.LoadAllAsync(Context)).OrderBy(x => x.Name), null);
         }
 
         public Task<IFileAsync> CreateFileAsync(string name)

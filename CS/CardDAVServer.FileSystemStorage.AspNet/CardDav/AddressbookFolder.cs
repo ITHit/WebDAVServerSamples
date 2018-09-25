@@ -122,7 +122,7 @@ namespace CardDAVServer.FileSystemStorage.AspNet.CardDav
         {
             // For the sake of simplicity we just call GetChildren returning all items. 
             // Typically you will return only items that match the query.
-            return (await GetChildrenAsync(propNames.ToList())).Cast<ICardFileAsync>();
+            return (await GetChildrenAsync(propNames.ToList(), null, null, null)).Page.Cast<ICardFileAsync>();
         }
 
 

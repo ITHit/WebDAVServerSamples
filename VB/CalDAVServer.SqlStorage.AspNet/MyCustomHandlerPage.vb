@@ -26,7 +26,7 @@ Public Class MyCustomHandlerPage
             ' Get all user calendars Urls.
             ' Get list of folders that contain user calendars and enumerate calendars in each folder.
             For Each folder As IItemCollectionAsync In Await discovery.GetCalendarHomeSetAsync()
-                Dim children As IEnumerable(Of IHierarchyItemAsync) = Await folder.GetChildrenAsync(New PropertyName(-1) {})
+                Dim children As IEnumerable(Of IHierarchyItemAsync) =(Await folder.GetChildrenAsync(New PropertyName(-1) {}, Nothing, Nothing, Nothing)).Page
                 AllUserCalendars.AddRange(children.Where(Function(x) TypeOf x Is ICalendarFolderAsync))
             Next
         End Using
