@@ -250,7 +250,7 @@
             var oSearchFormView = this;
             oWebDAV.NavigateSearch(oSearchForm.GetValue(), false, nPageNumber, true, function (oResult) {
                 oFolderGrid.Render(oResult.Result, true);
-                oPagination.Render(nPageNumber, Math.ceil(oResult.PagingTotal / oWebDAV.PageSize), function (pageNumber) {
+                oPagination.Render(nPageNumber, Math.ceil(oResult.TotalItems / oWebDAV.PageSize), function (pageNumber) {
                     oSearchFormView._RenderFolderGrid(oSearchQuery, pageNumber);
                 });
 
@@ -442,6 +442,12 @@
             this.$container.on('click', this._OnLinkClick.bind(this));
         },
 
+        PushState: function () {
+            if (this._IsBrowserSupport()) {
+                history.pushState('', document.title, window.location.pathname + window.location.search);
+            }
+        },
+
         _OnPopState: function (oEvent) {
             if (!oWebDAV.GetHashValue('search')) {
                 var sUrl = oEvent.state && oEvent.state.Url || window.location.href.split("#")[0];
@@ -558,15 +564,11 @@
         },
 
         NavigateFolder: function (sPath, pageNumber, sortColumn, sortAscending, fCallback) {
-            var pageSize = this.PageSize;
+            var pageSize = this.PageSize, currentPageNumber = 1;
             // add default sorting by file type
             var sortColumns = [new ITHit.WebDAV.Client.OrderProperty(new ITHit.WebDAV.Client.PropertyName('is-directory', ITHit.WebDAV.Client.DavConstants.NamespaceUri), this.CurrentSortColumnAscending)];
             if (!sPath && this.CurrentFolder) {
                 sPath = this.CurrentFolder.Href;
-            }
-
-            if (!this.CurrentPageNumber) {
-                this.CurrentPageNumber = 1;
             }
 
             if (sortColumn) {
@@ -591,15 +593,18 @@
 
             // update page number
             if (pageNumber) {
-                this.CurrentPageNumber = pageNumber;
+                currentPageNumber = pageNumber;
             } else if (this.GetHashValue('page')) {
-                this.CurrentPageNumber = parseInt(this.GetHashValue('page'));
+                currentPageNumber = parseInt(this.GetHashValue('page'));
             }
-            this.SetHashValue('page', this.CurrentPageNumber);
 
+            if (currentPageNumber != 1) {
+                this.SetHashValue('page', currentPageNumber);
+            } else {
+                this.SetHashValue('page', '');
+            }
 
             this.WebDavSession.OpenFolderAsync(sPath, [], function (oResponse) {
-                pageNumber = this.CurrentPageNumber;
                 this.CurrentFolder = oResponse.Result;
                 oBreadcrumbs.SetHierarchyItem(this.CurrentFolder);
 
@@ -611,13 +616,13 @@
                     oSearchForm.SetDisabled(!(oOptionsInfo.Features & ITHit.WebDAV.Client.Features.Dasl));
                 });
 
-                this.CurrentFolder.GetPageAsync(false, [], (this.CurrentPageNumber - 1) * pageSize, pageSize, sortColumns, function (oResult) {
+                this.CurrentFolder.GetPageAsync([], (currentPageNumber - 1) * pageSize, pageSize, sortColumns, function (oResult) {
                     /** @type {ITHit.WebDAV.Client.HierarchyItem[]} aItems */
                     var aItems = oResult.Result;
-                    var aCountPages = Math.ceil(oResult.PagingTotal / pageSize);
+                    var aCountPages = Math.ceil(oResult.TotalItems / pageSize);
 
                     oFolderGrid.Render(aItems, false);
-                    oPagination.Render(pageNumber, aCountPages, function (pageNumber) {
+                    oPagination.Render(currentPageNumber, aCountPages, function (pageNumber) {
                         oWebDAV.NavigateFolder(null, pageNumber);
                     });
 
@@ -632,10 +637,10 @@
         },
 
         NavigateSearch: function (sPhrase, bIsDynamic, pageNumber, updateUrlHash, fCallback) {
-            var pageSize = this.PageSize;
+            var pageSize = this.PageSize, currentPageNumber = 1;;
 
             if (!this.CurrentFolder) {
-                fCallback && fCallback({ Items: [], PagingTotal: 0 });
+                fCallback && fCallback({ Items: [], TotalItems: 0 });
                 return;
             }
 
@@ -650,13 +655,15 @@
 
             // update page number
             if (pageNumber) {
-                this.CurrentPageNumber = pageNumber;
+                currentPageNumber = pageNumber;
             } else if (this.GetHashValue('page')) {
-                this.CurrentPageNumber = parseInt(this.GetHashValue('page'));
+                currentPageNumber = parseInt(this.GetHashValue('page'));
             }
 
-            if (updateUrlHash) {
-                this.SetHashValue('page', this.CurrentPageNumber);
+            if (updateUrlHash && currentPageNumber != 1) {
+                this.SetHashValue('page', currentPageNumber);
+            } else {
+                this.SetHashValue('page', '');
             }
 
             // The DASL search phrase can contain wildcard characters and escape according to DASL rules:
@@ -676,7 +683,7 @@
                 this.SnippetPropertyName
             ];
 
-            this.CurrentFolder.PageSearchByQueryAsync(searchQuery, (this.CurrentPageNumber - 1) * pageSize, pageSize, function (oResult) {
+            this.CurrentFolder.GetSearchPageByQueryAsync(searchQuery, (currentPageNumber - 1) * pageSize, pageSize, function (oResult) {
                 /** @type {ITHit.WebDAV.Client.AsyncResult} oResult */
 
                 /** @type {ITHit.WebDAV.Client.HierarchyItem[]} aItems */
@@ -791,11 +798,15 @@
                 }
             }
 
-            if (!nameExist) {
+            if (!nameExist && value) {
                 params.push(name + '=' + value);
             }
 
-            location.hash = params.length > 0 ? ('#' + params.join('&')) : null;
+            location.hash = params.length > 0 ? ('#' + params.join('&')) : '';
+
+            if (location.href[location.href.length - 1] == '#') {
+                oHistoryApi.PushState();
+            }
         },
 
         /**
