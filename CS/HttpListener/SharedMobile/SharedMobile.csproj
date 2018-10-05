@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ITHit.WebDAV.Server" Version="7.0.4462-Beta" />
+    <PackageReference Include="ITHit.WebDAV.Server" Version="7.0.4491-Beta" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
   </ItemGroup>

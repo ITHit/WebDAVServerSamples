@@ -225,7 +225,7 @@
 
         _Source: function (sPhrase, c, fCallback) {
             oWebDAV.NavigateSearch(sPhrase, false, 1, false, function (oResult) {
-                fCallback(oResult.Result);
+                fCallback(oResult.Result.Page);
             });
         },
 
@@ -249,12 +249,12 @@
         _RenderFolderGrid: function (oSearchQuery, nPageNumber) {
             var oSearchFormView = this;
             oWebDAV.NavigateSearch(oSearchForm.GetValue(), false, nPageNumber, true, function (oResult) {
-                oFolderGrid.Render(oResult.Result, true);
-                oPagination.Render(nPageNumber, Math.ceil(oResult.TotalItems / oWebDAV.PageSize), function (pageNumber) {
+                oFolderGrid.Render(oResult.Result.Page, true);
+                oPagination.Render(nPageNumber, Math.ceil(oResult.Result.TotalItems / oWebDAV.PageSize), function (pageNumber) {
                     oSearchFormView._RenderFolderGrid(oSearchQuery, pageNumber);
                 });
 
-                if (oResult.Result.length == 0 && nPageNumber != 1) {
+                if (oResult.Result.Page.length == 0 && nPageNumber != 1) {
                     oSearchFormView._RenderFolderGrid(oSearchQuery, 1);
                 }
             });
@@ -618,8 +618,8 @@
 
                 this.CurrentFolder.GetPageAsync([], (currentPageNumber - 1) * pageSize, pageSize, sortColumns, function (oResult) {
                     /** @type {ITHit.WebDAV.Client.HierarchyItem[]} aItems */
-                    var aItems = oResult.Result;
-                    var aCountPages = Math.ceil(oResult.TotalItems / pageSize);
+                    var aItems = oResult.Result.Page;
+                    var aCountPages = Math.ceil(oResult.Result.TotalItems / pageSize);
 
                     oFolderGrid.Render(aItems, false);
                     oPagination.Render(currentPageNumber, aCountPages, function (pageNumber) {
