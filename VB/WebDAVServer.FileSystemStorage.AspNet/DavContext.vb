@@ -12,7 +12,7 @@ Imports ITHit.WebDAV.Server.Acl
 Imports ITHit.WebDAV.Server.Quota
 
 ''' <summary>
-''' Implementation of <see cref="DavContext"/> .
+''' Implementation of <see cref="DavContextBaseAsync"/> .
 ''' Resolves hierarchy items by paths.
 ''' </summary>
 Public Class DavContext

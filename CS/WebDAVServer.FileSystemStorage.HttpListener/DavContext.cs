@@ -15,7 +15,7 @@ using ITHit.WebDAV.Server.Quota;
 namespace WebDAVServer.FileSystemStorage.HttpListener
 {
     /// <summary>
-    /// Implementation of <see cref="DavContext"/>.
+    /// Implementation of <see cref="DavContextBaseAsync"/>.
     /// Resolves hierarchy items by paths.
     /// </summary>
     public class DavContext :
@@ -31,6 +31,7 @@ namespace WebDAVServer.FileSystemStorage.HttpListener
         /// Gets WebDAV Logger instance.
         /// </summary>
         public ILogger Logger { get; private set; }
+
         /// <summary>
         /// Singleton instance of <see cref="WebSocketsService"/>.
         /// </summary>

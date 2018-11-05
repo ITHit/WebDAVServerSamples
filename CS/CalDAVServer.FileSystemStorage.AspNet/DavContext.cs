@@ -19,7 +19,7 @@ using CalDAVServer.FileSystemStorage.AspNet.CalDav;
 namespace CalDAVServer.FileSystemStorage.AspNet
 {
     /// <summary>
-    /// Implementation of <see cref="DavContext"/>.
+    /// Implementation of <see cref="DavContextBaseAsync"/>.
     /// Resolves hierarchy items by paths.
     /// </summary>
     public class DavContext :

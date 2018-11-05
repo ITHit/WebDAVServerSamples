@@ -19,7 +19,7 @@ using CardDAVServer.FileSystemStorage.AspNet.CardDav;
 namespace CardDAVServer.FileSystemStorage.AspNet
 {
     /// <summary>
-    /// Implementation of <see cref="DavContext"/>.
+    /// Implementation of <see cref="DavContextBaseAsync"/>.
     /// Resolves hierarchy items by paths.
     /// </summary>
     public class DavContext :

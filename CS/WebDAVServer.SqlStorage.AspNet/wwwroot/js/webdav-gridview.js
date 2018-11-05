@@ -407,9 +407,7 @@
                 var className = 'ascending'
                 if ($(this).hasClass('ascending')) {
                     className = 'descending';
-                }
-                $cols.removeClass('ascending descending');
-                $(this).addClass(className);
+                }            
 
                 oWebDAV.Sort($(this).data('sort-column'), className == 'ascending');
             })
@@ -417,6 +415,7 @@
 
         Set: function (sortColumn, sortAscending) {
             var $col = this.$headerCols.filter('[data-sort-column="' + sortColumn + '"]');
+            this.$headerCols.removeClass('ascending descending');
             if (sortAscending) {
                 $col.removeClass('descending').addClass('ascending');
             } else {
@@ -574,13 +573,12 @@
             if (sortColumn) {
                 this.CurrentSortColumn = sortColumn;
                 this.CurrentSortAscending = sortAscending;
-                this.SetHashValue('sortcolumn', sortColumn);
-                this.SetHashValue('sortascending', sortAscending.toString());
+                this.SetHashValues([{ Name: 'sortcolumn', Value: sortColumn }, { Name: 'sortascending', Value: sortAscending.toString() }]);
             } else if (this.GetHashValue('sortcolumn')) {
                 this.CurrentSortColumn = this.GetHashValue('sortcolumn');
                 this.CurrentSortAscending = this.GetHashValue('sortascending') == 'true';
                 oTableSorting.Set(this.CurrentSortColumn, this.CurrentSortAscending);
-            } else if (!this.CurrentSortColumn) {
+            } else {
                 this.CurrentSortColumn = 'displayname';
                 this.CurrentSortAscending = true;
                 oTableSorting.Set(this.CurrentSortColumn, this.CurrentSortAscending);
@@ -637,7 +635,7 @@
         },
 
         NavigateSearch: function (sPhrase, bIsDynamic, pageNumber, updateUrlHash, fCallback) {
-            var pageSize = this.PageSize, currentPageNumber = 1;;
+            var pageSize = this.PageSize, currentPageNumber = 1;
 
             if (!this.CurrentFolder) {
                 fCallback && fCallback({ Items: [], TotalItems: 0 });
@@ -775,31 +773,18 @@
         },
 
         /**
-         * Sets value to hash       
+         * Sets values to hash       
          */
-        SetHashValue: function (name, value) {
-            var nameExist = false;
-            var hashValue = null;
-            var hashConfig = this._parseUrlHash();
+        SetHashValues: function (arrayValues) {
             var params = [];
+            var hashConfig = this._parseUrlHash();
 
-            for (var key in hashConfig) {
-                if (hashConfig.hasOwnProperty(key)) {
-                    if (key == name) {
-                        nameExist = true;
-                        hashConfig[key] = value;
-                    }
-
-                    if (!hashConfig[key]) {
-                        continue;
-                    }
-
-                    params.push(key + '=' + hashConfig[key]);
-                }
+            for (var i = 0; i < arrayValues.length; i++) {
+                hashConfig = this._addParameterToArray(arrayValues[i].Name, arrayValues[i].Value, hashConfig)
             }
 
-            if (!nameExist && value) {
-                params.push(name + '=' + value);
+            for (var key in hashConfig) {
+                params.push(key + '=' + hashConfig[key]);
             }
 
             location.hash = params.length > 0 ? ('#' + params.join('&')) : '';
@@ -807,6 +792,40 @@
             if (location.href[location.href.length - 1] == '#') {
                 oHistoryApi.PushState();
             }
+        },
+
+        /**
+         * Sets value to hash       
+         */
+        SetHashValue: function (name, value) {
+            this.SetHashValues([{ Name: name, Value: value }]);
+        },
+
+        /**
+         * Adds name and value to array
+         * @return {Array}
+         */
+        _addParameterToArray: function (name, value, arrayParams) {
+            var nameExist = false;        
+
+            for (var key in arrayParams) {
+                if (arrayParams.hasOwnProperty(key)) {
+                    if (key == name) {
+                        nameExist = true;
+                        arrayParams[key] = value;
+                    }
+
+                    if (!arrayParams[key]) {
+                        continue;
+                    }
+                }
+            }
+
+            if (!nameExist && value) {
+                arrayParams[name] = value;
+            }
+
+            return arrayParams;
         },
 
         /**

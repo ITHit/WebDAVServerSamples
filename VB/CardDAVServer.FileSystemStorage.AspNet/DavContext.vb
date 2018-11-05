@@ -15,7 +15,7 @@ Imports CardDAVServer.FileSystemStorage.AspNet.Acl
 Imports CardDAVServer.FileSystemStorage.AspNet.CardDav
 
 ''' <summary>
-''' Implementation of <see cref="DavContext"/> .
+''' Implementation of <see cref="DavContextBaseAsync"/> .
 ''' Resolves hierarchy items by paths.
 ''' </summary>
 Public Class DavContext

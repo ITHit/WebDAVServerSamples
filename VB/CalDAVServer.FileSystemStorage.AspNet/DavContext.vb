@@ -15,7 +15,7 @@ Imports CalDAVServer.FileSystemStorage.AspNet.Acl
 Imports CalDAVServer.FileSystemStorage.AspNet.CalDav
 
 ''' <summary>
-''' Implementation of <see cref="DavContext"/> .
+''' Implementation of <see cref="DavContextBaseAsync"/> .
 ''' Resolves hierarchy items by paths.
 ''' </summary>
 Public Class DavContext
