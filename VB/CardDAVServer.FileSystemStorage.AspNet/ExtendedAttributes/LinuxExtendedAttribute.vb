@@ -129,6 +129,32 @@ Namespace ExtendedAttributes
         End Function
 
         ''' <summary>
+        ''' Deletes all extended attributes.
+        ''' </summary>
+        ''' <param name="path">File or folder path.</param>
+        Public Async Function DeleteExtendedAttributes(path As String) As Task Implements IExtendedAttribute.DeleteExtendedAttributes
+            Throw New NotImplementedException()
+        End Function
+
+        ''' <summary>
+        ''' Copies all extended attributes.
+        ''' </summary>
+        ''' <param name="sourcePath">The source path. </param>
+        ''' <param name="destinationPath">The target pat.</param>
+        Public Async Function CopyExtendedAttributes(sourcePath As String, destinationPath As String) As Task Implements IExtendedAttribute.CopyExtendedAttributes
+            Throw New NotImplementedException()
+        End Function
+
+        ''' <summary>
+        ''' Moves all extended attributes.
+        ''' </summary>
+        ''' <param name="sourcePath">The source path. </param>
+        ''' <param name="destinationPath">The target pat.</param>
+        Public Async Function MoveExtendedAttributes(sourcePath As String, destinationPath As String) As Task Implements IExtendedAttribute.MoveExtendedAttributes
+            Throw New NotImplementedException()
+        End Function
+
+        ''' <summary>
         ''' Throws corresponding exception for last platform api call.
         ''' </summary>
         ''' <param name="fileName">File name.</param>

@@ -14,6 +14,7 @@ using ITHit.WebDAV.Server;
 using WebDAVServer.FileSystemStorage.HttpListener;
 using System.Net.WebSockets;
 using System.Threading;
+using WebDAVServer.FileSystemStorage.HttpListener.ExtendedAttributes;
 
 namespace WebDAVServer.FileSystemStorage.HttpListener
 {
@@ -119,6 +120,17 @@ namespace WebDAVServer.FileSystemStorage.HttpListener
             MyCustomGetHandler handlerHead = new MyCustomGetHandler(contentRootPath);
             handlerGet.OriginalHandler  = engine.RegisterMethodHandler("GET",  handlerGet);
             handlerHead.OriginalHandler = engine.RegisterMethodHandler("HEAD", handlerHead);
+            string attrStoragePath = (ConfigurationManager.AppSettings["AttrStoragePath"] ?? string.Empty).TrimEnd(Path.DirectorySeparatorChar);
+
+            if (!string.IsNullOrEmpty(attrStoragePath))
+            {
+                FileSystemInfoExtension.UseFileSystemAttribute(new FileSystemExtendedAttribute(attrStoragePath, repositoryPath));
+            }
+            else if (!(new DirectoryInfo(repositoryPath).IsExtendedAttributesSupported()))
+            {
+                var tempPath = Path.Combine(Path.GetTempPath(), System.Reflection.Assembly.GetExecutingAssembly().GetName().Name);
+                FileSystemInfoExtension.UseFileSystemAttribute(new FileSystemExtendedAttribute(tempPath, repositoryPath));
+            }
         }
 
         public static async void ThreadProcAsync()

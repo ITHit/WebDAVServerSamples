@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using ITHit.WebDAV.Server;
 using ITHit.WebDAV.Server.Acl;
 using ITHit.WebDAV.Server.Quota;
+using WebDAVServer.FileSystemStorage.HttpListener.ExtendedAttributes;
+
 
 
 namespace WebDAVServer.FileSystemStorage.HttpListener

@@ -14,6 +14,8 @@ using ITHit.WebDAV.Server.Acl;
 using ITHit.WebDAV.Server.Quota;
 using CardDAVServer.FileSystemStorage.AspNet.Acl;
 using CardDAVServer.FileSystemStorage.AspNet.CardDav;
+using CardDAVServer.FileSystemStorage.AspNet.ExtendedAttributes;
+
 
 
 namespace CardDAVServer.FileSystemStorage.AspNet
@@ -179,6 +181,24 @@ namespace CardDAVServer.FileSystemStorage.AspNet
             string configRepositoryPath = (ConfigurationManager.AppSettings["RepositoryPath"] ?? string.Empty).TrimEnd(Path.DirectorySeparatorChar);
             RepositoryPath = configRepositoryPath.StartsWith("~") ?
                 HttpContext.Current.Server.MapPath(configRepositoryPath) : configRepositoryPath;
+
+            string attrStoragePath = (ConfigurationManager.AppSettings["AttrStoragePath"] ?? string.Empty).TrimEnd(Path.DirectorySeparatorChar);
+            attrStoragePath = attrStoragePath.StartsWith("~") ?
+                HttpContext.Current.Server.MapPath(attrStoragePath) : attrStoragePath;
+
+            if (!FileSystemInfoExtension.IsUsingFileSystemAttribute)
+            {
+                if (!string.IsNullOrEmpty(attrStoragePath))
+                {
+                    FileSystemInfoExtension.UseFileSystemAttribute(new FileSystemExtendedAttribute(attrStoragePath, this.RepositoryPath));
+                } 
+                else if (!(new DirectoryInfo(RepositoryPath).IsExtendedAttributesSupported()))
+                {
+                    var tempPath = Path.Combine(Path.GetTempPath(), System.Reflection.Assembly.GetExecutingAssembly().GetName().Name);
+                    FileSystemInfoExtension.UseFileSystemAttribute(new FileSystemExtendedAttribute(tempPath, this.RepositoryPath));
+                }
+            }
+
 
             if (!Directory.Exists(RepositoryPath))
             {

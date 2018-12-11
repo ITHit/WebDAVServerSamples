@@ -229,9 +229,17 @@ namespace CalDAVServer.FileSystemStorage.AspNet
             {
                 File.Copy(fileSystemInfo.FullName, newFilePath);
 
+                var newFileSystemInfo = new FileInfo(newFilePath);
+                if (FileSystemInfoExtension.IsUsingFileSystemAttribute)
+                {
+                    await fileSystemInfo.CopyExtendedAttributes(newFileSystemInfo);
+                }
+
                 // Locks should not be copied, delete them.
                 if (await fileSystemInfo.HasExtendedAttributeAsync("Locks"))
-                    await new FileInfo(newFilePath).DeleteExtendedAttributeAsync("Locks");
+                {
+                    await newFileSystemInfo.DeleteExtendedAttributeAsync("Locks");
+                }
             }
             catch (UnauthorizedAccessException)
             {
@@ -284,8 +292,13 @@ namespace CalDAVServer.FileSystemStorage.AspNet
             {
                 File.Move(fileSystemInfo.FullName, newDirPath);
 
-                // Locks should not be copied, delete them.
                 var newFileInfo = new FileInfo(newDirPath);
+                if (FileSystemInfoExtension.IsUsingFileSystemAttribute)
+                {
+                    await fileSystemInfo.MoveExtendedAttributes(newFileInfo);
+                }
+
+                // Locks should not be copied, delete them.
                 if (await newFileInfo.HasExtendedAttributeAsync("Locks"))
                     await newFileInfo.DeleteExtendedAttributeAsync("Locks");
             }
@@ -307,6 +320,11 @@ namespace CalDAVServer.FileSystemStorage.AspNet
         /// <param name="multistatus">Information about items that failed to delete.</param>
         public override async Task DeleteAsync(MultistatusException multistatus)
         {
+            if (FileSystemInfoExtension.IsUsingFileSystemAttribute)
+            {
+                await fileSystemInfo.DeleteExtendedAttributes();
+            }
+
             fileSystemInfo.Delete();
         }
 

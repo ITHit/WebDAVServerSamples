@@ -14,6 +14,7 @@ Imports ITHit.WebDAV.Server
 Imports WebDAVServer.FileSystemStorage.HttpListener
 Imports System.Net.WebSockets
 Imports System.Threading
+Imports WebDAVServer.FileSystemStorage.HttpListener.ExtendedAttributes
 
 ''' <summary>
 ''' WebDAV engine host.
@@ -96,6 +97,13 @@ Friend Class Program
         Dim handlerHead As MyCustomGetHandler = New MyCustomGetHandler(contentRootPath)
         handlerGet.OriginalHandler = engine.RegisterMethodHandler("GET", handlerGet)
         handlerHead.OriginalHandler = engine.RegisterMethodHandler("HEAD", handlerHead)
+        Dim attrStoragePath As String =(If(ConfigurationManager.AppSettings("AttrStoragePath"), String.Empty)).TrimEnd(Path.DirectorySeparatorChar)
+        If Not String.IsNullOrEmpty(attrStoragePath) Then
+            FileSystemInfoExtension.UseFileSystemAttribute(New FileSystemExtendedAttribute(attrStoragePath, repositoryPath))
+        ElseIf Not(New DirectoryInfo(repositoryPath).IsExtendedAttributesSupported()) Then
+            Dim tempPath = Path.Combine(Path.GetTempPath(), System.Reflection.Assembly.GetExecutingAssembly().GetName().Name)
+            FileSystemInfoExtension.UseFileSystemAttribute(New FileSystemExtendedAttribute(tempPath, repositoryPath))
+        End If
     End Sub
 
     Public Shared Async Sub ThreadProcAsync()

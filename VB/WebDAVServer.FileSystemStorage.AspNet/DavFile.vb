@@ -209,8 +209,15 @@ Public Class DavFile
         ' Copy the file togather with all extended attributes (custom props and locks).
         Try
             File.Copy(fileSystemInfo.FullName, newFilePath)
+            Dim newFileSystemInfo = New FileInfo(newFilePath)
+            If FileSystemInfoExtension.IsUsingFileSystemAttribute Then
+                Await fileSystemInfo.CopyExtendedAttributes(newFileSystemInfo)
+            End If
+
             ' Locks should not be copied, delete them.
-            If Await fileSystemInfo.HasExtendedAttributeAsync("Locks") Then Await New FileInfo(newFilePath).DeleteExtendedAttributeAsync("Locks")
+            If Await fileSystemInfo.HasExtendedAttributeAsync("Locks") Then
+                Await newFileSystemInfo.DeleteExtendedAttributeAsync("Locks")
+            End If
         Catch __unusedUnauthorizedAccessException1__ As UnauthorizedAccessException
             ' Fail
             Dim ex As NeedPrivilegesException = New NeedPrivilegesException("Not enough privileges")
@@ -252,8 +259,12 @@ Public Class DavFile
         ' Move the file.
         Try
             File.Move(fileSystemInfo.FullName, newDirPath)
-            ' Locks should not be copied, delete them.
             Dim newFileInfo = New FileInfo(newDirPath)
+            If FileSystemInfoExtension.IsUsingFileSystemAttribute Then
+                Await fileSystemInfo.MoveExtendedAttributes(newFileInfo)
+            End If
+
+            ' Locks should not be copied, delete them.
             If Await newFileInfo.HasExtendedAttributeAsync("Locks") Then Await newFileInfo.DeleteExtendedAttributeAsync("Locks")
         Catch __unusedUnauthorizedAccessException1__ As UnauthorizedAccessException
             ' Exception occurred with the item for which MoveTo was called - fail the operation.
@@ -275,6 +286,10 @@ Public Class DavFile
     ''' <param name="multistatus">Information about items that failed to delete.</param>
     Public Overrides Async Function DeleteAsync(multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.DeleteAsync
         Await RequireHasTokenAsync()
+        If FileSystemInfoExtension.IsUsingFileSystemAttribute Then
+            Await fileSystemInfo.DeleteExtendedAttributes()
+        End If
+
         fileSystemInfo.Delete()
         Await context.socketService.NotifyRefreshAsync(GetParentPath(Path))
     End Function

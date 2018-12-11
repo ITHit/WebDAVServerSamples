@@ -16,7 +16,26 @@ namespace WebDAVServer.FileSystemStorage.AspNet.Cookies.ExtendedAttributes
         /// <summary>
         /// Depending on OS holds WindowsExtendedAttribute, OSXExtendedAttribute or LinuxExtendedAttribute class instance.
         /// </summary>
-        private static readonly IExtendedAttribute extendedAttribute;
+        private static IExtendedAttribute extendedAttribute;
+
+        /// <summary>
+        /// Sets <see cref="FileSystemExtendedAttribute"/> as a storage for attributes.
+        /// </summary>
+        /// <param name="fileSystemExtendedAttribute"></param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="fileSystemExtendedAttribute"/> is <c>null</c>.</exception>
+        public static void UseFileSystemAttribute(FileSystemExtendedAttribute fileSystemExtendedAttribute)
+        {
+            if(extendedAttribute == null) throw new ArgumentNullException(nameof(extendedAttribute));
+            extendedAttribute = fileSystemExtendedAttribute;
+        }
+
+        /// <summary>
+        /// <c>True</c> if attributes stores in <see cref="FileSystemExtendedAttribute"/>.
+        /// </summary>
+        public static bool IsUsingFileSystemAttribute
+        {
+            get { return extendedAttribute is FileSystemExtendedAttribute; }
+        }
 
         /// <summary>
         /// Initializes static class members.
@@ -54,6 +73,16 @@ namespace WebDAVServer.FileSystemStorage.AspNet.Cookies.ExtendedAttributes
             }
 
             return await extendedAttribute.IsExtendedAttributesSupportedAsync(info.FullName);
+        }
+
+        /// <summary>
+        /// Determines whether extended attributes are supported.
+        /// </summary>
+        /// <param name="info"><see cref="FileSystemInfo"/> instance.</param>
+        /// <returns>True if extended attributes or NTFS file alternative streams are supported, false otherwise.</returns>
+        public static bool IsExtendedAttributesSupported(this FileSystemInfo info)
+        {
+            return info.IsExtendedAttributesSupportedAsync().ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
         /// <summary>
@@ -227,6 +256,44 @@ namespace WebDAVServer.FileSystemStorage.AspNet.Cookies.ExtendedAttributes
             {
                 return (T)xmlSerializer.Deserialize(reader);
             }
+        }
+
+        /// <summary>
+        /// Deletes all extended attributes.
+        /// </summary>
+        /// <param name="info">><see cref="FileSystemInfo"/> instance.</param>
+        public static async Task DeleteExtendedAttributes(this FileSystemInfo info)
+        {
+            if (info == null) throw new ArgumentNullException(nameof(info));
+
+            await extendedAttribute.DeleteExtendedAttributes(info.FullName);
+        }
+
+        /// <summary>
+        /// Copies all extended attributes.
+        /// </summary>
+        /// <param name="info">><see cref="FileSystemInfo"/> instance.</param>
+        /// <param name="destination">><see cref="FileSystemInfo"/> destination instance.</param>
+        public static async Task CopyExtendedAttributes(this FileSystemInfo info, FileSystemInfo destination)
+        {
+            if (info == null) throw new ArgumentNullException(nameof(info));
+            if (destination == null) throw new ArgumentNullException(nameof(destination));
+
+            await extendedAttribute.CopyExtendedAttributes(info.FullName, destination.FullName);
+        }
+
+
+        /// <summary>
+        /// Moves all extended attributes.
+        /// </summary>
+        /// <param name="info">><see cref="FileSystemInfo"/> instance.</param>
+        /// <param name="destination">><see cref="FileSystemInfo"/> destination instance.</param>
+        public static async Task MoveExtendedAttributes(this FileSystemInfo info, FileSystemInfo destination)
+        {
+            if (info == null) throw new ArgumentNullException(nameof(info));
+            if (destination == null) throw new ArgumentNullException(nameof(destination));
+
+            await extendedAttribute.MoveExtendedAttributes(info.FullName, destination.FullName);
         }
     }
 }

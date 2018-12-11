@@ -15,6 +15,11 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore.Options
         /// Files and folders in this folder become available via WebDAV.
         /// </summary>
         public string RepositoryPath { get; set; }
+
+        /// <summary>
+        /// This folder used for extended attributes storage.
+        /// </summary>
+        public string AttrStoragePath { get; set; }
     }
 
     /// <summary>
@@ -51,9 +56,19 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore.Options
                 throw new DirectoryNotFoundException(string.Format("DavContextOptions.RepositoryPath specified in appsettings.webdav.json is invalid: '{0}'.", options.RepositoryPath));
             }
 
-            if (!await new DirectoryInfo(options.RepositoryPath).IsExtendedAttributesSupportedAsync())
+            if (!(string.IsNullOrEmpty(options.AttrStoragePath) || Path.IsPathRooted(options.AttrStoragePath)))
             {
-                throw new NotSupportedException(string.Format("File system at '{0}' doesn't support extended attributes. This sample requires NTFS Alternate Data Streams support if running on Windows or extended attributes support if running on OS X or Linux.", options.RepositoryPath));
+                options.AttrStoragePath = Path.GetFullPath(Path.Combine(env.ContentRootPath, options.AttrStoragePath));
+            }
+
+            if (!string.IsNullOrEmpty(options.AttrStoragePath))
+            {
+                FileSystemInfoExtension.UseFileSystemAttribute(new FileSystemExtendedAttribute(options.AttrStoragePath, options.RepositoryPath));
+            }
+            else if (!await new DirectoryInfo(options.RepositoryPath).IsExtendedAttributesSupportedAsync())
+            {
+                var tempPath = Path.Combine(Path.GetTempPath(), System.Reflection.Assembly.GetExecutingAssembly().GetName().Name);
+                FileSystemInfoExtension.UseFileSystemAttribute(new FileSystemExtendedAttribute(tempPath, options.RepositoryPath));
             }
         }
     }

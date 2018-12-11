@@ -13,6 +13,8 @@ using ITHit.WebDAV.Server.Core;
 using ITHit.WebDAV.Server.Acl;
 using ITHit.WebDAV.Server.Quota;
 using WebDAVServer.FileSystemStorage.AspNetCore.Options;
+using WebDAVServer.FileSystemStorage.AspNetCore.ExtendedAttributes;
+
 
 
 namespace WebDAVServer.FileSystemStorage.AspNetCore

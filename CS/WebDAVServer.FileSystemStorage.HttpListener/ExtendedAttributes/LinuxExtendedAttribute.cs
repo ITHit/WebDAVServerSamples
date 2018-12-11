@@ -149,6 +149,35 @@ namespace WebDAVServer.FileSystemStorage.HttpListener.ExtendedAttributes
         }
 
         /// <summary>
+        /// Deletes all extended attributes.
+        /// </summary>
+        /// <param name="path">File or folder path.</param>
+        public async Task DeleteExtendedAttributes(string path)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Copies all extended attributes.
+        /// </summary>
+        /// <param name="sourcePath">The source path. </param>
+        /// <param name="destinationPath">The target pat.</param>
+        public async Task CopyExtendedAttributes(string sourcePath, string destinationPath)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Moves all extended attributes.
+        /// </summary>
+        /// <param name="sourcePath">The source path. </param>
+        /// <param name="destinationPath">The target pat.</param>
+        public async Task MoveExtendedAttributes(string sourcePath, string destinationPath)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
         /// Throws corresponding exception for last platform api call.
         /// </summary>
         /// <param name="fileName">File name.</param>

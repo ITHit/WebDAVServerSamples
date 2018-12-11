@@ -10,6 +10,7 @@ Imports System.Threading.Tasks
 Imports ITHit.WebDAV.Server
 Imports ITHit.WebDAV.Server.Acl
 Imports ITHit.WebDAV.Server.Quota
+Imports WebDAVServer.FileSystemStorage.AspNet.ExtendedAttributes
 
 ''' <summary>
 ''' Implementation of <see cref="DavContextBaseAsync"/> .
@@ -49,6 +50,17 @@ Public Class DavContext
         Logger = WebDAVServer.FileSystemStorage.AspNet.Logger.Instance
         Dim configRepositoryPath As String =(If(ConfigurationManager.AppSettings("RepositoryPath"), String.Empty)).TrimEnd(Path.DirectorySeparatorChar)
         RepositoryPath = If(configRepositoryPath.StartsWith("~"), HttpContext.Current.Server.MapPath(configRepositoryPath), configRepositoryPath)
+        Dim attrStoragePath As String =(If(ConfigurationManager.AppSettings("AttrStoragePath"), String.Empty)).TrimEnd(Path.DirectorySeparatorChar)
+        attrStoragePath = If(attrStoragePath.StartsWith("~"), HttpContext.Current.Server.MapPath(attrStoragePath), attrStoragePath)
+        If Not FileSystemInfoExtension.IsUsingFileSystemAttribute Then
+            If Not String.IsNullOrEmpty(attrStoragePath) Then
+                FileSystemInfoExtension.UseFileSystemAttribute(New FileSystemExtendedAttribute(attrStoragePath, Me.RepositoryPath))
+            ElseIf Not(New DirectoryInfo(RepositoryPath).IsExtendedAttributesSupported()) Then
+                Dim tempPath = Path.Combine(Path.GetTempPath(), System.Reflection.Assembly.GetExecutingAssembly().GetName().Name)
+                FileSystemInfoExtension.UseFileSystemAttribute(New FileSystemExtendedAttribute(tempPath, Me.RepositoryPath))
+            End If
+        End If
+
         If Not Directory.Exists(RepositoryPath) Then
             WebDAVServer.FileSystemStorage.AspNet.Logger.Instance.LogError("Repository path specified in Web.config is invalid.", Nothing)
         End If

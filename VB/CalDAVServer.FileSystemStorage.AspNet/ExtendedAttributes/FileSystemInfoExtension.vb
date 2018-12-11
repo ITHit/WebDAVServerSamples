@@ -17,7 +17,26 @@ Namespace ExtendedAttributes
         ''' <summary>
         ''' Depending on OS holds WindowsExtendedAttribute, OSXExtendedAttribute or LinuxExtendedAttribute class instance.
         ''' </summary>
-        Private ReadOnly extendedAttribute As IExtendedAttribute
+        Private extendedAttribute As IExtendedAttribute
+
+        ''' <summary>
+        ''' Sets <see cref="FileSystemExtendedAttribute"/>  as a storage for attributes.
+        ''' </summary>
+        ''' <param name="fileSystemExtendedAttribute"></param>
+        ''' <exception cref="ArgumentNullException">Thrown if <paramref name="fileSystemExtendedAttribute"/>  is <c>null</c>.</exception>
+        Sub UseFileSystemAttribute(fileSystemExtendedAttribute As FileSystemExtendedAttribute)
+            If extendedAttribute Is Nothing Then Throw New ArgumentNullException(NameOf(extendedAttribute))
+            extendedAttribute = fileSystemExtendedAttribute
+        End Sub
+
+        ''' <summary>
+        ''' <c>True</c> if attributes stores in <see cref="FileSystemExtendedAttribute"/> .
+        ''' </summary>
+        Public ReadOnly Property IsUsingFileSystemAttribute As Boolean
+            Get
+                Return TypeOf extendedAttribute Is FileSystemExtendedAttribute
+            End Get
+        End Property
 
         ''' <summary>
         ''' Initializes static class members.
@@ -46,6 +65,16 @@ Namespace ExtendedAttributes
             End If
 
             Return Await extendedAttribute.IsExtendedAttributesSupportedAsync(info.FullName)
+        End Function
+
+        ''' <summary>
+        ''' Determines whether extended attributes are supported.
+        ''' </summary>
+        ''' <param name="info"><see cref="FileSystemInfo"/>  instance.</param>
+        ''' <returns>True if extended attributes or NTFS file alternative streams are supported, false otherwise.</returns>
+        <Extension()>
+        Function IsExtendedAttributesSupported(info As FileSystemInfo) As Boolean
+            Return info.IsExtendedAttributesSupportedAsync().ConfigureAwait(False).GetAwaiter().GetResult()
         End Function
 
         ''' <summary>
@@ -195,6 +224,40 @@ Namespace ExtendedAttributes
             Using reader As StringReader = New StringReader(xmlString)
                 Return CType(xmlSerializer.Deserialize(reader), T)
             End Using
+        End Function
+
+        ''' <summary>
+        ''' Deletes all extended attributes.
+        ''' </summary>
+        ''' <param name="info">><see cref="FileSystemInfo"/>  instance.</param>
+        <Extension()>
+        Async Function DeleteExtendedAttributes(info As FileSystemInfo) As Task
+            If info Is Nothing Then Throw New ArgumentNullException(NameOf(info))
+            Await extendedAttribute.DeleteExtendedAttributes(info.FullName)
+        End Function
+
+        ''' <summary>
+        ''' Copies all extended attributes.
+        ''' </summary>
+        ''' <param name="info">><see cref="FileSystemInfo"/>  instance.</param>
+        ''' <param name="destination">><see cref="FileSystemInfo"/>  destination instance.</param>
+        <Extension()>
+        Async Function CopyExtendedAttributes(info As FileSystemInfo, destination As FileSystemInfo) As Task
+            If info Is Nothing Then Throw New ArgumentNullException(NameOf(info))
+            If destination Is Nothing Then Throw New ArgumentNullException(NameOf(destination))
+            Await extendedAttribute.CopyExtendedAttributes(info.FullName, destination.FullName)
+        End Function
+
+        ''' <summary>
+        ''' Moves all extended attributes.
+        ''' </summary>
+        ''' <param name="info">><see cref="FileSystemInfo"/>  instance.</param>
+        ''' <param name="destination">><see cref="FileSystemInfo"/>  destination instance.</param>
+        <Extension()>
+        Async Function MoveExtendedAttributes(info As FileSystemInfo, destination As FileSystemInfo) As Task
+            If info Is Nothing Then Throw New ArgumentNullException(NameOf(info))
+            If destination Is Nothing Then Throw New ArgumentNullException(NameOf(destination))
+            Await extendedAttribute.MoveExtendedAttributes(info.FullName, destination.FullName)
         End Function
     End Module
 End Namespace

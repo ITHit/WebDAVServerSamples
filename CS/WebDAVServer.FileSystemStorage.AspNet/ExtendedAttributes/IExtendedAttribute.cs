@@ -36,5 +36,25 @@ namespace WebDAVServer.FileSystemStorage.AspNet.ExtendedAttributes
         /// <param name="path">File or folder path.</param>
         /// <param name="attribName">Attribute name.</param>
         Task DeleteExtendedAttributeAsync(string path, string attribName);
+
+        /// <summary>
+        /// Deletes all extended attributes.
+        /// </summary>
+        /// <param name="path">File or folder path.</param>
+        Task DeleteExtendedAttributes(string path);
+
+        /// <summary>
+        /// Copies all extended attributes.
+        /// </summary>
+        /// <param name="sourcePath">The source path. </param>
+        /// <param name="destinationPath">The target pat.</param>
+        Task CopyExtendedAttributes(string sourcePath, string destinationPath);
+
+        /// <summary>
+        /// Moves all extended attributes.
+        /// </summary>
+        /// <param name="sourcePath">The source path. </param>
+        /// <param name="destinationPath">The target pat.</param>
+        Task MoveExtendedAttributes(string sourcePath, string destinationPath);
     }
 }

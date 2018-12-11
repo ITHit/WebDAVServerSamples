@@ -234,9 +234,17 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
             {
                 File.Copy(fileSystemInfo.FullName, newFilePath);
 
+                var newFileSystemInfo = new FileInfo(newFilePath);
+                if (FileSystemInfoExtension.IsUsingFileSystemAttribute)
+                {
+                    await fileSystemInfo.CopyExtendedAttributes(newFileSystemInfo);
+                }
+
                 // Locks should not be copied, delete them.
                 if (await fileSystemInfo.HasExtendedAttributeAsync("Locks"))
-                    await new FileInfo(newFilePath).DeleteExtendedAttributeAsync("Locks");
+                {
+                    await newFileSystemInfo.DeleteExtendedAttributeAsync("Locks");
+                }
             }
             catch (UnauthorizedAccessException)
             {
@@ -291,8 +299,13 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
             {
                 File.Move(fileSystemInfo.FullName, newDirPath);
 
-                // Locks should not be copied, delete them.
                 var newFileInfo = new FileInfo(newDirPath);
+                if (FileSystemInfoExtension.IsUsingFileSystemAttribute)
+                {
+                    await fileSystemInfo.MoveExtendedAttributes(newFileInfo);
+                }
+
+                // Locks should not be copied, delete them.
                 if (await newFileInfo.HasExtendedAttributeAsync("Locks"))
                     await newFileInfo.DeleteExtendedAttributeAsync("Locks");
             }
@@ -318,6 +331,11 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
         public override async Task DeleteAsync(MultistatusException multistatus)
         {
             await RequireHasTokenAsync();
+            if (FileSystemInfoExtension.IsUsingFileSystemAttribute)
+            {
+                await fileSystemInfo.DeleteExtendedAttributes();
+            }
+
             fileSystemInfo.Delete();
             await context.socketService.NotifyRefreshAsync(GetParentPath(Path));
         }

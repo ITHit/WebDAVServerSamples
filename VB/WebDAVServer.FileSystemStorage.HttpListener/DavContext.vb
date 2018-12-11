@@ -9,6 +9,7 @@ Imports System.Threading.Tasks
 Imports ITHit.WebDAV.Server
 Imports ITHit.WebDAV.Server.Acl
 Imports ITHit.WebDAV.Server.Quota
+Imports WebDAVServer.FileSystemStorage.HttpListener.ExtendedAttributes
 
 ''' <summary>
 ''' Implementation of <see cref="DavContextBaseAsync"/> .

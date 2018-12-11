@@ -6,7 +6,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>AE7F313D-49BE-4D09-8C5E-3F914E857A38</ProjectGuid>
+    <ProjectGuid>67E036A1-5D76-4478-9777-2B8BFC851203</ProjectGuid>
     <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{f184b08f-c81c-45f6-a57f-5abd9991f28f}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
@@ -72,6 +72,7 @@
     </Compile>
     <Compile Include="Logger.vb" />
     <Compile Include="ExtendedAttributes\FileSystemInfoExtension.vb" />
+    <Compile Include="ExtendedAttributes\FileSystemExtendedAttribute.vb" />
     <Compile Include="ExtendedAttributes\IExtendedAttribute.vb" />
     <Compile Include="ExtendedAttributes\LinuxExtendedAttribute.vb" />
     <Compile Include="ExtendedAttributes\OSXExtendedAttribute.vb" />
@@ -139,10 +140,10 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="ITHit.WebDAV.Server">
-      <HintPath>..\packages\ITHit.WebDAV.Server.7.1.4620\lib\net451\ITHit.WebDAV.Server.dll</HintPath>
+      <HintPath>..\packages\ITHit.WebDAV.Server.7.1.4792\lib\net451\ITHit.WebDAV.Server.dll</HintPath>
     </Reference>
     <Reference Include="ITHit.WebDAV.Server.Web">
-      <HintPath>..\packages\ITHit.WebDAV.Server.Web.7.1.4620\lib\net451\ITHit.WebDAV.Server.Web.dll</HintPath>
+      <HintPath>..\packages\ITHit.WebDAV.Server.Web.7.1.4792\lib\net451\ITHit.WebDAV.Server.Web.dll</HintPath>
     </Reference>
   </ItemGroup>
   <PropertyGroup>
@@ -160,7 +161,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>9658</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:35540/</IISUrl>
+          <IISUrl>http://localhost:45860/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>
