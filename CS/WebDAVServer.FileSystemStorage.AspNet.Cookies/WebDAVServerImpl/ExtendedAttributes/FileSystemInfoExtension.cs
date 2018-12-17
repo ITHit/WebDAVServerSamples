@@ -295,5 +295,37 @@ namespace WebDAVServer.FileSystemStorage.AspNet.Cookies.ExtendedAttributes
 
             await extendedAttribute.MoveExtendedAttributes(info.FullName, destination.FullName);
         }
+
+        /// <summary>
+        /// Returns free bytes available to current user.
+        /// </summary>
+        /// <remarks>For the sake of simplicity we return entire available disk space.</remarks>
+        /// <returns>Free bytes available or <c>long.MaxValue</c> if storage type not supported.</returns>
+        public static async Task<long> GetStorageFreeBytesAsync(this DirectoryInfo dirInfo)
+        {
+            if (dirInfo == null) throw new ArgumentNullException(nameof(dirInfo));
+            if (dirInfo.Root.FullName.StartsWith(@"\\"))
+            {
+                return long.MaxValue;
+            }
+
+            return new DriveInfo(dirInfo.Root.FullName).AvailableFreeSpace;
+        }
+
+        /// <summary>
+        /// Returns used bytes by current user.
+        /// </summary>
+        /// <returns>Number of bytes used on disk or <c>0</c> if storage type not supported.</returns>
+        public static async Task<long> GetStorageUsedBytesAsync(this DirectoryInfo dirInfo)
+        {
+            if (dirInfo == null) throw new ArgumentNullException(nameof(dirInfo));
+            if (dirInfo.Root.FullName.StartsWith(@"\\"))
+            {
+                return 0;
+            }
+
+            DriveInfo driveInfo = new DriveInfo(dirInfo.Root.FullName);
+            return driveInfo.TotalSize - driveInfo.AvailableFreeSpace;
+        }
     }
 }

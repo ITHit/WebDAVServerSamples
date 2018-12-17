@@ -252,7 +252,7 @@ Public Class DavFolder
         ' Here you can return amount of bytes available for current user.
         ' For the sake of simplicity we return entire available disk space.
         ' Note: NTFS quotes retrieval for current user works very slowly.
-        Return New DriveInfo(dirInfo.Root.FullName).AvailableFreeSpace
+        Return Await dirInfo.GetStorageFreeBytesAsync()
     End Function
 
     ''' <summary>
@@ -263,8 +263,7 @@ Public Class DavFolder
         ' Here you can return amount of bytes used by current user.
         ' For the sake of simplicity we return entire used disk space.
         'Note: NTFS quotes retrieval for current user works very slowly.
-        Dim driveInfo As DriveInfo = New DriveInfo(dirInfo.Root.FullName)
-        Return driveInfo.TotalSize - driveInfo.AvailableFreeSpace
+        Return Await dirInfo.GetStorageUsedBytesAsync()
     End Function
 
     ''' <summary>

@@ -252,12 +252,17 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore.ExtendedAttributes
         /// <param name="path">File or folder path.</param>
         private string GetWin32LongPath(string path)
         {
-            if (!path.StartsWith(@"\\?\"))
+             if(path.StartsWith(@"\\?\"))
             {
-                path = @"\\?\" + path;
+                return path;
             }
 
-            return path;
+            if(path.StartsWith(@"\\"))
+            {
+                return @"\\?\UNC\" + path.TrimStart('\\');
+            }
+
+            return @"\\?\" + path;
         }
 
 

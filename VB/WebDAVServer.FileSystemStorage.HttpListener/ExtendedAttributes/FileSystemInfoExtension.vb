@@ -259,5 +259,35 @@ Namespace ExtendedAttributes
             If destination Is Nothing Then Throw New ArgumentNullException(NameOf(destination))
             Await extendedAttribute.MoveExtendedAttributes(info.FullName, destination.FullName)
         End Function
+
+        ''' <summary>
+        ''' Returns free bytes available to current user.
+        ''' </summary>
+        ''' <remarks>For the sake of simplicity we return entire available disk space.</remarks>
+        ''' <returns>Free bytes available or <c>long.MaxValue</c> if storage type not supported.</returns>
+        <Extension()>
+        Async Function GetStorageFreeBytesAsync(dirInfo As DirectoryInfo) As Task(Of Long)
+            If dirInfo Is Nothing Then Throw New ArgumentNullException(NameOf(dirInfo))
+            If dirInfo.Root.FullName.StartsWith("\\") Then
+                Return Long.MaxValue
+            End If
+
+            Return New DriveInfo(dirInfo.Root.FullName).AvailableFreeSpace
+        End Function
+
+        ''' <summary>
+        ''' Returns used bytes by current user.
+        ''' </summary>
+        ''' <returns>Number of bytes used on disk or <c>0</c> if storage type not supported.</returns>
+        <Extension()>
+        Async Function GetStorageUsedBytesAsync(dirInfo As DirectoryInfo) As Task(Of Long)
+            If dirInfo Is Nothing Then Throw New ArgumentNullException(NameOf(dirInfo))
+            If dirInfo.Root.FullName.StartsWith("\\") Then
+                Return 0
+            End If
+
+            Dim driveInfo As DriveInfo = New DriveInfo(dirInfo.Root.FullName)
+            Return driveInfo.TotalSize - driveInfo.AvailableFreeSpace
+        End Function
     End Module
 End Namespace

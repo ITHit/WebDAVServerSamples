@@ -304,7 +304,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
 
             // Note: NTFS quotes retrieval for current user works very slowly.
 
-            return new DriveInfo(dirInfo.Root.FullName).AvailableFreeSpace;
+            return await dirInfo.GetStorageFreeBytesAsync();
         }
 
         /// <summary>
@@ -318,8 +318,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
 
             //Note: NTFS quotes retrieval for current user works very slowly.
 
-            DriveInfo driveInfo = new DriveInfo(dirInfo.Root.FullName);
-            return driveInfo.TotalSize - driveInfo.AvailableFreeSpace;
+            return await dirInfo.GetStorageUsedBytesAsync();
         }
 
         /// <summary>

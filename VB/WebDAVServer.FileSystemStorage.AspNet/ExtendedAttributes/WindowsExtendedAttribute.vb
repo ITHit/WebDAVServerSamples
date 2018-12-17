@@ -214,11 +214,15 @@ Namespace ExtendedAttributes
         ''' </summary>
         ''' <param name="path">File or folder path.</param>
         Private Function GetWin32LongPath(path As String) As String
-            If Not path.StartsWith("\\?\") Then
-                path = "\\?\" & path
+            If path.StartsWith("\\?\") Then
+                Return path
             End If
 
-            Return path
+            If path.StartsWith("\\") Then
+                Return "\\?\UNC\" & path.TrimStart("\"c)
+            End If
+
+            Return "\\?\" & path
         End Function
 
         <DllImport("kernel32.dll", CharSet:=CharSet.Unicode, SetLastError:=True)>
