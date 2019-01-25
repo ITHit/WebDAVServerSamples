@@ -50,19 +50,23 @@ namespace WebDAVServer.SqlStorage.HttpListener
         /// <returns>Items requested by the client and a total number of items in this folder.</returns>
         public virtual async Task<PageResults> GetChildrenAsync(IList<PropertyName> propNames, long? offset, long? nResults, IList<OrderProperty> orderProps)
         {
-            // map DAV properties to db table 
-            Dictionary<string, string> mappedProperties = new Dictionary<string, string>()
+            IList<IHierarchyItemAsync> children = null;
+
+            if (orderProps != null && orderProps.Count() != 0 && nResults.HasValue && offset.HasValue)
+            {
+                // map DAV properties to db table 
+                Dictionary<string, string> mappedProperties = new Dictionary<string, string>()
                 { { "displayname", "Name" }, { "getlastmodified", "Modified" }, { "getcontenttype", "(case when Name like '%.%' then reverse(left(reverse(Name), charindex('.', reverse(Name)) - 1)) else '' end)" },
                   { "quota-used-bytes", "(DATALENGTH(Content))" }, { "is-directory", "IIF(ItemType = 3, 1, 0)" } };
-            List<string> orderByProperies = new List<string>();
+                List<string> orderByProperies = new List<string>();
 
-            foreach (OrderProperty ordProp in orderProps)
-            {
-                orderByProperies.Add(string.Format("{0} {1}", mappedProperties[ordProp.Property.Name], ordProp.Ascending ? "ASC" : "DESC"));
-            }
+                foreach (OrderProperty ordProp in orderProps)
+                {
+                    orderByProperies.Add(string.Format("{0} {1}", mappedProperties[ordProp.Property.Name], ordProp.Ascending ? "ASC" : "DESC"));
+                }
 
-            string command =
-                String.Format(@"SELECT * FROM (SELECT 
+                string command =
+                    String.Format(@"SELECT * FROM (SELECT 
                     ROW_NUMBER() OVER (ORDER BY {0}) AS RowNum
                     ,ItemId
                     , ParentItemId
@@ -72,14 +76,32 @@ namespace WebDAVServer.SqlStorage.HttpListener
                     , Modified                  FROM Item
                    WHERE ParentItemId = @Parent) AS PageResults WHERE RowNum >= @StartRow
                    AND RowNum <= @EndRow
-                   ORDER BY RowNum", string.Join(",", orderByProperies)); 
+                   ORDER BY RowNum", string.Join(",", orderByProperies));
 
-            IList<IHierarchyItemAsync> children = await Context.ExecuteItemAsync<IHierarchyItemAsync>(
-                Path,
-                command,
-                "@Parent", ItemId,
-                "@StartRow", offset + 1,
-                "@EndRow", offset + nResults);
+               children = await Context.ExecuteItemAsync<IHierarchyItemAsync>(
+                    Path,
+                    command,
+                    "@Parent", ItemId,
+                    "@StartRow", offset + 1,
+                    "@EndRow", offset + nResults);
+            }
+            else
+            {
+                string command =
+                  @"SELECT 
+                          ItemId
+                        , ParentItemId
+                        , ItemType
+                        , Name
+                        , Created
+                        , Modified                      FROM Item
+                       WHERE ParentItemId = @Parent";
+
+                children = await Context.ExecuteItemAsync<IHierarchyItemAsync>(
+                    Path,
+                    command,
+                    "@Parent", ItemId);
+            }
 
             return new PageResults(children, await Context.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM Item WHERE ParentItemId = @Parent", "@Parent", ItemId));
         }
@@ -332,6 +354,7 @@ namespace WebDAVServer.SqlStorage.HttpListener
         {
             bool includeSnippet = propNames.Any(s => s.Name == SNIPPET);
             string condition = "Name LIKE @Name";
+            string commandText = string.Empty;
 
             // To enable full-text search, uncoment the code below and follow instructions 
             // in DB.sql to enable full-text indexing
@@ -341,8 +364,9 @@ namespace WebDAVServer.SqlStorage.HttpListener
                 condition += " OR FREETEXT(Content, '@Content')";
             }
             */
-
-            string commandText = String.Format(
+            if (offset.HasValue && nResults.HasValue)
+            {
+                commandText = String.Format(
                 @"SELECT  * FROM  (SELECT 
                     ROW_NUMBER() OVER ( ORDER BY Name) AS RowNum
                     ,ItemId
@@ -356,6 +380,21 @@ namespace WebDAVServer.SqlStorage.HttpListener
                    WHERE ParentItemId = @Parent AND ({0})) AS PageResults WHERE RowNum >= @StartRow
                    AND RowNum <= @EndRow
                    ORDER BY RowNum", condition);
+            }
+            else
+            {
+                commandText = String.Format(
+                @"SELECT 
+                      ItemId
+                    , ParentItemId
+                    , ItemType
+                    , Name
+                    , Created
+                    , Modified
+                    , FileAttributes                          
+                   FROM Item
+                   WHERE ParentItemId = @Parent AND ({0})", condition);
+            }
 
             List<IHierarchyItemAsync> result = new List<IHierarchyItemAsync>();
             await GetSearchResultsAsync(result, commandText, searchString, includeSnippet, offset, nResults);
@@ -374,8 +413,12 @@ namespace WebDAVServer.SqlStorage.HttpListener
 
         private async Task GetSearchResultsAsync(List<IHierarchyItemAsync> result, string commandText, string searchString, bool includeSnippet, long? offset, long? nResults)
         {
+            IEnumerable<IHierarchyItemAsync> folderSearchResults = null;
+
             // search this folder
-            IEnumerable<IHierarchyItemAsync> folderSearchResults = await Context.ExecuteItemAsync<IHierarchyItemAsync>(
+            if (offset.HasValue && nResults.HasValue)
+            {
+                folderSearchResults = await Context.ExecuteItemAsync<IHierarchyItemAsync>(
                 Path,
                 commandText,
                 "@Parent", ItemId,
@@ -383,6 +426,16 @@ namespace WebDAVServer.SqlStorage.HttpListener
                 "@Content", searchString,
                 "@StartRow", offset + 1,
                 "@EndRow", offset + nResults);
+            }
+            else
+            {
+                folderSearchResults = await Context.ExecuteItemAsync<IHierarchyItemAsync>(
+                Path,
+                commandText,
+                "@Parent", ItemId,
+                "@Name", searchString,
+                "@Content", searchString);
+            }
 
             foreach (IHierarchyItemAsync item in folderSearchResults)
             {

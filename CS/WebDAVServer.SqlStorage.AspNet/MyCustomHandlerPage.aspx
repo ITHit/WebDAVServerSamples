@@ -183,7 +183,7 @@
 			EditDocAuth: {
 			    Authentication: 'anonymous',                       // Authentication to use when opening documents for editing: 'anonymous', 'challenge', 'ms-ofba', 'cookies'
                 CookieNames: null,                                 // Coma separated list of cookie names to search for.
-                SearchIn: null,                                    // Web browsers to search and copy permanent cookies from: 'current', 'none', 'all'.
+                SearchIn: null,                                    // Web browsers to search and copy permanent cookies from: 'current', 'none'.
                 LoginUrl: null                                     // Login URL to redirect to in case any cookies specified in CookieNames parameter are not found.
            }
         }

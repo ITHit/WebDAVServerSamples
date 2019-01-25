@@ -54,7 +54,7 @@
 	            // The block below is used when opening documents from server with pure cookies authentication. Not required for challenge-response auth (Basic/Digest/NTLM/Kerberos).
 	            // EditDocAuth: {
 	            //    Authentication: 'cookies',                           // Authentication to use when opening documents for editing: 'challenge', 'cookies'
-	            //    SearchIn: 'current',                                 // Web browsers to search and copy permanent cookies from: 'сurrent', 'none', 'all'.
+	            //    SearchIn: 'current',                                 // Web browsers to search and copy permanent cookies from: 'сurrent', 'none'.
 	            //    CookieNames: '.AspNet.ApplicationCookie',            // Coma separated list of cookie names to search for.
 	            //    LoginUrl: '/Account/login/'                          // Login URL to redirect to in case any cookies specified in CookieNames parameter are not found.
 	            //},

@@ -46,15 +46,17 @@ Public Class DavFolder
     ''' <param name="orderProps">List of order properties requested by the client.</param>
     ''' <returns>Items requested by the client and a total number of items in this folder.</returns>
     Public Overridable Async Function GetChildrenAsync(propNames As IList(Of PropertyName), offset As Long?, nResults As Long?, orderProps As IList(Of OrderProperty)) As Task(Of PageResults) Implements IItemCollectionAsync.GetChildrenAsync
-        ' map DAV properties to db table 
-        Dim mappedProperties As Dictionary(Of String, String) = New Dictionary(Of String, String)() From {{"displayname", "Name"}, {"getlastmodified", "Modified"}, {"getcontenttype", "(case when Name like '%.%' then reverse(left(reverse(Name), charindex('.', reverse(Name)) - 1)) else '' end)"},
-                                                                                                         {"quota-used-bytes", "(DATALENGTH(Content))"}, {"is-directory", "IIF(ItemType = 3, 1, 0)"}}
-        Dim orderByProperies As List(Of String) = New List(Of String)()
-        For Each ordProp As OrderProperty In orderProps
-            orderByProperies.Add(String.Format("{0} {1}", mappedProperties(ordProp.Property.Name), If(ordProp.Ascending, "ASC", "DESC")))
-        Next
+        Dim children As IList(Of IHierarchyItemAsync) = Nothing
+        If orderProps IsNot Nothing AndAlso orderProps.Count() <> 0 AndAlso nResults.HasValue AndAlso offset.HasValue Then
+            ' map DAV properties to db table 
+            Dim mappedProperties As Dictionary(Of String, String) = New Dictionary(Of String, String)() From {{"displayname", "Name"}, {"getlastmodified", "Modified"}, {"getcontenttype", "(case when Name like '%.%' then reverse(left(reverse(Name), charindex('.', reverse(Name)) - 1)) else '' end)"},
+                                                                                                             {"quota-used-bytes", "(DATALENGTH(Content))"}, {"is-directory", "IIF(ItemType = 3, 1, 0)"}}
+            Dim orderByProperies As List(Of String) = New List(Of String)()
+            For Each ordProp As OrderProperty In orderProps
+                orderByProperies.Add(String.Format("{0} {1}", mappedProperties(ordProp.Property.Name), If(ordProp.Ascending, "ASC", "DESC")))
+            Next
 
-        Dim command As String = [String].Format("SELECT * FROM (SELECT 
+            Dim command As String = [String].Format("SELECT * FROM (SELECT 
                     ROW_NUMBER() OVER (ORDER BY {0}) AS RowNum
                     ,ItemId
                     , ParentItemId
@@ -65,11 +67,25 @@ Public Class DavFolder
                    WHERE ParentItemId = @Parent) AS PageResults WHERE RowNum >= @StartRow
                    AND RowNum <= @EndRow
                    ORDER BY RowNum", String.Join(",", orderByProperies))
-        Dim children As IList(Of IHierarchyItemAsync) = Await Context.ExecuteItemAsync(Of IHierarchyItemAsync)(Path,
-                                                                                                              command,
-                                                                                                              "@Parent", ItemId,
-                                                                                                              "@StartRow", offset + 1,
-                                                                                                              "@EndRow", offset + nResults)
+            children = Await Context.ExecuteItemAsync(Of IHierarchyItemAsync)(Path,
+                                                                             command,
+                                                                             "@Parent", ItemId,
+                                                                             "@StartRow", offset + 1,
+                                                                             "@EndRow", offset + nResults)
+        Else
+            Dim command As String = "SELECT 
+                          ItemId
+                        , ParentItemId
+                        , ItemType
+                        , Name
+                        , Created
+                        , Modified                      FROM Item
+                       WHERE ParentItemId = @Parent"
+            children = Await Context.ExecuteItemAsync(Of IHierarchyItemAsync)(Path,
+                                                                             command,
+                                                                             "@Parent", ItemId)
+        End If
+
         Return New PageResults(children, Await Context.ExecuteScalarAsync(Of Integer)("SELECT COUNT(*) FROM Item WHERE ParentItemId = @Parent", "@Parent", ItemId))
     End Function
 
@@ -275,9 +291,15 @@ Public Class DavFolder
     Public Async Function SearchAsync(searchString As String, options As SearchOptions, propNames As List(Of PropertyName), offset As Long?, nResults As Long?) As Task(Of PageResults) Implements ISearchAsync.SearchAsync
         Dim includeSnippet As Boolean = propNames.Any(Function(s) s.Name = SNIPPET)
         Dim condition As String = "Name LIKE @Name"
+        Dim commandText As String = String.Empty
         ' To enable full-text search, uncoment the code below and follow instructions 
         ' in DB.sql to enable full-text indexing
-        Dim commandText As String = [String].Format("SELECT  * FROM  (SELECT 
+        'if (options.SearchContent)
+        '{
+        'condition += " OR FREETEXT(Content, '@Content')";
+        '}
+        If offset.HasValue AndAlso nResults.HasValue Then
+            commandText = [String].Format("SELECT  * FROM  (SELECT 
                     ROW_NUMBER() OVER ( ORDER BY Name) AS RowNum
                     ,ItemId
                     , ParentItemId
@@ -290,6 +312,19 @@ Public Class DavFolder
                    WHERE ParentItemId = @Parent AND ({0})) AS PageResults WHERE RowNum >= @StartRow
                    AND RowNum <= @EndRow
                    ORDER BY RowNum", condition)
+        Else
+            commandText = [String].Format("SELECT 
+                      ItemId
+                    , ParentItemId
+                    , ItemType
+                    , Name
+                    , Created
+                    , Modified
+                    , FileAttributes                          
+                   FROM Item
+                   WHERE ParentItemId = @Parent AND ({0})", condition)
+        End If
+
         Dim result As List(Of IHierarchyItemAsync) = New List(Of IHierarchyItemAsync)()
         Await GetSearchResultsAsync(result, commandText, searchString, includeSnippet, offset, nResults)
         Return New PageResults(result, Await Context.ExecuteScalarAsync(Of Integer)([String].Format("SELECT COUNT(*) FROM Item WHERE ParentItemId = @Parent AND ({0})", condition), "@Parent", ItemId, "@Name", searchString))
@@ -304,14 +339,24 @@ Public Class DavFolder
     ''' <param name="offset">The number of children to skip before returning the remaining items. Start listing from from next item.</param>
     ''' <param name="nResults">The number of items to return.</param>
     Private Async Function GetSearchResultsAsync(result As List(Of IHierarchyItemAsync), commandText As String, searchString As String, includeSnippet As Boolean, offset As Long?, nResults As Long?) As Task
+        Dim folderSearchResults As IEnumerable(Of IHierarchyItemAsync) = Nothing
         ' search this folder
-        Dim folderSearchResults As IEnumerable(Of IHierarchyItemAsync) = Await Context.ExecuteItemAsync(Of IHierarchyItemAsync)(Path,
-                                                                                                                               commandText,
-                                                                                                                               "@Parent", ItemId,
-                                                                                                                               "@Name", searchString,
-                                                                                                                               "@Content", searchString,
-                                                                                                                               "@StartRow", offset + 1,
-                                                                                                                               "@EndRow", offset + nResults)
+        If offset.HasValue AndAlso nResults.HasValue Then
+            folderSearchResults = Await Context.ExecuteItemAsync(Of IHierarchyItemAsync)(Path,
+                                                                                        commandText,
+                                                                                        "@Parent", ItemId,
+                                                                                        "@Name", searchString,
+                                                                                        "@Content", searchString,
+                                                                                        "@StartRow", offset + 1,
+                                                                                        "@EndRow", offset + nResults)
+        Else
+            folderSearchResults = Await Context.ExecuteItemAsync(Of IHierarchyItemAsync)(Path,
+                                                                                        commandText,
+                                                                                        "@Parent", ItemId,
+                                                                                        "@Name", searchString,
+                                                                                        "@Content", searchString)
+        End If
+
         For Each item As IHierarchyItemAsync In folderSearchResults
             If includeSnippet AndAlso TypeOf item Is DavFile Then TryCast(item, DavFile).Snippet = "Not Implemented"
         Next
