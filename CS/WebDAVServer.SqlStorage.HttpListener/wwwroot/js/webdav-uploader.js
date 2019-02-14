@@ -85,7 +85,7 @@
             $(input.HtmlElement).trigger('click');
         });
 
-        this.Uploader.SetUploadUrl(ITHit.WebDAV.Client.Encoder.Decode(window.location.href.split("#")[0]));
+        this.SetUploadUrl(ITHit.WebDAV.Client.Encoder.Decode(window.location.href.split("#")[0]));
         this.Uploader.Queue.AddListener('OnQueueChanged', '_QueueChange', this);
         this.Uploader.Queue.OnUploadItemsCreatedCallback = this._OnUploadItemsCreatedCallback.bind(this);
         var $table = this.$table = $(sSelector);
@@ -103,6 +103,10 @@
                 return warnMessage;
             }
         });
+    };
+
+    UploaderGridView.prototype.SetUploadUrl = function (url) {
+        this.Uploader.SetUploadUrl(url);
     };
 
     UploaderGridView.prototype._OnUploadItemsCreatedCallback = function (oUploadItemsCreated) {
@@ -463,5 +467,5 @@
     };
 
     var oConfirmModal = new ConfirmModal('#ConfirmModal');
-    var oUploaderGrid = new UploaderGridView('.ithit-grid-uploads');
+    window.WebDAVUploaderGridView = new UploaderGridView('.ithit-grid-uploads');
 })();

@@ -573,6 +573,11 @@
                 sPath = this.CurrentFolder.Href;
             }
 
+            //set upload url for uploader control
+            if (typeof WebDAVUploaderGridView !== 'undefined') {
+                WebDAVUploaderGridView.SetUploadUrl(sPath);
+            }
+
             if (sortColumn) {
                 this.CurrentSortColumn = sortColumn;
                 this.CurrentSortAscending = sortAscending;
