@@ -830,6 +830,13 @@
         },
 
         /**
+         * Returns url of app installer
+         */
+        GetInstallerFileUrl: function () {
+            return webDavSettings.ApplicationProtocolsPath + ITHit.WebDAV.Client.DocManager.GetInstallFileName();
+        },
+
+        /**
          * Adds name and value to array
          * @return {Array}
          */
@@ -879,6 +886,8 @@
          * @private
          */
         _ProtocolInstallMessage: function () {
+            var installerFilePath = this.GetInstallerFileUrl();
+
             if (ITHit.WebDAV.Client.DocManager.IsDavProtocolSupported()) {
                 oConfirmModal.Confirm('This action requires a protocol installation. <br/><br/>' +
                     'Make sure a web browser extension is enabled after protocol installation.<br/>' +
@@ -888,9 +897,9 @@
                     'Select OK to download the protocol installer.', function () {
                         // IT Hit WebDAV Ajax Library protocol installers path.
                         // Used to open non-MS Office documents or if MS Office is
-                        // not installed as well as to open OS File Manager.      
+                        // not installed as well as to open OS File Manager.     
 
-                        var installerFilePath = webDavSettings.ApplicationProtocolsPath + ITHit.WebDAV.Client.DocManager.GetInstallFileName();
+                     
                         window.open(installerFilePath);
                     }, { size: 'lg' });
             }
@@ -917,7 +926,12 @@
     }
 
     // Set Ajax lib version
-    $('.ithit-version-value').text('v' + ITHit.WebDAV.Client.WebDavSession.Version + ' (Protocol v' + ITHit.WebDAV.Client.WebDavSession.ProtocolVersion + ')');
+    if (ITHit.WebDAV.Client.DocManager.IsDavProtocolSupported()) {
+        $('.ithit-version-value').html('v' + ITHit.WebDAV.Client.WebDavSession.Version + ' (<a href="' + oWebDAV.GetInstallerFileUrl() + '">Protocol v' + ITHit.WebDAV.Client.WebDavSession.ProtocolVersion + '</a>)');
+    }
+    else {
+        $('.ithit-version-value').text('v' + ITHit.WebDAV.Client.WebDavSession.Version + ' (Protocol v' + ITHit.WebDAV.Client.WebDavSession.ProtocolVersion + ')');
+    }
     $('.ithit-current-folder-value').text(oWebDAV.GetMountUrl());
 
 })();
