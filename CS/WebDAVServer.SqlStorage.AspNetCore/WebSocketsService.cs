@@ -97,11 +97,11 @@ namespace WebDAVServer.SqlStorage.AspNetCore
         /// <summary>
         /// Represents notification data.
         /// </summary>
-        public string FolderPath { get; set; }
+        public string FolderPath { get; set; } = string.Empty;
 
         /// <summary>
         /// Represents event type.
         /// </summary>
-        public string EventType { get; set; }
+        public string EventType { get; set; } = string.Empty;
     }
 }

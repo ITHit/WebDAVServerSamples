@@ -15,11 +15,19 @@ namespace CardDAVServer.FileSystemStorage.AspNet.ExtendedAttributes
         Task<bool> IsExtendedAttributesSupportedAsync(string path);
 
         /// <summary>
+        /// Checks extended attribute existence.
+        /// </summary>
+        /// <param name="path">File or folder path.</param>
+        /// <param name="attribName">Attribute name.</param>
+        /// <returns>True if attribute exist, false otherwise.</returns>
+        Task<bool> HasExtendedAttributeAsync(string path, string attribName);
+
+        /// <summary>
         /// Gets extended attribute or null if attribute or file not found.
         /// </summary>
         /// <param name="path">File or folder path.</param>
         /// <param name="attribName">Attribute name.</param>
-        /// <returns>Attribute value or null if attribute or file not found.</returns>
+        /// <returns>Attribute value.</returns>
         Task<string> GetExtendedAttributeAsync(string path, string attribName);
 
         /// <summary>

@@ -12,11 +12,19 @@ Namespace ExtendedAttributes
         Function IsExtendedAttributesSupportedAsync(path As String) As Task(Of Boolean)
 
         ''' <summary>
+        ''' Checks extended attribute existence.
+        ''' </summary>
+        ''' <param name="path">File or folder path.</param>
+        ''' <param name="attribName">Attribute name.</param>
+        ''' <returns>True if attribute exist, false otherwise.</returns>
+        Function HasExtendedAttributeAsync(path As String, attribName As String) As Task(Of Boolean)
+
+        ''' <summary>
         ''' Gets extended attribute or null if attribute or file not found.
         ''' </summary>
         ''' <param name="path">File or folder path.</param>
         ''' <param name="attribName">Attribute name.</param>
-        ''' <returns>Attribute value or null if attribute or file not found.</returns>
+        ''' <returns>Attribute value.</returns>
         Function GetExtendedAttributeAsync(path As String, attribName As String) As Task(Of String)
 
         ''' <summary>

@@ -66,11 +66,6 @@ namespace CardDAVServer.FileSystemStorage.AspNet
         protected DavContext context;
 
         /// <summary>
-        /// User defined property values.
-        /// </summary>
-        private List<PropertyValue> propertyValues;
-
-        /// <summary>
         /// Initializes a new instance of this class.
         /// </summary>
         /// <param name="fileSystemInfo">Corresponding file or folder in the file system.</param>
@@ -149,11 +144,13 @@ namespace CardDAVServer.FileSystemStorage.AspNet
         /// <returns>List of user defined properties.</returns>
         private async Task<List<PropertyValue>> GetPropertyValuesAsync()
         {
-            if (propertyValues == null)
+            List<PropertyValue> properties = new List<PropertyValue>();
+            if (await fileSystemInfo.HasExtendedAttributeAsync(propertiesAttributeName))
             {
-                propertyValues = await fileSystemInfo.GetExtendedAttributeAsync<List<PropertyValue>>(propertiesAttributeName);
+                properties = await fileSystemInfo.GetExtendedAttributeAsync<List<PropertyValue>>(propertiesAttributeName);
             }
-            return propertyValues;
+
+            return properties;
         }
 
         /// <summary>

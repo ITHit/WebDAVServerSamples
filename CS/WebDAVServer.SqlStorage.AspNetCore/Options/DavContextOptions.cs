@@ -13,7 +13,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore.Options
         /// <summary>
         /// Database conntion string.
         /// </summary>
-        public string ConnectionString { get; set; }
+        public string ConnectionString { get; set; } = string.Empty;
     }
 
     /// <summary>

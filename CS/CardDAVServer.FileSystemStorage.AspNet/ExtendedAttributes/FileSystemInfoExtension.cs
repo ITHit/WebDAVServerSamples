@@ -125,7 +125,7 @@ namespace CardDAVServer.FileSystemStorage.AspNet.ExtendedAttributes
                 throw new ArgumentNullException("attribName");
             }
 
-            return await extendedAttribute.GetExtendedAttributeAsync(info.FullName, attribName) != null;
+            return await extendedAttribute.HasExtendedAttributeAsync(info.FullName, attribName);
         }
 
         /// <summary>
@@ -134,7 +134,7 @@ namespace CardDAVServer.FileSystemStorage.AspNet.ExtendedAttributes
         /// <typeparam name="T">The value will be automatically deserialized to the type specified by this type-parameter.</typeparam>
         /// <param name="info"><see cref="FileSystemInfo"/> instance.</param>
         /// <param name="attribName">Attribute name.</param>
-        /// <returns>Attribute value or null if attribute or file not found.</returns>
+        /// <returns>Attribute value.</returns>
         public static async Task<T> GetExtendedAttributeAsync<T>(this FileSystemInfo info, string attribName) where T : new()
         {
             if (info == null)

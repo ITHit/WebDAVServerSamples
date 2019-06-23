@@ -47,19 +47,39 @@ namespace CalDAVServer.FileSystemStorage.AspNet.ExtendedAttributes
         }
 
         /// <summary>
+        /// Checks extended attribute existence.
+        /// </summary>
+        /// <param name="path">File or folder path.</param>
+        /// <param name="attribName">Attribute name.</param>
+        /// <returns>True if attribute exist, false otherwise.</returns>
+        public async Task<bool> HasExtendedAttributeAsync(string path, string attribName)
+        {
+            if (string.IsNullOrEmpty(path)) throw new ArgumentNullException(nameof(path));
+            if (string.IsNullOrEmpty(attribName)) throw new ArgumentNullException(nameof(attribName));
+
+            bool attributeExists = true;
+            string attrPath = this.GetAttrFullPath(path, attribName);
+
+            if (!File.Exists(attrPath))
+            {
+                attributeExists = false;
+            }
+            return attributeExists;
+        }
+
+        /// <summary>
         /// Gets extended attribute or null if attribute or file not found.
         /// </summary>
         /// <param name="path">File or folder path.</param>
         /// <param name="attribName">Attribute name.</param>
-        /// <returns>Attribute value or null if attribute or file not found.</returns>
+        /// <returns>Attribute value.</returns>
         public async Task<string> GetExtendedAttributeAsync(string path, string attribName)
         {
-            if(string.IsNullOrEmpty(path)) throw new ArgumentNullException(nameof(path));
-            if(string.IsNullOrEmpty(attribName)) throw new ArgumentNullException(nameof(attribName));
+            if (string.IsNullOrEmpty(path)) throw new ArgumentNullException(nameof(path));
+            if (string.IsNullOrEmpty(attribName)) throw new ArgumentNullException(nameof(attribName));
 
 
             string attrPath = this.GetAttrFullPath(path, attribName);
-            if(!File.Exists(attrPath)) return null;
 
             using (FileStream fileStream = File.Open(attrPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             using (StreamReader reader = new StreamReader(fileStream, Encoding.UTF8))

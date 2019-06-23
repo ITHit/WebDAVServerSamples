@@ -79,11 +79,6 @@ Public MustInherit Class DavHierarchyItem
     Protected context As DavContext
 
     ''' <summary>
-    ''' User defined property values.
-    ''' </summary>
-    Private propertyValues As List(Of PropertyValue)
-
-    ''' <summary>
     ''' Initializes a new instance of this class.
     ''' </summary>
     ''' <param name="fileSystemInfo">Corresponding file or folder in the file system.</param>
@@ -157,11 +152,12 @@ Public MustInherit Class DavHierarchyItem
     ''' </summary>
     ''' <returns>List of user defined properties.</returns>
     Private Async Function GetPropertyValuesAsync() As Task(Of List(Of PropertyValue))
-        If propertyValues Is Nothing Then
-            propertyValues = Await fileSystemInfo.GetExtendedAttributeAsync(Of List(Of PropertyValue))(propertiesAttributeName)
+        Dim properties As List(Of PropertyValue) = New List(Of PropertyValue)()
+        If Await fileSystemInfo.HasExtendedAttributeAsync(propertiesAttributeName) Then
+            properties = Await fileSystemInfo.GetExtendedAttributeAsync(Of List(Of PropertyValue))(propertiesAttributeName)
         End If
 
-        Return propertyValues
+        Return properties
     End Function
 
     ''' <summary>

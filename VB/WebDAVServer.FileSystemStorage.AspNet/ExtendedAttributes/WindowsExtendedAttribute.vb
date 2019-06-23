@@ -50,11 +50,42 @@ Namespace ExtendedAttributes
         End Function
 
         ''' <summary>
+        ''' Checks extended attribute existence.
+        ''' </summary>
+        ''' <param name="path">File or folder path.</param>
+        ''' <param name="attribName">Attribute name.</param>
+        ''' <returns>True if attribute exist, false otherwise.</returns>
+        Public Async Function HasExtendedAttributeAsync(path As String, attribName As String) As Task(Of Boolean) Implements IExtendedAttribute.HasExtendedAttributeAsync
+            If String.IsNullOrEmpty(path) Then
+                Throw New ArgumentNullException("path")
+            End If
+
+            If String.IsNullOrEmpty(attribName) Then
+                Throw New ArgumentNullException("attribName")
+            End If
+
+            Dim attributeExists As Boolean = True
+            Dim fullPath As String = String.Format(pathFormat, GetWin32LongPath(path), attribName)
+            Using safeHandler As SafeFileHandle = GetSafeHandler(fullPath, FileAccess.Read, FileMode.Open, FileShare.ReadWrite)
+                If safeHandler.IsInvalid Then
+                    Dim lastError As Integer = Marshal.GetLastWin32Error()
+                    If lastError = 2 Then
+                        attributeExists = False
+                    End If
+                Else
+                    ThrowLastError()
+                End If
+            End Using
+
+            Return attributeExists
+        End Function
+
+        ''' <summary>
         ''' Gets extended attribute.
         ''' </summary>
         ''' <param name="path">File or folder path.</param>
         ''' <param name="attribName">Attribute name.</param>
-        ''' <returns>Attribute value or null if attribute or file not found.</returns>
+        ''' <returns>Attribute value.</returns>
         Public Async Function GetExtendedAttributeAsync(path As String, attribName As String) As Task(Of String) Implements IExtendedAttribute.GetExtendedAttributeAsync
             If String.IsNullOrEmpty(path) Then
                 Throw New ArgumentNullException("path")
@@ -66,15 +97,6 @@ Namespace ExtendedAttributes
 
             Dim fullPath As String = String.Format(pathFormat, GetWin32LongPath(path), attribName)
             Using safeHandler As SafeFileHandle = GetSafeHandler(fullPath, FileAccess.Read, FileMode.Open, FileShare.ReadWrite)
-                If safeHandler.IsInvalid Then
-                    Dim lastError As Integer = Marshal.GetLastWin32Error()
-                    If lastError = 2 Then
-                        Return Nothing
-                    End If
-                Else
-                    ThrowLastError()
-                End If
-
                 Using fileStream As FileStream = Open(safeHandler, FileAccess.Read)
                     Using streamReader As StreamReader = New StreamReader(fileStream)
                         Return Await streamReader.ReadToEndAsync()

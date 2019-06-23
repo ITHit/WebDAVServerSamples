@@ -52,23 +52,22 @@ namespace WebDAVServer.SqlStorage.AspNetCore
                 Guid clientId = socketService.AddClient(client);
 
                 byte[] buffer = new byte[1024 * 4];
-                WebSocketReceiveResult result = null;
 
                 while (client.State == WebSocketState.Open)
                 {
                     try
                     {
                         // Must receive client results.
-                        result = await client.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+                        WebSocketReceiveResult result = await client.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+
+                        if (result.MessageType == WebSocketMessageType.Close)
+                        {
+                            await client.CloseAsync(result.CloseStatus ?? WebSocketCloseStatus.ProtocolError, result.CloseStatusDescription, CancellationToken.None);
+                        }
                     }
                     catch (WebSocketException)
                     {
                         break;
-                    }
-
-                    if (result.MessageType == WebSocketMessageType.Close)
-                    {
-                        await client.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
                     }
                 }
 

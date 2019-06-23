@@ -112,7 +112,7 @@ Namespace ExtendedAttributes
                 Throw New ArgumentNullException("attribName")
             End If
 
-            Return Await extendedAttribute.GetExtendedAttributeAsync(info.FullName, attribName) IsNot Nothing
+            Return Await extendedAttribute.HasExtendedAttributeAsync(info.FullName, attribName)
         End Function
 
         ''' <summary>
@@ -121,7 +121,7 @@ Namespace ExtendedAttributes
         ''' <typeparam name="T">The value will be automatically deserialized to the type specified by this type-parameter.</typeparam>
         ''' <param name="info"><see cref="FileSystemInfo"/>  instance.</param>
         ''' <param name="attribName">Attribute name.</param>
-        ''' <returns>Attribute value or null if attribute or file not found.</returns>
+        ''' <returns>Attribute value.</returns>
         <Extension()>
         Async Function GetExtendedAttributeAsync(Of T As New)(info As FileSystemInfo, attribName As String) As Task(Of T)
             If info Is Nothing Then

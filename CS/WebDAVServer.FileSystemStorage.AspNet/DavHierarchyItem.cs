@@ -68,16 +68,6 @@ namespace WebDAVServer.FileSystemStorage.AspNet
         protected DavContext context;
 
         /// <summary>
-        /// User defined property values.
-        /// </summary>
-        private List<PropertyValue> propertyValues;
-
-        /// <summary>
-        /// Item locks.
-        /// </summary>
-        private List<DateLockInfo> locks;
-
-        /// <summary>
         /// Initializes a new instance of this class.
         /// </summary>
         /// <param name="fileSystemInfo">Corresponding file or folder in the file system.</param>
@@ -162,11 +152,13 @@ namespace WebDAVServer.FileSystemStorage.AspNet
         /// <returns>List of user defined properties.</returns>
         private async Task<List<PropertyValue>> GetPropertyValuesAsync()
         {
-            if (propertyValues == null)
+            List<PropertyValue> properties = new List<PropertyValue>();
+            if (await fileSystemInfo.HasExtendedAttributeAsync(propertiesAttributeName))
             {
-                propertyValues = await fileSystemInfo.GetExtendedAttributeAsync<List<PropertyValue>>(propertiesAttributeName);
+                properties = await fileSystemInfo.GetExtendedAttributeAsync<List<PropertyValue>>(propertiesAttributeName);
             }
-            return propertyValues;
+
+            return properties;
         }
 
         /// <summary>
@@ -424,7 +416,10 @@ namespace WebDAVServer.FileSystemStorage.AspNet
         /// <returns>List of locks with their expiration dates.</returns>
         private async Task<List<DateLockInfo>> GetLocksAsync(bool getAllWithExpired = false)
         {
-            if (locks == null)
+
+            List<DateLockInfo> locks = new List<DateLockInfo>();
+
+            if (await fileSystemInfo.HasExtendedAttributeAsync(locksAttributeName))
             {
                 locks = await fileSystemInfo.GetExtendedAttributeAsync<List<DateLockInfo>>(locksAttributeName);
 
@@ -433,10 +428,7 @@ namespace WebDAVServer.FileSystemStorage.AspNet
                     locks.ForEach(l => l.LockRoot = Path);
                 }
             }
-            if (locks == null)
-            {
-                return new List<DateLockInfo>();
-            }
+
             if (getAllWithExpired)
             {
                 return locks;
@@ -480,7 +472,7 @@ namespace WebDAVServer.FileSystemStorage.AspNet
             await fileSystemInfo.SetExtendedAttributeAsync(locksAttributeName, locks);
         }
 
-        private async Task RemoveExpiredLocksAsync(string unlockedToken = null)
+        private async Task RemoveExpiredLocksAsync(string unlockedToken)
         {
             List<DateLockInfo> locks = await GetLocksAsync(getAllWithExpired: true);
 

@@ -52,11 +52,51 @@ namespace WebDAVServer.FileSystemStorage.AspNet.ExtendedAttributes
         }
 
         /// <summary>
+        /// Checks extended attribute existence.
+        /// </summary>
+        /// <param name="path">File or folder path.</param>
+        /// <param name="attribName">Attribute name.</param>
+        /// <returns>True if attribute exist, false otherwise.</returns>
+        public async Task<bool> HasExtendedAttributeAsync(string path, string attribName)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentNullException("path");
+            }
+
+            if (string.IsNullOrEmpty(attribName))
+            {
+                throw new ArgumentNullException("attribName");
+            }
+
+            bool attributeExists = true;
+            string fullPath = string.Format(pathFormat, GetWin32LongPath(path), attribName);
+
+            using (SafeFileHandle safeHandler = GetSafeHandler(fullPath, FileAccess.Read, FileMode.Open, FileShare.ReadWrite))
+            {
+                if (safeHandler.IsInvalid)
+                {
+                    int lastError = Marshal.GetLastWin32Error();
+                    if (lastError == 2) // File or alternate stream not found.
+                    {
+                        attributeExists = false;
+                    }
+                }
+                else
+                {
+                    ThrowLastError();
+                }
+            }
+
+            return attributeExists;
+        }
+
+        /// <summary>
         /// Gets extended attribute.
         /// </summary>
         /// <param name="path">File or folder path.</param>
         /// <param name="attribName">Attribute name.</param>
-        /// <returns>Attribute value or null if attribute or file not found.</returns>
+        /// <returns>Attribute value.</returns>
         public async Task<string> GetExtendedAttributeAsync(string path, string attribName)
         {
             if (string.IsNullOrEmpty(path))
@@ -73,19 +113,6 @@ namespace WebDAVServer.FileSystemStorage.AspNet.ExtendedAttributes
 
             using (SafeFileHandle safeHandler = GetSafeHandler(fullPath, FileAccess.Read, FileMode.Open, FileShare.ReadWrite))
             {
-                if (safeHandler.IsInvalid)
-                {
-                    int lastError = Marshal.GetLastWin32Error();
-                    if (lastError == 2) // File or alternate stream not found.
-                    {
-                        return null;
-                    }
-                }
-                else
-                {
-                    ThrowLastError();
-                }
-
                 using (FileStream fileStream = Open(safeHandler, FileAccess.Read))
                 {
                     using (StreamReader streamReader = new StreamReader(fileStream))

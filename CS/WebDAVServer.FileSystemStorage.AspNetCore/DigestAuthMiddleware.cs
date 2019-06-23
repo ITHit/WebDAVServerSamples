@@ -122,7 +122,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
             string par = getUserPassword(username);
             if (par == null)
             {
-                return null;
+                return new ClaimsPrincipal(); 
             }
 
             // Generate hash.
@@ -133,7 +133,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
 
             if ((reqInfo["response"] != hashedDigest) || isNonceStale)
             {
-                return null;
+                return new ClaimsPrincipal(); 
             }
 
             // Authenticate user.
@@ -282,7 +282,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
             }
             else
             {
-                return null;
+                return string.Empty;
             }
         }
     }

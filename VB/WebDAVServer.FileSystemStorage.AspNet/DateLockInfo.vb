@@ -9,7 +9,7 @@ Public Class DateLockInfo
     ''' <summary>
     ''' Gets or sets lock owner as specified by client.
     ''' </summary>
-    Public Property ClientOwner As String
+    Public Property ClientOwner As String = String.Empty
 
     ''' <summary>
     ''' Gets or sets time when the lock expires.
@@ -19,7 +19,7 @@ Public Class DateLockInfo
     ''' <summary>
     ''' Gets or sets lock token.
     ''' </summary>
-    Public Property LockToken As String
+    Public Property LockToken As String = String.Empty
 
     ''' <summary>
     ''' Gets or sets lock level.
@@ -34,7 +34,7 @@ Public Class DateLockInfo
     ''' <summary>
     ''' Gets or sets path of item item which has the lock specified explicitly.
     ''' </summary>
-    Public Property LockRoot As String
+    Public Property LockRoot As String = String.Empty
 
     ''' <summary>
     ''' Gets or sets timeout for the lock requested by client.

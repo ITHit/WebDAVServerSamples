@@ -14,7 +14,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore.Options
         /// <summary>
         /// Specifies whether XML written to the output will be formatted. Default is <b>false</b>.
         /// </summary>
-        public bool OutputXmlFormatting { get; set; }
+        public bool OutputXmlFormatting { get; set; } = false;
 
         /// <summary>
         /// Specifies whether engine shall use full or relative urls. Default is <b>true</b>.
@@ -22,17 +22,17 @@ namespace WebDAVServer.SqlStorage.AspNetCore.Options
         /// <remarks>
         /// By default full urls are used.
         /// </remarks>
-        public bool UseFullUris { get; set; }
+        public bool UseFullUris { get; set; } = true;
 
         /// <summary>
         /// Enables or disables CORS for specified domain. If "*" is specified, CORS will be enabled for in all domains.
         /// </summary>
-        public string CorsAllowedFor { get; set; }
+        public string CorsAllowedFor { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the license text. See comments in appsettings.webdav.json where to get the license file.
         /// </summary>
-        public string License { get; set; }
+        public string License { get; set; } = string.Empty;
     }
 
     /// <summary>

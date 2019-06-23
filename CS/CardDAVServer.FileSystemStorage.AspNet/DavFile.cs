@@ -77,7 +77,10 @@ namespace CardDAVServer.FileSystemStorage.AspNet
 
             DavFile davFile = new DavFile(file, context, path);
 
-            davFile.serialNumber = await file.GetExtendedAttributeAsync<int?>("SerialNumber") ?? 0;
+            if (await file.HasExtendedAttributeAsync("SerialNumber"))
+            {
+                davFile.serialNumber = await file.GetExtendedAttributeAsync<int?>("SerialNumber") ?? 0;
+            }
 
             return davFile;
         }

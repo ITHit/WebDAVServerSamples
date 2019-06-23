@@ -41,8 +41,45 @@ namespace WebDAVServer.FileSystemStorage.AspNet.ExtendedAttributes
                 throw new ArgumentNullException("path");
             }
 
-            long attributeCount = ListXAattr(path, null, 0);
+            long attributeCount = ListXAattr(path, new StringBuilder(), 0);
             return attributeCount != -1;
+        }
+
+        /// <summary>
+        /// Checks extended attribute existence.
+        /// </summary>
+        /// <param name="path">File or folder path.</param>
+        /// <param name="attribName">Attribute name.</param>
+        /// <returns>True if attribute exist, false otherwise.</returns>
+        public async Task<bool> HasExtendedAttributeAsync(string path, string attribName)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentNullException("path");
+            }
+
+            if (string.IsNullOrEmpty(attribName))
+            {
+                throw new ArgumentNullException("attribName");
+            }
+
+            string userAttributeName = string.Format(attributeNameFormat, attribName);
+            long attributeSize = GetXAttr(path, userAttributeName, new byte[0], 0);
+            bool attributeExists = true;
+
+            if (attributeSize == -1)
+            {
+                if (Marshal.GetLastWin32Error() == AttributeNotFoundErrno)
+                {
+                    attributeExists = false;
+                }
+                else
+                {
+                    ThrowLastException(path, userAttributeName);
+                }
+            }
+
+            return attributeExists;
         }
 
         /// <summary>
@@ -66,17 +103,7 @@ namespace WebDAVServer.FileSystemStorage.AspNet.ExtendedAttributes
             }
 
             string userAttributeName = string.Format(attributeNameFormat, attribName);
-            long attributeSize = GetXAttr(path, userAttributeName, null, 0);
-
-            if (attributeSize == -1)
-            {
-                if (Marshal.GetLastWin32Error() == AttributeNotFoundErrno)
-                {
-                    return null;
-                }
-
-                ThrowLastException(path, userAttributeName);
-            }
+            long attributeSize = GetXAttr(path, userAttributeName, new byte[0], 0);
 
             byte[] buffer = new byte[attributeSize];
             long readedLength = GetXAttr(path, userAttributeName, buffer, attributeSize);

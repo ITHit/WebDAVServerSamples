@@ -42,7 +42,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
             if(IsAuthorizationPresent(context.Request))
             {
                 ClaimsPrincipal userPrincipal = AuthenticateRequest(context.Request);
-                if (userPrincipal != null)
+                if (userPrincipal.Identity != null)
                 {
                     // Authenticated succesfully.
                     context.User = userPrincipal;
@@ -110,12 +110,12 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
                 }
                 else
                 {
-                    return null;
+                    return new ClaimsPrincipal();
                 }
             }
             else
             {
-                return null;
+                return new ClaimsPrincipal();
             }
         }
 

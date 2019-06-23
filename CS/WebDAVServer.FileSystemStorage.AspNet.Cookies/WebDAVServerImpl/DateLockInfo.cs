@@ -11,7 +11,7 @@ namespace WebDAVServer.FileSystemStorage.AspNet.Cookies
         /// <summary>
         /// Gets or sets lock owner as specified by client.
         /// </summary>
-        public string ClientOwner { get; set; }
+        public string ClientOwner { get; set; } = string.Empty;
         /// <summary>
         /// Gets or sets time when the lock expires.
         /// </summary>
@@ -20,7 +20,7 @@ namespace WebDAVServer.FileSystemStorage.AspNet.Cookies
         /// <summary>
         /// Gets or sets lock token.
         /// </summary>
-        public string LockToken { get; set; }
+        public string LockToken { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets lock level.
@@ -35,7 +35,7 @@ namespace WebDAVServer.FileSystemStorage.AspNet.Cookies
         /// <summary>
         /// Gets or sets path of item item which has the lock specified explicitly.
         /// </summary>
-        public string LockRoot { get; set; }
+        public string LockRoot { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets timeout for the lock requested by client.

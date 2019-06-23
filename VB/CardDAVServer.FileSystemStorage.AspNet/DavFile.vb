@@ -75,7 +75,10 @@ Public Class DavFile
         End If
 
         Dim davFile As DavFile = New DavFile(file, context, path)
-        davFile.serialNumber = If(Await file.GetExtendedAttributeAsync(Of Integer?)("SerialNumber"), 0)
+        If Await file.HasExtendedAttributeAsync("SerialNumber") Then
+            davFile.serialNumber = If(Await file.GetExtendedAttributeAsync(Of Integer?)("SerialNumber"), 0)
+        End If
+
         Return davFile
     End Function
 

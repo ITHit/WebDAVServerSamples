@@ -46,16 +46,33 @@ Namespace ExtendedAttributes
         End Function
 
         ''' <summary>
+        ''' Checks extended attribute existence.
+        ''' </summary>
+        ''' <param name="path">File or folder path.</param>
+        ''' <param name="attribName">Attribute name.</param>
+        ''' <returns>True if attribute exist, false otherwise.</returns>
+        Public Async Function HasExtendedAttributeAsync(path As String, attribName As String) As Task(Of Boolean) Implements IExtendedAttribute.HasExtendedAttributeAsync
+            If String.IsNullOrEmpty(path) Then Throw New ArgumentNullException(NameOf(path))
+            If String.IsNullOrEmpty(attribName) Then Throw New ArgumentNullException(NameOf(attribName))
+            Dim attributeExists As Boolean = True
+            Dim attrPath As String = Me.GetAttrFullPath(path, attribName)
+            If Not File.Exists(attrPath) Then
+                attributeExists = False
+            End If
+
+            Return attributeExists
+        End Function
+
+        ''' <summary>
         ''' Gets extended attribute or null if attribute or file not found.
         ''' </summary>
         ''' <param name="path">File or folder path.</param>
         ''' <param name="attribName">Attribute name.</param>
-        ''' <returns>Attribute value or null if attribute or file not found.</returns>
+        ''' <returns>Attribute value.</returns>
         Public Async Function GetExtendedAttributeAsync(path As String, attribName As String) As Task(Of String) Implements IExtendedAttribute.GetExtendedAttributeAsync
             If String.IsNullOrEmpty(path) Then Throw New ArgumentNullException(NameOf(path))
             If String.IsNullOrEmpty(attribName) Then Throw New ArgumentNullException(NameOf(attribName))
             Dim attrPath As String = Me.GetAttrFullPath(path, attribName)
-            If Not File.Exists(attrPath) Then Return Nothing
             Using fileStream As FileStream = File.Open(attrPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)
                 Using reader As StreamReader = New StreamReader(fileStream, Encoding.UTF8)
                     Return Await reader.ReadToEndAsync()

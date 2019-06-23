@@ -14,12 +14,12 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore.Options
         /// <summary>
         /// Files and folders in this folder become available via WebDAV.
         /// </summary>
-        public string RepositoryPath { get; set; }
+        public string RepositoryPath { get; set; } = string.Empty;
 
         /// <summary>
         /// This folder used for extended attributes storage.
         /// </summary>
-        public string AttrStoragePath { get; set; }
+        public string AttrStoragePath { get; set; } = string.Empty;
     }
 
     /// <summary>

@@ -74,9 +74,8 @@ Public Class DavFolder
         ' return only items that you want to be visible for this 
         ' particular user.
         Dim children As IList(Of IHierarchyItemAsync) = New List(Of IHierarchyItemAsync)()
-        Dim fileInfos As FileSystemInfo() = Nothing
         Dim totalItems As Long = 0
-        fileInfos = dirInfo.GetFileSystemInfos()
+        Dim fileInfos As FileSystemInfo() = dirInfo.GetFileSystemInfos()
         totalItems = fileInfos.Length
         ' Apply sorting.
         fileInfos = SortChildren(fileInfos, orderProps)
@@ -129,11 +128,11 @@ Public Class DavFolder
     ''' <param name="deep">Whether children items shall be copied.</param>
     ''' <param name="multistatus">Information about child items that failed to copy.</param>
     Public Overrides Async Function CopyToAsync(destFolder As IItemCollectionAsync, destName As String, deep As Boolean, multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.CopyToAsync
-        Dim targetFolder As DavFolder = TryCast(destFolder, DavFolder)
-        If targetFolder Is Nothing Then
+        If Not(TypeOf destFolder Is DavFolder) Then
             Throw New DavException("Target folder doesn't exist", DavStatus.CONFLICT)
         End If
 
+        Dim targetFolder As DavFolder = CType(destFolder, DavFolder)
         If IsRecursive(targetFolder) Then
             Throw New DavException("Cannot copy to subfolder", DavStatus.FORBIDDEN)
         End If
@@ -152,7 +151,7 @@ Public Class DavFolder
 
         ' Copy children.
         Dim createdFolder As IFolderAsync = CType(Await context.GetHierarchyItemAsync(targetPath), IFolderAsync)
-        For Each item As DavHierarchyItem In(Await GetChildrenAsync(New PropertyName(-1) {}, Nothing, Nothing, Nothing)).Page
+        For Each item As DavHierarchyItem In(Await GetChildrenAsync(New PropertyName(-1) {}, Nothing, Nothing, New List(Of OrderProperty)())).Page
             If Not deep AndAlso TypeOf item Is DavFolder Then
                 Continue For
             End If
@@ -176,11 +175,11 @@ Public Class DavFolder
     ''' <param name="multistatus">Information about child items that failed to move.</param>
     Public Overrides Async Function MoveToAsync(destFolder As IItemCollectionAsync, destName As String, multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.MoveToAsync
         Await RequireHasTokenAsync()
-        Dim targetFolder As DavFolder = TryCast(destFolder, DavFolder)
-        If targetFolder Is Nothing Then
+        If Not(TypeOf destFolder Is DavFolder) Then
             Throw New DavException("Target folder doesn't exist", DavStatus.CONFLICT)
         End If
 
+        Dim targetFolder As DavFolder = CType(destFolder, DavFolder)
         If IsRecursive(targetFolder) Then
             Throw New DavException("Cannot move folder to its subtree.", DavStatus.FORBIDDEN)
         End If
@@ -201,7 +200,7 @@ Public Class DavFolder
         ' Move child items.
         Dim movedSuccessfully As Boolean = True
         Dim createdFolder As IFolderAsync = CType(Await context.GetHierarchyItemAsync(targetPath), IFolderAsync)
-        For Each item As DavHierarchyItem In(Await GetChildrenAsync(New PropertyName(-1) {}, Nothing, Nothing, Nothing)).Page
+        For Each item As DavHierarchyItem In(Await GetChildrenAsync(New PropertyName(-1) {}, Nothing, Nothing, New List(Of OrderProperty)())).Page
             Try
                 Await item.MoveToAsync(createdFolder, item.Name, multistatus)
             Catch ex As DavException
@@ -227,7 +226,7 @@ Public Class DavFolder
     Public Overrides Async Function DeleteAsync(multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.DeleteAsync
         Await RequireHasTokenAsync()
         Dim allChildrenDeleted As Boolean = True
-        For Each child As IHierarchyItemAsync In(Await GetChildrenAsync(New PropertyName(-1) {}, Nothing, Nothing, Nothing)).Page
+        For Each child As IHierarchyItemAsync In(Await GetChildrenAsync(New PropertyName(-1) {}, Nothing, Nothing, New List(Of OrderProperty)())).Page
             Try
                 Await child.DeleteAsync(multistatus)
             Catch ex As DavException
@@ -371,30 +370,28 @@ Public Class DavFolder
             ' map DAV properties to FileSystemInfo 
             Dim mappedProperties As Dictionary(Of String, String) = New Dictionary(Of String, String)() From {{"displayname", "Name"}, {"getlastmodified", "LastWriteTime"}, {"getcontenttype", "Extension"},
                                                                                                              {"quota-used-bytes", "ContentLength"}, {"is-directory", "IsDirectory"}}
-            Dim orderedFileInfos As IOrderedEnumerable(Of FileSystemInfo) = Nothing
-            Dim index As Integer = 0
-            For Each ordProp As OrderProperty In orderProps
-                Dim propertyName As String = mappedProperties(ordProp.Property.Name)
-                Dim sortFunc As Func(Of FileSystemInfo, Object) = Nothing
-                Dim propertyInfo As PropertyInfo =(GetType(FileSystemInfo)).GetProperties().FirstOrDefault(Function(p) p.Name.Equals(propertyName, StringComparison.InvariantCultureIgnoreCase))
-                If propertyInfo IsNot Nothing Then
-                    sortFunc = Function(p) p.GetType().GetProperty(propertyInfo.Name).GetValue(p)
-                ElseIf propertyName = "IsDirectory" Then
-                    sortFunc = Function(p) p.IsDirectory()
-                ElseIf propertyName = "ContentLength" Then
-                    sortFunc = Function(p) If(TypeOf p Is FileInfo, TryCast(p, FileInfo).Length, 0)
-                End If
+            If orderProps.Count <> 0 Then
+                Dim orderedFileInfos As IOrderedEnumerable(Of FileSystemInfo) = fileInfos.OrderBy(Function(p) p.Name)
+                Dim index As Integer = 0
+                For Each ordProp As OrderProperty In orderProps
+                    Dim propertyName As String = mappedProperties(ordProp.Property.Name)
+                    Dim sortFunc As Func(Of FileSystemInfo, Object) = Function(p) p.Name
+                    Dim propertyInfo As PropertyInfo =(GetType(FileSystemInfo)).GetProperties().FirstOrDefault(Function(p) p.Name.Equals(propertyName, StringComparison.InvariantCultureIgnoreCase))
+                    If propertyInfo IsNot Nothing Then
+                        sortFunc = Function(p) p.GetType().GetProperty(propertyInfo.Name).GetValue(p)
+                    ElseIf propertyName = "IsDirectory" Then
+                        sortFunc = Function(p) p.IsDirectory()
+                    ElseIf propertyName = "ContentLength" Then
+                        sortFunc = Function(p) If(TypeOf p Is FileInfo, CType(p, FileInfo).Length, 0)
+                    End If
 
-                If sortFunc IsNot Nothing Then
                     If Math.Min(System.Threading.Interlocked.Increment(index), index - 1) = 0 Then
                         If ordProp.Ascending Then orderedFileInfos = fileInfos.OrderBy(sortFunc) Else orderedFileInfos = fileInfos.OrderByDescending(sortFunc)
                     Else
                         If ordProp.Ascending Then orderedFileInfos = orderedFileInfos.ThenBy(sortFunc) Else orderedFileInfos = orderedFileInfos.ThenByDescending(sortFunc)
                     End If
-                End If
-            Next
+                Next
 
-            If orderedFileInfos IsNot Nothing Then
                 fileInfos = orderedFileInfos.ToArray()
             End If
         End If

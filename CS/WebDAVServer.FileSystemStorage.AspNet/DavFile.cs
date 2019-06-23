@@ -61,7 +61,7 @@ namespace WebDAVServer.FileSystemStorage.AspNet
         /// <summary>
         /// Gets or Sets snippet of file content that matches search conditions.
         /// </summary>
-        public string Snippet { get; set; }
+        public string Snippet { get; set; } = string.Empty;
 
         /// <summary>
         /// Returns file that corresponds to path.
@@ -82,8 +82,14 @@ namespace WebDAVServer.FileSystemStorage.AspNet
 
             DavFile davFile = new DavFile(file, context, path);
 
-            davFile.serialNumber = await file.GetExtendedAttributeAsync<int?>("SerialNumber") ?? 0;
-            davFile.TotalContentLength = await file.GetExtendedAttributeAsync<long?>("TotalContentLength") ?? 0;
+            if (await file.HasExtendedAttributeAsync("SerialNumber"))
+            {
+                davFile.serialNumber = await file.GetExtendedAttributeAsync<int?>("SerialNumber") ?? 0;
+            }
+            if (await file.HasExtendedAttributeAsync("TotalContentLength"))
+            {
+                davFile.TotalContentLength = await file.GetExtendedAttributeAsync<long?>("TotalContentLength") ?? 0;
+            }
 
             return davFile;
         }
@@ -162,7 +168,7 @@ namespace WebDAVServer.FileSystemStorage.AspNet
             {
                 using (FileStream filestream = fileInfo.Open(FileMode.Truncate)) { }
             }
-            await fileInfo.SetExtendedAttributeAsync("TotalContentLength", totalFileSize >= 0 ? (object)totalFileSize : null);
+            await fileInfo.SetExtendedAttributeAsync("TotalContentLength", (object)totalFileSize);
             await fileInfo.SetExtendedAttributeAsync("SerialNumber", this.serialNumber + 1);
 
             using (FileStream fileStream = fileInfo.Open(FileMode.OpenOrCreate, FileAccess.Write, FileShare.Read))
@@ -352,7 +358,7 @@ namespace WebDAVServer.FileSystemStorage.AspNet
         /// </remarks>
         public async Task CancelUploadAsync()
         {
-            await DeleteAsync(null);
+            await DeleteAsync(new MultistatusException());
         }
 
         /// <summary>

@@ -39,8 +39,40 @@ namespace WebDAVServer.FileSystemStorage.HttpListener.ExtendedAttributes
                 throw new ArgumentNullException("path");
             }
 
-            long attributeCount = ListXAattr(path, null, 0, 0);
+            long attributeCount = ListXAattr(path, new StringBuilder(), 0, 0);
             return attributeCount >= 0;
+        }
+
+        /// <summary>
+        /// Checks extended attribute existence.
+        /// </summary>
+        /// <param name="path">File or folder path.</param>
+        /// <param name="attribName">Attribute name.</param>
+        /// <returns>True if attribute exist, false otherwise.</returns>
+        public async Task<bool> HasExtendedAttributeAsync(string path, string attribName)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentNullException("path");
+            }
+
+            if (string.IsNullOrEmpty(attribName))
+            {
+                throw new ArgumentNullException("attribName");
+            }
+
+            long attributeSize = GetXAttr(path, attribName, new byte[0], 0, 0, 0);
+            bool attributeExists = true;
+
+            if (attributeSize < 0)
+            {
+                if (Marshal.GetLastWin32Error() == AttributeNotFoundErrno)
+                {
+                    attributeExists = false;
+                }
+            }
+
+            return attributeExists;
         }
 
         /// <summary>
@@ -63,18 +95,7 @@ namespace WebDAVServer.FileSystemStorage.HttpListener.ExtendedAttributes
                 throw new ArgumentNullException("attribName");
             }
 
-            long attributeSize = GetXAttr(path, attribName, null, 0, 0, 0);
-
-            if (attributeSize < 0)
-            {
-                if (Marshal.GetLastWin32Error() == AttributeNotFoundErrno)
-                {
-                    return null;
-                }
-
-                ThrowLastException(path, attribName);
-            }
-
+            long attributeSize = GetXAttr(path, attribName, new byte[0], 0, 0, 0);
             byte[] buffer = new byte[attributeSize];
             long readedLength = GetXAttr(path, attribName, buffer, attributeSize, 0, 0);
 

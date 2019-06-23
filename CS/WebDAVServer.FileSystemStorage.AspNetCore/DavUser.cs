@@ -8,12 +8,12 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
         /// <summary>
         /// Represents user name.
         /// </summary>
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         /// <summary>
         /// Represents user password.
         /// </summary>
-        public string Password { get; set; }
+        public string Password { get; set; } = string.Empty;
     }
 
     /// <summary>
@@ -24,6 +24,6 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
         /// <summary>
         /// Represents array of users from storage.
         /// </summary>
-        public DavUser[] Users { get; set; }
+        public DavUser[] Users { get; set; } = new DavUser[0];
     }  
 }

@@ -78,9 +78,8 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
 
             IList<IHierarchyItemAsync> children = new List<IHierarchyItemAsync>();
 
-            FileSystemInfo[] fileInfos = null;
             long totalItems = 0;
-            fileInfos = dirInfo.GetFileSystemInfos();
+            FileSystemInfo[] fileInfos = dirInfo.GetFileSystemInfos();
             totalItems = fileInfos.Length;
 
             // Apply sorting.
@@ -143,11 +142,12 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
         /// <param name="multistatus">Information about child items that failed to copy.</param>
         public override async Task CopyToAsync(IItemCollectionAsync destFolder, string destName, bool deep, MultistatusException multistatus)
         {
-            DavFolder targetFolder = destFolder as DavFolder;
-            if (targetFolder == null)
+            if (!(destFolder is DavFolder))
             {
                 throw new DavException("Target folder doesn't exist", DavStatus.CONFLICT);
             }
+
+            DavFolder targetFolder = (DavFolder)destFolder;
 
             if (IsRecursive(targetFolder))
             {
@@ -173,7 +173,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
 
             // Copy children.
             IFolderAsync createdFolder = (IFolderAsync)await context.GetHierarchyItemAsync(targetPath);
-            foreach (DavHierarchyItem item in (await GetChildrenAsync(new PropertyName[0], null, null, null)).Page)
+            foreach (DavHierarchyItem item in (await GetChildrenAsync(new PropertyName[0], null, null, new List<OrderProperty>())).Page)
             {
                 if (!deep && item is DavFolder)
                 {
@@ -202,11 +202,12 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
         public override async Task MoveToAsync(IItemCollectionAsync destFolder, string destName, MultistatusException multistatus)
         {
             await RequireHasTokenAsync();
-            DavFolder targetFolder = destFolder as DavFolder;
-            if (targetFolder == null)
+            if (!(destFolder is DavFolder))
             {
                 throw new DavException("Target folder doesn't exist", DavStatus.CONFLICT);
             }
+
+            DavFolder targetFolder = (DavFolder)destFolder;
 
             if (IsRecursive(targetFolder))
             {
@@ -235,7 +236,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
             // Move child items.
             bool movedSuccessfully = true;
             IFolderAsync createdFolder = (IFolderAsync)await context.GetHierarchyItemAsync(targetPath);
-            foreach (DavHierarchyItem item in (await GetChildrenAsync(new PropertyName[0], null, null, null)).Page)
+            foreach (DavHierarchyItem item in (await GetChildrenAsync(new PropertyName[0], null, null, new List<OrderProperty>())).Page)
             {
                 try
                 {
@@ -272,7 +273,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
             */
             await RequireHasTokenAsync();
             bool allChildrenDeleted = true;
-            foreach (IHierarchyItemAsync child in (await GetChildrenAsync(new PropertyName[0], null, null, null)).Page)
+            foreach (IHierarchyItemAsync child in (await GetChildrenAsync(new PropertyName[0], null, null, new List<OrderProperty>())).Page)
             {
                 try
                 {
@@ -365,29 +366,30 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
                 Dictionary<string, string> mappedProperties = new Dictionary<string, string>()
                 { { "displayname", "Name" }, { "getlastmodified", "LastWriteTime" }, { "getcontenttype", "Extension" },
                   { "quota-used-bytes", "ContentLength" }, { "is-directory", "IsDirectory" } };
-                IOrderedEnumerable<FileSystemInfo> orderedFileInfos = null;
-                int index = 0;
-
-                foreach (OrderProperty ordProp in orderProps)
+                if (orderProps.Count != 0)
                 {
-                    string propertyName = mappedProperties[ordProp.Property.Name];
-                    Func<FileSystemInfo, object> sortFunc = null;
-                    PropertyInfo propertyInfo = (typeof(FileSystemInfo)).GetProperties().FirstOrDefault(p => p.Name.Equals(propertyName, StringComparison.InvariantCultureIgnoreCase));
-                    if (propertyInfo != null)
-                    {
-                        sortFunc = p => p.GetType().GetProperty(propertyInfo.Name).GetValue(p);
-                    }
-                    else if (propertyName == "IsDirectory")
-                    {
-                        sortFunc = p => p.IsDirectory();
-                    }
-                    else if (propertyName == "ContentLength")
-                    {
-                        sortFunc = p => p is FileInfo ? (p as FileInfo).Length : 0;
-                    }
+                    IOrderedEnumerable<FileSystemInfo> orderedFileInfos = fileInfos.OrderBy(p => p.Name); // init sorting by item Name
+                    int index = 0;
 
-                    if (sortFunc != null)
+                    foreach (OrderProperty ordProp in orderProps)
                     {
+                        string propertyName = mappedProperties[ordProp.Property.Name];
+                        Func<FileSystemInfo, object> sortFunc = p => p.Name; // default sorting by item Name
+                        PropertyInfo propertyInfo = (typeof(FileSystemInfo)).GetProperties().FirstOrDefault(p => p.Name.Equals(propertyName, StringComparison.InvariantCultureIgnoreCase));
+
+                        if (propertyInfo != null)
+                        {
+                            sortFunc = p => p.GetType().GetProperty(propertyInfo.Name).GetValue(p);
+                        }
+                        else if (propertyName == "IsDirectory")
+                        {
+                            sortFunc = p => p.IsDirectory();
+                        }
+                        else if (propertyName == "ContentLength")
+                        {
+                            sortFunc = p => p is FileInfo ? ((FileInfo)p).Length : 0;
+                        }
+
                         if (index++ == 0)
                         {
                             if (ordProp.Ascending)
@@ -404,10 +406,6 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
                         }
                     }
 
-                }
-
-                if (orderedFileInfos != null)
-                {
                     fileInfos = orderedFileInfos.ToArray();
                 }
             }

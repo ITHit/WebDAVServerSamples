@@ -82,16 +82,6 @@ Public MustInherit Class DavHierarchyItem
     Protected context As DavContext
 
     ''' <summary>
-    ''' User defined property values.
-    ''' </summary>
-    Private propertyValues As List(Of PropertyValue)
-
-    ''' <summary>
-    ''' Item locks.
-    ''' </summary>
-    Private locks As List(Of DateLockInfo)
-
-    ''' <summary>
     ''' Initializes a new instance of this class.
     ''' </summary>
     ''' <param name="fileSystemInfo">Corresponding file or folder in the file system.</param>
@@ -169,11 +159,12 @@ Public MustInherit Class DavHierarchyItem
     ''' </summary>
     ''' <returns>List of user defined properties.</returns>
     Private Async Function GetPropertyValuesAsync() As Task(Of List(Of PropertyValue))
-        If propertyValues Is Nothing Then
-            propertyValues = Await fileSystemInfo.GetExtendedAttributeAsync(Of List(Of PropertyValue))(propertiesAttributeName)
+        Dim properties As List(Of PropertyValue) = New List(Of PropertyValue)()
+        If Await fileSystemInfo.HasExtendedAttributeAsync(propertiesAttributeName) Then
+            properties = Await fileSystemInfo.GetExtendedAttributeAsync(Of List(Of PropertyValue))(propertiesAttributeName)
         End If
 
-        Return propertyValues
+        Return properties
     End Function
 
     ''' <summary>
@@ -377,15 +368,12 @@ Public MustInherit Class DavHierarchyItem
     ''' <param name="getAllWithExpired">Indicate needed return expired locks.</param>
     ''' <returns>List of locks with their expiration dates.</returns>
     Private Async Function GetLocksAsync(Optional getAllWithExpired As Boolean = False) As Task(Of List(Of DateLockInfo))
-        If locks Is Nothing Then
+        Dim locks As List(Of DateLockInfo) = New List(Of DateLockInfo)()
+        If Await fileSystemInfo.HasExtendedAttributeAsync(locksAttributeName) Then
             locks = Await fileSystemInfo.GetExtendedAttributeAsync(Of List(Of DateLockInfo))(locksAttributeName)
             If locks IsNot Nothing Then
                 locks.ForEach(Sub(l) __InlineAssignHelper(l.LockRoot, Path))
             End If
-        End If
-
-        If locks Is Nothing Then
-            Return New List(Of DateLockInfo)()
         End If
 
         If getAllWithExpired Then
@@ -421,7 +409,7 @@ Public MustInherit Class DavHierarchyItem
         Await fileSystemInfo.SetExtendedAttributeAsync(locksAttributeName, locks)
     End Function
 
-    Private Async Function RemoveExpiredLocksAsync(Optional unlockedToken As String = Nothing) As Task
+    Private Async Function RemoveExpiredLocksAsync(unlockedToken As String) As Task
         Dim locks As List(Of DateLockInfo) = Await GetLocksAsync(getAllWithExpired:=True)
         'remove expired and current lock
         locks.RemoveAll(Function(x) x.Expiration <= DateTime.UtcNow)

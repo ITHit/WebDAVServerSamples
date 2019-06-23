@@ -89,10 +89,10 @@ Public Class Notification
     ''' <summary>
     ''' Represents notification data.
     ''' </summary>
-    Public Property FolderPath As String
+    Public Property FolderPath As String = String.Empty
 
     ''' <summary>
     ''' Represents event type.
     ''' </summary>
-    Public Property EventType As String
+    Public Property EventType As String = String.Empty
 End Class

@@ -64,7 +64,7 @@ Public Class DavFile
     ''' <summary>
     ''' Gets or Sets snippet of file content that matches search conditions.
     ''' </summary>
-    Public Property Snippet As String
+    Public Property Snippet As String = String.Empty
 
     ''' <summary>
     ''' Returns file that corresponds to path.
@@ -81,8 +81,14 @@ Public Class DavFile
         End If
 
         Dim davFile As DavFile = New DavFile(file, context, path)
-        davFile.serialNumber = If(Await file.GetExtendedAttributeAsync(Of Integer?)("SerialNumber"), 0)
-        davFile.TotalContentLength = If(Await file.GetExtendedAttributeAsync(Of Long?)("TotalContentLength"), 0)
+        If Await file.HasExtendedAttributeAsync("SerialNumber") Then
+            davFile.serialNumber = If(Await file.GetExtendedAttributeAsync(Of Integer?)("SerialNumber"), 0)
+        End If
+
+        If Await file.HasExtendedAttributeAsync("TotalContentLength") Then
+            davFile.TotalContentLength = If(Await file.GetExtendedAttributeAsync(Of Long?)("TotalContentLength"), 0)
+        End If
+
         Return davFile
     End Function
 
@@ -151,7 +157,7 @@ Public Class DavFile
                  End Using
         End If
 
-        Await fileInfo.SetExtendedAttributeAsync("TotalContentLength", If(totalFileSize >= 0, CObj(totalFileSize), Nothing))
+        Await fileInfo.SetExtendedAttributeAsync("TotalContentLength", CObj(totalFileSize))
         Await fileInfo.SetExtendedAttributeAsync("SerialNumber", Me.serialNumber + 1)
         Using fileStream As FileStream = fileInfo.Open(FileMode.OpenOrCreate, FileAccess.Write, FileShare.Read)
             If fileStream.Length < startIndex Then
@@ -301,7 +307,7 @@ Public Class DavFile
     ''' Client do not plan to restore upload. Remove any temporary files / cleanup resources here.
     ''' </remarks>
     Public Async Function CancelUploadAsync() As Task Implements IResumableUploadAsync.CancelUploadAsync
-        Await DeleteAsync(Nothing)
+        Await DeleteAsync(New MultistatusException())
     End Function
 
     ''' <summary>

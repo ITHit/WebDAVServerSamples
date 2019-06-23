@@ -39,8 +39,34 @@ Namespace ExtendedAttributes
                 Throw New ArgumentNullException("path")
             End If
 
-            Dim attributeCount As Long = ListXAattr(path, Nothing, 0, 0)
+            Dim attributeCount As Long = ListXAattr(path, New StringBuilder(), 0, 0)
             Return attributeCount >= 0
+        End Function
+
+        ''' <summary>
+        ''' Checks extended attribute existence.
+        ''' </summary>
+        ''' <param name="path">File or folder path.</param>
+        ''' <param name="attribName">Attribute name.</param>
+        ''' <returns>True if attribute exist, false otherwise.</returns>
+        Public Async Function HasExtendedAttributeAsync(path As String, attribName As String) As Task(Of Boolean) Implements IExtendedAttribute.HasExtendedAttributeAsync
+            If String.IsNullOrEmpty(path) Then
+                Throw New ArgumentNullException("path")
+            End If
+
+            If String.IsNullOrEmpty(attribName) Then
+                Throw New ArgumentNullException("attribName")
+            End If
+
+            Dim attributeSize As Long = GetXAttr(path, attribName, New Byte(-1) {}, 0, 0, 0)
+            Dim attributeExists As Boolean = True
+            If attributeSize < 0 Then
+                If Marshal.GetLastWin32Error() = AttributeNotFoundErrno Then
+                    attributeExists = False
+                End If
+            End If
+
+            Return attributeExists
         End Function
 
         ''' <summary>
@@ -60,15 +86,7 @@ Namespace ExtendedAttributes
                 Throw New ArgumentNullException("attribName")
             End If
 
-            Dim attributeSize As Long = GetXAttr(path, attribName, Nothing, 0, 0, 0)
-            If attributeSize < 0 Then
-                If Marshal.GetLastWin32Error() = AttributeNotFoundErrno Then
-                    Return Nothing
-                End If
-
-                ThrowLastException(path, attribName)
-            End If
-
+            Dim attributeSize As Long = GetXAttr(path, attribName, New Byte(-1) {}, 0, 0, 0)
             Dim buffer As Byte() = New Byte(attributeSize - 1) {}
             Dim readedLength As Long = GetXAttr(path, attribName, buffer, attributeSize, 0, 0)
             If readedLength = -1 Then
