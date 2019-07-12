@@ -2,7 +2,7 @@
 USE [master]
 GO
 
-CREATE DATABASE WebDav
+CREATE DATABASE [WebDav]
 GO
 
 USE [WebDav]
@@ -111,7 +111,7 @@ CREATE TABLE [dbo].[card_CardFile](
 	[SortString] [nvarchar](255) NULL,
 	[Language] [nvarchar](50) NULL,
 	[TimeZone] [nvarchar](50) NULL,
-	[Geo] [geography] NULL,
+	[Geo] [nvarchar](50) NULL,
 	[Title] [nvarchar](255) NULL,
 	[Role] [nvarchar](255) NULL,
 	[OrgName] [nvarchar](255) NULL,

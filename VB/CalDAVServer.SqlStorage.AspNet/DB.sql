@@ -2,7 +2,7 @@
 USE [master]
 GO
 
-CREATE DATABASE WebDav
+CREATE DATABASE [WebDav]
 GO
 
 USE [WebDav]

@@ -46,7 +46,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
             if (IsAuthorizationPresent(context.Request))
             {
                 ClaimsPrincipal userPrincipal = AuthenticateRequest(context.Request);
-                if (userPrincipal != null)
+                if (userPrincipal.Identity != null)
                 {
                     // Authenticated succesfully.
                     context.User = userPrincipal;
@@ -139,6 +139,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
             // Authenticate user.
             List<Claim> claims = new List<Claim>();
             claims.Add(new Claim(ClaimTypes.NameIdentifier, username));
+            claims.Add(new Claim(ClaimTypes.Name, username));
             ClaimsIdentity identity = new ClaimsIdentity(claims, "Digest");
             return new ClaimsPrincipal(identity);
         }

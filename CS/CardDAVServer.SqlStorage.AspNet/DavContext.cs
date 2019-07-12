@@ -8,7 +8,6 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 
 using ITHit.WebDAV.Server;
-
 using CardDAVServer.SqlStorage.AspNet.Acl;
 using CardDAVServer.SqlStorage.AspNet.CardDav;
 
@@ -20,12 +19,14 @@ namespace CardDAVServer.SqlStorage.AspNet
     /// contains useful methods for working with transactions, connections, reading
     /// varios items from database.
     /// </summary>
-    public class DavContext : DavContextWebBaseAsync, IDisposable
+    public class DavContext :
+        DavContextWebBaseAsync
+        , IDisposable
     {
         /// <summary>
         /// Database connection string.
         /// </summary>
-        private static readonly string connectionString = 
+        private static readonly string connectionString =
             ConfigurationManager.ConnectionStrings["WebDAV"].ConnectionString;
 
         /// <summary>
@@ -248,6 +249,7 @@ namespace CardDAVServer.SqlStorage.AspNet
             if (this.connection == null)
             {
                 this.connection = new SqlConnection(connectionString);
+      
                 await this.connection.OpenAsync();
                 this.transaction = this.connection.BeginTransaction(IsolationLevel.ReadUncommitted);
             }

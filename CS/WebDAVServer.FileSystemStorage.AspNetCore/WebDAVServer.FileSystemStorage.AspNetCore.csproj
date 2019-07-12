@@ -122,9 +122,9 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="ITHit.WebDAV.Server.Core" Version="8.0.5110" />
+    <PackageReference Include="ITHit.WebDAV.Server.Core" Version="8.1.5257" />
     <PackageReference Include="Microsoft.AspNetCore" Version="2.2.0" />
-  </ItemGroup>  
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="2.2.0" />

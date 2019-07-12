@@ -32,8 +32,8 @@ namespace WebDAVServer.SqlStorage.AspNetCore
             UserCollection = new Dictionary<string, string>();
             foreach (DavUser user in options.Value.Users)
             {
-                if (!UserCollection.ContainsKey(user.Name))
-                    UserCollection.Add(user.Name, user.Password);
+                if (!UserCollection.ContainsKey(user.UserName))
+                    UserCollection.Add(user.UserName, user.Password);
             }
         }
 

@@ -50,7 +50,6 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore.Options
             {
                 options.RepositoryPath = Path.GetFullPath(Path.Combine(env.ContentRootPath, options.RepositoryPath));
             }
-
             if (!Directory.Exists(options.RepositoryPath))
             {
                 throw new DirectoryNotFoundException(string.Format("DavContextOptions.RepositoryPath specified in appsettings.webdav.json is invalid: '{0}'.", options.RepositoryPath));

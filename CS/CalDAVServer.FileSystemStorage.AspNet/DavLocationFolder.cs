@@ -29,6 +29,7 @@ namespace CalDAVServer.FileSystemStorage.AspNet
         {
             get
             {
+   
                 NameValueCollection davLocationsSection = (NameValueCollection)System.Configuration.ConfigurationManager.GetSection("davLocations");
 
                 if (davLocationsSection != null)
@@ -41,7 +42,6 @@ namespace CalDAVServer.FileSystemStorage.AspNet
                             return path.TrimEnd('/') + '/';
                     }
                 }
-
                 // If no davLocation section is found or no non-root WebDAV location is specified in 
                 // configuration file asume the WebDAV is on web site root.
                 return "/";

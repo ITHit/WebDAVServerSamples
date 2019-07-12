@@ -105,6 +105,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
                     // Authenticated succesfully.
                     List<Claim> claims = new List<Claim>();
                     claims.Add(new Claim(ClaimTypes.NameIdentifier, userName));
+                    claims.Add(new Claim(ClaimTypes.Name, userName));
                     ClaimsIdentity identity = new ClaimsIdentity(claims, "Basic");
                     return new ClaimsPrincipal(identity);
                 }

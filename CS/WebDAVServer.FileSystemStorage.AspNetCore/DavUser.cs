@@ -8,7 +8,12 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
         /// <summary>
         /// Represents user name.
         /// </summary>
-        public string Name { get; set; } = string.Empty;
+        public string UserName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Represents user email.
+        /// </summary>
+        public string Email { get; set; } = string.Empty;
 
         /// <summary>
         /// Represents user password.

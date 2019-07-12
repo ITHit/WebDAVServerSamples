@@ -200,6 +200,7 @@ Public Class DavFile
             ' The remote host closed the connection (for example Cancel or Pause pressed).
              End Try
 
+        Await Context.socketService.NotifyRefreshAsync(GetParentPath(Path))
         Return True
     End Function
 

@@ -224,6 +224,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
 
                     bytes += lastBytesRead;
                 }
+            await Context.socketService.NotifyRefreshAsync(GetParentPath(Path));
             return true;
         }
 

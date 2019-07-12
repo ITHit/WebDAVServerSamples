@@ -36,7 +36,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
         {
             services.AddWebDav(Configuration, HostingEnvironment);
             services.AddSingleton<WebSocketsService>();
-            services.Configure<DavUsersOptions>(options => Configuration.GetSection("DavUsers").Bind(options));
+      
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

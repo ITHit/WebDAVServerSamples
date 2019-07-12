@@ -23,9 +23,10 @@ namespace CardDAVServer.SqlStorage.AspNet.Acl
             // Loged-in user can access only his own account data.
             if (!context.UserId.Equals(userId, StringComparison.InvariantCultureIgnoreCase))
                 throw new DavException("Forbidden.", DavStatus.FORBIDDEN);
+         
             MembershipUser user = Membership.GetUser(userId);
-
-            return new User(context, userId, user.UserName, user.Email, new DateTime(2000, 1, 1), new DateTime(2000, 1, 1));
+        
+            return new User(context, userId, user.UserName, user.Email, new DateTime(2000, 1, 1), new DateTime(2000, 1, 1));   
         }
 
         /// <summary>

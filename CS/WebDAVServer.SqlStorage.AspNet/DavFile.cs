@@ -244,6 +244,7 @@ namespace WebDAVServer.SqlStorage.AspNet
             {
                 // The remote host closed the connection (for example Cancel or Pause pressed).
             }
+            await Context.socketService.NotifyRefreshAsync(GetParentPath(Path));
             return true;
         }
 

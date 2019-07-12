@@ -50,8 +50,8 @@ namespace CalDAVServer.FileSystemStorage.AspNet
         /// Creates initial calendars for user as well as inbox and outbox folders.
         /// </summary>
         internal static async Task CreateCalendarFoldersAsync(DavContext context)
-        {            
-            string physicalRepositoryPath = repositoryPath.StartsWith("~") ? HttpContext.Current.Server.MapPath(repositoryPath) :repositoryPath;      
+        {
+            string physicalRepositoryPath = repositoryPath.StartsWith("~") ? HttpContext.Current.Server.MapPath(repositoryPath) :repositoryPath;
 
             // Get path to user folder /calendars/[user_name]/ and check if it exists.
             string calendarsUserFolder = string.Format("{0}{1}", CalendarsRootFolder.CalendarsRootFolderPath.Replace('/', Path.DirectorySeparatorChar), context.UserName);

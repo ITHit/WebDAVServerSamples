@@ -66,10 +66,11 @@ namespace WebDAVServer.SqlStorage.AspNetCore
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
-            services.AddTransient<DavContextCoreBaseAsync, DavContext>();
+            services.AddScoped<DavContextCoreBaseAsync, DavContext>();
             services.Configure<DavEngineOptions>(async options => await Configuration.GetSection("DavEngineOptions").ReadOptionsAsync(options));
             services.Configure<DavContextOptions>(async options => await Configuration.GetSection("DavContextOptions").ReadOptionsAsync(options, env));
             services.Configure<DavLoggerOptions>(async options => await Configuration.GetSection("DavLoggerOptions").ReadOptionsAsync(options, env));
+            services.Configure<DavUsersOptions>(options => Configuration.GetSection("DavUsers").Bind(options));
         }
 
         /// <summary>
