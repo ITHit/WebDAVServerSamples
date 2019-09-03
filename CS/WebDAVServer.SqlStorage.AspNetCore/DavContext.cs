@@ -7,8 +7,9 @@ using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Security.Principal;
-using System.Threading.Tasks; 
+using System.Threading.Tasks;
 
+using ITHit.Server;
 using ITHit.WebDAV.Server;
 using ITHit.WebDAV.Server.Core;
 using ITHit.WebDAV.Server.Class2;
@@ -86,7 +87,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
         /// </summary>
         /// <param name="path">Relative path to the item including query string.</param>
         /// <returns><see cref="IHierarchyItemAsync"/> instance if item is found, <c>null</c> otherwise.</returns>
-        public override async Task<IHierarchyItemAsync> GetHierarchyItemAsync(string path)
+        public override async Task<IHierarchyItemBaseAsync> GetHierarchyItemAsync(string path)
         {
             path = path.Trim(new[] { ' ', '/' });
 

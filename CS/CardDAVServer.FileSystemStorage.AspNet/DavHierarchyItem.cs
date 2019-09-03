@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 using ITHit.WebDAV.Server;
 using ITHit.WebDAV.Server.Acl;
+using ITHit.WebDAV.Server.Extensibility;
 
 using CardDAVServer.FileSystemStorage.AspNet.Acl;
 using CardDAVServer.FileSystemStorage.AspNet.ExtendedAttributes;

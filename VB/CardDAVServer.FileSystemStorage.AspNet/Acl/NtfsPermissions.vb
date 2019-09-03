@@ -2,6 +2,7 @@ Imports System
 Imports System.Collections.Generic
 Imports System.Linq
 Imports System.Security.AccessControl
+Imports ITHit.Server
 Imports ITHit.WebDAV.Server
 Imports ITHit.WebDAV.Server.Acl
 

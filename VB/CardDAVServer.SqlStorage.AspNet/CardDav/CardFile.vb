@@ -10,6 +10,7 @@ Imports ITHit.WebDAV.Server
 Imports ITHit.WebDAV.Server.CardDav
 Imports ITHit.Collab
 Imports ITHit.Collab.Card
+Imports ITHit.Server
 
 Namespace CardDav
 
@@ -206,7 +207,7 @@ Namespace CardDav
         ''' Gets display name of the card. Used for demo purposes only, to be displayed in Ajax File Browser.
         ''' </summary>
         ''' <remarks>CardDAV clients typically never request this property.</remarks>
-        Public Overrides ReadOnly Property Name As String Implements IHierarchyItemAsync.Name
+        Public Overrides ReadOnly Property Name As String Implements IHierarchyItemBaseAsync.Name
             Get
                 Return rowCardFile.Field(Of String)("FormattedName")
             End Get
@@ -216,7 +217,7 @@ Namespace CardDav
         ''' Gets item path.
         ''' </summary>
         ''' <remarks>[DAVLocation]/addressbooks/[AddressbookFolderId]/[FileName].vcf</remarks>
-        Public Overrides ReadOnly Property Path As String Implements IHierarchyItemAsync.Path
+        Public Overrides ReadOnly Property Path As String Implements IHierarchyItemBaseAsync.Path
             Get
                 Dim addressbookFolderId As Guid = rowCardFile.Field(Of Guid)("AddressbookFolderId")
                 Dim fileName As String = rowCardFile.Field(Of String)("FileName")
@@ -227,7 +228,7 @@ Namespace CardDav
         ''' <summary>
         ''' Gets eTag. ETag must change every time this card is updated.
         ''' </summary>
-        Public ReadOnly Property Etag As String Implements IContentAsync.Etag
+        Public ReadOnly Property Etag As String Implements IContentBaseAsync.Etag
             Get
                 Dim bETag As Byte() = rowCardFile.Field(Of Byte())("ETag")
                 Return BitConverter.ToUInt64(bETag.Reverse().ToArray(), 0).ToString()
@@ -237,7 +238,7 @@ Namespace CardDav
         ''' <summary>
         ''' Gets item creation date. Must be in UTC.
         ''' </summary>
-        Public Overrides ReadOnly Property Created As DateTime Implements IHierarchyItemAsync.Created
+        Public Overrides ReadOnly Property Created As DateTime Implements IHierarchyItemBaseAsync.Created
             Get
                 Return rowCardFile.Field(Of DateTime)("CreatedUtc")
             End Get
@@ -246,7 +247,7 @@ Namespace CardDav
         ''' <summary>
         ''' Gets item modification date. Must be in UTC.
         ''' </summary>
-        Public Overrides ReadOnly Property Modified As DateTime Implements IHierarchyItemAsync.Modified
+        Public Overrides ReadOnly Property Modified As DateTime Implements IHierarchyItemBaseAsync.Modified
             Get
                 Return rowCardFile.Field(Of DateTime)("ModifiedUtc")
             End Get
@@ -258,7 +259,7 @@ Namespace CardDav
         ''' <remarks>
         ''' If -1 is returned the chunked response will be generated if possible. The getcontentlength property will not be generated.
         ''' </remarks>
-        Public ReadOnly Property ContentLength As Long Implements IContentAsync.ContentLength
+        Public ReadOnly Property ContentLength As Long Implements IContentBaseAsync.ContentLength
             Get
                 Return -1
             End Get
@@ -267,7 +268,7 @@ Namespace CardDav
         ''' <summary>
         ''' File Mime-type/Content-Type.
         ''' </summary>
-        Public ReadOnly Property ContentType As String Implements IContentAsync.ContentType
+        Public ReadOnly Property ContentType As String Implements IContentBaseAsync.ContentType
             Get
                 Return "text/vcard"
             End Get
@@ -309,7 +310,7 @@ Namespace CardDav
         ''' for which data comes in <paramref name="content"/>  stream.</param>
         ''' <param name="totalFileSize">Size of file as it will be after all parts are uploaded. -1 if unknown (in case of chunked upload).</param>
         ''' <returns>Whether the whole stream has been written.</returns>
-        Public Async Function WriteAsync(stream As Stream, contentType As String, startIndex As Long, totalFileSize As Long) As Task(Of Boolean) Implements IContentAsync.WriteAsync
+        Public Async Function WriteAsync(stream As Stream, contentType As String, startIndex As Long, totalFileSize As Long) As Task(Of Boolean) Implements IContentBaseAsync.WriteAsync
             'Set timeout to maximum value to be able to upload large card files.
             System.Web.HttpContext.Current.Server.ScriptTimeout = Integer.MaxValue
             Dim vCard As String
@@ -1009,7 +1010,7 @@ Namespace CardDav
         ''' <param name="output">Stream to write vCard content.</param>
         ''' <param name="startIndex">Index to start reading data from back-end storage. Used for segmented reads, not used by CardDAV clients.</param>
         ''' <param name="count">Number of bytes to read. Used for segmented reads, not used by CardDAV clients.</param>
-        Public Async Function ReadAsync(output As Stream, startIndex As Long, count As Long) As Task Implements IContentAsync.ReadAsync
+        Public Async Function ReadAsync(output As Stream, startIndex As Long, count As Long) As Task Implements IContentBaseAsync.ReadAsync
             Dim vCardVersion As String = rowCardFile.Field(Of String)("Version")
             Dim card As ICard2 = CardFactory.CreateCard(vCardVersion)
             ReadCard(card)

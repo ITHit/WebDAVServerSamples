@@ -7,8 +7,10 @@ Imports System.Security.Principal
 Imports System.Threading.Tasks
 Imports ITHit.WebDAV.Server
 Imports ITHit.WebDAV.Server.Acl
+Imports ITHit.WebDAV.Server.Extensibility
 Imports CalDAVServer.FileSystemStorage.AspNet.Acl
 Imports CalDAVServer.FileSystemStorage.AspNet.ExtendedAttributes
+Imports ITHit.Server
 
 ''' <summary>
 ''' Base class for WebDAV items (folders, files, etc).
@@ -30,7 +32,7 @@ Public MustInherit Class DavHierarchyItem
     ''' <summary>
     ''' Gets name of the item.
     ''' </summary>
-    Public ReadOnly Property Name As String Implements IHierarchyItemAsync.Name
+    Public ReadOnly Property Name As String Implements IHierarchyItemBaseAsync.Name
         Get
             Return fileSystemInfo.Name
         End Get
@@ -39,7 +41,7 @@ Public MustInherit Class DavHierarchyItem
     ''' <summary>
     ''' Gets date when the item was created in UTC.
     ''' </summary>
-    Public ReadOnly Property Created As DateTime Implements IHierarchyItemAsync.Created
+    Public ReadOnly Property Created As DateTime Implements IHierarchyItemBaseAsync.Created
         Get
             Return fileSystemInfo.CreationTimeUtc
         End Get
@@ -48,7 +50,7 @@ Public MustInherit Class DavHierarchyItem
     ''' <summary>
     ''' Gets date when the item was last modified in UTC.
     ''' </summary>
-    Public ReadOnly Property Modified As DateTime Implements IHierarchyItemAsync.Modified
+    Public ReadOnly Property Modified As DateTime Implements IHierarchyItemBaseAsync.Modified
         Get
             Return fileSystemInfo.LastWriteTimeUtc
         End Get
@@ -57,7 +59,7 @@ Public MustInherit Class DavHierarchyItem
     ''' <summary>
     ''' Gets path of the item where each part between slashes is encoded.
     ''' </summary>
-    Public Property Path As String Implements IHierarchyItemAsync.Path
+    Public Property Path As String Implements IHierarchyItemBaseAsync.Path
 
     ''' <summary>
     ''' Gets full path for this file/folder in the file system.

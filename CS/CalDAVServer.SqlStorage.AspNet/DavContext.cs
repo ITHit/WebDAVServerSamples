@@ -7,6 +7,7 @@ using System.Web;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
+using ITHit.Server;
 using ITHit.WebDAV.Server;
 using CalDAVServer.SqlStorage.AspNet.Acl;
 using CalDAVServer.SqlStorage.AspNet.CalDav;
@@ -71,7 +72,7 @@ namespace CalDAVServer.SqlStorage.AspNet
         /// </summary>
         /// <param name="path">Relative path to the item including query string.</param>
         /// <returns><see cref="IHierarchyItem"/> instance if item is found, <c>null</c> otherwise.</returns>
-        public override async Task<IHierarchyItemAsync> GetHierarchyItemAsync(string path)
+        public override async Task<IHierarchyItemBaseAsync> GetHierarchyItemAsync(string path)
         {
             path = path.Trim(new[] { ' ', '/' });
 

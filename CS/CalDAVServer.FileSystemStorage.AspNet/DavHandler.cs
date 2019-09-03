@@ -8,6 +8,7 @@ using System.Xml;
 using System.Xml.Serialization;
 using System.Threading.Tasks;
 
+using ITHit.Server;
 using ITHit.WebDAV.Server;
 using CalDAVServer.FileSystemStorage.AspNet;
 using CalDAVServer.FileSystemStorage.AspNet.Acl;

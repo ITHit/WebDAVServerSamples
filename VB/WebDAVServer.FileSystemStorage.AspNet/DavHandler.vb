@@ -6,6 +6,7 @@ Imports System.Web
 Imports System.Xml
 Imports System.Xml.Serialization
 Imports System.Threading.Tasks
+Imports ITHit.Server
 Imports ITHit.WebDAV.Server
 
 ''' <summary>

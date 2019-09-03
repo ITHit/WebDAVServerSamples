@@ -5,9 +5,11 @@ Imports System.IO
 Imports System.Linq
 Imports System.Threading.Tasks
 Imports ITHit.WebDAV.Server
+Imports ITHit.WebDAV.Server.Extensibility
 Imports ITHit.WebDAV.Server.Class1
 Imports ITHit.WebDAV.Server.Class2
 Imports ITHit.WebDAV.Server.MicrosoftExtensions
+Imports ITHit.Server
 
 ''' <summary>
 ''' Base class for items like files, folders, versions etc.
@@ -24,13 +26,13 @@ Public MustInherit Class DavHierarchyItem
 
     Public Property ItemId As Guid
 
-    Public Property Name As String Implements IHierarchyItemAsync.Name
+    Public Property Name As String Implements IHierarchyItemBaseAsync.Name
 
-    Public Property Path As String Implements IHierarchyItemAsync.Path
+    Public Property Path As String Implements IHierarchyItemBaseAsync.Path
 
-    Public Property Created As DateTime Implements IHierarchyItemAsync.Created
+    Public Property Created As DateTime Implements IHierarchyItemBaseAsync.Created
 
-    Public Property Modified As DateTime Implements IHierarchyItemAsync.Modified
+    Public Property Modified As DateTime Implements IHierarchyItemBaseAsync.Modified
 
     Protected Property ParentId As Guid
 
@@ -407,7 +409,7 @@ Public MustInherit Class DavHierarchyItem
             Return True
         End If
 
-        Dim clientLockTokens As IList(Of String) = Context.Request.ClientLockTokens
+        Dim clientLockTokens As IList(Of String) = TryCast(Context.Request, DavRequest).ClientLockTokens
         Return itemLocks.Any(Function(il) clientLockTokens.Contains(il.Token))
     End Function
 

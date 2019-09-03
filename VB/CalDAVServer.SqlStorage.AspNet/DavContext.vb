@@ -6,6 +6,7 @@ Imports System.Security.Principal
 Imports System.Web
 Imports System.Diagnostics
 Imports System.Threading.Tasks
+Imports ITHit.Server
 Imports ITHit.WebDAV.Server
 Imports CalDAVServer.SqlStorage.AspNet.Acl
 Imports CalDAVServer.SqlStorage.AspNet.CalDav
@@ -71,7 +72,7 @@ Public Class DavContext
     ''' </summary>
     ''' <param name="path">Relative path to the item including query string.</param>
     ''' <returns><see cref="IHierarchyItem"/>  instance if item is found, <c>null</c> otherwise.</returns>
-    Public Overrides Async Function GetHierarchyItemAsync(path As String) As Task(Of IHierarchyItemAsync)
+    Public Overrides Async Function GetHierarchyItemAsync(path As String) As Task(Of IHierarchyItemBaseAsync)
         path = path.Trim({" "c, "/"c})
         'remove query string.
         Dim ind As Integer = path.IndexOf("?"c)

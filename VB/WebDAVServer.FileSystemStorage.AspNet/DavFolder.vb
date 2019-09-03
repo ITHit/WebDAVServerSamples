@@ -87,7 +87,7 @@ Public Class DavFolder
 
         For Each fileInfo As FileSystemInfo In fileInfos
             Dim childPath As String = Path & EncodeUtil.EncodeUrlPart(fileInfo.Name)
-            Dim child As IHierarchyItemAsync = Await context.GetHierarchyItemAsync(childPath)
+            Dim child As IHierarchyItemAsync = TryCast(Await context.GetHierarchyItemAsync(childPath), IHierarchyItemAsync)
             If child IsNot Nothing Then
                 children.Add(child)
             End If
@@ -189,7 +189,7 @@ Public Class DavFolder
         Dim targetPath As String = targetFolder.Path & EncodeUtil.EncodeUrlPart(destName)
         Try
             ' Remove item with the same name at destination if it exists.
-            Dim item As IHierarchyItemAsync = Await context.GetHierarchyItemAsync(targetPath)
+            Dim item As IHierarchyItemAsync = TryCast(Await context.GetHierarchyItemAsync(targetPath), IHierarchyItemAsync)
             If item IsNot Nothing Then Await item.DeleteAsync(multistatus)
             Await targetFolder.CreateFolderAsync(destName)
         Catch ex As DavException
@@ -313,7 +313,7 @@ Public Class DavFolder
 
         Dim subtreeItems As IList(Of IHierarchyItemAsync) = New List(Of IHierarchyItemAsync)()
         For Each path As String In foundItems.Keys
-            Dim item As IHierarchyItemAsync = Await context.GetHierarchyItemAsync(GetRelativePath(path))
+            Dim item As IHierarchyItemAsync = TryCast(Await context.GetHierarchyItemAsync(GetRelativePath(path)), IHierarchyItemAsync)
             If includeSnippet AndAlso TypeOf item Is DavFile Then TryCast(item, DavFile).Snippet = HighlightKeywords(searchString.Trim("%"c), foundItems(path))
             subtreeItems.Add(item)
         Next

@@ -6,6 +6,7 @@ Imports System.Threading.Tasks
 Imports ITHit.WebDAV.Server
 Imports ITHit.WebDAV.Server.Acl
 Imports ITHit.WebDAV.Server.CardDav
+Imports ITHit.Server
 
 Namespace Acl
 
@@ -60,22 +61,22 @@ Namespace Acl
         ''' <summary>
         ''' Gets principal name.
         ''' </summary>
-        Public Property Name As String Implements IHierarchyItemAsync.Name
+        Public Property Name As String Implements IHierarchyItemBaseAsync.Name
 
         ''' <summary>
         ''' Gets encoded path to this principal.
         ''' </summary>
-        Public Property Path As String Implements IHierarchyItemAsync.Path
+        Public Property Path As String Implements IHierarchyItemBaseAsync.Path
 
         ''' <summary>
         ''' Gets date when principal was created.
         ''' </summary>
-        Public Property Created As DateTime Implements IHierarchyItemAsync.Created
+        Public Property Created As DateTime Implements IHierarchyItemBaseAsync.Created
 
         ''' <summary>
         ''' Gets date when principal was modified.
         ''' </summary>
-        Public Property Modified As DateTime Implements IHierarchyItemAsync.Modified
+        Public Property Modified As DateTime Implements IHierarchyItemBaseAsync.Modified
 
         ''' <summary>
         ''' Creates new user as copy of this one.

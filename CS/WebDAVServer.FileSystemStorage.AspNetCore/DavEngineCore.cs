@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Hosting;
 
+using ITHit.Server;
 using ITHit.WebDAV.Server;
 
 using WebDAVServer.FileSystemStorage.AspNetCore.Options;

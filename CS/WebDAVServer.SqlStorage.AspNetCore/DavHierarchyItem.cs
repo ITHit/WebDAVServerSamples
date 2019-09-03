@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using ITHit.WebDAV.Server;
+using ITHit.WebDAV.Server.Extensibility;
 using ITHit.WebDAV.Server.Class1;
 using ITHit.WebDAV.Server.Class2;
 using ITHit.WebDAV.Server.MicrosoftExtensions;
@@ -524,7 +525,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
                 return true;
             }
 
-            IList<string> clientLockTokens = Context.Request.ClientLockTokens;
+            IList<string> clientLockTokens = (Context.Request as DavRequest).ClientLockTokens;
             return itemLocks.Any(il => clientLockTokens.Contains(il.Token));
         }
 

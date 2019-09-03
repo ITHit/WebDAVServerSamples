@@ -3,6 +3,7 @@ using System.Configuration;
 using System.IO;
 using System.Web;
 
+using ITHit.Server;
 using ITHit.WebDAV.Server;
 using ITHit.WebDAV.Server.Logger;
 

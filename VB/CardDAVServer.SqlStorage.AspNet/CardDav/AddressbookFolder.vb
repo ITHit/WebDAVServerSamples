@@ -9,6 +9,7 @@ Imports ITHit.WebDAV.Server.CardDav
 Imports ITHit.WebDAV.Server.Acl
 Imports ITHit.WebDAV.Server.Class1
 Imports ITHit.WebDAV.Server.Paging
+Imports ITHit.Server
 
 Namespace CardDav
 
@@ -142,7 +143,7 @@ Namespace CardDav
         ''' Gets display name of the address book.
         ''' </summary>
         ''' <remarks>CalDAV clients typically never request this property.</remarks>
-        Public Overrides ReadOnly Property Name As String Implements IHierarchyItemAsync.Name
+        Public Overrides ReadOnly Property Name As String Implements IHierarchyItemBaseAsync.Name
             Get
                 Return If(rowAddressbookFolder IsNot Nothing, rowAddressbookFolder.Field(Of String)("Name"), Nothing)
             End Get
@@ -151,7 +152,7 @@ Namespace CardDav
         ''' <summary>
         ''' Gets item path.
         ''' </summary>
-        Public Overrides ReadOnly Property Path As String Implements IHierarchyItemAsync.Path
+        Public Overrides ReadOnly Property Path As String Implements IHierarchyItemBaseAsync.Path
             Get
                 Return String.Format("{0}{1}/", AddressbooksRootFolder.AddressbooksRootFolderPath, addressbookFolderId)
             End Get

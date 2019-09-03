@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using ITHit.WebDAV.Server;
 using ITHit.WebDAV.Server.Class1;
 using ITHit.WebDAV.Server.Extensibility;
+using ITHit.Server.Extensibility;
+using ITHit.Server;
 
 namespace WebDAVServer.FileSystemStorage.AspNetCore
 {
@@ -67,10 +69,10 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
         /// <summary>
         /// Handles GET and HEAD request.
         /// </summary>
-        /// <param name="context">Instace of <see cref="DavContextBaseAsync"/>.</param>
+        /// <param name="context">Instace of <see cref="ContextBaseAsync"/>.</param>
         /// <param name="item">Instance of <see cref="IHierarchyItemAsync"/> which was returned by
-        /// <see cref="DavContextBaseAsync.GetHierarchyItemAsync"/> for this request.</param>
-        public async Task ProcessRequestAsync(DavContextBaseAsync context, IHierarchyItemAsync item)
+        /// <see cref="ContextBaseAsync.GetHierarchyItemAsync"/> for this request.</param>
+        public async Task ProcessRequestAsync(ContextBaseAsync context, IHierarchyItemBaseAsync item)
         {
             string urlPath = context.Request.RawUrl.Substring(context.Request.ApplicationPath.TrimEnd('/').Length);
 
@@ -104,10 +106,10 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
         /// Writes HTML to the output stream in case of GET request using encoding specified in Engine. 
         /// Writes headers only in case of HEAD request.
         /// </summary>
-        /// <param name="context">Instace of <see cref="DavContextBaseAsync"/>.</param>
+        /// <param name="context">Instace of <see cref="ContextBaseAsync"/>.</param>
         /// <param name="content">String representation of the content to write.</param>
         /// <param name="filePath">Relative file path, which holds the content.</param>
-        private async Task WriteFileContentAsync(DavContextBaseAsync context, string content, string filePath)
+        private async Task WriteFileContentAsync(ContextBaseAsync context, string content, string filePath)
         {
             Encoding encoding = context.Engine.ContentEncoding; // UTF-8 by default
             context.Response.ContentLength = encoding.GetByteCount(content);     
@@ -128,9 +130,9 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
         /// this handler substitutes) shall be called for the item.
         /// </summary>
         /// <param name="item">Instance of <see cref="IHierarchyItemAsync"/> which was returned by
-        /// <see cref="DavContextBaseAsync.GetHierarchyItemAsync"/> for this request.</param>
+        /// <see cref="ContextBaseAsync.GetHierarchyItemAsync"/> for this request.</param>
         /// <returns>Returns <c>true</c> if this handler can handler this item.</returns>
-        public bool AppliesTo(IHierarchyItemAsync item)
+        public bool AppliesTo(IHierarchyItemBaseAsync item)
         {
             return item is IFolderAsync || OriginalHandler.AppliesTo(item);
         }

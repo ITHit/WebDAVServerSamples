@@ -93,6 +93,13 @@ th.sort {
             vertical-align: middle;
         }
 
+    .ithit-grid-container .badge {
+        left: -8px;
+        font-size: 55%;
+        position: relative;
+        top: 2px;
+    }
+
 table.ithit-grid-container > tbody > tr > td {
     vertical-align: middle;
     white-space: nowrap;
@@ -117,6 +124,14 @@ table.ithit-grid-container > tbody > tr > td {
 
     table.ithit-grid-container > tbody > tr > td:nth-child(3) {
         width: 100%;
+    }
+
+    table.ithit-grid-container > tbody > tr > td button:last-child {
+        margin-left: 5px;
+    }
+
+    table.ithit-grid-container > tbody > tr > td button.btn-delete .btn-label {
+        padding-left: 5px;
     }
 
 .ithit-grid-icon-locked {
@@ -156,6 +171,25 @@ table.ithit-grid-container > tbody > tr > td {
     background-color: transparent;
     padding: 0 0 0 8px;
     margin: 0;
+}
+
+.ithit-grid-container .actions .fab, .ithit-grid-container .actions .fas {
+    margin-right: 10px;
+    font-size: 20px;
+    position: relative;
+    top: 2px;
+}
+
+.ithit-grid-container .actions .dropdown-radio {
+    margin-top: -20px;
+    z-index: 2;
+}
+
+.ithit-grid-container .actions input[type=radio] {
+    position: relative;
+    top: 9px;
+    left: 5px;
+    z-index: 3;
 }
 
 .tt-suggestion ol.breadcrumb {
@@ -268,10 +302,6 @@ table .fas {
         vertical-align: middle;
     }
 
-    table .fas:before {
-        font-size: 18px;
-    }
-
 #ithit-dropzone {
     border: 2px dashed;
     padding: 20px;
@@ -379,3 +409,26 @@ p.error-message {
     .btn-info .fas {
         vertical-align: initial;
     }
+
+.btn-label {
+     display: inline-block;
+     padding: 4px 9px;
+     background: rgba(0,0,0,0.15);
+     border-radius: 3px 0 0 3px;    
+}
+
+ .btn-labeled {
+     padding: 0;    
+}
+    
+    .btn-labeled .fas {
+        font-size: 12px;       
+    }
+    
+    .btn-labeled span:last-child {
+        padding-right: 5px;        
+    }
+
+.btn-edit-label {
+    padding-left: 5px;    
+}

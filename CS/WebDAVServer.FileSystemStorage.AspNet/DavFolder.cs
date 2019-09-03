@@ -100,7 +100,7 @@ namespace WebDAVServer.FileSystemStorage.AspNet
             foreach (FileSystemInfo fileInfo in fileInfos)
             {
                 string childPath = Path + EncodeUtil.EncodeUrlPart(fileInfo.Name);
-                IHierarchyItemAsync child = await context.GetHierarchyItemAsync(childPath);
+                IHierarchyItemAsync child = await context.GetHierarchyItemAsync(childPath) as IHierarchyItemAsync;
                 if (child != null)
                 {
                     children.Add(child);
@@ -226,7 +226,7 @@ namespace WebDAVServer.FileSystemStorage.AspNet
             try
             {
                 // Remove item with the same name at destination if it exists.
-                IHierarchyItemAsync item = await context.GetHierarchyItemAsync(targetPath);
+                IHierarchyItemAsync item = await context.GetHierarchyItemAsync(targetPath) as IHierarchyItemAsync;
                 if (item != null)
                     await item.DeleteAsync(multistatus);
 
@@ -390,7 +390,7 @@ namespace WebDAVServer.FileSystemStorage.AspNet
             IList<IHierarchyItemAsync> subtreeItems = new List<IHierarchyItemAsync>();
             foreach (string path in foundItems.Keys)
             {
-                IHierarchyItemAsync item = await context.GetHierarchyItemAsync(GetRelativePath(path));
+                IHierarchyItemAsync item = await context.GetHierarchyItemAsync(GetRelativePath(path)) as IHierarchyItemAsync;
                 if (includeSnippet && item is DavFile)
                     (item as DavFile).Snippet = HighlightKeywords(searchString.Trim('%'), foundItems[path]);
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.AccessControl;
 
+using ITHit.Server;
 using ITHit.WebDAV.Server;
 using ITHit.WebDAV.Server.Acl;
 

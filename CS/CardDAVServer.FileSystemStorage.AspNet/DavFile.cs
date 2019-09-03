@@ -158,7 +158,7 @@ namespace CardDAVServer.FileSystemStorage.AspNet
             {
                 using (FileStream filestream = fileInfo.Open(FileMode.Truncate)) { }
             }
-            await fileInfo.SetExtendedAttributeAsync("SerialNumber", this.serialNumber + 1);
+            await fileInfo.SetExtendedAttributeAsync("SerialNumber", ++this.serialNumber);
 
             using (FileStream fileStream = fileInfo.Open(FileMode.OpenOrCreate, FileAccess.Write, FileShare.Read))
             {
@@ -216,7 +216,7 @@ namespace CardDAVServer.FileSystemStorage.AspNet
             // If an item with the same name exists - remove it.
             try
             {
-                IHierarchyItemAsync item = await context.GetHierarchyItemAsync(targetPath);
+                IHierarchyItemAsync item = await context.GetHierarchyItemAsync(targetPath) as IHierarchyItemAsync;
                 if (item != null)
                     await item.DeleteAsync(multistatus);
             }
@@ -276,7 +276,7 @@ namespace CardDAVServer.FileSystemStorage.AspNet
             // If an item with the same name exists in target directory - remove it.
             try
             {
-                IHierarchyItemAsync item = await context.GetHierarchyItemAsync(targetPath);
+                IHierarchyItemAsync item = await context.GetHierarchyItemAsync(targetPath) as IHierarchyItemAsync;
 
                 if (item != null)
                 {

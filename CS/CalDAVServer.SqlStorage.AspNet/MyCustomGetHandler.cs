@@ -13,6 +13,8 @@ using ITHit.WebDAV.Server;
 using ITHit.WebDAV.Server.Class1;
 using ITHit.WebDAV.Server.Extensibility;
 using ITHit.WebDAV.Server.CalDav;
+using ITHit.Server.Extensibility;
+using ITHit.Server;
 
 namespace CalDAVServer.SqlStorage.AspNet
 {
@@ -70,10 +72,10 @@ namespace CalDAVServer.SqlStorage.AspNet
         /// <summary>
         /// Handles GET and HEAD request.
         /// </summary>
-        /// <param name="context">Instace of <see cref="DavContextBaseAsync"/>.</param>
+        /// <param name="context">Instace of <see cref="ContextBaseAsync"/>.</param>
         /// <param name="item">Instance of <see cref="IHierarchyItemAsync"/> which was returned by
-        /// <see cref="DavContextBaseAsync.GetHierarchyItemAsync"/> for this request.</param>
-        public async Task ProcessRequestAsync(DavContextBaseAsync context, IHierarchyItemAsync item)
+        /// <see cref="ContextBaseAsync.GetHierarchyItemAsync"/> for this request.</param>
+        public async Task ProcessRequestAsync(ContextBaseAsync context, IHierarchyItemBaseAsync item)
         {
             string urlPath = context.Request.RawUrl.Substring(context.Request.ApplicationPath.TrimEnd('/').Length);
 
@@ -117,9 +119,9 @@ namespace CalDAVServer.SqlStorage.AspNet
         /// this handler substitutes) shall be called for the item.
         /// </summary>
         /// <param name="item">Instance of <see cref="IHierarchyItemAsync"/> which was returned by
-        /// <see cref="DavContextBaseAsync.GetHierarchyItemAsync"/> for this request.</param>
+        /// <see cref="ContextBaseAsync.GetHierarchyItemAsync"/> for this request.</param>
         /// <returns>Returns <c>true</c> if this handler can handler this item.</returns>
-        public bool AppliesTo(IHierarchyItemAsync item)
+        public bool AppliesTo(IHierarchyItemBaseAsync item)
         {
             return item is IFolderAsync || OriginalHandler.AppliesTo(item);
         }
@@ -127,10 +129,10 @@ namespace CalDAVServer.SqlStorage.AspNet
         /// <summary>
         /// Writes iOS / OS X CalDAV/CardDAV profile.
         /// </summary>
-        /// <param name="context">Instace of <see cref="DavContextBaseAsync"/>.</param>
+        /// <param name="context">Instace of <see cref="ContextBaseAsync"/>.</param>
         /// <param name="item">ICalendarFolderAsync or IAddressbookFolderAsync item.</param>
         /// <returns></returns>
-        private async Task WriteProfileAsync(DavContextBaseAsync context, IHierarchyItemAsync item, string htmlPath)
+        private async Task WriteProfileAsync(ContextBaseAsync context, IHierarchyItemBaseAsync item, string htmlPath)
         {
             string mobileconfigFileName = null;
             string decription = null;
@@ -178,10 +180,10 @@ namespace CalDAVServer.SqlStorage.AspNet
         /// <summary>
         /// Signs iOS / OS X payload profile with SSL certificate.
         /// </summary>
-        /// <param name="context">Instace of <see cref="DavContextBaseAsync"/>.</param>
+        /// <param name="context">Instace of <see cref="ContextBaseAsync"/>.</param>
         /// <param name="profile">Profile to sign.</param>
         /// <returns>Signed profile.</returns>
-        private byte[] SignProfile(DavContextBaseAsync context, string profile)
+        private byte[] SignProfile(ContextBaseAsync context, string profile)
         {
             // Here you will sign your profile with SSL certificate to avoid "Unsigned" warning on iOS and OS X.
             // For demo purposes we just return the profile content unmodified.

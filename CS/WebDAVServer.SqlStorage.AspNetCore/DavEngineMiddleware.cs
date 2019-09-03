@@ -9,6 +9,7 @@ using System.Data.SqlClient;
 using System.IO;
 using System.Threading.Tasks;
 
+using ITHit.Server;
 using ITHit.WebDAV.Server;
 using ITHit.WebDAV.Server.Core;
 
@@ -39,7 +40,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
         /// <summary>
         /// Processes WebDAV request.
         /// </summary>
-        public async Task Invoke(HttpContext context, DavContextCoreBaseAsync davContext, IOptions<DavContextOptions> tmp, ILogger logger)
+        public async Task Invoke(HttpContext context, ContextBaseAsync davContext, IOptions<DavContextOptions> tmp, ILogger logger)
         {
             await engine.RunAsync(davContext);
         }
@@ -66,11 +67,11 @@ namespace WebDAVServer.SqlStorage.AspNetCore
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
-            services.AddScoped<DavContextCoreBaseAsync, DavContext>();
-            services.Configure<DavEngineOptions>(async options => await Configuration.GetSection("DavEngineOptions").ReadOptionsAsync(options));
-            services.Configure<DavContextOptions>(async options => await Configuration.GetSection("DavContextOptions").ReadOptionsAsync(options, env));
-            services.Configure<DavLoggerOptions>(async options => await Configuration.GetSection("DavLoggerOptions").ReadOptionsAsync(options, env));
-            services.Configure<DavUsersOptions>(options => Configuration.GetSection("DavUsers").Bind(options));
+            services.AddScoped<ContextBaseAsync, DavContext>();
+            services.Configure<DavEngineOptions>(async options => await Configuration.GetSection("EngineOptions").ReadOptionsAsync(options));
+            services.Configure<DavContextOptions>(async options => await Configuration.GetSection("ContextOptions").ReadOptionsAsync(options, env));
+            services.Configure<DavLoggerOptions>(async options => await Configuration.GetSection("LoggerOptions").ReadOptionsAsync(options, env));
+            services.Configure<DavUsersOptions>(options => Configuration.GetSection("Users").Bind(options));
         }
 
         /// <summary>

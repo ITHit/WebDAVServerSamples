@@ -3,6 +3,7 @@ Imports System.Collections.Generic
 Imports System.Threading.Tasks
 Imports ITHit.WebDAV.Server
 Imports ITHit.WebDAV.Server.Paging
+Imports ITHit.Server
 
 ''' <summary>
 ''' Base class for logical folders which are not present in file system, like '/acl/,
@@ -14,9 +15,9 @@ Public MustInherit Class LogicalFolder
 
     Public Property Context As DavContext
 
-    Public Property Name As String Implements IHierarchyItemAsync.Name
+    Public Property Name As String Implements IHierarchyItemBaseAsync.Name
 
-    Public Property Path As String Implements IHierarchyItemAsync.Path
+    Public Property Path As String Implements IHierarchyItemBaseAsync.Path
 
     Protected Sub New(context As DavContext, name As String, path As String)
         MyBase.New(context)
@@ -25,13 +26,13 @@ Public MustInherit Class LogicalFolder
         Me.Path = path
     End Sub
 
-    Public ReadOnly Property Created As DateTime Implements IHierarchyItemAsync.Created
+    Public ReadOnly Property Created As DateTime Implements IHierarchyItemBaseAsync.Created
         Get
             Return DateTime.UtcNow
         End Get
     End Property
 
-    Public ReadOnly Property Modified As DateTime Implements IHierarchyItemAsync.Modified
+    Public ReadOnly Property Modified As DateTime Implements IHierarchyItemBaseAsync.Modified
         Get
             Return DateTime.UtcNow
         End Get

@@ -35,6 +35,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddWebDav(Configuration, HostingEnvironment);
+            services.AddGSuite(Configuration, HostingEnvironment);
             services.AddSingleton<WebSocketsService>();
       
         }
@@ -56,8 +57,8 @@ namespace WebDAVServer.SqlStorage.AspNetCore
             //app.UseDigestAuth();
             app.UseWebSockets();
             app.UseWebSocketsMiddleware();
-
-            app.UseWebDav(HostingEnvironment);
+            app.UseGSuite(HostingEnvironment);
+            app.UseWebDav(HostingEnvironment);     
         }
     }
 }

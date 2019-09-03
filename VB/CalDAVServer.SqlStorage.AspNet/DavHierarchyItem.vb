@@ -4,6 +4,7 @@ Imports System.Threading.Tasks
 Imports ITHit.WebDAV.Server
 Imports ITHit.WebDAV.Server.Acl
 Imports CalDAVServer.SqlStorage.AspNet.Acl
+Imports ITHit.Server
 
 ''' <summary>
 ''' Base class for calendars (calendar folders), and calendar files (events and to-dos).
@@ -19,7 +20,7 @@ Public MustInherit Class DavHierarchyItem
     ''' <summary>
     ''' Gets item display name.
     ''' </summary>
-    Public Overridable ReadOnly Property Name As String Implements IHierarchyItemAsync.Name
+    Public Overridable ReadOnly Property Name As String Implements IHierarchyItemBaseAsync.Name
         Get
             Return displayName
         End Get
@@ -28,7 +29,7 @@ Public MustInherit Class DavHierarchyItem
     ''' <summary>
     ''' Gets item path.
     ''' </summary>
-    Public Overridable ReadOnly Property Path As String Implements IHierarchyItemAsync.Path
+    Public Overridable ReadOnly Property Path As String Implements IHierarchyItemBaseAsync.Path
         Get
             Return itemPath
         End Get
@@ -37,7 +38,7 @@ Public MustInherit Class DavHierarchyItem
     ''' <summary>
     ''' Gets item creation date. Must be in UTC.
     ''' </summary>
-    Public Overridable ReadOnly Property Created As DateTime Implements IHierarchyItemAsync.Created
+    Public Overridable ReadOnly Property Created As DateTime Implements IHierarchyItemBaseAsync.Created
         Get
             Return New DateTime(2000, 1, 1)
         End Get
@@ -46,7 +47,7 @@ Public MustInherit Class DavHierarchyItem
     ''' <summary>
     ''' Gets item modification date. Must be in UTC.
     ''' </summary>
-    Public Overridable ReadOnly Property Modified As DateTime Implements IHierarchyItemAsync.Modified
+    Public Overridable ReadOnly Property Modified As DateTime Implements IHierarchyItemBaseAsync.Modified
         Get
             Return New DateTime(2000, 1, 1)
         End Get

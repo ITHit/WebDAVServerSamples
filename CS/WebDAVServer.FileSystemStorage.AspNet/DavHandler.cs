@@ -7,6 +7,7 @@ using System.Xml;
 using System.Xml.Serialization;
 using System.Threading.Tasks;
 
+using ITHit.Server;
 using ITHit.WebDAV.Server;
 
 namespace WebDAVServer.FileSystemStorage.AspNet

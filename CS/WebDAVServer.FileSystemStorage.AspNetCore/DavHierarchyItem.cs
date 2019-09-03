@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using ITHit.WebDAV.Server;
 using ITHit.WebDAV.Server.Acl;
+using ITHit.WebDAV.Server.Extensibility;
 using ITHit.WebDAV.Server.Class2;
 using ITHit.WebDAV.Server.MicrosoftExtensions;
 using WebDAVServer.FileSystemStorage.AspNetCore.ExtendedAttributes;
@@ -383,7 +384,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
             List<DateLockInfo> locks = await GetLocksAsync();
             if (locks != null && locks.Any())
             {
-                IList<string> clientLockTokens = context.Request.ClientLockTokens;
+                IList<string> clientLockTokens = (context.Request as DavRequest).ClientLockTokens;
                 if (locks.All(l => !clientLockTokens.Contains(l.LockToken)))
                 {
                     throw new LockedException();

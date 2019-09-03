@@ -7,6 +7,7 @@ using System.Security.Principal;
 using System.Configuration;
 using System.Threading.Tasks;
 
+using ITHit.Server;
 using ITHit.WebDAV.Server;
 using ITHit.WebDAV.Server.Acl;
 using ITHit.WebDAV.Server.Quota;
@@ -92,7 +93,7 @@ namespace WebDAVServer.FileSystemStorage.HttpListener
         /// </summary>
         /// <param name="path">Item relative path including query string.</param>
         /// <returns>Instance of corresponding <see cref="IHierarchyItemAsync"/> or null if item is not found.</returns>
-        public override async Task<IHierarchyItemAsync> GetHierarchyItemAsync(string path)
+        public override async Task<IHierarchyItemBaseAsync> GetHierarchyItemAsync(string path)
         {
             path = path.Trim(new[] { ' ', '/' });
 

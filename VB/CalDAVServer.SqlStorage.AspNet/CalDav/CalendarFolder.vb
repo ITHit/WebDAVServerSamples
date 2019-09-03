@@ -9,6 +9,7 @@ Imports ITHit.WebDAV.Server.CalDav
 Imports ITHit.WebDAV.Server.Acl
 Imports ITHit.WebDAV.Server.Class1
 Imports ITHit.WebDAV.Server.Paging
+Imports ITHit.Server
 
 Namespace CalDav
 
@@ -144,7 +145,7 @@ Namespace CalDav
         ''' Gets display name of the calendar.
         ''' </summary>
         ''' <remarks>CalDAV clients typically never request this property.</remarks>
-        Public Overrides ReadOnly Property Name As String Implements IHierarchyItemAsync.Name
+        Public Overrides ReadOnly Property Name As String Implements IHierarchyItemBaseAsync.Name
             Get
                 Return If(rowCalendarFolder IsNot Nothing, rowCalendarFolder.Field(Of String)("Name"), Nothing)
             End Get
@@ -153,7 +154,7 @@ Namespace CalDav
         ''' <summary>
         ''' Gets item path.
         ''' </summary>
-        Public Overrides ReadOnly Property Path As String Implements IHierarchyItemAsync.Path
+        Public Overrides ReadOnly Property Path As String Implements IHierarchyItemBaseAsync.Path
             Get
                 Return String.Format("{0}{1}/", CalendarsRootFolder.CalendarsRootFolderPath, calendarFolderId)
             End Get

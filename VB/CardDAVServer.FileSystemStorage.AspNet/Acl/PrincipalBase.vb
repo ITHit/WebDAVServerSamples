@@ -11,6 +11,7 @@ Imports ITHit.WebDAV.Server.CardDav
 Imports CardDAVServer.FileSystemStorage.AspNet.CardDav
 Imports CardDAVServer.FileSystemStorage.AspNet
 Imports IPrincipal = ITHit.WebDAV.Server.Acl.IPrincipalAsync
+Imports ITHit.Server
 
 Namespace Acl
 
@@ -47,7 +48,7 @@ Namespace Acl
         ''' <summary>
         ''' Gets principal name.
         ''' </summary>
-        Public ReadOnly Property Name As String Implements IHierarchyItemAsync.Name
+        Public ReadOnly Property Name As String Implements IHierarchyItemBaseAsync.Name
             Get
                 Return Principal.SamAccountName
             End Get
@@ -56,7 +57,7 @@ Namespace Acl
         ''' <summary>
         ''' Gets date when principal was created.
         ''' </summary>
-        Public ReadOnly Property Created As DateTime Implements IHierarchyItemAsync.Created
+        Public ReadOnly Property Created As DateTime Implements IHierarchyItemBaseAsync.Created
             Get
                 Dim o As Object = CType(Principal.GetUnderlyingObject(), DirectoryEntry).Properties("whenCreated").Value
                 Return If(o IsNot Nothing, CDate(o), New DateTime(2000, 1, 1).ToUniversalTime())
@@ -66,7 +67,7 @@ Namespace Acl
         ''' <summary>
         ''' Gets date when principal was modified.
         ''' </summary>
-        Public ReadOnly Property Modified As DateTime Implements IHierarchyItemAsync.Modified
+        Public ReadOnly Property Modified As DateTime Implements IHierarchyItemBaseAsync.Modified
             Get
                 Dim o As Object = CType(Principal.GetUnderlyingObject(), DirectoryEntry).Properties("whenChanged").Value
                 Return If(o IsNot Nothing, CDate(o), New DateTime(2000, 1, 1).ToUniversalTime())
@@ -85,7 +86,7 @@ Namespace Acl
         ''' <summary>
         ''' Gets encoded path to this principal.
         ''' </summary>
-        Public MustOverride ReadOnly Property Path As String Implements IHierarchyItemAsync.Path
+        Public MustOverride ReadOnly Property Path As String Implements IHierarchyItemBaseAsync.Path
 
         ''' <summary>
         ''' Gets instance of <see cref="DavContext"/> .

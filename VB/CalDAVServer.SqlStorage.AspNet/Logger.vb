@@ -2,6 +2,7 @@ Imports System
 Imports System.Configuration
 Imports System.IO
 Imports System.Web
+Imports ITHit.Server
 Imports ITHit.WebDAV.Server
 Imports ITHit.WebDAV.Server.Logger
 
