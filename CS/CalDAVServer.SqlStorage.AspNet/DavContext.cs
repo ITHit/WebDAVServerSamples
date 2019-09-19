@@ -21,7 +21,7 @@ namespace CalDAVServer.SqlStorage.AspNet
     /// varios items from database.
     /// </summary>
     public class DavContext :
-        DavContextWebBaseAsync
+        ContextWebAsync<IHierarchyItemAsync>
         , IDisposable
     {
         /// <summary>
@@ -72,7 +72,7 @@ namespace CalDAVServer.SqlStorage.AspNet
         /// </summary>
         /// <param name="path">Relative path to the item including query string.</param>
         /// <returns><see cref="IHierarchyItem"/> instance if item is found, <c>null</c> otherwise.</returns>
-        public override async Task<IHierarchyItemBaseAsync> GetHierarchyItemAsync(string path)
+        public override async Task<IHierarchyItemAsync> GetHierarchyItemAsync(string path)
         {
             path = path.Trim(new[] { ' ', '/' });
 

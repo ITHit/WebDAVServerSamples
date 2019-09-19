@@ -384,7 +384,7 @@ namespace WebDAVServer.FileSystemStorage.AspNet
             List<DateLockInfo> locks = await GetLocksAsync();
             if (locks != null && locks.Any())
             {
-                IList<string> clientLockTokens = (context.Request as DavRequest).ClientLockTokens;
+                IList<string> clientLockTokens = context.Request.GetClientLockTokens();
                 if (locks.All(l => !clientLockTokens.Contains(l.LockToken)))
                 {
                     throw new LockedException();

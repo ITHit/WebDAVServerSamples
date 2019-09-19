@@ -216,7 +216,7 @@ namespace CalDAVServer.FileSystemStorage.AspNet
             // If an item with the same name exists - remove it.
             try
             {
-                IHierarchyItemAsync item = await context.GetHierarchyItemAsync(targetPath) as IHierarchyItemAsync;
+                IHierarchyItemAsync item = await context.GetHierarchyItemAsync(targetPath);
                 if (item != null)
                     await item.DeleteAsync(multistatus);
             }

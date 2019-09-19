@@ -344,7 +344,7 @@ Public MustInherit Class DavHierarchyItem
     Public Async Function RequireHasTokenAsync(Optional skipShared As Boolean = False) As Task
         Dim locks As List(Of DateLockInfo) = Await GetLocksAsync()
         If locks IsNot Nothing AndAlso locks.Any() Then
-            Dim clientLockTokens As IList(Of String) = TryCast(context.Request, DavRequest).ClientLockTokens
+            Dim clientLockTokens As IList(Of String) = context.Request.GetClientLockTokens()
             If locks.All(Function(l) Not clientLockTokens.Contains(l.LockToken)) Then
                 Throw New LockedException()
             End If

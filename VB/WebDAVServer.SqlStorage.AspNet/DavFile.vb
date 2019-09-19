@@ -44,7 +44,7 @@ Public Class DavFile
     ''' <summary>
     ''' Gets item's content type.
     ''' </summary>
-    Public ReadOnly Property ContentType As String Implements IContentBaseAsync.ContentType
+    Public ReadOnly Property ContentType As String Implements IContentAsync.ContentType
         Get
             Dim itemContentType As String = Nothing
             Dim extIndex As Integer = Name.LastIndexOf("."c)
@@ -67,7 +67,7 @@ Public Class DavFile
     ''' <summary>
     ''' Gets file length.
     ''' </summary>
-    Public ReadOnly Property ContentLength As Long Implements IContentBaseAsync.ContentLength
+    Public ReadOnly Property ContentLength As Long Implements IContentAsync.ContentLength
         Get
             Dim result As Object = Context.ExecuteScalar(Of Object)("SELECT DATALENGTH(Content) FROM Item WHERE ItemId = @ItemId",
                                                                    "@ItemId", ItemId)
@@ -78,7 +78,7 @@ Public Class DavFile
     ''' <summary>
     ''' Gets Etag.
     ''' </summary>
-    Public ReadOnly Property Etag As String Implements IContentBaseAsync.Etag
+    Public ReadOnly Property Etag As String Implements IContentAsync.Etag
         Get
             Dim serialNumber As Integer = getDbField("SerialNumber", 0)
             Return String.Format("{0}-{1}", Modified.ToBinary(), serialNumber)
@@ -96,7 +96,7 @@ Public Class DavFile
     ''' <param name="output">Stream to read body to.</param>
     ''' <param name="byteStart">Number of first byte to write.</param>
     ''' <param name="count">Number of bytes to be written.</param>
-    Public Async Function ReadAsync(output As Stream, byteStart As Long, count As Long) As Task Implements IContentBaseAsync.ReadAsync
+    Public Async Function ReadAsync(output As Stream, byteStart As Long, count As Long) As Task Implements IContentAsync.ReadAsync
         'Set timeout to maximum value to be able to download large files.
         HttpContext.Current.Server.ScriptTimeout = Integer.MaxValue
         If ContainsDownloadParam(Context.Request.RawUrl) Then
@@ -154,7 +154,7 @@ Public Class DavFile
     ''' <param name="startIndex">Index of first byte in the file where update shall be applied.</param>
     ''' <param name="totalContentLength">Length of the file after it will be updated with the new content.</param>
     ''' <returns>Boolean value indicating if entire stream was written.</returns>
-    Public Async Function WriteAsync(segment As Stream, contentType As String, startIndex As Long, totalContentLength As Long) As Task(Of Boolean) Implements IContentBaseAsync.WriteAsync
+    Public Async Function WriteAsync(segment As Stream, contentType As String, startIndex As Long, totalContentLength As Long) As Task(Of Boolean) Implements IContentAsync.WriteAsync
         Await RequireHasTokenAsync()
         'Set timeout to maximum value to be able to upload large files.
         HttpContext.Current.Server.ScriptTimeout = Integer.MaxValue

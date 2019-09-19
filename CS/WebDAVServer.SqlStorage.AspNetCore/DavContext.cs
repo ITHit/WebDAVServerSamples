@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 
 using ITHit.Server;
 using ITHit.WebDAV.Server;
-using ITHit.WebDAV.Server.Core;
 using ITHit.WebDAV.Server.Class2;
 using WebDAVServer.SqlStorage.AspNetCore.Options;
 
@@ -24,7 +23,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
     /// varios items from database.
     /// </summary>
     public class DavContext :
-        DavContextCoreBaseAsync
+        ContextCoreAsync<IHierarchyItemAsync>
         , IDisposable
     {
         /// <summary>
@@ -87,7 +86,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
         /// </summary>
         /// <param name="path">Relative path to the item including query string.</param>
         /// <returns><see cref="IHierarchyItemAsync"/> instance if item is found, <c>null</c> otherwise.</returns>
-        public override async Task<IHierarchyItemBaseAsync> GetHierarchyItemAsync(string path)
+        public override async Task<IHierarchyItemAsync> GetHierarchyItemAsync(string path)
         {
             path = path.Trim(new[] { ' ', '/' });
 

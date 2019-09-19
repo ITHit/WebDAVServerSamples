@@ -519,7 +519,7 @@ namespace WebDAVServer.SqlStorage.HttpListener
                 return true;
             }
 
-            IList<string> clientLockTokens = (Context.Request as DavRequest).ClientLockTokens;
+            IList<string> clientLockTokens = Context.Request.GetClientLockTokens();
             return itemLocks.Any(il => clientLockTokens.Contains(il.Token));
         }
 

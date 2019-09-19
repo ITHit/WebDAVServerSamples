@@ -21,7 +21,7 @@ Imports ITHit.WebDAV.Server.Class2
 ''' varios items from database.
 ''' </summary>
 Public Class DavContext
-    Inherits DavContextWebBaseAsync
+    Inherits ContextWebAsync(Of IHierarchyItemAsync)
     Implements IDisposable
 
     ''' <summary>
@@ -86,7 +86,7 @@ Public Class DavContext
     ''' </summary>
     ''' <param name="path">Relative path to the item including query string.</param>
     ''' <returns><see cref="IHierarchyItemAsync"/>  instance if item is found, <c>null</c> otherwise.</returns>
-    Public Overrides Async Function GetHierarchyItemAsync(path As String) As Task(Of IHierarchyItemBaseAsync)
+    Public Overrides Async Function GetHierarchyItemAsync(path As String) As Task(Of IHierarchyItemAsync)
         path = path.Trim({" "c, "/"c})
         'remove query string.
         Dim ind As Integer = path.IndexOf("?"c)

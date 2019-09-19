@@ -80,7 +80,7 @@ Namespace CalDav
         ''' for which data comes in <paramref name="content"/>  stream.</param>
         ''' <param name="totalFileSize">Size of file as it will be after all parts are uploaded. -1 if unknown (in case of chunked upload).</param>
         ''' <returns>Whether the whole stream has been written.</returns>
-        Public Overrides Async Function WriteAsync(content As Stream, contentType As String, startIndex As Long, totalFileSize As Long) As Task(Of Boolean) Implements IContentBaseAsync.WriteAsync
+        Public Overrides Async Function WriteAsync(content As Stream, contentType As String, startIndex As Long, totalFileSize As Long) As Task(Of Boolean) Implements IContentAsync.WriteAsync
             Dim result As Boolean = Await MyBase.WriteAsync(content, contentType, startIndex, totalFileSize)
             ' Notify attendees that event is created or modified.
             Dim calendarObjectContent As String = File.ReadAllText(fileSystemInfo.FullName)

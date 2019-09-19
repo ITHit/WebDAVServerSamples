@@ -17,14 +17,14 @@ Imports ITHit.Server
 ''' This handler processes GET and HEAD requests to folders returning custom HTML page.
 ''' </summary>
 Friend Class MyCustomGetHandler
-    Implements IMethodHandlerAsync
+    Implements IMethodHandlerAsync(Of IHierarchyItemAsync)
 
     ''' <summary>
     ''' Handler for GET and HEAD request registered with the engine before registering this one.
     ''' We call this default handler to handle GET and HEAD for files, because this handler
     ''' only handles GET and HEAD for folders.
     ''' </summary>
-    Public Property OriginalHandler As IMethodHandlerAsync
+    Public Property OriginalHandler As IMethodHandlerAsync(Of IHierarchyItemAsync)
 
     ''' <summary>
     ''' Gets a value indicating whether output shall be buffered to calculate content length.
@@ -70,10 +70,10 @@ Friend Class MyCustomGetHandler
     ''' <summary>
     ''' Handles GET and HEAD request.
     ''' </summary>
-    ''' <param name="context">Instace of <see cref="ContextBaseAsync"/> .</param>
+    ''' <param name="context">Instace of <see cref="ContextAsync{IHierarchyItemAsync}"/> .</param>
     ''' <param name="item">Instance of <see cref="IHierarchyItemAsync"/>  which was returned by
-    ''' <see cref="ContextBaseAsync.GetHierarchyItemAsync"/>  for this request.</param>
-    Public Async Function ProcessRequestAsync(context As ContextBaseAsync, item As IHierarchyItemBaseAsync) As Task Implements IMethodHandlerAsync.ProcessRequestAsync
+    ''' <see cref="ContextAsync{IHierarchyItemAsync}.GetHierarchyItemAsync"/>  for this request.</param>
+    Public Async Function ProcessRequestAsync(context As ContextAsync(Of IHierarchyItemAsync), item As IHierarchyItemAsync) As Task Implements IMethodHandlerAsync.ProcessRequestAsync
         Dim urlPath As String = context.Request.RawUrl.Substring(context.Request.ApplicationPath.TrimEnd("/"c).Length)
         If TypeOf item Is IItemCollectionAsync Then
             ' In case of GET requests to WebDAV folders we serve a web page to display 
@@ -99,9 +99,9 @@ Friend Class MyCustomGetHandler
     ''' this handler substitutes) shall be called for the item.
     ''' </summary>
     ''' <param name="item">Instance of <see cref="IHierarchyItemAsync"/>  which was returned by
-    ''' <see cref="ContextBaseAsync.GetHierarchyItemAsync"/>  for this request.</param>
+    ''' <see cref="ContextAsync{IHierarchyItemAsync}.GetHierarchyItemAsync"/>  for this request.</param>
     ''' <returns>Returns <c>true</c> if this handler can handler this item.</returns>
-    Public Function AppliesTo(item As IHierarchyItemBaseAsync) As Boolean Implements IMethodHandlerAsync.AppliesTo
+    Public Function AppliesTo(item As IHierarchyItemAsync) As Boolean Implements IMethodHandlerAsync.AppliesTo
         Return TypeOf item Is IFolderAsync OrElse OriginalHandler.AppliesTo(item)
     End Function
 End Class

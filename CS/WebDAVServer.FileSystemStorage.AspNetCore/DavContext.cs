@@ -10,7 +10,6 @@ using Microsoft.Extensions.Options;
 
 using ITHit.Server;
 using ITHit.WebDAV.Server;
-using ITHit.WebDAV.Server.Core;
 using ITHit.WebDAV.Server.Acl;
 using ITHit.WebDAV.Server.Quota;
 using WebDAVServer.FileSystemStorage.AspNetCore.Options;
@@ -25,7 +24,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
     /// Resolves hierarchy items by paths.
     /// </summary>
     public class DavContext :
-        DavContextCoreBaseAsync
+        ContextCoreAsync<IHierarchyItemAsync>
     {
 
         /// <summary>
@@ -65,7 +64,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
         /// </summary>
         /// <param name="path">Item relative path including query string.</param>
         /// <returns>Instance of corresponding <see cref="IHierarchyItemAsync"/> or null if item is not found.</returns>
-        public override async Task<IHierarchyItemBaseAsync> GetHierarchyItemAsync(string path)
+        public override async Task<IHierarchyItemAsync> GetHierarchyItemAsync(string path)
         {
             path = path.Trim(new[] { ' ', '/' });
 

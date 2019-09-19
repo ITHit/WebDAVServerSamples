@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 
 using ITHit.Server;
 using ITHit.WebDAV.Server;
-using ITHit.WebDAV.Server.Core;
 
 using WebDAVServer.FileSystemStorage.AspNetCore.Options;
 
@@ -37,7 +36,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
         /// <summary>
         /// Processes WebDAV request.
         /// </summary>
-        public async Task Invoke(HttpContext context, ContextBaseAsync davContext, IOptions<DavContextOptions> tmp, ILogger logger)
+        public async Task Invoke(HttpContext context, ContextCoreAsync<IHierarchyItemAsync> davContext, IOptions<DavContextOptions> tmp, ILogger logger)
         {
             await engine.RunAsync(davContext);
         }
@@ -64,7 +63,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
-            services.AddScoped<ContextBaseAsync, DavContext>();
+            services.AddScoped<ContextCoreAsync<IHierarchyItemAsync>, DavContext>();
             services.Configure<DavEngineOptions>(async options => await Configuration.GetSection("EngineOptions").ReadOptionsAsync(options));
             services.Configure<DavContextOptions>(async options => await Configuration.GetSection("ContextOptions").ReadOptionsAsync(options, env));
             services.Configure<DavLoggerOptions>(async options => await Configuration.GetSection("LoggerOptions").ReadOptionsAsync(options, env));

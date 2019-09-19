@@ -86,7 +86,7 @@ Public Class DavFolder
 
         For Each fileInfo As FileSystemInfo In fileInfos
             Dim childPath As String = Path & EncodeUtil.EncodeUrlPart(fileInfo.Name)
-            Dim child As IHierarchyItemAsync = TryCast(Await context.GetHierarchyItemAsync(childPath), IHierarchyItemAsync)
+            Dim child As IHierarchyItemAsync = Await context.GetHierarchyItemAsync(childPath)
             If child IsNot Nothing Then
                 children.Add(child)
             End If
@@ -188,7 +188,7 @@ Public Class DavFolder
         Dim targetPath As String = targetFolder.Path & EncodeUtil.EncodeUrlPart(destName)
         Try
             ' Remove item with the same name at destination if it exists.
-            Dim item As IHierarchyItemAsync = TryCast(Await context.GetHierarchyItemAsync(targetPath), IHierarchyItemAsync)
+            Dim item As IHierarchyItemAsync = Await context.GetHierarchyItemAsync(targetPath)
             If item IsNot Nothing Then Await item.DeleteAsync(multistatus)
             Await targetFolder.CreateFolderAsync(destName)
         Catch ex As DavException

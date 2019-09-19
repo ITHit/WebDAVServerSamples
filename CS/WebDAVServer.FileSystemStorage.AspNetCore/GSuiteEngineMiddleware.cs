@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 using ITHit.Server;
 using ITHit.WebDAV.Server;
-using ITHit.WebDAV.Server.Core;
+using ITHit.GSuite.Server;
 
 using WebDAVServer.FileSystemStorage.AspNetCore.Options;
 
@@ -43,12 +43,10 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
         /// <summary>
         /// Processes GSuite request.
         /// </summary>
-        public async Task Invoke(HttpContext context, ContextBaseAsync davContext)
+        public async Task Invoke(HttpContext context, ContextCoreAsync<IHierarchyItemAsync> davContext)
         {
-            if (!await engine.RunAsync(davContext))
-            {
-                await next(context);
-            }
+            await engine.RunAsync(ContextConverter.ConvertToGSuiteContext(davContext));
+            await next(context);
         }
     }
 

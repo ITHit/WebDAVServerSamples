@@ -100,7 +100,7 @@ namespace WebDAVServer.FileSystemStorage.AspNet.Cookies
             foreach (FileSystemInfo fileInfo in fileInfos)
             {
                 string childPath = Path + EncodeUtil.EncodeUrlPart(fileInfo.Name);
-                IHierarchyItemAsync child = await context.GetHierarchyItemAsync(childPath) as IHierarchyItemAsync;
+                IHierarchyItemAsync child = await context.GetHierarchyItemAsync(childPath);
                 if (child != null)
                 {
                     children.Add(child);
@@ -226,7 +226,7 @@ namespace WebDAVServer.FileSystemStorage.AspNet.Cookies
             try
             {
                 // Remove item with the same name at destination if it exists.
-                IHierarchyItemAsync item = await context.GetHierarchyItemAsync(targetPath) as IHierarchyItemAsync;
+                IHierarchyItemAsync item = await context.GetHierarchyItemAsync(targetPath);
                 if (item != null)
                     await item.DeleteAsync(multistatus);
 

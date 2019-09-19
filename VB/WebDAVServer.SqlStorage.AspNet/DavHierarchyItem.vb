@@ -409,7 +409,7 @@ Public MustInherit Class DavHierarchyItem
             Return True
         End If
 
-        Dim clientLockTokens As IList(Of String) = TryCast(Context.Request, DavRequest).ClientLockTokens
+        Dim clientLockTokens As IList(Of String) = Context.Request.GetClientLockTokens()
         Return itemLocks.Any(Function(il) clientLockTokens.Contains(il.Token))
     End Function
 

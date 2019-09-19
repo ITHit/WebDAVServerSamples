@@ -121,6 +121,76 @@
                         </div>
                     </div>
                 </div>
+                <div id="ConfirmRewriteModal" class="modal" tabindex="-1" role="dialog" aria-labelledby="ConfirmRewriteModalLabel">
+                    <div class="modal-dialog modal-sm" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Confirm</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <p class="message"></p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary btn-ok">Yes</button>
+                                <button type="button" class="btn btn-no">No</button>
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="ErrorModal" class="modal" tabindex="-1" role="dialog" aria-labelledby="ConfirmModalLabel">
+                    <div class="modal-dialog modal-md" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Error</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="container-fluid">
+                                    <div class="row">
+                                        <div class="col-md-4"><p>Error message:</p></div>
+                                        <div class="col-md-8"><p class="error-message"></p></div>
+                                    </div>
+                                    <div class="row error-details-row">
+                                        <div class="col-md-12">
+                                            <p>
+                                                <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#error-details-collapse" aria-expanded="false" aria-controls="error-details-collapse">
+                                                    Error Details
+                                                </button>
+                                            </p>
+                                            <div class="collapse" id="error-details-collapse">
+                                                <div class="card card-body">
+                                                    <div class="row">
+                                                        <div class="col-md-2"><p>Url:</p></div>
+                                                        <div class="col-md-10"><p class="error-details-url"></p></div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-4 "><p>Error message:</p></div>
+                                                        <div class="col-md-8"><p class="error-details-message"></p></div>
+                                                    </div>
+                                                    <div class="row error-details-row">
+                                                        <div class="col-md-12">
+                                                            <iframe style="width: 100%; border: none"></iframe>
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="col-lg-4 col-md-12">
                 <p>

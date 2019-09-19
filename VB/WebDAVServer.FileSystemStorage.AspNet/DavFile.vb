@@ -36,7 +36,7 @@ Public Class DavFile
     ''' <summary>
     ''' Gets content type.
     ''' </summary>
-    Public ReadOnly Property ContentType As String Implements IContentBaseAsync.ContentType
+    Public ReadOnly Property ContentType As String Implements IContentAsync.ContentType
         Get
             Return If(MimeType.GetMimeType(fileSystemInfo.Extension), "application/octet-stream")
         End Get
@@ -45,7 +45,7 @@ Public Class DavFile
     ''' <summary>
     ''' Gets length of the file.
     ''' </summary>
-    Public ReadOnly Property ContentLength As Long Implements IContentBaseAsync.ContentLength
+    Public ReadOnly Property ContentLength As Long Implements IContentAsync.ContentLength
         Get
             Return fileInfo.Length
         End Get
@@ -55,7 +55,7 @@ Public Class DavFile
     ''' Gets entity tag - string that identifies current state of resource's content.
     ''' </summary>
     ''' <remarks>This property shall return different value if content changes.</remarks>
-    Public ReadOnly Property Etag As String Implements IContentBaseAsync.Etag
+    Public ReadOnly Property Etag As String Implements IContentAsync.Etag
         Get
             Return String.Format("{0}-{1}", Modified.ToBinary(), Me.serialNumber)
         End Get
@@ -109,7 +109,7 @@ Public Class DavFile
     ''' <param name="output">Stream to copy contents to.</param>
     ''' <param name="startIndex">The zero-bazed byte offset in file content at which to begin copying bytes to the output stream.</param>
     ''' <param name="count">The number of bytes to be written to the output stream.</param>
-    Public Overridable Async Function ReadAsync(output As Stream, startIndex As Long, count As Long) As Task Implements IContentBaseAsync.ReadAsync
+    Public Overridable Async Function ReadAsync(output As Stream, startIndex As Long, count As Long) As Task Implements IContentAsync.ReadAsync
         'Set timeout to maximum value to be able to download large files.
         HttpContext.Current.Server.ScriptTimeout = Integer.MaxValue
         If ContainsDownloadParam(context.Request.RawUrl) Then
@@ -148,7 +148,7 @@ Public Class DavFile
     ''' <param name="totalFileSize">Size of file as it will be after all parts are uploaded. -1 if unknown (in case of chunked upload).</param>
     ''' <returns>Whether the whole stream has been written. This result is used by the engine to determine
     ''' if auto checkin shall be performed (if auto versioning is used).</returns>
-    Public Overridable Async Function WriteAsync(content As Stream, contentType As String, startIndex As Long, totalFileSize As Long) As Task(Of Boolean) Implements IContentBaseAsync.WriteAsync
+    Public Overridable Async Function WriteAsync(content As Stream, contentType As String, startIndex As Long, totalFileSize As Long) As Task(Of Boolean) Implements IContentAsync.WriteAsync
         Await RequireHasTokenAsync()
         'Set timeout to maximum value to be able to upload large files.
         HttpContext.Current.Server.ScriptTimeout = Integer.MaxValue
@@ -204,7 +204,7 @@ Public Class DavFile
         Dim targetPath As String = targetFolder.Path & EncodeUtil.EncodeUrlPart(destName)
         ' If an item with the same name exists - remove it.
         Try
-            Dim item As IHierarchyItemAsync = TryCast(Await context.GetHierarchyItemAsync(targetPath), IHierarchyItemAsync)
+            Dim item As IHierarchyItemAsync = Await context.GetHierarchyItemAsync(targetPath)
             If item IsNot Nothing Then Await item.DeleteAsync(multistatus)
         Catch ex As DavException
             ' Report error with other item to client.

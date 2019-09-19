@@ -24,7 +24,7 @@ namespace WebDAVServer.SqlStorage.HttpListener
     /// varios items from database.
     /// </summary>
     public class DavContext :
-        DavContextHttpListenerBaseAsync
+        ContextHttpListenerAsync<IHierarchyItemAsync>
         , IDisposable
     {
         /// <summary>
@@ -94,7 +94,7 @@ namespace WebDAVServer.SqlStorage.HttpListener
         /// </summary>
         /// <param name="path">Relative path to the item including query string.</param>
         /// <returns><see cref="IHierarchyItemAsync"/> instance if item is found, <c>null</c> otherwise.</returns>
-        public override async Task<IHierarchyItemBaseAsync> GetHierarchyItemAsync(string path)
+        public override async Task<IHierarchyItemAsync> GetHierarchyItemAsync(string path)
         {
             path = path.Trim(new[] { ' ', '/' });
 

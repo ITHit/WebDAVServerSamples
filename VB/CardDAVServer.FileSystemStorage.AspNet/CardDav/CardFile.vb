@@ -63,7 +63,7 @@ Namespace CardDav
         ''' <param name="output">Stream to write vCard content.</param>
         ''' <param name="startIndex">Index to start reading data from back-end storage. Used for segmented reads, not used by CardDAV clients.</param>
         ''' <param name="count">Number of bytes to read. Used for segmented reads, not used by CardDAV clients.</param>
-        Public Overrides Async Function ReadAsync(output As Stream, startIndex As Long, count As Long) As Task Implements IContentBaseAsync.ReadAsync
+        Public Overrides Async Function ReadAsync(output As Stream, startIndex As Long, count As Long) As Task Implements IContentAsync.ReadAsync
             Dim vCard As String = Nothing
             Using reader As StreamReader = File.OpenText(Me.fileSystemInfo.FullName)
                 vCard = Await reader.ReadToEndAsync()
@@ -92,7 +92,7 @@ Namespace CardDav
         ''' for which data comes in <paramref name="content"/>  stream.</param>
         ''' <param name="totalFileSize">Size of file as it will be after all parts are uploaded. -1 if unknown (in case of chunked upload).</param>
         ''' <returns>Whether the whole stream has been written.</returns>
-        Public Overrides Async Function WriteAsync(content As Stream, contentType As String, startIndex As Long, totalFileSize As Long) As Task(Of Boolean) Implements IContentBaseAsync.WriteAsync
+        Public Overrides Async Function WriteAsync(content As Stream, contentType As String, startIndex As Long, totalFileSize As Long) As Task(Of Boolean) Implements IContentAsync.WriteAsync
             ' We store a business card in the original vCard form sent by the CardDAV client app.
             ' This form may not be understood by some CardDAV client apps. 
             ' We will convert the card if needed when reading depending on the client app reading the vCard.

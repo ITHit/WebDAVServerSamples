@@ -21,14 +21,14 @@ namespace CalDAVServer.SqlStorage.AspNet
     /// <summary>
     /// This handler processes GET and HEAD requests to folders returning custom HTML page.
     /// </summary>
-    internal class MyCustomGetHandler : IMethodHandlerAsync
+    internal class MyCustomGetHandler : IMethodHandlerAsync<IHierarchyItemAsync>
     {
         /// <summary>
         /// Handler for GET and HEAD request registered with the engine before registering this one.
         /// We call this default handler to handle GET and HEAD for files, because this handler
         /// only handles GET and HEAD for folders.
         /// </summary>
-        public IMethodHandlerAsync OriginalHandler { get; set; }
+        public IMethodHandlerAsync<IHierarchyItemAsync> OriginalHandler { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether output shall be buffered to calculate content length.
@@ -72,10 +72,10 @@ namespace CalDAVServer.SqlStorage.AspNet
         /// <summary>
         /// Handles GET and HEAD request.
         /// </summary>
-        /// <param name="context">Instace of <see cref="ContextBaseAsync"/>.</param>
+        /// <param name="context">Instace of <see cref="ContextAsync{IHierarchyItemAsync}"/>.</param>
         /// <param name="item">Instance of <see cref="IHierarchyItemAsync"/> which was returned by
-        /// <see cref="ContextBaseAsync.GetHierarchyItemAsync"/> for this request.</param>
-        public async Task ProcessRequestAsync(ContextBaseAsync context, IHierarchyItemBaseAsync item)
+        /// <see cref="ContextAsync{IHierarchyItemAsync}.GetHierarchyItemAsync"/> for this request.</param>
+        public async Task ProcessRequestAsync(ContextAsync<IHierarchyItemAsync> context, IHierarchyItemAsync item)
         {
             string urlPath = context.Request.RawUrl.Substring(context.Request.ApplicationPath.TrimEnd('/').Length);
 
@@ -119,9 +119,9 @@ namespace CalDAVServer.SqlStorage.AspNet
         /// this handler substitutes) shall be called for the item.
         /// </summary>
         /// <param name="item">Instance of <see cref="IHierarchyItemAsync"/> which was returned by
-        /// <see cref="ContextBaseAsync.GetHierarchyItemAsync"/> for this request.</param>
+        /// <see cref="ContextAsync{IHierarchyItemAsync}.GetHierarchyItemAsync"/> for this request.</param>
         /// <returns>Returns <c>true</c> if this handler can handler this item.</returns>
-        public bool AppliesTo(IHierarchyItemBaseAsync item)
+        public bool AppliesTo(IHierarchyItemAsync item)
         {
             return item is IFolderAsync || OriginalHandler.AppliesTo(item);
         }
@@ -129,10 +129,10 @@ namespace CalDAVServer.SqlStorage.AspNet
         /// <summary>
         /// Writes iOS / OS X CalDAV/CardDAV profile.
         /// </summary>
-        /// <param name="context">Instace of <see cref="ContextBaseAsync"/>.</param>
+        /// <param name="context">Instace of <see cref="ContextAsync{IHierarchyItemAsync}"/>.</param>
         /// <param name="item">ICalendarFolderAsync or IAddressbookFolderAsync item.</param>
         /// <returns></returns>
-        private async Task WriteProfileAsync(ContextBaseAsync context, IHierarchyItemBaseAsync item, string htmlPath)
+        private async Task WriteProfileAsync(ContextAsync<IHierarchyItemAsync> context, IHierarchyItemBaseAsync item, string htmlPath)
         {
             string mobileconfigFileName = null;
             string decription = null;
@@ -180,10 +180,10 @@ namespace CalDAVServer.SqlStorage.AspNet
         /// <summary>
         /// Signs iOS / OS X payload profile with SSL certificate.
         /// </summary>
-        /// <param name="context">Instace of <see cref="ContextBaseAsync"/>.</param>
+        /// <param name="context">Instace of <see cref="ContextAsync{IHierarchyItemAsync}"/>.</param>
         /// <param name="profile">Profile to sign.</param>
         /// <returns>Signed profile.</returns>
-        private byte[] SignProfile(ContextBaseAsync context, string profile)
+        private byte[] SignProfile(ContextAsync<IHierarchyItemAsync> context, string profile)
         {
             // Here you will sign your profile with SSL certificate to avoid "Unsigned" warning on iOS and OS X.
             // For demo purposes we just return the profile content unmodified.

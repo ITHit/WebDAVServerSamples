@@ -18,7 +18,7 @@ Imports WebDAVServer.FileSystemStorage.AspNet.ExtendedAttributes
 ''' Resolves hierarchy items by paths.
 ''' </summary>
 Public Class DavContext
-    Inherits DavContextWebBaseAsync
+    Inherits ContextWebAsync(Of IHierarchyItemAsync)
 
     ''' <summary>
     ''' Path to the folder which become available via WebDAV.
@@ -72,7 +72,7 @@ Public Class DavContext
     ''' </summary>
     ''' <param name="path">Item relative path including query string.</param>
     ''' <returns>Instance of corresponding <see cref="IHierarchyItemAsync"/>  or null if item is not found.</returns>
-    Public Overrides Async Function GetHierarchyItemAsync(path As String) As Task(Of IHierarchyItemBaseAsync)
+    Public Overrides Async Function GetHierarchyItemAsync(path As String) As Task(Of IHierarchyItemAsync)
         path = path.Trim({" "c, "/"c})
         'remove query string.
         Dim ind As Integer = path.IndexOf("?"c)

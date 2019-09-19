@@ -148,7 +148,7 @@
          * @returns string
          **/
         _RenderActions: function (oItem) {
-            var me = this;
+            var self = this;
             var actions = [];
             var isDavProtocolSupported = ITHit.WebDAV.Client.DocManager.IsDavProtocolSupported();
             var isMicrosoftOfficeDocument = ITHit.WebDAV.Client.DocManager.IsMicrosoftOfficeDocument(oItem.Href);
@@ -157,8 +157,8 @@
             function _changeDefaultEditor() {
                 var $radioBtn = $(this);
                 var iconClassName = $radioBtn.next().find('i:first').attr('class');
-                me._defaultEditor = $radioBtn.val();
-                $('input[value="' + me._defaultEditor + '"]').prop('checked', true);
+                self._defaultEditor = $radioBtn.val();
+                $('input[value="' + self._defaultEditor + '"]').prop('checked', true);
                 // update button icon
                 $('.btn-default-edit').each(function () {
                     var $btn = $(this);
@@ -169,13 +169,13 @@
             }
 
             function _isDefaultEditor(editorName) {
-                return me._defaultEditor == editorName ? 'checked="checked"' : '';
+                return self._defaultEditor == editorName ? 'checked="checked"' : '';
             }
 
             function _getDefaultEditorIcon() {
                 var iconClassName = 'fas fa-edit';
-                if (me._defaultEditor) {
-                    switch (me._defaultEditor) {
+                if (self._defaultEditor) {
+                    switch (self._defaultEditor) {
                         case 'OSEditor':
                             iconClassName = 'fab fa-microsoft';
                             break;
@@ -208,8 +208,15 @@
                         }
                     }).prop("disabled", !isDavProtocolSupported && !isMicrosoftOfficeDocument);
 
-                $('<button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split btn-sm" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span class="sr-only">Toggle Dropdown</span></button>')
+                var $dropdownToggle = $('<button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split btn-sm" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span class="sr-only">Toggle Dropdown</span></button>')
                     .appendTo($btnGroup).prop("disabled", !isDavProtocolSupported && !isMicrosoftOfficeDocument);
+
+                $btnGroup.on('shown.bs.dropdown', function () {
+                    self.ContextMenuID = oItem.Href;
+                });
+                $btnGroup.on('hidden.bs.dropdown', function () {
+                    self.ContextMenuID = null;
+                });           
 
                 $dropdownMenu = $('<div class="dropdown-menu dropdown-menu-right actions"></div>').appendTo($btnGroup);
 
@@ -244,6 +251,10 @@
                         });
                 }
 
+                // open context menu if it was open before update
+                if (self.ContextMenuID && self.ContextMenuID == oItem.Href) {
+                    $dropdownToggle.dropdown('toggle');
+                }
 
                 actions.push($btnGroup);
             }
@@ -257,7 +268,6 @@
 
             return actions;
         }
-        
     };
 
     ///////////////////
@@ -484,7 +494,7 @@
                 var className = 'ascending'
                 if ($(this).hasClass('ascending')) {
                     className = 'descending';
-                }            
+                }
 
                 oWebDAV.Sort($(this).data('sort-column'), className == 'ascending');
             })
@@ -526,7 +536,7 @@
 
         _OnPopState: function (oEvent) {
             if (oWebDAV.GetHashValue('search')) {
-                oSearchForm.LoadFromHash();         
+                oSearchForm.LoadFromHash();
             }
             else {
                 var sUrl = oEvent.state && oEvent.state.Url || window.location.href.split("#")[0];
@@ -581,6 +591,69 @@
             this.$el.modal('show');
         }
     }
+
+    /**
+     * This class provides method for display error modal window.
+     * @param {string} selector - The selector of root element of modal window markup.
+     * @class
+     */
+    function ErrorModal(selector) {
+        this.$el = $(selector);
+        this.$el.on('hidden.bs.modal',this._onModalHideHandler.bind(this));
+    }
+
+    ErrorModal.prototype = {
+
+        /** 
+         * Shows modal window with message and error details.
+         * @param {string} sMessage - The error message.
+         * @param {ITHit.WebDAV.Client.Exceptions.WebDavHttpException} oError - The error object to display.
+         * @param {function} [fCallback] - The callback to be called on close.
+         */
+        Show: function(sMessage, oError, fCallback) {
+            this._closeCallback = fCallback || $.noop;
+            this._SetErrorMessage(sMessage);
+            this._SetUrl(oError.Uri);
+            this._SetMessage(oError.Message);
+
+            if(oError.Error) {
+                this._SetBody(oError.Error.Description || oError.Error.BodyText);
+            } else if(oError.InnerException) {
+                this._SetBody(oError.InnerException.toString());
+            }
+
+            this.$el.modal('show');
+        },
+
+        _SetErrorMessage: function(sMessage) {
+            this.$el.find('.error-message').html(sMessage);
+        },
+
+        _SetUrl: function(sUrl) {
+            this.$el.find('.error-details-url').html(ITHit.Utils.HtmlEscape(sUrl));
+        },
+
+        _SetMessage: function(sMessage) {
+            sMessage = ITHit.Utils.HtmlEscape(sMessage);
+            sMessage = String(sMessage).replace(/\n/g, '<br />\n').replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;');
+            this.$el.find('.error-details-message').html(sMessage);
+        },
+
+        _SetBody: function(sMessage) {
+            var iframe = this.$el.find('iframe')[0];
+            var doc = iframe.contentDocument || iframe.contentWindow.document;
+
+            // FireFox fix, trigger a page `load`
+            doc.open();
+            doc.close();
+
+            doc.body.innerHTML = sMessage;
+        },
+        _onModalHideHandler: function () {
+            this._closeCallback();
+        }
+    };
+
 
     ///////////////////
     // Create Folder Bootstrap Modal
@@ -688,16 +761,16 @@
             }
 
             this.WebDavSession.OpenFolderAsync(sPath, [], function (oResponse) {
-                var me = this;
+                var self = this;
                 this.CurrentFolder = oResponse.Result;
                 oBreadcrumbs.SetHierarchyItem(this.CurrentFolder);
 
                 // Detect search support. If search is not supported - disable search field.
                 this.CurrentFolder.GetSupportedFeaturesAsync(function (oResult) {
                     /** @typedef {ITHit.WebDAV.Client.OptionsInfo} oOptionsInfo */
-                    me.OptionsInfo = oResult.Result;
+                    self.OptionsInfo = oResult.Result;
 
-                    oSearchForm.SetDisabled(!(me.OptionsInfo.Features & ITHit.WebDAV.Client.Features.Dasl));
+                    oSearchForm.SetDisabled(!(self.OptionsInfo.Features & ITHit.WebDAV.Client.Features.Dasl));
                 });
 
                 this.CurrentFolder.GetPageAsync([], (currentPageNumber - 1) * pageSize, pageSize, sortColumns, function (oResult) {
@@ -721,7 +794,7 @@
         },
 
         NavigateSearch: function (sPhrase, bIsDynamic, pageNumber, updateUrlHash, fCallback) {
-            var pageSize = this.PageSize, currentPageNumber = 1;         
+            var pageSize = this.PageSize, currentPageNumber = 1;
 
             if (!this.CurrentFolder) {
                 fCallback && fCallback({ Items: [], TotalItems: 0 });
@@ -775,20 +848,20 @@
 
                     fCallback && fCallback(oResult);
                 });
-            }        
+            }
 
             if (window.location.href.split("#")[0] != this.CurrentFolder.Href) {
                 this.WebDavSession.OpenFolderAsync(window.location.href.split("#")[0], [], function (oResponse) {
                     oWebDAV.CurrentFolder = oResponse.Result;
                     oBreadcrumbs.SetHierarchyItem(oWebDAV.CurrentFolder);
                     _getSearchPageByQuery();
-                }); 
+                });
             }
             else {
                 _getSearchPageByQuery();
             }
 
-          
+
         },
 
         Sort: function (columnName, sortAscending) {
@@ -809,13 +882,13 @@
             }
         },
 
-         /**		           
-          * Opens document for editing in online GSuite editor.
+        /**		           
+          * Opens document for editing in online G Suite editor.
           * @param {string} sDocumentUrl Must be full path including domain name: https://webdavserver.com/path/file.ext		           
         */
-         GSuiteEditDoc: function (sDocumentUrl) {
-             ITHit.WebDAV.Client.DocManager.GSuiteEditDocument(sDocumentUrl);
-         },
+        GSuiteEditDoc: function (sDocumentUrl) {
+            ITHit.WebDAV.Client.DocManager.GSuiteEditDocument(sDocumentUrl);
+        },
 
         /**
            * Opens document with.
@@ -927,7 +1000,7 @@
          * @return {Array}
          */
         _addParameterToArray: function (name, value, arrayParams) {
-            var nameExist = false;        
+            var nameExist = false;
 
             for (var key in arrayParams) {
                 if (arrayParams.hasOwnProperty(key)) {
@@ -985,7 +1058,7 @@
                         // Used to open non-MS Office documents or if MS Office is
                         // not installed as well as to open OS File Manager.     
 
-                     
+
                         window.open(installerFilePath);
                     }, { size: 'lg' });
             }
@@ -1001,6 +1074,7 @@
     var oWebDAV = window.WebDAVController = new WebDAVController();
     var oConfirmModal = new ConfirmModal('#ConfirmModal');
     var oCreateFolderModal = new CreateFolderModal('#CreateFolderModal', '.btn-create-folder');
+    window.ErrorModal = new ErrorModal('#ErrorModal');
     // List files on a WebDAV server using WebDAV Ajax Library
     if (oWebDAV.GetHashValue('search')) {
         oWebDAV.NavigateFolder(window.location.href.split("#")[0], null, null, null, function () {

@@ -228,7 +228,7 @@ Namespace CardDav
         ''' <summary>
         ''' Gets eTag. ETag must change every time this card is updated.
         ''' </summary>
-        Public ReadOnly Property Etag As String Implements IContentBaseAsync.Etag
+        Public ReadOnly Property Etag As String Implements IContentAsync.Etag
             Get
                 Dim bETag As Byte() = rowCardFile.Field(Of Byte())("ETag")
                 Return BitConverter.ToUInt64(bETag.Reverse().ToArray(), 0).ToString()
@@ -259,7 +259,7 @@ Namespace CardDav
         ''' <remarks>
         ''' If -1 is returned the chunked response will be generated if possible. The getcontentlength property will not be generated.
         ''' </remarks>
-        Public ReadOnly Property ContentLength As Long Implements IContentBaseAsync.ContentLength
+        Public ReadOnly Property ContentLength As Long Implements IContentAsync.ContentLength
             Get
                 Return -1
             End Get
@@ -268,7 +268,7 @@ Namespace CardDav
         ''' <summary>
         ''' File Mime-type/Content-Type.
         ''' </summary>
-        Public ReadOnly Property ContentType As String Implements IContentBaseAsync.ContentType
+        Public ReadOnly Property ContentType As String Implements IContentAsync.ContentType
             Get
                 Return "text/vcard"
             End Get
@@ -310,7 +310,7 @@ Namespace CardDav
         ''' for which data comes in <paramref name="content"/>  stream.</param>
         ''' <param name="totalFileSize">Size of file as it will be after all parts are uploaded. -1 if unknown (in case of chunked upload).</param>
         ''' <returns>Whether the whole stream has been written.</returns>
-        Public Async Function WriteAsync(stream As Stream, contentType As String, startIndex As Long, totalFileSize As Long) As Task(Of Boolean) Implements IContentBaseAsync.WriteAsync
+        Public Async Function WriteAsync(stream As Stream, contentType As String, startIndex As Long, totalFileSize As Long) As Task(Of Boolean) Implements IContentAsync.WriteAsync
             'Set timeout to maximum value to be able to upload large card files.
             System.Web.HttpContext.Current.Server.ScriptTimeout = Integer.MaxValue
             Dim vCard As String
@@ -1010,7 +1010,7 @@ Namespace CardDav
         ''' <param name="output">Stream to write vCard content.</param>
         ''' <param name="startIndex">Index to start reading data from back-end storage. Used for segmented reads, not used by CardDAV clients.</param>
         ''' <param name="count">Number of bytes to read. Used for segmented reads, not used by CardDAV clients.</param>
-        Public Async Function ReadAsync(output As Stream, startIndex As Long, count As Long) As Task Implements IContentBaseAsync.ReadAsync
+        Public Async Function ReadAsync(output As Stream, startIndex As Long, count As Long) As Task Implements IContentAsync.ReadAsync
             Dim vCardVersion As String = rowCardFile.Field(Of String)("Version")
             Dim card As ICard2 = CardFactory.CreateCard(vCardVersion)
             ReadCard(card)

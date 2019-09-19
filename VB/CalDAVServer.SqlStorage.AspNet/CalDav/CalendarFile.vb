@@ -315,7 +315,7 @@ Namespace CalDav
         ''' <summary>
         ''' Gets eTag. Used for synchronization with client application. ETag must change every time the event/to-do is updated.
         ''' </summary>
-        Public ReadOnly Property Etag As String Implements IContentBaseAsync.Etag
+        Public ReadOnly Property Etag As String Implements IContentAsync.Etag
             Get
                 Dim bETag As Byte() = rowCalendarFile.Field(Of Byte())("ETag")
                 Return BitConverter.ToUInt64(bETag.Reverse().ToArray(), 0).ToString()
@@ -346,7 +346,7 @@ Namespace CalDav
         ''' <remarks>
         ''' If -1 is returned the chunked response will be generated if possible. The getcontentlength property will not be generated.
         ''' </remarks>
-        Public ReadOnly Property ContentLength As Long Implements IContentBaseAsync.ContentLength
+        Public ReadOnly Property ContentLength As Long Implements IContentAsync.ContentLength
             Get
                 Return -1
             End Get
@@ -355,7 +355,7 @@ Namespace CalDav
         ''' <summary>
         ''' File Mime-type/Content-Type.
         ''' </summary>
-        Public ReadOnly Property ContentType As String Implements IContentBaseAsync.ContentType
+        Public ReadOnly Property ContentType As String Implements IContentAsync.ContentType
             Get
                 Return "text/calendar"
             End Get
@@ -401,7 +401,7 @@ Namespace CalDav
         ''' for which data comes in <paramref name="content"/>  stream.</param>
         ''' <param name="totalFileSize">Size of file as it will be after all parts are uploaded. -1 if unknown (in case of chunked upload).</param>
         ''' <returns>Whether the whole stream has been written.</returns>
-        Public Async Function WriteAsync(stream As Stream, contentType As String, startIndex As Long, totalFileSize As Long) As Task(Of Boolean) Implements IContentBaseAsync.WriteAsync
+        Public Async Function WriteAsync(stream As Stream, contentType As String, startIndex As Long, totalFileSize As Long) As Task(Of Boolean) Implements IContentAsync.WriteAsync
             'Set timeout to maximum value to be able to upload iCalendar files with large file attachments.
             System.Web.HttpContext.Current.Server.ScriptTimeout = Integer.MaxValue
             Dim iCalendar As String
@@ -1019,7 +1019,7 @@ Namespace CalDav
         ''' <param name="startIndex">Index to start reading data from back-end storage. Used for segmented reads, not used by CalDAV clients.</param>
         ''' <param name="count">Number of bytes to read. Used for segmented reads, not used by CalDAV clients.</param>
         ''' <returns></returns>
-        Public Async Function ReadAsync(output As Stream, startIndex As Long, count As Long) As Task Implements IContentBaseAsync.ReadAsync
+        Public Async Function ReadAsync(output As Stream, startIndex As Long, count As Long) As Task Implements IContentAsync.ReadAsync
             Dim cal As ICalendar2 = Await GetCalendarAsync()
             Call New vFormatter().Serialize(output, cal)
         End Function

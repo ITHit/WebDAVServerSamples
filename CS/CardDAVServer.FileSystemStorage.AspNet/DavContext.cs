@@ -26,7 +26,7 @@ namespace CardDAVServer.FileSystemStorage.AspNet
     /// Resolves hierarchy items by paths.
     /// </summary>
     public class DavContext :
-        DavContextWebBaseAsync, IDisposable
+        ContextWebAsync<IHierarchyItemAsync>, IDisposable
     {
 
         /// <summary>
@@ -215,7 +215,7 @@ namespace CardDAVServer.FileSystemStorage.AspNet
         /// </summary>
         /// <param name="path">Item relative path including query string.</param>
         /// <returns>Instance of corresponding <see cref="IHierarchyItemAsync"/> or null if item is not found.</returns>
-        public override async Task<IHierarchyItemBaseAsync> GetHierarchyItemAsync(string path)
+        public override async Task<IHierarchyItemAsync> GetHierarchyItemAsync(string path)
         {
             path = path.Trim(new[] { ' ', '/' });
 

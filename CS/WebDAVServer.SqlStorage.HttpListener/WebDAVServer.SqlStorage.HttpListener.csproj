@@ -6,7 +6,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>98AE2D74-7A07-48A5-AB6E-DB279705939B</ProjectGuid>
+    <ProjectGuid>9ECAB2F4-FD4E-4F0D-AA1C-DD4CD5CDB4FE</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>WebDAVServer.SqlStorage.HttpListener</RootNamespace>
@@ -117,13 +117,13 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="ITHit.WebDAV.Server">
-      <HintPath>..\packages\ITHit.WebDAV.Server.9.0.1208-Beta\lib\net451\ITHit.WebDAV.Server.dll</HintPath>
+      <HintPath>..\packages\ITHit.WebDAV.Server.9.1.5311-Beta\lib\net451\ITHit.WebDAV.Server.dll</HintPath>
     </Reference>
     <Reference Include="ITHit.Server">
-      <HintPath>..\packages\ITHit.Server.9.0.1208-Beta\lib\net451\ITHit.Server.dll</HintPath>
+      <HintPath>..\packages\ITHit.Server.9.1.5311-Beta\lib\net451\ITHit.Server.dll</HintPath>
     </Reference>
-    <Reference Include="ITHit.WebDAV.Server.HttpListener">
-      <HintPath>..\packages\ITHit.WebDAV.Server.HttpListener.9.0.1208-Beta\lib\net451\ITHit.WebDAV.Server.HttpListener.dll</HintPath>
+    <Reference Include="ITHit.Server.HttpListener">
+      <HintPath>..\packages\ITHit.Server.HttpListener.9.1.5311-Beta\lib\net451\ITHit.Server.HttpListener.dll</HintPath>
     </Reference>
   </ItemGroup>
   <PropertyGroup>
