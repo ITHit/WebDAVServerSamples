@@ -19,7 +19,7 @@ namespace WebDAVServer.SqlStorage.AspNet
 {
     /// <summary>
     /// WebDAV request context. Is used by WebDAV engine to resolve path into items.
-    /// Implements abstract methods from <see cref="DavContextBaseAsync"/>,
+    /// Implements abstract methods from <see cref="ContextAsync{IHierarchyItemAsync}"/>,
     /// contains useful methods for working with transactions, connections, reading
     /// varios items from database.
     /// </summary>

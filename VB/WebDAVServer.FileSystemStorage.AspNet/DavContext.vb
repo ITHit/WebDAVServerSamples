@@ -14,7 +14,7 @@ Imports ITHit.WebDAV.Server.Quota
 Imports WebDAVServer.FileSystemStorage.AspNet.ExtendedAttributes
 
 ''' <summary>
-''' Implementation of <see cref="DavContextBaseAsync"/> .
+''' Implementation of <see cref="ContextAsync{IHierarchyItemAsync}"/> .
 ''' Resolves hierarchy items by paths.
 ''' </summary>
 Public Class DavContext

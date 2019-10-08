@@ -7,7 +7,7 @@ Imports System.Linq
 Imports ITHit.WebDAV.Server.CardDav
 Imports ITHit.Collab
 Imports ITHit.Collab.Card
-Imports ITHit.WebDAV.Server
+Imports ITHit.Server
 
 Namespace CardDav
 

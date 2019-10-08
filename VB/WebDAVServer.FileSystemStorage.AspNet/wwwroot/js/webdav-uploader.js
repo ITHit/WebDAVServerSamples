@@ -1,7 +1,15 @@
-﻿﻿﻿﻿﻿﻿﻿﻿
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿
 (function () {
     var sOverwriteDialogueFormat = 'The following item(s) exist on the server:<br/><br/>{0}<br/><br/>Overwrite?';
     var sFailedCheckExistsMessage = "Check for already exists item failed with error.";
+    var sFileNameSpecialCharactersRestrictionFormat = "The name cannot contain any of the following characters:\n\t\t{0}";
+    var sWrongFileSizeFormat = 'File size should be less than {0}.';
+    var sForbiddenExtensionFormat = 'Upload files with "{0}" extension is forbidden.';
+    var sValidationError = 'Validation Error';
+    var iMaxFileSize = 10485760; //10MB
+    var aForbiddenExtensions = ['BAT', 'BIN', 'CMD', 'COM', 'EXE'];
+    var sForbiddenNameChars = '\/:*?"<>|';
+
 
     ///////////////////
     // Confirm Bootstrap Modal
@@ -74,6 +82,37 @@
 
     };
 
+    /**
+     * Returns extension from Url.
+     * @param {string} sDocumentUrl The url to get extension.
+     * @returns {string} Extension or empty string.
+     */
+    function getExtension(sDocumentUrl) {
+        var queryIndex = sDocumentUrl.indexOf("?");
+        if(queryIndex > -1) {
+            sDocumentUrl = sDocumentUrl.substr(0, queryIndex);
+        }
+
+        var aExt = sDocumentUrl.split(".");
+        if(aExt.length === 1) {
+            return "";
+        }
+        return aExt.pop();
+    }
+
+    /**
+     * This class represents error that occured on client.
+     * @class
+     * @param {string} sMessage - The message will be displayed as error's short description.
+     * @param {string} sUri - This url will be displayed as item's URL caused error.
+     * @property {string} Message
+     * @property {string} Uri
+     */
+    function ClientError(sMessage, sUri) {
+        this.Message = sMessage;
+        this.Uri = sUri;
+    }
+
     ////////////////
     // Uploader Grid View
      /** @class  */
@@ -93,7 +132,7 @@
 
         this.Uploader.SetUploadUrl(ITHit.WebDAV.Client.Encoder.Decode(window.location.href.split("#")[0]));
         this.Uploader.Queue.AddListener('OnQueueChanged', '_QueueChange', this);
-        this.Uploader.Queue.OnUploadItemsCreatedCallback = this._OnUploadItemsCreatedCallback.bind(this);
+        this.Uploader.Queue.AddListener('OnUploadItemsCreated', this._OnUploadItemsCreated, this);
         var $table = this.$table = $(sSelector);
         this.rows = [];
         this.fileLoadCompleted = function () {
@@ -112,28 +151,38 @@
     };
 
     /** Called when a user selects items for upload or drops items into a drop area. 
-     * In this function, you can validate files selected for upload 
-     * and present user interface if user interaction is necessary. 
-     * You can check if each item exists on the server, submitting additional requests to the server, and specify if each item should be overwritten or skipped. 
-     * You can also specify if the item should be deleted in case of upload cancelation (typically if the item did not exist on the server before upload). 
+     * In this function, you can validate files selected for upload and present user interface 
+     * if user interaction is necessary. 
+     * You can check if each item exists on the server, submitting additional requests to the 
+     * server, and specify if each item should be overwritten or skipped. You can also specify 
+     * if the item should be deleted in case of upload cancelation (typically if the item did 
+     * not exist on the server before upload). 
      * In addition you can validate file size, file extension, file upload path, and file name.
      *
-     * As soon you may perform asynchronous calls in this function you must signal that all asynchronous checks are completed and upload can be started calling 
-     * UploadItemsCreated.Upload() function with the list of items to be uploaded.
+     * As soon as you may perform asynchronous calls in this function you must signal that all 
+     * asynchronous checks are completed and upload can be started calling 
+     * UploadItemsCreated.Upload() function passing a list of UploadItems to be uploaded.
      * 
-     * @param {ITHit.WebDAV.Client.Upload.Events.UploadItemsCreated} oUploadItemsCreated - Contains a list of items selected by the user for upload.
+     * @param {ITHit.WebDAV.Client.Upload.Events.UploadItemsCreated} oUploadItemsCreated - Contains 
+     * a list of items selected by the user for upload in UploadItemsCreated.Items property.
      * @memberof UploaderGridView.prototype
      */
-    UploaderGridView.prototype._OnUploadItemsCreatedCallback = function (oUploadItemsCreated) {
-        
+    UploaderGridView.prototype._OnUploadItemsCreated = function (oUploadItemsCreated) {
+
         /* Validate file extensions, size, name, etc. here. */
-        
-        /* Below we will check if each file exists on the server and ask a user if files should be overwritten or skipped. */
+        var oValidationError = this._ValidateUploadItems(oUploadItemsCreated.Items);
+        if(oValidationError) {
+            window.ErrorModal.Show(sValidationError, oValidationError);
+            return;
+        }
+
+        /* Below we will check if each file exists on the server 
+        and ask a user if files should be overwritten or skipped. */
         this._GetExistsAsync(oUploadItemsCreated.Items, function (oAsyncResult) {
-            if(oAsyncResult.IsSuccess && oAsyncResult.Result.length === 0) {            
-                // No items exists on the server.
-                // Add all items to the upload queue and exit.
-                oUploadItemsCreated.Upload(oUploadItemsCreated.Items); // Add all items to the upload queue.
+            if(oAsyncResult.IsSuccess && oAsyncResult.Result.length === 0) {
+                // No items exists on the server.                
+                // Add all items to the upload queue.
+                oUploadItemsCreated.Upload(oUploadItemsCreated.Items); 
                 return;
             }
 
@@ -144,10 +193,14 @@
                 this._ShowExistsCheckError(oAsyncResult.Error,
                     function() {
                         oUploadItemsCreated.Items.forEach(function(oUploadItem) {
-                            oUploadItem.SetFailed(oAsyncResult.Error); // Move an item into the error state. Upload of this item will not start when added to the queue.
+                        
+                            // Move an item into the error state. 
+                            // Upload of this item will NOT start when added to the queue.
+                            oUploadItem.SetFailed(oAsyncResult.Error);
                         });
 
-                        oUploadItemsCreated.Upload(oUploadItemsCreated.Items); // Add all items to the upload list, so a user can start the upload later.
+                        // Add all items to the upload queue, so a user can start the upload later.
+                        oUploadItemsCreated.Upload(oUploadItemsCreated.Items);
                     });
                 return;
             }
@@ -157,11 +210,17 @@
             /** @type {ITHit.WebDAV.Client.Upload.UploadItem[]} aExistsUploadItems */
             var aExistsUploadItems = [];
             oAsyncResult.Result.forEach(function(oUploadItem) {
-                if (!oUploadItem.IsFolder()) { // For the sake of simplicity folders are never deleted when upload canceled.
-                    oUploadItem.SetDeleteOnCancel(false); // File exists so we should not delete it when file's upload canceled.
+                
+                // For the sake of simplicity folders are never deleted when upload canceled.
+                if (!oUploadItem.IsFolder()) {
+                    
+                    // File exists so we should not delete it when file's upload canceled.
+                    oUploadItem.SetDeleteOnCancel(false); 
                 } 
                 
-                oUploadItem.CustomData.FileExistanceVerified = true; // Mark item as verified to avoid additional file existence verification requests to the server.
+                // Mark item as verified to avoid additional file existence verification requests.
+                oUploadItem.CustomData.FileExistanceVerified = true;
+                
                 sItemsList += oUploadItem.GetRelativePath() + '<br/>';
                 aExistsUploadItems.push(oUploadItem);
             });
@@ -175,10 +234,13 @@
                     // Mark all items that exist on the server with overwrite flag.
                     aExistsUploadItems.forEach(function(oUploadItem) {
                         if(oUploadItem.IsFolder()) return;
-                        oUploadItem.SetOverwrite(true); // The item will be overwritten if it exists on the server.
+                        
+                        // The file will be overwritten if it exists on the server.
+                        oUploadItem.SetOverwrite(true);
                     });
 
-                    oUploadItemsCreated.Upload(oUploadItemsCreated.Items); // Add all items to the upload queue.
+                    // Add all items to the upload queue.
+                    oUploadItemsCreated.Upload(oUploadItemsCreated.Items);
                 },
 
                 /* A user selected to skip existing files. */
@@ -191,21 +253,88 @@
                             return !ITHit.Utils.Contains(aExistsUploadItems, oUploadItem);
                         });
 
-                    oUploadItemsCreated.Upload(aNotExistsUploadItems); // Add only items that do not exist on the server to the upload queue.
+                    // Add only items that do not exist on the server to the upload queue.
+                    oUploadItemsCreated.Upload(aNotExistsUploadItems);
                 });
         }.bind(this));
     };
 
     /**
+     * @param {ITHit.WebDAV.Client.Upload.UploadItem[]} aUploadItems - Array of items to check.
+     * @memberof UploaderGridView.prototype
+     */
+    UploaderGridView.prototype._ValidateUploadItems = function(aUploadItems) {
+        for(var i = 0; i < aUploadItems.length; i++) {
+            var oUploadItem = aUploadItems[i];
+            //Max file size validation
+            //var oExtensionError = this._ValidateExtension(oUploadItem);
+
+            //File extension validation
+            //var oSizeError = this._ValidateSize(oUploadItem);
+
+            //Special characters validation
+            //var oNameError = this._ValidateName(oUploadItem);
+
+            //var oValidationError = oExtensionError || oSizeError || oNameError;
+            //if(oValidationError) {
+            //    return oValidationError;
+            //}
+
+            var oValidationError = this._ValidateName(oUploadItem);
+            if(oValidationError) {
+                return oValidationError;
+            }
+        }
+    };
+
+    /**
+     * @param {ITHit.WebDAV.Client.Upload.UploadItem} oUploadItem - Array of items to check.
+     * @memberof UploaderGridView.prototype
+     */
+    UploaderGridView.prototype._ValidateSize = function(oUploadItem) {
+        if(oUploadItem.GetSize() > iMaxFileSize) {
+            var sMessage = pasteFormat(sWrongFileSizeFormat, Formatters.FileSize(iMaxFileSize));
+            return new ClientError(sMessage, oUploadItem.GetUrl());
+        }
+    };
+
+    /**
+     * @param {ITHit.WebDAV.Client.Upload.UploadItem} oUploadItem - Array of items to check.
+     * @memberof UploaderGridView.prototype
+     */
+    UploaderGridView.prototype._ValidateExtension = function(oUploadItem) {
+        var sExtension = getExtension(oUploadItem.GetUrl());
+        if(aForbiddenExtensions.indexOf(sExtension.toUpperCase()) >= 0) {
+            var sMessage = pasteFormat(sForbiddenExtensionFormat, sExtension);
+            return new ClientError(sMessage, oUploadItem.GetUrl());
+        }
+    };
+
+    /**
+     * @param {ITHit.WebDAV.Client.Upload.UploadItem} oUploadItem - Array of items to check.
+     * @memberof UploaderGridView.prototype
+     */
+    UploaderGridView.prototype._ValidateName = function(oUploadItem) {
+        var oRegExp = new RegExp('[' + sForbiddenNameChars + ']', 'g');
+        if(oRegExp.test(oUploadItem.GetName())) {
+            var sMessage = pasteFormat(sFileNameSpecialCharactersRestrictionFormat, sForbiddenNameChars.replace(/\\?(.)/g, '$1 '));
+            return new ClientError(sMessage, oUploadItem.GetUrl());
+        }
+    };
+
+
+    /**
      * Verifies if each item in the list exists on the server and returns list of existing items.
      * @callback UploaderGridView~GetExistsAsyncCallback
      * @param {ITHit.WebDAV.Client.AsyncResult} oAsyncResult - The result of operation.
-     * @param {ITHit.WebDAV.Client.Upload.UploadItem[]} oAsyncResult.Result - The array of items that exists on server.
+     * @param {ITHit.WebDAV.Client.Upload.UploadItem[]} oAsyncResult.Result - The array of items 
+     * that exists on server.
      */
 
     /**
      * @param {ITHit.WebDAV.Client.Upload.UploadItem[]} aUploadItems - Array of items to check.
-     * @param {UploaderGridView~GetExistsAsyncCallback} fCallback - The function to be called when all checks are complete.
+     * @param {UploaderGridView~GetExistsAsyncCallback} fCallback - The function to be called when
+     * all checks are completed.
      * @memberof UploaderGridView.prototype
      */
     UploaderGridView.prototype._GetExistsAsync = function(aUploadItems, fCallback) {
@@ -248,7 +377,8 @@
 
     /**
      * @param {ITHit.WebDAV.Client.Upload.UploadItem[]} aUploadItems - Array of items to check.
-     * @param {UploaderGridView~OpenItemsCollectionAsyncCallback} fCallback - The function to be called when all checks are complete.
+     * @param {UploaderGridView~OpenItemsCollectionAsyncCallback} fCallback - The function to 
+     * be called when all requests completed.
      * @memberof UploaderGridView.prototype
      */
     UploaderGridView.prototype._OpenItemsCollectionAsync = function(aUploadItems, fCallback) {
@@ -281,9 +411,13 @@
 
     /** 
      * Called when items are added or deleted from upload queue.
-     * @param {ITHit.WebDAV.Client.Upload.Queue#event:OnQueueChanged} oQueueChanged - Contains lists of items added to the quieue in oQueueChanged.AddedItems and removed from queue in oQueueChanged.RemovedItems.
+     * @param {ITHit.WebDAV.Client.Upload.Queue#event:OnQueueChanged} oQueueChanged - Contains 
+     * lists of items added to the upload queue in oQueueChanged.AddedItems property and removed 
+     * from the upload queue in oQueueChanged.RemovedItems property.
      */
     UploaderGridView.prototype._QueueChange = function (oQueueChanged) {
+    
+        // Display each ited added to the upload queue in the grid.
         oQueueChanged.AddedItems.forEach(function (value) {
             var row = new UploaderGridRow(value, this.fileLoadCompleted.bind(this), this._ShowExistsCheckError.bind(this));
             this.rows.push(row);
@@ -291,6 +425,7 @@
             this.$table.append(row.$progressBarRow);
         }.bind(this));
 
+        // Remove items deleted from upload queue from the grid.
         oQueueChanged.RemovedItems.forEach(function (value) {
             var aRows = $.grep(this.rows, function (oElem) { return value === oElem.UploadItem; });
             if (aRows.length === 0) return;
@@ -307,6 +442,9 @@
         }
     };
 
+    /** 
+     * Drag-and-Drop area visual effects.
+     */    
     UploaderGridView.prototype._OnDragEnter = function (oEvent) {
         this._dropCounter++;
         $(oEvent.target).closest('#ithit-dropzone').addClass('bg-info');
@@ -342,8 +480,8 @@
         this.UploadItem = oUploadItem;
         this.UploadItem.AddListener('OnProgressChanged', '_OnProgress', this);
         this.UploadItem.AddListener('OnStateChanged', '_OnStateChange', this);
-        this.UploadItem.OnUploadStartedCallback = this._OnUploadStartedCallback.bind(this);
-        this.UploadItem.OnUploadErrorCallback = this._OnUploadErrorCallback.bind(this);
+        this.UploadItem.AddListener('OnBeforeUploadStarted', this._OnBeforeUploadStarted, this);
+        this.UploadItem.AddListener('OnUploadError', this._OnUploadError, this);
         this._Render(oUploadItem);
         this._RenderProgressRow(oUploadItem);
         this._MaxRetry = 10;
@@ -531,29 +669,39 @@
     /**
      * Called before item upload starts.
      * Here you can make additional checks and validation.
-     * @param {ITHit.WebDAV.Client.Upload.Events.UploadStarted} oBeforeUploadStart 
+     * @param {ITHit.WebDAV.Client.Upload.UploadItem#event:OnBeforeUploadStarted} oBeforeUploadStarted 
      */
-    UploaderGridRow.prototype._OnUploadStartedCallback = function (oBeforeUploadStart) {
+    UploaderGridRow.prototype._OnBeforeUploadStarted = function (oBeforeUploadStarted) {
+
+        // If the file does not exists on the server (verified when item was selected for upload) 
+        // or it must be overwritten we start the upload.  
         /** @type {ITHit.WebDAV.Client.Upload.UploadItem} oItem */
-        var oItem = oBeforeUploadStart.Sender;
+        var oItem = oBeforeUploadStarted.Sender;
         if (oItem.GetOverwrite() || oItem.IsFolder() || oItem.CustomData.FileExistanceVerified) {
-            oBeforeUploadStart.Upload();
+            oBeforeUploadStarted.Upload();
             return;
         }
 
+        // Otherwise (item exitence verification failed, the server was down or network 
+        // connection error orrured when item was selected for upload), 
+        // below we verify that item does not exist on the server and upload can be started.
         var sHref = ITHit.EncodeURI(oItem.GetUrl());
         window.WebDAVController.WebDavSession.OpenItemAsync(sHref,
             [],
             function (oAsyncResult) {
                 if (!oAsyncResult.IsSuccess && oAsyncResult.Status.Code === 404) {
-                    oBeforeUploadStart.Upload();
+                
+                    // The file does not exist on the server, start the upload.
+                    oBeforeUploadStarted.Upload();
                     return;
                 }
 
                 if(!oAsyncResult.IsSuccess) {
+                
+                    // An error during the request occured, do not upload file, set item error state.
                     this.fileUploadFailedCallback(oAsyncResult.Error,
                         function() {
-                            oBeforeUploadStart.Sender.SetFailed(oAsyncResult.Error);
+                            oBeforeUploadStarted.Sender.SetFailed(oAsyncResult.Error);
                         });
 
                     return;
@@ -561,11 +709,20 @@
 
                 var sMessage = pasteFormat(sOverwriteDialogueFormat, oItem.GetRelativePath());
 
+                // The file exists on the server, ask a user if it must be overwritten. 
                 oConfirmModal.Confirm(sMessage,
+                    
+                    /* A user selected to overwrite existing file. */
                     function onOverwrite() {
-                        oBeforeUploadStart.Sender.SetDeleteOnCancel(false);
-                        oBeforeUploadStart.Sender.SetOverwrite(true);
-                        oBeforeUploadStart.Upload();
+                    
+                        // Do not delete item if upload canceled (it existed before the upload).
+                        oBeforeUploadStarted.Sender.SetDeleteOnCancel(false);
+                        
+                        // The item will be overwritten if it exists on the server.
+                        oBeforeUploadStarted.Sender.SetOverwrite(true); 
+                        
+                        // All async requests completed - start upload.
+                        oBeforeUploadStarted.Upload();
                     });
  
             }.bind(this));
@@ -604,14 +761,25 @@
     
     /**
      * Called when upload error occurs.
-     * @param {ITHit.WebDAV.Client.Upload.UploadItem#event:OnError} oUploadError
+     * Here you can retry upload or analyze error returned by the server and show error UI 
+     * to the user, for example if upload validation failed on the server-side.
+     * @param {ITHit.WebDAV.Client.Upload.Events.UploadError} oUploadError - Contains 
+     * WebDavException in UploadError.Error property as well as functions to restart the 
+     * upload or stop the upload.
      */
-    UploaderGridRow.prototype._OnUploadErrorCallback = function (oUploadError) {
+    UploaderGridRow.prototype._OnUploadError = function (oUploadError) {
+        
+        // Here you can verify error code returned by the server and show error UI, 
+        // for example if server-side validation failed.
+    
+        // Stop upload if max upload retries reached.
         if (this._MaxRetry <= this._CurrentRetry) {
             this._ShowError(oUploadError.Error);
             oUploadError.Skip();
             return;
         }
+        
+        // Retry upload.
         var retryTime = (new Date()).getTime() + (this._RetryDelay * 1000);
         var retryTimerId = setInterval(function () {
             var timeLeft = retryTime - (new Date()).getTime();
@@ -622,7 +790,11 @@
             clearInterval(retryTimerId);
             this._CurrentRetry++;
             this._RemoveRetryMessage();
+            
+            // Request number of bytes succesefully saved on the server 
+            // and retry upload from next byte.
             oUploadError.Retry();
+            
         }.bind(this), 1000);
         this.CancelRetryCallback = function () {
             clearInterval(retryTimerId);

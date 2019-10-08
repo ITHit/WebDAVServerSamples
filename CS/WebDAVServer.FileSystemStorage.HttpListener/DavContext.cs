@@ -18,7 +18,7 @@ using WebDAVServer.FileSystemStorage.HttpListener.ExtendedAttributes;
 namespace WebDAVServer.FileSystemStorage.HttpListener
 {
     /// <summary>
-    /// Implementation of <see cref="DavContextBaseAsync"/>.
+    /// Implementation of <see cref="ContextAsync{IHierarchyItemAsync}"/>.
     /// Resolves hierarchy items by paths.
     /// </summary>
     public class DavContext :

@@ -39,8 +39,8 @@ namespace CardDAVServer.SqlStorage.AspNet
                 // Create addressboks for the user during first log-in.
                 await CreateAddressbookFoldersAsync(context);
 
-                // Closes transaction. Calls DavContextBaseAsync.BeforeResponseAsync only first time this method is invoked.
-                // This method must be called manually if DavContextBaseAsync is used outside of DavEngine. 
+                // Closes transaction. Calls ContextAsync{IHierarchyItemAsync}.BeforeResponseAsync only first time this method is invoked.
+                // This method must be called manually if ContextAsync{IHierarchyItemAsync} is used outside of DavEngine. 
                 await context.EnsureBeforeResponseWasCalledAsync();
             }
         }

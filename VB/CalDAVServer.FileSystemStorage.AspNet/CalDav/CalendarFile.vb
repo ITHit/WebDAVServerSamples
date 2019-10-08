@@ -8,6 +8,7 @@ Imports ITHit.Collab
 Imports ITHit.Collab.Calendar
 Imports ITHit.WebDAV.Server
 Imports ITHit.WebDAV.Server.CalDav
+Imports ITHit.Server
 
 Namespace CalDav
 

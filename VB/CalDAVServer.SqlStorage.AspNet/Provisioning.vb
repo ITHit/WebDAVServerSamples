@@ -28,8 +28,8 @@ Public Class Provisioning
         Using context As DavContext = New DavContext(httpContext)
             ' Create calendars for the user during first log-in.
             Await CreateCalendarFoldersAsync(context)
-            ' Closes transaction. Calls DavContextBaseAsync.BeforeResponseAsync only first time this method is invoked.
-            ' This method must be called manually if DavContextBaseAsync is used outside of DavEngine. 
+            ' Closes transaction. Calls ContextAsync{IHierarchyItemAsync}.BeforeResponseAsync only first time this method is invoked.
+            ' This method must be called manually if ContextAsync{IHierarchyItemAsync} is used outside of DavEngine. 
             Await context.EnsureBeforeResponseWasCalledAsync()
         End Using
     End Function

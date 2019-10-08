@@ -9,6 +9,7 @@ Imports ITHit.WebDAV.Server.Acl
 Imports ITHit.WebDAV.Server.Class1
 Imports ITHit.WebDAV.Server.ResumableUpload
 Imports WebDAVServer.FileSystemStorage.AspNet.ExtendedAttributes
+Imports ITHit.Server
 
 ''' <summary>
 ''' Represents file in WebDAV repository.

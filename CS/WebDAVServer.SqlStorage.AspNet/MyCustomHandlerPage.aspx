@@ -56,12 +56,21 @@
                         <tbody></tbody>
                     </table>
                 </div>
-                <button class="btn btn-primary btn-create-folder">Create Folder</button>
+                <div class="row">
+                    <div class="col-auto">
+                        <button class="btn btn-primary btn-create-folder">Create Folder</button>
+                    </div>
+                    <div class="col">
+                        <div class="text-right ithit-grid-toolbar">
+                            <button class="btn btn-primary btn-delete-items" disabled="disabled"><i class="far fa-trash-alt"></i> Delete Items</button>
+                        </div>
+                    </div>
+                </div>        
                 <div class="table-responsive">
                     <table class="table table-hover ithit-grid-container">
                         <thead>
                             <tr>
-                                <th class="d-none d-sm-table-cell" scope="col">#</th>
+                                <th scope="col"><input type="checkbox" /></th>
                                 <th scope="col"></th>
                                 <th class="ellipsis sort" scope="col" data-sort-column="displayname"><span>Display Name</span></th>
                                 <th class="d-none d-sm-table-cell sort" scope="col" data-sort-column="getcontenttype">Type</th>

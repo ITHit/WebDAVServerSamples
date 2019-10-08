@@ -19,7 +19,7 @@ using WebDAVServer.FileSystemStorage.AspNet.Cookies.ExtendedAttributes;
 namespace WebDAVServer.FileSystemStorage.AspNet.Cookies
 {
     /// <summary>
-    /// Implementation of <see cref="DavContextBaseAsync"/>.
+    /// Implementation of <see cref="ContextAsync{IHierarchyItemAsync}"/>.
     /// Resolves hierarchy items by paths.
     /// </summary>
     public class DavContext :

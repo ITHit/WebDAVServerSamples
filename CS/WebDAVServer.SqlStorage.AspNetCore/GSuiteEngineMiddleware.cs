@@ -68,7 +68,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
             Configuration = configuration;
             services.AddSingleton<GSuiteEngineCore>();
 
-            services.Configure<GSuiteOptions>(options => Configuration.GetSection("GSuiteOptions").Bind(options));           
+            services.Configure<GSuiteEngineOptions>(options => Configuration.GetSection("GSuiteEngineOptions").Bind(options));           
         }
 
         /// <summary>

@@ -25,15 +25,15 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
         /// <param name="configOptions">WebDAV Engine configuration options.</param>
         /// <param name="logger">Logger instance.</param>
         /// <param name="env">IHostingEnvironment instance.</param>
-        public GSuiteEngineCore(IOptions<DavEngineOptions> engineOptions, IOptions<GSuiteOptions> gDriveOptions,
-            ILogger logger) : base(gDriveOptions.Value.ClientEmail, gDriveOptions.Value.PrivateKey)
+        public GSuiteEngineCore(IOptions<DavEngineOptions> engineOptions, IOptions<GSuiteEngineOptions> gDriveOptions,
+           ILogger logger) : base(gDriveOptions.Value.ServiceEmail, gDriveOptions.Value.ServicePrivateKey)
         {
             DavEngineOptions options = engineOptions.Value;
 
-            OutputXmlFormatting         = options.OutputXmlFormatting; 
-            CorsAllowedFor              = options.CorsAllowedFor;
-            License                     = options.License;
-            Logger                      = logger;           
+            OutputXmlFormatting = options.OutputXmlFormatting;
+            CorsAllowedFor = options.CorsAllowedFor;
+            License = options.License;
+            Logger = logger;
         }
     }
 }

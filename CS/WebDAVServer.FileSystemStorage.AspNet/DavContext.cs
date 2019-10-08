@@ -19,7 +19,7 @@ using WebDAVServer.FileSystemStorage.AspNet.ExtendedAttributes;
 namespace WebDAVServer.FileSystemStorage.AspNet
 {
     /// <summary>
-    /// Implementation of <see cref="DavContextBaseAsync"/>.
+    /// Implementation of <see cref="ContextAsync{IHierarchyItemAsync}"/>.
     /// Resolves hierarchy items by paths.
     /// </summary>
     public class DavContext :

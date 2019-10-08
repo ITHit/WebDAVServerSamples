@@ -12,6 +12,7 @@ Imports ITHit.WebDAV.Server
 Imports ITHit.WebDAV.Server.Class1
 Imports ITHit.WebDAV.Server.Class2
 Imports ITHit.WebDAV.Server.ResumableUpload
+Imports ITHit.Server
 
 ''' <summary>
 ''' Represents file in WebDAV repository.
