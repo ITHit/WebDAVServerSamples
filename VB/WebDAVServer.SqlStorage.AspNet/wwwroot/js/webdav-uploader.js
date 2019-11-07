@@ -1,14 +1,13 @@
 ﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿
-(function () {
+﻿﻿(function (WebdavCommon) {
     var sOverwriteDialogueFormat = 'The following item(s) exist on the server:<br/><br/>{0}<br/><br/>Overwrite?';
     var sFailedCheckExistsMessage = "Check for already exists item failed with error.";
-    var sFileNameSpecialCharactersRestrictionFormat = "The name cannot contain any of the following characters:\n\t\t{0}";
+    var sRetryMessageFormat = 'Retry in: {0}';
     var sWrongFileSizeFormat = 'File size should be less than {0}.';
     var sForbiddenExtensionFormat = 'Upload files with "{0}" extension is forbidden.';
     var sValidationError = 'Validation Error';
     var iMaxFileSize = 10485760; //10MB
     var aForbiddenExtensions = ['BAT', 'BIN', 'CMD', 'COM', 'EXE'];
-    var sForbiddenNameChars = '\/:*?"<>|';
 
 
     ///////////////////
@@ -48,57 +47,6 @@
             }
         }
     };
-
-    var Formatters = {
-        /**
-         *
-         * @param {number} iSize
-         * @returns {string}
-         */
-        FileSize: function (iSize) {
-            if (!iSize) {
-                return '0.00 B';
-            }
-            var i = Math.floor(Math.log(iSize) / Math.log(1024));
-            return (iSize / Math.pow(1024, i)).toFixed(2) + ' ' + ['B', 'kB', 'MB', 'GB', 'TB'][i];
-        },
-
-
-        /**
-         *
-         * @param {number} iSeconds
-         * @returns {string}
-         */
-        TimeSpan: function (iSeconds) {
-            var hours = Math.floor(iSeconds / 3600);
-            var minutes = Math.floor((iSeconds - hours * 3600) / 60);
-            var seconds = iSeconds - (hours * 3600) - (minutes * 60)
-            var sResult = '';
-            if (hours) sResult += hours + 'h ';
-            if (minutes) sResult += minutes + 'm ';
-            sResult += seconds + 's ';
-            return sResult;
-        }
-
-    };
-
-    /**
-     * Returns extension from Url.
-     * @param {string} sDocumentUrl The url to get extension.
-     * @returns {string} Extension or empty string.
-     */
-    function getExtension(sDocumentUrl) {
-        var queryIndex = sDocumentUrl.indexOf("?");
-        if(queryIndex > -1) {
-            sDocumentUrl = sDocumentUrl.substr(0, queryIndex);
-        }
-
-        var aExt = sDocumentUrl.split(".");
-        if(aExt.length === 1) {
-            return "";
-        }
-        return aExt.pop();
-    }
 
     /**
      * This class represents error that occured on client.
@@ -226,7 +174,7 @@
             });
 
             /* One or more items exists on the server. Show Overwrite / Skip / Cancel dialog.*/
-            oConfirmModal.Confirm(pasteFormat(sOverwriteDialogueFormat, sItemsList),
+            oConfirmModal.Confirm(WebdavCommon.PasteFormat(sOverwriteDialogueFormat, sItemsList),
 
                 /* A user selected to overwrite existing files. */
                 function onOverwrite() {
@@ -288,24 +236,26 @@
     };
 
     /**
-     * @param {ITHit.WebDAV.Client.Upload.UploadItem} oUploadItem - Array of items to check.
+     * @param {ITHit.WebDAV.Client.Upload.UploadItem} oUploadItem - The item to check.
      * @memberof UploaderGridView.prototype
+     * @returns {undefined | WebdavCommon.ClientError} - Undefined if item valid or error object.
      */
     UploaderGridView.prototype._ValidateSize = function(oUploadItem) {
         if(oUploadItem.GetSize() > iMaxFileSize) {
-            var sMessage = pasteFormat(sWrongFileSizeFormat, Formatters.FileSize(iMaxFileSize));
+            var sMessage = WebdavCommon.PasteFormat(sWrongFileSizeFormat, WebdavCommon.Formatters.FileSize(iMaxFileSize));
             return new ClientError(sMessage, oUploadItem.GetUrl());
         }
     };
 
     /**
-     * @param {ITHit.WebDAV.Client.Upload.UploadItem} oUploadItem - Array of items to check.
+     * @param {ITHit.WebDAV.Client.Upload.UploadItem} oUploadItem - The item to check.
      * @memberof UploaderGridView.prototype
+     * @returns {undefined | WebdavCommon.ClientError} - Undefined if item valid or error object.
      */
     UploaderGridView.prototype._ValidateExtension = function(oUploadItem) {
-        var sExtension = getExtension(oUploadItem.GetUrl());
+        var sExtension = WebdavCommon.Formatters.GetExtension(oUploadItem.GetUrl());
         if(aForbiddenExtensions.indexOf(sExtension.toUpperCase()) >= 0) {
-            var sMessage = pasteFormat(sForbiddenExtensionFormat, sExtension);
+            var sMessage = WebdavCommon.PasteFormat(sForbiddenExtensionFormat, sExtension);
             return new ClientError(sMessage, oUploadItem.GetUrl());
         }
     };
@@ -315,10 +265,9 @@
      * @memberof UploaderGridView.prototype
      */
     UploaderGridView.prototype._ValidateName = function(oUploadItem) {
-        var oRegExp = new RegExp('[' + sForbiddenNameChars + ']', 'g');
-        if(oRegExp.test(oUploadItem.GetName())) {
-            var sMessage = pasteFormat(sFileNameSpecialCharactersRestrictionFormat, sForbiddenNameChars.replace(/\\?(.)/g, '$1 '));
-            return new ClientError(sMessage, oUploadItem.GetUrl());
+        var sValidationMessage = WebdavCommon.Validators.ValidateName(oUploadItem.GetName());
+        if(sValidationMessage) {
+            return new ClientError(sValidationMessage, oUploadItem.GetUrl());
         }
     };
 
@@ -569,12 +518,12 @@
         var $errorInfoBtn = null;
         var columns = [
             '<span>' + oUploadItem.GetName() + '</span>',
-            Formatters.FileSize(oUploadItem.GetSize()),
-            Formatters.FileSize(oProgress.UploadedBytes),
+            WebdavCommon.Formatters.FileSize(oUploadItem.GetSize()),
+            WebdavCommon.Formatters.FileSize(oProgress.UploadedBytes),
             oProgress.Completed + ' %',
-            Formatters.TimeSpan(oProgress.ElapsedTime),
-            Formatters.TimeSpan(oProgress.RemainingTime),
-            Formatters.FileSize(oProgress.Speed) + '/s',
+            WebdavCommon.Formatters.TimeSpan(oProgress.ElapsedTime),
+            WebdavCommon.Formatters.TimeSpan(oProgress.RemainingTime),
+            WebdavCommon.Formatters.FileSize(oProgress.Speed) + '/s',
             oUploadItem.GetState()
         ];
 
@@ -707,7 +656,7 @@
                     return;
                 }
 
-                var sMessage = pasteFormat(sOverwriteDialogueFormat, oItem.GetRelativePath());
+                var sMessage = WebdavCommon.PasteFormat(sOverwriteDialogueFormat, oItem.GetRelativePath());
 
                 // The file exists on the server, ask a user if it must be overwritten. 
                 oConfirmModal.Confirm(sMessage,
@@ -729,7 +678,7 @@
     };
     
     UploaderGridRow.prototype._SetRetryMessage = function (timeLeft) {
-        var sMessage = 'Retry in: ' + Formatters.TimeSpan(Math.ceil(timeLeft / 1000));
+        var sMessage = WebdavCommon.PasteFormat(sRetryMessageFormat, WebdavCommon.Formatters.TimeSpan(Math.ceil(timeLeft / 1000)));
         this.$el.children().eq(5).html(sMessage).addClass('text-danger');
         this.$progressBarRow.find('.progress-bar').addClass('bg-danger');
     };
@@ -802,25 +751,6 @@
         }
     };
 
-    function pasteFormat(sPhrase) {
-        var callbackReplace = function(oArguments) {
-            this._arguments = oArguments;
-        };
-
-        callbackReplace.prototype.Replace = function(sPlaceholder) {
-
-            var iIndex = sPlaceholder.substr(1, sPlaceholder.length - 2);
-            return ('undefined' !== typeof this._arguments[iIndex]) ? this._arguments[iIndex] : sPlaceholder;
-        };
-
-        if(/\{\d+?\}/.test(sPhrase)) {
-            var oReplace = new callbackReplace(Array.prototype.slice.call(arguments, 1));
-            sPhrase = sPhrase.replace(/\{(\d+?)\}/g, function(args) { return oReplace.Replace(args); });
-        }
-
-        return sPhrase;
-    }
-
     var oConfirmModal = new ConfirmRewriteModal('#ConfirmRewriteModal');
     var oUploaderGrid = new UploaderGridView('.ithit-grid-uploads');
-})();
+})(WebdavCommon);

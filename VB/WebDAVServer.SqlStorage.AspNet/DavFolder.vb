@@ -309,83 +309,85 @@ Public Class DavFolder
     ''' <returns>Items satisfying search request and a total number.</returns>
     Public Async Function SearchAsync(searchString As String, options As SearchOptions, propNames As List(Of PropertyName), offset As Long?, nResults As Long?) As Task(Of PageResults) Implements ISearchAsync.SearchAsync
         Dim includeSnippet As Boolean = propNames.Any(Function(s) s.Name = SNIPPET)
-        Dim condition As String = "Name LIKE @Name"
-        Dim commandText As String = String.Empty
-        ' To enable full-text search, uncoment the code below and follow instructions 
-        ' in DB.sql to enable full-text indexing
-        'if (options.SearchContent)
-        '{
-        'condition += " OR FREETEXT(Content, '@Content')";
-        '}
-        If offset.HasValue AndAlso nResults.HasValue Then
-            commandText = [String].Format("SELECT  * FROM  (SELECT 
-                    ROW_NUMBER() OVER ( ORDER BY Name) AS RowNum
-                    ,ItemId
-                    , ParentItemId
-                    , ItemType
-                    , Name
-                    , Created
-                    , Modified
-                    , FileAttributes                          
-                   FROM Item
-                   WHERE ParentItemId = @Parent AND ({0})) AS PageResults WHERE RowNum >= @StartRow
-                   AND RowNum <= @EndRow
-                   ORDER BY RowNum", condition)
-        Else
-            commandText = [String].Format("SELECT 
+        Dim commandText As String = "
+                ;WITH Hierarchy
+                AS (
+                SELECT 
                       ItemId
                     , ParentItemId
                     , ItemType
                     , Name
                     , Created
                     , Modified
-                    , FileAttributes                          
-                   FROM Item
-                   WHERE ParentItemId = @Parent AND ({0})", condition)
-        End If
+                    , FileAttributes
+                    , RelativePath = Cast(Name as nvarchar)
+                FROM Item
+                Where ParentItemId = @Parent
+                UNION ALL
+                SELECT 
+                     Child.ItemId
+                    , Child.ParentItemId
+                    , Child.ItemType
+                    , Child.Name
+                    , Child.Created
+                    , Child.Modified
+                    , Child.FileAttributes
+                    , RelativePath = Cast(Concat(RelativePath, '/',  Child.Name) as nvarchar)
+                FROM Item Child
+                Join Hierarchy Parent ON Child.ParentItemId = Parent.ItemId
+                )"
+        ' To disable full-text search, uncomment the code below and comment next code or follow instructions 
+        ' in DB.sql to enable full-text indexing
+        'commandText += @"
+        '    SELECT
+        '          *
+        '        , TotalRowsCount = COUNT(*) OVER()
+        '    FROM Hierarchy
+        '    Where Name Like @SearchString  
+        '    ORDER BY Name Asc";
+        ' To disable full-text search, comment the code below or follow instructions 
+        ' in DB.sql to enable full-text indexing
+        commandText += "
+                SELECT
+                      *
+                    , RANK
+                    , TotalRowsCount = COUNT(*) OVER()
+                FROM Hierarchy AS ItemTable   
+                Left JOIN  
+                FREETEXTTABLE(Item, Content, @SearchString) AS RankTable  
+                ON ItemTable.ItemId = RankTable.[KEY]
+                Where RANK Is Not null OR Name Like @SearchString  
+                ORDER BY  -RANK, Name Asc"
+        Try
+            Return Await GetSearchResultsAsync(commandText, searchString, includeSnippet, offset, nResults)
+        Catch e As System.Data.SqlClient.SqlException
+            If e.Message.Contains(("FREETEXT")) Then
+                Throw New DavException("Full text search is disabled. To enable full text search refer to the instructions in SQL configuration file.", e)
+            End If
 
-        Dim result As List(Of IHierarchyItemAsync) = New List(Of IHierarchyItemAsync)()
-        Await GetSearchResultsAsync(result, commandText, searchString, includeSnippet, offset, nResults)
-        Return New PageResults(result, Await Context.ExecuteScalarAsync(Of Integer)([String].Format("SELECT COUNT(*) FROM Item WHERE ParentItemId = @Parent AND ({0})", condition), "@Parent", ItemId, "@Name", searchString))
+            Throw
+        End Try
     End Function
 
     ''' <summary>
     ''' Produces recursive search in current folder.
     ''' </summary>
-    ''' <param name="result">A list to add search results to.</param>
     ''' <param name="commandText">SQL command text for search in a folder.</param>
     ''' <param name="searchString">A phrase to search.</param>
     ''' <param name="offset">The number of children to skip before returning the remaining items. Start listing from from next item.</param>
     ''' <param name="nResults">The number of items to return.</param>
-    Private Async Function GetSearchResultsAsync(result As List(Of IHierarchyItemAsync), commandText As String, searchString As String, includeSnippet As Boolean, offset As Long?, nResults As Long?) As Task
-        Dim folderSearchResults As IEnumerable(Of IHierarchyItemAsync) = Nothing
-        ' search this folder
-        If offset.HasValue AndAlso nResults.HasValue Then
-            folderSearchResults = Await Context.ExecuteItemAsync(Of IHierarchyItemAsync)(Path,
-                                                                                        commandText,
-                                                                                        "@Parent", ItemId,
-                                                                                        "@Name", searchString,
-                                                                                        "@Content", searchString,
-                                                                                        "@StartRow", offset + 1,
-                                                                                        "@EndRow", offset + nResults)
-        Else
-            folderSearchResults = Await Context.ExecuteItemAsync(Of IHierarchyItemAsync)(Path,
-                                                                                        commandText,
-                                                                                        "@Parent", ItemId,
-                                                                                        "@Name", searchString,
-                                                                                        "@Content", searchString)
-        End If
-
-        For Each item As IHierarchyItemAsync In folderSearchResults
+    Private Async Function GetSearchResultsAsync(commandText As String, searchString As String, includeSnippet As Boolean, offset As Long?, nResults As Long?) As Task(Of PageResults)
+        Dim folderSearchResults As PageResults = Await Context.ExecuteItemPagedHierarchyAsync(Path,
+                                                                                             commandText,
+                                                                                             offset,
+                                                                                             nResults,
+                                                                                             "@Parent", ItemId,
+                                                                                             "@SearchString", searchString)
+        For Each item As IHierarchyItemAsync In folderSearchResults.Page
             If includeSnippet AndAlso TypeOf item Is DavFile Then TryCast(item, DavFile).Snippet = "Not Implemented"
         Next
 
-        result.AddRange(folderSearchResults)
-        ' search children
-        For Each item As IHierarchyItemAsync In Await GetChildrenFoldersAsync()
-            Dim folder As DavFolder = TryCast(item, DavFolder)
-            If folder IsNot Nothing Then Await folder.GetSearchResultsAsync(result, commandText, searchString, includeSnippet, offset, nResults)
-        Next
+        Return folderSearchResults
     End Function
 
     ''' <summary>

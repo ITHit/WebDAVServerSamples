@@ -13,6 +13,7 @@ Imports System.Threading.Tasks
 Imports ITHit.Server
 Imports ITHit.WebDAV.Server
 Imports ITHit.WebDAV.Server.Class2
+Imports ITHit.WebDAV.Server.Paging
 
 ''' <summary>
 ''' WebDAV request context. Is used by WebDAV engine to resolve path into items.
@@ -197,6 +198,72 @@ Public Class DavContext
         End Using
 
         Return children
+    End Function
+
+    ''' <summary>
+    ''' Reads <see cref="DavFile"/>  or <see cref="DavFolder"/>  depending on type 
+    ''' Fills Reads <see cref="PageResults.TotalItems"/>  from TotalRowsCount and <see cref="IHierarchyItemAsync.Path"/>  from RelativePath fields.
+    ''' </summary>
+    ''' <param name="parentPath">Path to parent hierarchy item.</param>
+    ''' <param name="command">SQL expression which returns hierachy item records.</param>
+    ''' <param name="offset">The number of children to skip before returning the remaining items. Start listing from from next item.</param>
+    ''' <param name="nResults">The number of items to return.</param>
+    ''' <param name="prms">Sequence: sql parameter1 name, sql parameter1 value, sql parameter2 name,
+    ''' sql parameter2 value...</param>
+    ''' <returns>List of requested items.</returns>
+    Public Async Function ExecuteItemPagedHierarchyAsync(parentPath As String, command As String, offset As Long?, nResults As Long?, ParamArray prms As Object()) As Task(Of PageResults)
+        Dim totalRowsCount As Long? = Nothing
+        Dim children As IList(Of IHierarchyItemAsync) = New List(Of IHierarchyItemAsync)()
+        Using reader As SqlDataReader = Await prepareCommand(command, prms).ExecuteReaderAsync()
+            While reader.Read()
+                Dim itemId As Guid = CType(reader("ItemID"), Guid)
+                Dim parentId As Guid = CType(reader("ParentItemID"), Guid)
+                Dim itemType As ItemType = CType(reader.GetInt32(reader.GetOrdinal("ItemType")), ItemType)
+                Dim name As String = reader.GetString(reader.GetOrdinal("Name"))
+                Dim created As DateTime = reader.GetDateTime(reader.GetOrdinal("Created"))
+                Dim modified As DateTime = reader.GetDateTime(reader.GetOrdinal("Modified"))
+                Dim fileAttributes As FileAttributes = CType(reader.GetInt32(reader.GetOrdinal("FileAttributes")), FileAttributes)
+                Dim relativePath As String = reader.GetString(reader.GetOrdinal("RelativePath"))
+                Dim relativePathEncoded As String = String.Join("/", relativePath.Split("/"c).Select(AddressOf EncodeUtil.EncodeUrlPart))
+                If Not totalRowsCount.HasValue Then
+                    totalRowsCount = reader.GetInt32(reader.GetOrdinal("TotalRowsCount"))
+                End If
+
+                Select Case itemType
+                    Case ItemType.File
+                        children.Add(New DavFile(Me,
+                                                itemId,
+                                                parentId,
+                                                name,
+                                                parentPath & relativePathEncoded,
+                                                created,
+                                                modified, fileAttributes))
+                    Case ItemType.Folder
+                        children.Add(New DavFolder(Me,
+                                                  itemId,
+                                                  parentId,
+                                                  name,
+                                                  (parentPath & relativePathEncoded & "/").TrimStart("/"c),
+                                                  created,
+                                                  modified, fileAttributes))
+                End Select
+            End While
+        End Using
+
+        If Not(offset.HasValue OrElse nResults.HasValue) Then
+            Return New PageResults(children, totalRowsCount)
+        End If
+
+        Dim pagedResult As IEnumerable(Of IHierarchyItemAsync) = children.AsEnumerable()
+        If offset.HasValue Then
+            pagedResult = pagedResult.Skip(CInt(offset.Value))
+        End If
+
+        If nResults.HasValue Then
+            pagedResult = pagedResult.Take(CInt(nResults.Value))
+        End If
+
+        Return New PageResults(pagedResult, totalRowsCount)
     End Function
 
     ''' <summary>

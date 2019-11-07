@@ -7,14 +7,14 @@ namespace WebDAVServer.SqlStorage.AspNetCore.Options
     public class GSuiteEngineOptions : DavEngineOptions
     {
         /// <summary>
-        /// Email of service account for Google Drive
+        /// Google Service Account ID (client_email field from JSON file).
         /// </summary>
-        public string ServiceEmail { get; set; }
+        public string GoogleServiceAccountID { get; set; }
 
         /// <summary>
-        /// Private key of service account for Google Drive
+        /// Google Service private key (private_key field from JSON file).
         /// </summary>
-        public string ServicePrivateKey { get; set; }
+        public string GoogleServicePrivateKey { get; set; }
 
     }
 }

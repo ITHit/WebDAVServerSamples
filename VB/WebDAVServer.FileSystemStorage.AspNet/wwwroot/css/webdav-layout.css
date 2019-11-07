@@ -68,37 +68,46 @@ th.sort {
 .ithit-grid-container {
     width: 100%;
     margin-top: 20px;
+    overflow: hidden;
 }
 
-    .ithit-grid-container .column-action {
-        text-align: right;
-        padding-left: 0;
-        padding-right: 0;
+@media (max-width: 767px) {
+    .ithit-grid-container {
+        width: 100%;
+        margin-top: 20px;
+        overflow: inherit;
+    }
+}
+
+.ithit-grid-container .column-action {
+    text-align: right;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+    .ithit-grid-container .column-action a {
+        display: inline-block;
+        padding: 2px 8px;
     }
 
-        .ithit-grid-container .column-action a {
-            display: inline-block;
-            padding: 2px 8px;
+        .ithit-grid-container .column-action a:last-child {
+            margin-right: 0;
         }
 
-            .ithit-grid-container .column-action a:last-child {
-                margin-right: 0;
-            }
-
-        .ithit-grid-container .column-action button.browse-lnk span:last-child {
-            margin-right: 10px;
-        }
-
-        .ithit-grid-container .column-action button span {
-            vertical-align: middle;
-        }
-
-    .ithit-grid-container .badge {
-        left: -8px;
-        font-size: 55%;
-        position: relative;
-        top: 2px;
+    .ithit-grid-container .column-action button.browse-lnk span:last-child {
+        margin-right: 10px;
     }
+
+    .ithit-grid-container .column-action button span {
+        vertical-align: middle;
+    }
+
+.ithit-grid-container .badge {
+    left: -8px;
+    font-size: 55%;
+    position: relative;
+    top: 2px;
+}
 
 table.ithit-grid-container > tbody > tr > td {
     vertical-align: middle;
@@ -108,6 +117,12 @@ table.ithit-grid-container > tbody > tr > td {
     table.ithit-grid-container > thead > tr > th:nth-child(1),
     table.ithit-grid-container > tbody > tr > td:nth-child(1) {
         text-align: right;
+    }
+
+    table.ithit-grid-container > thead > tr > th:nth-child(2),
+    table.ithit-grid-container > tbody > tr > td:nth-child(2) {
+        min-width: 46px;
+        text-align: center;
     }
 
     table.ithit-grid-container > thead > tr > th:nth-child(4),
@@ -180,6 +195,10 @@ table.ithit-grid-container > tbody > tr > td {
     top: 2px;
 }
 
+.ithit-grid-container .actions .fas {
+    top: 0px;
+}
+
 .ithit-grid-container .actions .dropdown-radio {
     margin-top: -20px;
     z-index: 2;
@@ -188,7 +207,7 @@ table.ithit-grid-container > tbody > tr > td {
 .ithit-grid-container .actions input[type=radio] {
     position: relative;
     top: 9px;
-    left: 5px;
+    left: 2px;
     z-index: 3;
 }
 
@@ -264,7 +283,7 @@ table tr.tr-snippet-url td {
         }
 
 table tr.hover {
-    background-color: #f5f5f5 !important;
+    background-color: #f5f5f5;
 }
 
 .table td, .table th {
@@ -293,14 +312,9 @@ table td.ellipsis, table th.ellipsis {
         text-overflow: ellipsis;
     }
 
-table .fas {
+table .fas > span {
     vertical-align: middle;
-    top: -3px;
 }
-
-    table .fas > span {
-        vertical-align: middle;
-    }
 
 #ithit-dropzone {
     border: 2px dashed;
@@ -418,18 +432,156 @@ p.error-message {
     width: 30px;
 }
 
- .btn-labeled {
-     padding: 0;    
+.btn-labeled {
+    padding: 0;
 }
-    
+
     .btn-labeled .fas {
-        font-size: 12px;       
+        font-size: 12px;
     }
-    
+
     .btn-labeled span:last-child {
-        padding-right: 5px;        
+        padding-right: 5px;
     }
 
 .btn-edit-label {
-    padding-left: 5px;    
+    padding-left: 5px;
+}
+
+.dropdown-menu-radio-btns {
+    padding-left: 10px;
+}
+
+.table-hover tbody tr.active {
+    background-color: rgba(0,0,0,.075);
+}
+
+.gsuite-container #gSuitePreview, .gsuite-container #gSuiteEdit {
+    height: 722px;
+    margin: -8px -8px 25px -8px;
+}
+
+.gsuite-container {
+    position: relative;
+}
+
+    .gsuite-container .background {
+        position: absolute;
+        top: calc(50% - 20px);
+        left: 0;
+        bottom: 0;
+        right: 0;
+        z-index: -1;
+        overflow: hidden;
+        text-align: center;
+    }
+
+.split {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.gutter {
+    z-index: 2;
+    background-color: transparent;
+    background-repeat: no-repeat;
+    background-position: 50%;
+}
+
+    .gutter.gutter-horizontal {
+        cursor: col-resize;
+        background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAeCAYAAADkftS9AAAAIklEQVQoU2M4c+bMfxAGAgYYmwGrIIiDjrELjpo5aiZeMwF+yNnOs5KSvgAAAABJRU5ErkJggg==');
+    }
+
+    .gutter.gutter-vertical {
+        cursor: row-resize;
+        background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAFAQMAAABo7865AAAABlBMVEVHcEzMzMzyAv2sAAAAAXRSTlMAQObYZgAAABBJREFUeF5jOAMEEAIEEFwAn3kMwcB6I2AAAAAASUVORK5CYII=');
+    }
+
+    .split.split-horizontal, .gutter.gutter-horizontal {
+        float: left;
+    }
+
+@media (max-width: 575px) {
+    #leftPanel {
+        display: block;
+        flex-basis: 100% !important;
+    }
+
+    #rightPanel {
+        display: none;
+    }
+
+    .gutter {
+        display: none;
+    }
+}
+
+#leftPanel, #rightPanel {
+    overflow: hidden;
+}
+
+#rightPanel {
+    position: relative;
+}
+
+    #rightPanel.disable-iframe-events:before {
+        content: "";
+        display: block;
+        position: absolute;
+        background-color: transparent;
+        height: 100%;
+        width: 100%;
+        top: 0;
+        z-index: 1;
+    }
+
+#leftPanel.large-point .d-xl-table-cell {
+    display: none !important;
+}
+
+#leftPanel.medium-point .d-lg-table-cell,
+#leftPanel.medium-point .d-xl-table-cell,
+#leftPanel.medium-point .d-lg-inline {
+    display: none !important;
+}
+
+.versions {
+    font-size: 14px;
+    float: right;
+}
+
+.modal-footer button {
+    min-width: 75px;
+}
+
+.navbar {
+    overflow: hidden;
+}
+
+    .navbar .nav-link {
+        margin-right: 0.5rem;
+    }
+
+.navbar-dark .navbar-nav .nav-link {
+    color: #fff;
+}
+
+@media (max-width: 767px) {
+    .navbar .nav-link {
+        margin-right: 0;
+        margin-bottom: 0.5rem;
+    }
+
+    .navbar .navbar-collapse {
+        margin-top: 0.5rem;
+    }
+}
+
+
+.nav-tabs .nav-item {
+    line-height: 31px;
 }

@@ -373,104 +373,98 @@ namespace WebDAVServer.SqlStorage.AspNetCore
         public async Task<PageResults> SearchAsync(string searchString, SearchOptions options, List<PropertyName> propNames, long? offset, long? nResults)
         {
             bool includeSnippet = propNames.Any(s => s.Name == SNIPPET);
-            string condition = "Name LIKE @Name";
-            string commandText = string.Empty;
 
-            // To enable full-text search, uncoment the code below and follow instructions 
-            // in DB.sql to enable full-text indexing
-            /*
-            if (options.SearchContent)
-            {
-                condition += " OR FREETEXT(Content, '@Content')";
-            }
-            */
-            if (offset.HasValue && nResults.HasValue)
-            {
-                commandText = String.Format(
-                @"SELECT  * FROM  (SELECT 
-                    ROW_NUMBER() OVER ( ORDER BY Name) AS RowNum
-                    ,ItemId
-                    , ParentItemId
-                    , ItemType
-                    , Name
-                    , Created
-                    , Modified
-                    , FileAttributes                          
-                   FROM Item
-                   WHERE ParentItemId = @Parent AND ({0})) AS PageResults WHERE RowNum >= @StartRow
-                   AND RowNum <= @EndRow
-                   ORDER BY RowNum", condition);
-            }
-            else
-            {
-                commandText = String.Format(
-                @"SELECT 
+            string commandText = @"
+                ;WITH Hierarchy
+                AS (
+                SELECT 
                       ItemId
                     , ParentItemId
                     , ItemType
                     , Name
                     , Created
                     , Modified
-                    , FileAttributes                          
-                   FROM Item
-                   WHERE ParentItemId = @Parent AND ({0})", condition);
+                    , FileAttributes
+                    , RelativePath = Cast(Name as nvarchar)
+                FROM Item
+                Where ParentItemId = @Parent
+                UNION ALL
+                SELECT 
+                     Child.ItemId
+                    , Child.ParentItemId
+                    , Child.ItemType
+                    , Child.Name
+                    , Child.Created
+                    , Child.Modified
+                    , Child.FileAttributes
+                    , RelativePath = Cast(Concat(RelativePath, '/',  Child.Name) as nvarchar)
+                FROM Item Child
+                Join Hierarchy Parent ON Child.ParentItemId = Parent.ItemId
+                )";
+
+            // To disable full-text search, uncomment the code below and comment next code or follow instructions 
+            // in DB.sql to enable full-text indexing
+            //commandText += @"
+            //    SELECT
+            //          *
+            //        , TotalRowsCount = COUNT(*) OVER()
+            //    FROM Hierarchy
+            //    Where Name Like @SearchString  
+            //    ORDER BY Name Asc";
+
+            // To disable full-text search, comment the code below or follow instructions 
+            // in DB.sql to enable full-text indexing
+            commandText += @"
+                SELECT
+                      *
+                    , RANK
+                    , TotalRowsCount = COUNT(*) OVER()
+                FROM Hierarchy AS ItemTable   
+                Left JOIN  
+                FREETEXTTABLE(Item, Content, @SearchString) AS RankTable  
+                ON ItemTable.ItemId = RankTable.[KEY]
+                Where RANK Is Not null OR Name Like @SearchString  
+                ORDER BY  -RANK, Name Asc";
+
+            try
+            {
+                return await GetSearchResultsAsync(commandText, searchString, includeSnippet, offset, nResults);
             }
+            catch (System.Data.SqlClient.SqlException e)
+            {
+                if(e.Message.Contains(("FREETEXT")))
+                {
+                    throw new DavException("Full text search is disabled. To enable full text search refer to the instructions in SQL configuration file.", e);
+                }
 
-            List<IHierarchyItemAsync> result = new List<IHierarchyItemAsync>();
-            await GetSearchResultsAsync(result, commandText, searchString, includeSnippet, offset, nResults);
-
-            return new PageResults(result, await Context.ExecuteScalarAsync<int>(String.Format("SELECT COUNT(*) FROM Item WHERE ParentItemId = @Parent AND ({0})", condition), "@Parent", ItemId, "@Name", searchString));
+                throw;
+            }
         }
 
         /// <summary>
         /// Produces recursive search in current folder.
         /// </summary>
-        /// <param name="result">A list to add search results to.</param>
         /// <param name="commandText">SQL command text for search in a folder.</param>
         /// <param name="searchString">A phrase to search.</param>
         /// <param name="offset">The number of children to skip before returning the remaining items. Start listing from from next item.</param>
         /// <param name="nResults">The number of items to return.</param>
-
-        private async Task GetSearchResultsAsync(List<IHierarchyItemAsync> result, string commandText, string searchString, bool includeSnippet, long? offset, long? nResults)
+        private async Task<PageResults> GetSearchResultsAsync(string commandText, string searchString, bool includeSnippet, long? offset, long? nResults)
         {
-            IEnumerable<IHierarchyItemAsync> folderSearchResults = null;
-
-            // search this folder
-            if (offset.HasValue && nResults.HasValue)
-            {
-                folderSearchResults = await Context.ExecuteItemAsync<IHierarchyItemAsync>(
+            PageResults folderSearchResults = await Context.ExecuteItemPagedHierarchyAsync(
                 Path,
                 commandText,
+                offset,
+                nResults,
                 "@Parent", ItemId,
-                "@Name", searchString,
-                "@Content", searchString,
-                "@StartRow", offset + 1,
-                "@EndRow", offset + nResults);
-            }
-            else
-            {
-                folderSearchResults = await Context.ExecuteItemAsync<IHierarchyItemAsync>(
-                Path,
-                commandText,
-                "@Parent", ItemId,
-                "@Name", searchString,
-                "@Content", searchString);
-            }
+                "@SearchString", searchString);
 
-            foreach (IHierarchyItemAsync item in folderSearchResults)
+            foreach (IHierarchyItemAsync item in folderSearchResults.Page)
             {
                 if (includeSnippet && item is DavFile)
                     (item as DavFile).Snippet = "Not Implemented";
             }
-            result.AddRange(folderSearchResults);
 
-            // search children
-            foreach (IHierarchyItemAsync item in await GetChildrenFoldersAsync())
-            {
-                DavFolder folder = item as DavFolder;
-                if (folder != null)
-                    await folder.GetSearchResultsAsync(result, commandText, searchString, includeSnippet, offset, nResults);
-            }
+            return folderSearchResults;
         }
 
         /// <summary>

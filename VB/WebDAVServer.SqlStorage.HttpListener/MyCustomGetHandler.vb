@@ -29,7 +29,7 @@ Friend Class MyCustomGetHandler
     ''' Gets a value indicating whether output shall be buffered to calculate content length.
     ''' Don't buffer output to calculate content length.
     ''' </summary>
-    Public ReadOnly Property EnableOutputBuffering As Boolean Implements IMethodHandlerAsync.EnableOutputBuffering
+    Public ReadOnly Property EnableOutputBuffering As Boolean Implements IMethodHandlerAsync(Of IHierarchyItemAsync).EnableOutputBuffering
         Get
             Return False
         End Get
@@ -38,7 +38,7 @@ Friend Class MyCustomGetHandler
     ''' <summary>
     ''' Gets a value indicating whether engine shall log response data (even if debug logging is on).
     ''' </summary>
-    Public ReadOnly Property EnableOutputDebugLogging As Boolean Implements IMethodHandlerAsync.EnableOutputDebugLogging
+    Public ReadOnly Property EnableOutputDebugLogging As Boolean Implements IMethodHandlerAsync(Of IHierarchyItemAsync).EnableOutputDebugLogging
         Get
             Return False
         End Get
@@ -47,7 +47,7 @@ Friend Class MyCustomGetHandler
     ''' <summary>
     ''' Gets a value indicating whether the engine shall log request data.
     ''' </summary>
-    Public ReadOnly Property EnableInputDebugLogging As Boolean Implements IMethodHandlerAsync.EnableInputDebugLogging
+    Public ReadOnly Property EnableInputDebugLogging As Boolean Implements IMethodHandlerAsync(Of IHierarchyItemAsync).EnableInputDebugLogging
         Get
             Return False
         End Get
@@ -72,7 +72,7 @@ Friend Class MyCustomGetHandler
     ''' <param name="context">Instace of <see cref="ContextAsync{IHierarchyItemAsync}"/> .</param>
     ''' <param name="item">Instance of <see cref="IHierarchyItemAsync"/>  which was returned by
     ''' <see cref="ContextAsync{IHierarchyItemAsync}.GetHierarchyItemAsync"/>  for this request.</param>
-    Public Async Function ProcessRequestAsync(context As ContextAsync(Of IHierarchyItemAsync), item As IHierarchyItemAsync) As Task Implements IMethodHandlerAsync.ProcessRequestAsync
+    Public Async Function ProcessRequestAsync(context As ContextAsync(Of IHierarchyItemAsync), item As IHierarchyItemAsync) As Task Implements IMethodHandlerAsync(Of IHierarchyItemAsync).ProcessRequestAsync
         Dim urlPath As String = context.Request.RawUrl.Substring(context.Request.ApplicationPath.TrimEnd("/"c).Length)
         If TypeOf item Is IItemCollectionAsync Then
             ' In case of GET requests to WebDAV folders we serve a web page to display 
@@ -144,7 +144,7 @@ Friend Class MyCustomGetHandler
     ''' <param name="item">Instance of <see cref="IHierarchyItemAsync"/>  which was returned by
     ''' <see cref="ContextAsync{IHierarchyItemAsync}.GetHierarchyItemAsync"/>  for this request.</param>
     ''' <returns>Returns <c>true</c> if this handler can handler this item.</returns>
-    Public Function AppliesTo(item As IHierarchyItemAsync) As Boolean Implements IMethodHandlerAsync.AppliesTo
+    Public Function AppliesTo(item As IHierarchyItemAsync) As Boolean Implements IMethodHandlerAsync(Of IHierarchyItemAsync).AppliesTo
         Return TypeOf item Is IFolderAsync OrElse OriginalHandler.AppliesTo(item)
     End Function
 End Class

@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using ITHit.Server;
 using ITHit.WebDAV.Server;
 using ITHit.WebDAV.Server.Class2;
+using ITHit.WebDAV.Server.Paging;
 
 namespace WebDAVServer.SqlStorage.AspNet
 {
@@ -218,6 +219,85 @@ namespace WebDAVServer.SqlStorage.AspNet
             }
 
             return children;
+        }
+
+        /// <summary>
+        /// Reads <see cref="DavFile"/> or <see cref="DavFolder"/> depending on type 
+        /// Fills Reads <see cref="PageResults.TotalItems"/> from TotalRowsCount and <see cref="IHierarchyItemAsync.Path"/> from RelativePath fields.
+        /// </summary>
+        /// <param name="parentPath">Path to parent hierarchy item.</param>
+        /// <param name="command">SQL expression which returns hierachy item records.</param>
+        /// <param name="offset">The number of children to skip before returning the remaining items. Start listing from from next item.</param>
+        /// <param name="nResults">The number of items to return.</param>
+        /// <param name="prms">Sequence: sql parameter1 name, sql parameter1 value, sql parameter2 name,
+        /// sql parameter2 value...</param>
+        /// <returns>List of requested items.</returns>
+        public async Task<PageResults> ExecuteItemPagedHierarchyAsync(string parentPath, string command, long? offset, long? nResults, params object[] prms)
+        {
+            long? totalRowsCount = null;
+            IList<IHierarchyItemAsync> children = new List<IHierarchyItemAsync>();
+            using (SqlDataReader reader = await prepareCommand(command, prms).ExecuteReaderAsync())
+            {
+                while (reader.Read())
+                {
+                    Guid itemId = (Guid)reader["ItemID"];
+                    Guid parentId = (Guid)reader["ParentItemID"];
+                    ItemType itemType = (ItemType)reader.GetInt32(reader.GetOrdinal("ItemType"));
+                    string name = reader.GetString(reader.GetOrdinal("Name"));
+                    DateTime created = reader.GetDateTime(reader.GetOrdinal("Created"));
+                    DateTime modified = reader.GetDateTime(reader.GetOrdinal("Modified"));
+                    FileAttributes fileAttributes = (FileAttributes)reader.GetInt32(
+                        reader.GetOrdinal("FileAttributes"));
+                    string relativePath = reader.GetString(reader.GetOrdinal("RelativePath"));
+                    string relativePathEncoded = string.Join("/", relativePath.Split('/').Select(EncodeUtil.EncodeUrlPart));
+                    if(!totalRowsCount.HasValue)
+                    {
+                        totalRowsCount = reader.GetInt32(reader.GetOrdinal("TotalRowsCount"));
+                    }
+
+                    switch (itemType)
+                    {
+                        case ItemType.File:
+                            children.Add(new DavFile(
+                                this,
+                                itemId,
+                                parentId,
+                                name,
+                                parentPath + relativePathEncoded,
+                                created,
+                                modified,fileAttributes));
+                            break;
+                        case ItemType.Folder:
+                            children.Add(new DavFolder(
+                                this,
+                                itemId,
+                                parentId,
+                                name,
+                                (parentPath + relativePathEncoded + "/").TrimStart('/'),
+                                created,
+                                modified,fileAttributes));
+                            break;
+                    }
+                }
+            }
+
+            if (!(offset.HasValue || nResults.HasValue))
+            {
+                return new PageResults(children, totalRowsCount);
+            }
+
+            IEnumerable<IHierarchyItemAsync> pagedResult = children.AsEnumerable();
+            if(offset.HasValue)
+            {
+                pagedResult = pagedResult.Skip((int)offset.Value);
+            }
+
+            if(nResults.HasValue)
+            {
+                pagedResult = pagedResult.Take((int)nResults.Value);
+            }
+
+            return new PageResults(pagedResult, totalRowsCount);
         }
 
         /// <summary>
