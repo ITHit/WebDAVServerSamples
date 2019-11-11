@@ -98,6 +98,10 @@
         });
     };
 
+    UploaderGridView.prototype.SetUploadUrl = function(sPath) {
+        this.Uploader.SetUploadUrl(sPath);
+    };
+
     /** Called when a user selects items for upload or drops items into a drop area. 
      * In this function, you can validate files selected for upload and present user interface 
      * if user interaction is necessary. 
@@ -752,5 +756,5 @@
     };
 
     var oConfirmModal = new ConfirmRewriteModal('#ConfirmRewriteModal');
-    var oUploaderGrid = new UploaderGridView('.ithit-grid-uploads');
+    window.WebDAVUploaderGridView = new UploaderGridView('.ithit-grid-uploads');
 })(WebdavCommon);
