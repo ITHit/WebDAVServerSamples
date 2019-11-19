@@ -15,6 +15,7 @@ Imports WebDAVServer.FileSystemStorage.HttpListener
 Imports System.Net.WebSockets
 Imports System.Threading
 Imports WebDAVServer.FileSystemStorage.HttpListener.ExtendedAttributes
+Imports ITHit.GSuite.Server
 
 ''' <summary>
 ''' WebDAV engine host.
@@ -24,6 +25,14 @@ Friend Class Program
     Public Shared Property Listening As Boolean
 
     Private Shared engine As DavEngineAsync
+
+    Private Shared gSuiteEngine As GSuiteEngineAsync
+
+    Private Shared ReadOnly googleServiceAccountID As String = ConfigurationManager.AppSettings("GoogleServiceAccountID")
+
+    Private Shared ReadOnly googleServicePrivateKey As String = ConfigurationManager.AppSettings("GoogleServicePrivateKey")
+
+    Private ReadOnly gSuiteLicense As String = File.ReadAllText(HttpContext.Current.Request.PhysicalApplicationPath & "GSuiteLicense.lic")
 
     Private Shared ReadOnly repositoryPath As String = ConfigurationManager.AppSettings("RepositoryPath").TrimEnd(Path.DirectorySeparatorChar)
 
@@ -88,6 +97,9 @@ Friend Class Program
         '''  - IT Hit iCalendar and vCard Library if used in a project
         Dim license As String = File.ReadAllText(Path.Combine(contentRootPath, "License.lic"))
         engine.License = license
+        gSuiteEngine = New GSuiteEngineAsync(googleServiceAccountID, googleServicePrivateKey) With {.License = gSuiteLicense,
+                                                                                              .Logger = logger
+                                                                                              }
         ' Set custom handler to process GET and HEAD requests to folders and display 
         ' info about how to connect to server. We are using the same custom handler 
         ' class (but different instances) here to process both GET and HEAD because 
@@ -168,6 +180,7 @@ Friend Class Program
                  End If
 
             Await engine.RunAsync(ntfsDavContext)
+            Await gSuiteEngine.RunAsync(ContextConverter.ConvertToGSuiteContext(ntfsDavContext))
             If context.Response.StatusCode = 401 Then
                 ShowLoginDialog(context, context.Response)
             End If
@@ -202,6 +215,16 @@ Friend Class Program
         Dim uriPrefix As String = ConfigurationManager.AppSettings("ListenerPrefix")
         If String.IsNullOrEmpty(uriPrefix) Then
             Throw New Exception("ListenerPrefix section is missing or invalid!")
+        End If
+
+        Dim googleServiceAccountID As String = ConfigurationManager.AppSettings("GoogleServiceAccountID")
+        If String.IsNullOrEmpty(googleServiceAccountID) Then
+            Throw New Exception("GoogleServiceAccountID is not specified.")
+        End If
+
+        Dim googleServicePrivateKey As String = ConfigurationManager.AppSettings("GoogleServicePrivateKey")
+        If String.IsNullOrEmpty(googleServicePrivateKey) Then
+            Throw New Exception("GoogleServicePrivateKey is not specified.")
         End If
     End Sub
 End Class

@@ -8,6 +8,7 @@ Imports System.Xml.Serialization
 Imports System.Threading.Tasks
 Imports ITHit.Server
 Imports ITHit.WebDAV.Server
+Imports ITHit.GSuite.Server
 
 ''' <summary>
 ''' This handler processes WebDAV requests.
@@ -21,6 +22,14 @@ Public Class DavHandler
     '''  - IT Hit iCalendar and vCard Library if used in a project
     ''' </summary>
     Private ReadOnly license As String = File.ReadAllText(HttpContext.Current.Request.PhysicalApplicationPath & "License.lic")
+
+    Private Shared ReadOnly googleServiceAccountID As String = ConfigurationManager.AppSettings("GoogleServiceAccountID")
+
+    Private Shared ReadOnly googleServicePrivateKey As String = ConfigurationManager.AppSettings("GoogleServicePrivateKey")
+
+    Private Shared ReadOnly gSuiteLicense As String = ConfigurationManager.AppSettings("GSuiteLicense")
+
+    Private ReadOnly gSuiteLicense As String = File.ReadAllText(HttpContext.Current.Request.PhysicalApplicationPath & "GSuiteLicense.lic")
 
     ''' <summary>
     ''' If debug logging is enabled reponses are output as formatted XML,
@@ -54,7 +63,9 @@ Public Class DavHandler
         Dim engine As DavEngineAsync = getOrInitializeEngine(context)
         context.Response.BufferOutput = False
         Dim ntfsDavContext As DavContext = New DavContext(context)
+        Dim gSuiteEngine As GSuiteEngineAsync = getOrInitializeGSuiteEngine(context)
         Await engine.RunAsync(ntfsDavContext)
+        Await gSuiteEngine.RunAsync(ContextConverter.ConvertToGSuiteContext(ntfsDavContext))
     End Function
 
     ''' <summary>
@@ -94,5 +105,24 @@ Public Class DavHandler
         End If
 
         Return CType(context.Application(ENGINE_KEY), DavEngineAsync)
+    End Function
+
+    ''' <summary>
+    ''' Initializes or gets engine singleton.
+    ''' </summary>
+    ''' <param name="context">Instance of <see cref="HttpContext"/> .</param>
+    ''' <returns>Instance of <see cref="GSuiteEngineAsync"/> .</returns>
+    Private Function getOrInitializeGSuiteEngine(context As HttpContext) As GSuiteEngineAsync
+        'we don't use any double check lock pattern here because nothing wrong
+        'is going to happen if we created occasionally several engines.
+        Const ENGINE_KEY As String = "$GSuiteEngine$"
+        If context.Application(ENGINE_KEY) Is Nothing Then
+            Dim gSuiteEngine = New GSuiteEngineAsync(googleServiceAccountID, googleServicePrivateKey) With {.License = gSuiteLicense, 
+                                                                                                      .Logger = WebDAVServer.FileSystemStorage.AspNet.Logger.Instance
+                                                                                                      }
+            context.Application(ENGINE_KEY) = gSuiteEngine
+        End If
+
+        Return CType(context.Application(ENGINE_KEY), GSuiteEngineAsync)
     End Function
 End Class

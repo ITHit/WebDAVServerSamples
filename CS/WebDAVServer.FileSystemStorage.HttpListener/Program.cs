@@ -15,6 +15,7 @@ using WebDAVServer.FileSystemStorage.HttpListener;
 using System.Net.WebSockets;
 using System.Threading;
 using WebDAVServer.FileSystemStorage.HttpListener.ExtendedAttributes;
+using ITHit.GSuite.Server;
 
 namespace WebDAVServer.FileSystemStorage.HttpListener
 {
@@ -26,6 +27,10 @@ namespace WebDAVServer.FileSystemStorage.HttpListener
         public static bool Listening { get; set; }
 
         private static DavEngineAsync engine;
+        private static GSuiteEngineAsync gSuiteEngine;
+        private static readonly string googleServiceAccountID = ConfigurationManager.AppSettings["GoogleServiceAccountID"];
+        private static readonly string googleServicePrivateKey = ConfigurationManager.AppSettings["GoogleServicePrivateKey"];
+        private readonly string gSuiteLicense = File.ReadAllText(HttpContext.Current.Request.PhysicalApplicationPath + "GSuiteLicense.lic");
 
         private static readonly string repositoryPath =
             ConfigurationManager.AppSettings["RepositoryPath"].TrimEnd(Path.DirectorySeparatorChar);
@@ -110,6 +115,11 @@ namespace WebDAVServer.FileSystemStorage.HttpListener
             string license = File.ReadAllText(Path.Combine(contentRootPath, "License.lic"));
 
             engine.License = license;
+            gSuiteEngine = new GSuiteEngineAsync(googleServiceAccountID, googleServicePrivateKey)
+            {
+                License = gSuiteLicense,
+                Logger = logger
+            };
 
             // Set custom handler to process GET and HEAD requests to folders and display 
             // info about how to connect to server. We are using the same custom handler 
@@ -224,6 +234,7 @@ namespace WebDAVServer.FileSystemStorage.HttpListener
                 {
                 }
                 await engine.RunAsync(ntfsDavContext);
+                await gSuiteEngine.RunAsync(ContextConverter.ConvertToGSuiteContext(ntfsDavContext));
 
                 if (context.Response.StatusCode == 401)
                 {
@@ -272,6 +283,17 @@ namespace WebDAVServer.FileSystemStorage.HttpListener
             if (string.IsNullOrEmpty(uriPrefix))
             {
                 throw new Exception("ListenerPrefix section is missing or invalid!");
+            }
+            string googleServiceAccountID = ConfigurationManager.AppSettings["GoogleServiceAccountID"];
+            if (string.IsNullOrEmpty(googleServiceAccountID))
+            {
+                throw new Exception("GoogleServiceAccountID is not specified.");
+            }
+
+            string googleServicePrivateKey = ConfigurationManager.AppSettings["GoogleServicePrivateKey"];
+            if (string.IsNullOrEmpty(googleServicePrivateKey))
+            {
+                throw new Exception("GoogleServicePrivateKey is not specified.");
             }
         }
     }

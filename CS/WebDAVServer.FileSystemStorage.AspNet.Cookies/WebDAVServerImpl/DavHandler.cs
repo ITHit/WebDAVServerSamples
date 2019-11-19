@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 using ITHit.Server;
 using ITHit.WebDAV.Server;
-
+using ITHit.GSuite.Server;
 namespace WebDAVServer.FileSystemStorage.AspNet.Cookies
 {
     /// <summary>
@@ -23,6 +23,10 @@ namespace WebDAVServer.FileSystemStorage.AspNet.Cookies
         ///  - IT Hit iCalendar and vCard Library if used in a project
         /// </summary>
         private readonly string license = File.ReadAllText(HttpContext.Current.Request.PhysicalApplicationPath + "License.lic");
+        private static readonly string googleServiceAccountID = ConfigurationManager.AppSettings["GoogleServiceAccountID"];
+        private static readonly string googleServicePrivateKey = ConfigurationManager.AppSettings["GoogleServicePrivateKey"];
+        private static readonly string gSuiteLicense = ConfigurationManager.AppSettings["GSuiteLicense"];
+        private readonly string gSuiteLicense = File.ReadAllText(HttpContext.Current.Request.PhysicalApplicationPath + "GSuiteLicense.lic");
 
         /// <summary>
         /// If debug logging is enabled reponses are output as formatted XML,
@@ -60,7 +64,9 @@ namespace WebDAVServer.FileSystemStorage.AspNet.Cookies
 
             context.Response.BufferOutput = false;
             DavContext ntfsDavContext = new DavContext(context);
+            GSuiteEngineAsync gSuiteEngine = getOrInitializeGSuiteEngine(context);
             await engine.RunAsync(ntfsDavContext);
+            await gSuiteEngine.RunAsync(ContextConverter.ConvertToGSuiteContext(ntfsDavContext));
         }
 
         /// <summary>
@@ -112,6 +118,29 @@ namespace WebDAVServer.FileSystemStorage.AspNet.Cookies
             }
 
             return (DavEngineAsync)context.Application[ENGINE_KEY];
+        }
+        /// <summary>
+        /// Initializes or gets engine singleton.
+        /// </summary>
+        /// <param name="context">Instance of <see cref="HttpContext"/>.</param>
+        /// <returns>Instance of <see cref="GSuiteEngineAsync"/>.</returns>
+        private GSuiteEngineAsync getOrInitializeGSuiteEngine(HttpContext context)
+        {
+            //we don't use any double check lock pattern here because nothing wrong
+            //is going to happen if we created occasionally several engines.
+            const string ENGINE_KEY = "$GSuiteEngine$";
+            if (context.Application[ENGINE_KEY] == null)
+            {
+                var gSuiteEngine = new GSuiteEngineAsync(googleServiceAccountID, googleServicePrivateKey)
+                {
+                    License = gSuiteLicense, 
+                    Logger = WebDAVServer.FileSystemStorage.AspNet.Cookies.Logger.Instance
+                };
+
+                context.Application[ENGINE_KEY] = gSuiteEngine;
+            }
+
+            return (GSuiteEngineAsync)context.Application[ENGINE_KEY];
         }
     }
 }
