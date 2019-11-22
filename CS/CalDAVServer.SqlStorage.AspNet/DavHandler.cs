@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using ITHit.Server;
 using ITHit.WebDAV.Server;
 using ITHit.GSuite.Server;
+
 namespace CalDAVServer.SqlStorage.AspNet
 {
     /// <summary>
@@ -23,9 +24,19 @@ namespace CalDAVServer.SqlStorage.AspNet
         ///  - IT Hit iCalendar and vCard Library if used in a project
         /// </summary>
         private readonly string license = File.ReadAllText(HttpContext.Current.Request.PhysicalApplicationPath + "License.lic");
+        /// <summary>
+        /// Google Service Account ID (client_email field from JSON file).
+        /// </summary>
         private static readonly string googleServiceAccountID = ConfigurationManager.AppSettings["GoogleServiceAccountID"];
+
+        /// <summary>
+        /// Google Service private key (private_key field from JSON file).
+        /// </summary>
         private static readonly string googleServicePrivateKey = ConfigurationManager.AppSettings["GoogleServicePrivateKey"];
-        private static readonly string gSuiteLicense = ConfigurationManager.AppSettings["GSuiteLicense"];
+
+        /// <summary>
+        /// This license file is used to activate G Suite Documents Editing for IT Hit WebDAV Server
+        /// </summary>
         private readonly string gSuiteLicense = File.ReadAllText(HttpContext.Current.Request.PhysicalApplicationPath + "GSuiteLicense.lic");
 
         /// <summary>
@@ -60,14 +71,14 @@ namespace CalDAVServer.SqlStorage.AspNet
         /// </param>
         public override async Task ProcessRequestAsync(HttpContext context)
         {
-            DavEngineAsync engine = getOrInitializeEngine(context);
+            DavEngineAsync webDavEngine = getOrInitializeWebDavEngine(context);
 
             context.Response.BufferOutput = false;
             GSuiteEngineAsync gSuiteEngine = getOrInitializeGSuiteEngine(context);
 
             using (var sqlDavContext = new DavContext(context))
             {
-                await engine.RunAsync(sqlDavContext);
+                await webDavEngine.RunAsync(sqlDavContext);
                 await gSuiteEngine.RunAsync(ContextConverter.ConvertToGSuiteContext(sqlDavContext));
             }
         }
@@ -77,12 +88,12 @@ namespace CalDAVServer.SqlStorage.AspNet
         /// </summary>
         /// <param name="context">Instance of <see cref="HttpContext"/>.</param>
         /// <returns>Initialized <see cref="DavEngine"/>.</returns>
-        private DavEngineAsync initializeEngine(HttpContext context)
+        private DavEngineAsync initializeWebDavEngine(HttpContext context)
         {
 
             ILogger logger = CalDAVServer.SqlStorage.AspNet.Logger.Instance;
             logger.LogFlags = LogFlagsEnum.LogGetResponseBody | LogFlagsEnum.LogPutRequestBody;
-            DavEngineAsync engine = new DavEngineAsync
+            DavEngineAsync webDavEngine = new DavEngineAsync
             {
                 Logger = logger
 
@@ -96,7 +107,7 @@ namespace CalDAVServer.SqlStorage.AspNet
                 , UseFullUris = false
             };
 
-            engine.License = license;
+            webDavEngine.License = license;
             string contentRootPath = HttpContext.Current.Request.MapPath("/");
 
             // Set custom handler to process GET and HEAD requests to folders and display 
@@ -106,8 +117,8 @@ namespace CalDAVServer.SqlStorage.AspNet
             // request is not processed.
             MyCustomGetHandler handlerGet  = new MyCustomGetHandler(contentRootPath);
             MyCustomGetHandler handlerHead = new MyCustomGetHandler(contentRootPath);
-            handlerGet.OriginalHandler  = engine.RegisterMethodHandler("GET",  handlerGet);
-            handlerHead.OriginalHandler = engine.RegisterMethodHandler("HEAD", handlerHead);
+            handlerGet.OriginalHandler  = webDavEngine.RegisterMethodHandler("GET",  handlerGet);
+            handlerHead.OriginalHandler = webDavEngine.RegisterMethodHandler("HEAD", handlerHead);
 
             // Set your iCalendar & vCard library license before calling any members.
             // iCalendar & vCard library accepts:
@@ -115,7 +126,7 @@ namespace CalDAVServer.SqlStorage.AspNet
             // - or iCalendar and vCard Library license.
             ITHit.Collab.LicenseValidator.SetLicense(license);
 
-            return engine;
+            return webDavEngine;
         }
 
         /// <summary>
@@ -123,14 +134,14 @@ namespace CalDAVServer.SqlStorage.AspNet
         /// </summary>
         /// <param name="context">Instance of <see cref="HttpContext"/>.</param>
         /// <returns>Instance of <see cref="DavEngineAsync"/>.</returns>
-        private DavEngineAsync getOrInitializeEngine(HttpContext context)
+        private DavEngineAsync getOrInitializeWebDavEngine(HttpContext context)
         {
             //we don't use any double check lock pattern here because nothing wrong
             //is going to happen if we created occasionally several engines.
             const string ENGINE_KEY = "$DavEngine$";
             if (context.Application[ENGINE_KEY] == null)
             {
-                context.Application[ENGINE_KEY] = initializeEngine(context);
+                context.Application[ENGINE_KEY] = initializeWebDavEngine(context);
             }
 
             return (DavEngineAsync)context.Application[ENGINE_KEY];

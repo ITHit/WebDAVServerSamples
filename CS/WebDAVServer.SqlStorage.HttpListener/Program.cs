@@ -26,11 +26,19 @@ namespace WebDAVServer.SqlStorage.HttpListener
     {
         public static bool Listening { get; set; }
 
-        private static DavEngineAsync engine;
+        private static DavEngineAsync webDavEngine;
+
         private static GSuiteEngineAsync gSuiteEngine;
+
+        /// <summary>
+        /// Google Service Account ID (client_email field from JSON file).
+        /// </summary>
         private static readonly string googleServiceAccountID = ConfigurationManager.AppSettings["GoogleServiceAccountID"];
+
+        /// <summary>
+        /// Google Service private key (private_key field from JSON file).
+        /// </summary>
         private static readonly string googleServicePrivateKey = ConfigurationManager.AppSettings["GoogleServicePrivateKey"];
-        private readonly string gSuiteLicense = File.ReadAllText(HttpContext.Current.Request.PhysicalApplicationPath + "GSuiteLicense.lic");
 
         /// <summary>
         /// Whether requests/responses shall be logged.
@@ -98,7 +106,7 @@ namespace WebDAVServer.SqlStorage.HttpListener
             logger.LogFile = Path.Combine(logPath, "WebDAVlog.txt");
             logger.IsDebugEnabled = debugLoggingEnabled;
 
-            engine = new DavEngineAsync
+            webDavEngine = new DavEngineAsync
             {
                 Logger = logger
 
@@ -111,7 +119,10 @@ namespace WebDAVServer.SqlStorage.HttpListener
             ///  - IT Hit iCalendar and vCard Library if used in a project
             string license = File.ReadAllText(Path.Combine(contentRootPath, "License.lic"));
 
-            engine.License = license;
+            webDavEngine.License = license;
+
+            /// This license file is used to activate G Suite Documents Editing for IT Hit WebDAV Server
+            string gSuiteLicense = File.ReadAllText(Path.Combine(contentRootPath,"GSuiteLicense.lic"));
             gSuiteEngine = new GSuiteEngineAsync(googleServiceAccountID, googleServicePrivateKey)
             {
                 License = gSuiteLicense,
@@ -125,8 +136,8 @@ namespace WebDAVServer.SqlStorage.HttpListener
             // request is not processed.
             MyCustomGetHandler handlerGet  = new MyCustomGetHandler(contentRootPath);
             MyCustomGetHandler handlerHead = new MyCustomGetHandler(contentRootPath);
-            handlerGet.OriginalHandler  = engine.RegisterMethodHandler("GET",  handlerGet);
-            handlerHead.OriginalHandler = engine.RegisterMethodHandler("HEAD", handlerHead);
+            handlerGet.OriginalHandler  = webDavEngine.RegisterMethodHandler("GET",  handlerGet);
+            handlerHead.OriginalHandler = webDavEngine.RegisterMethodHandler("HEAD", handlerHead);
         }
 
         public static async void ThreadProcAsync()
@@ -215,9 +226,9 @@ namespace WebDAVServer.SqlStorage.HttpListener
 
                 context.Response.SendChunked = false;
 
-                using (var sqlDavContext = new DavContext(context, listener.Prefixes, principal, engine.Logger))
+                using (var sqlDavContext = new DavContext(context, listener.Prefixes, principal, webDavEngine.Logger))
                 {
-                    await engine.RunAsync(sqlDavContext);
+                    await webDavEngine.RunAsync(sqlDavContext);
                     await gSuiteEngine.RunAsync(ContextConverter.ConvertToGSuiteContext(sqlDavContext));
                 }
             }
@@ -262,6 +273,7 @@ namespace WebDAVServer.SqlStorage.HttpListener
             {
                 throw new Exception("ListenerPrefix section is missing or invalid!");
             }
+
             string googleServiceAccountID = ConfigurationManager.AppSettings["GoogleServiceAccountID"];
             if (string.IsNullOrEmpty(googleServiceAccountID))
             {

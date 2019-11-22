@@ -26,11 +26,19 @@ namespace WebDAVServer.FileSystemStorage.HttpListener
     {
         public static bool Listening { get; set; }
 
-        private static DavEngineAsync engine;
+        private static DavEngineAsync webDavEngine;
+
         private static GSuiteEngineAsync gSuiteEngine;
+
+        /// <summary>
+        /// Google Service Account ID (client_email field from JSON file).
+        /// </summary>
         private static readonly string googleServiceAccountID = ConfigurationManager.AppSettings["GoogleServiceAccountID"];
+
+        /// <summary>
+        /// Google Service private key (private_key field from JSON file).
+        /// </summary>
         private static readonly string googleServicePrivateKey = ConfigurationManager.AppSettings["GoogleServicePrivateKey"];
-        private readonly string gSuiteLicense = File.ReadAllText(HttpContext.Current.Request.PhysicalApplicationPath + "GSuiteLicense.lic");
 
         private static readonly string repositoryPath =
             ConfigurationManager.AppSettings["RepositoryPath"].TrimEnd(Path.DirectorySeparatorChar);
@@ -101,7 +109,7 @@ namespace WebDAVServer.FileSystemStorage.HttpListener
             logger.LogFile = Path.Combine(logPath, "WebDAVlog.txt");
             logger.IsDebugEnabled = debugLoggingEnabled;
 
-            engine = new DavEngineAsync
+            webDavEngine = new DavEngineAsync
             {
                 Logger = logger
 
@@ -114,7 +122,10 @@ namespace WebDAVServer.FileSystemStorage.HttpListener
             ///  - IT Hit iCalendar and vCard Library if used in a project
             string license = File.ReadAllText(Path.Combine(contentRootPath, "License.lic"));
 
-            engine.License = license;
+            webDavEngine.License = license;
+
+            /// This license file is used to activate G Suite Documents Editing for IT Hit WebDAV Server
+            string gSuiteLicense = File.ReadAllText(Path.Combine(contentRootPath,"GSuiteLicense.lic"));
             gSuiteEngine = new GSuiteEngineAsync(googleServiceAccountID, googleServicePrivateKey)
             {
                 License = gSuiteLicense,
@@ -128,8 +139,8 @@ namespace WebDAVServer.FileSystemStorage.HttpListener
             // request is not processed.
             MyCustomGetHandler handlerGet  = new MyCustomGetHandler(contentRootPath);
             MyCustomGetHandler handlerHead = new MyCustomGetHandler(contentRootPath);
-            handlerGet.OriginalHandler  = engine.RegisterMethodHandler("GET",  handlerGet);
-            handlerHead.OriginalHandler = engine.RegisterMethodHandler("HEAD", handlerHead);
+            handlerGet.OriginalHandler  = webDavEngine.RegisterMethodHandler("GET",  handlerGet);
+            handlerHead.OriginalHandler = webDavEngine.RegisterMethodHandler("HEAD", handlerHead);
             string attrStoragePath = (ConfigurationManager.AppSettings["AttrStoragePath"] ?? string.Empty).TrimEnd(Path.DirectorySeparatorChar);
 
             if (!string.IsNullOrEmpty(attrStoragePath))
@@ -228,12 +239,12 @@ namespace WebDAVServer.FileSystemStorage.HttpListener
                 context.Response.SendChunked = false;
 
                 var ntfsDavContext =
-                    new DavContext(context, listener.Prefixes, principal, repositoryPath, engine.Logger);
+                    new DavContext(context, listener.Prefixes, principal, repositoryPath, webDavEngine.Logger);
 
                 if ((principal != null) && principal.Identity.IsAuthenticated)
                 {
                 }
-                await engine.RunAsync(ntfsDavContext);
+                await webDavEngine.RunAsync(ntfsDavContext);
                 await gSuiteEngine.RunAsync(ContextConverter.ConvertToGSuiteContext(ntfsDavContext));
 
                 if (context.Response.StatusCode == 401)
@@ -284,6 +295,7 @@ namespace WebDAVServer.FileSystemStorage.HttpListener
             {
                 throw new Exception("ListenerPrefix section is missing or invalid!");
             }
+
             string googleServiceAccountID = ConfigurationManager.AppSettings["GoogleServiceAccountID"];
             if (string.IsNullOrEmpty(googleServiceAccountID))
             {

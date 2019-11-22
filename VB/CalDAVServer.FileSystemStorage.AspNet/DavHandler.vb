@@ -26,12 +26,19 @@ Public Class DavHandler
     ''' </summary>
     Private ReadOnly license As String = File.ReadAllText(HttpContext.Current.Request.PhysicalApplicationPath & "License.lic")
 
+    ''' <summary>
+    ''' Google Service Account ID (client_email field from JSON file).
+    ''' </summary>
     Private Shared ReadOnly googleServiceAccountID As String = ConfigurationManager.AppSettings("GoogleServiceAccountID")
 
+    ''' <summary>
+    ''' Google Service private key (private_key field from JSON file).
+    ''' </summary>
     Private Shared ReadOnly googleServicePrivateKey As String = ConfigurationManager.AppSettings("GoogleServicePrivateKey")
 
-    Private Shared ReadOnly gSuiteLicense As String = ConfigurationManager.AppSettings("GSuiteLicense")
-
+    ''' <summary>
+    ''' This license file is used to activate G Suite Documents Editing for IT Hit WebDAV Server
+    ''' </summary>
     Private ReadOnly gSuiteLicense As String = File.ReadAllText(HttpContext.Current.Request.PhysicalApplicationPath & "GSuiteLicense.lic")
 
     ''' <summary>
@@ -74,11 +81,11 @@ Public Class DavHandler
     ''' HTTP requests. 
     ''' </param>
     Public Overrides Async Function ProcessRequestAsync(context As HttpContext) As Task
-        Dim engine As DavEngineAsync = getOrInitializeEngine(context)
+        Dim webDavEngine As DavEngineAsync = getOrInitializeWebDavEngine(context)
         context.Response.BufferOutput = False
         Dim ntfsDavContext As DavContext = New DavContext(context)
         Dim gSuiteEngine As GSuiteEngineAsync = getOrInitializeGSuiteEngine(context)
-        Await engine.RunAsync(ntfsDavContext)
+        Await webDavEngine.RunAsync(ntfsDavContext)
         Await gSuiteEngine.RunAsync(ContextConverter.ConvertToGSuiteContext(ntfsDavContext))
     End Function
 
@@ -87,12 +94,12 @@ Public Class DavHandler
     ''' </summary>
     ''' <param name="context">Instance of <see cref="HttpContext"/> .</param>
     ''' <returns>Initialized <see cref="DavEngine"/> .</returns>
-    Private Function initializeEngine(context As HttpContext) As DavEngineAsync
+    Private Function initializeWebDavEngine(context As HttpContext) As DavEngineAsync
         Dim logger As ILogger = CalDAVServer.FileSystemStorage.AspNet.Logger.Instance
         logger.LogFlags = LogFlagsEnum.LogGetResponseBody Or LogFlagsEnum.LogPutRequestBody
-        Dim engine As DavEngineAsync = New DavEngineAsync With {.Logger = logger,
-                                                          .OutputXmlFormatting = True, .CorsAllowedFor = Nothing, .UseFullUris = False}
-        engine.License = license
+        Dim webDavEngine As DavEngineAsync = New DavEngineAsync With {.Logger = logger,
+                                                                .OutputXmlFormatting = True, .CorsAllowedFor = Nothing, .UseFullUris = False}
+        webDavEngine.License = license
         Dim contentRootPath As String = HttpContext.Current.Request.MapPath("/")
         ' Set custom handler to process GET and HEAD requests to folders and display 
         ' info about how to connect to server. We are using the same custom handler 
@@ -101,14 +108,14 @@ Public Class DavHandler
         ' request is not processed.
         Dim handlerGet As MyCustomGetHandler = New MyCustomGetHandler(contentRootPath)
         Dim handlerHead As MyCustomGetHandler = New MyCustomGetHandler(contentRootPath)
-        handlerGet.OriginalHandler = engine.RegisterMethodHandler("GET", handlerGet)
-        handlerHead.OriginalHandler = engine.RegisterMethodHandler("HEAD", handlerHead)
+        handlerGet.OriginalHandler = webDavEngine.RegisterMethodHandler("GET", handlerGet)
+        handlerHead.OriginalHandler = webDavEngine.RegisterMethodHandler("HEAD", handlerHead)
         ' Set your iCalendar & vCard library license before calling any members.
         ' iCalendar & vCard library accepts:
         ' - WebDAV Server Engine license with iCalendar & vCard modules. Verify your license file to see if these modules are specified.
         ' - or iCalendar and vCard Library license.
         ITHit.Collab.LicenseValidator.SetLicense(license)
-        Return engine
+        Return webDavEngine
     End Function
 
     ''' <summary>
@@ -116,12 +123,12 @@ Public Class DavHandler
     ''' </summary>
     ''' <param name="context">Instance of <see cref="HttpContext"/> .</param>
     ''' <returns>Instance of <see cref="DavEngineAsync"/> .</returns>
-    Private Function getOrInitializeEngine(context As HttpContext) As DavEngineAsync
+    Private Function getOrInitializeWebDavEngine(context As HttpContext) As DavEngineAsync
         'we don't use any double check lock pattern here because nothing wrong
         'is going to happen if we created occasionally several engines.
         Const ENGINE_KEY As String = "$DavEngine$"
         If context.Application(ENGINE_KEY) Is Nothing Then
-            context.Application(ENGINE_KEY) = initializeEngine(context)
+            context.Application(ENGINE_KEY) = initializeWebDavEngine(context)
         End If
 
         Return CType(context.Application(ENGINE_KEY), DavEngineAsync)

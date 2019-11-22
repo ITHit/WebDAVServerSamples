@@ -24,15 +24,19 @@ Friend Class Program
 
     Public Shared Property Listening As Boolean
 
-    Private Shared engine As DavEngineAsync
+    Private Shared webDavEngine As DavEngineAsync
 
     Private Shared gSuiteEngine As GSuiteEngineAsync
 
+    ''' <summary>
+    ''' Google Service Account ID (client_email field from JSON file).
+    ''' </summary>
     Private Shared ReadOnly googleServiceAccountID As String = ConfigurationManager.AppSettings("GoogleServiceAccountID")
 
+    ''' <summary>
+    ''' Google Service private key (private_key field from JSON file).
+    ''' </summary>
     Private Shared ReadOnly googleServicePrivateKey As String = ConfigurationManager.AppSettings("GoogleServicePrivateKey")
-
-    Private ReadOnly gSuiteLicense As String = File.ReadAllText(HttpContext.Current.Request.PhysicalApplicationPath & "GSuiteLicense.lic")
 
     ''' <summary>
     ''' Whether requests/responses shall be logged.
@@ -88,13 +92,15 @@ Friend Class Program
         Dim logPath As String = Path.Combine(contentRootPath, "App_Data\WebDav\Logs")
         logger.LogFile = Path.Combine(logPath, "WebDAVlog.txt")
         logger.IsDebugEnabled = debugLoggingEnabled
-        engine = New DavEngineAsync With {.Logger = logger,
-                                    .OutputXmlFormatting = True}
+        webDavEngine = New DavEngineAsync With {.Logger = logger,
+                                          .OutputXmlFormatting = True}
         ''' This license lile is used to activate:
         '''  - IT Hit WebDAV Server Engine for .NET
         '''  - IT Hit iCalendar and vCard Library if used in a project
         Dim license As String = File.ReadAllText(Path.Combine(contentRootPath, "License.lic"))
-        engine.License = license
+        webDavEngine.License = license
+        ''' This license file is used to activate G Suite Documents Editing for IT Hit WebDAV Server
+        Dim gSuiteLicense As String = File.ReadAllText(Path.Combine(contentRootPath, "GSuiteLicense.lic"))
         gSuiteEngine = New GSuiteEngineAsync(googleServiceAccountID, googleServicePrivateKey) With {.License = gSuiteLicense,
                                                                                               .Logger = logger
                                                                                               }
@@ -105,8 +111,8 @@ Friend Class Program
         ' request is not processed.
         Dim handlerGet As MyCustomGetHandler = New MyCustomGetHandler(contentRootPath)
         Dim handlerHead As MyCustomGetHandler = New MyCustomGetHandler(contentRootPath)
-        handlerGet.OriginalHandler = engine.RegisterMethodHandler("GET", handlerGet)
-        handlerHead.OriginalHandler = engine.RegisterMethodHandler("HEAD", handlerHead)
+        handlerGet.OriginalHandler = webDavEngine.RegisterMethodHandler("GET", handlerGet)
+        handlerHead.OriginalHandler = webDavEngine.RegisterMethodHandler("HEAD", handlerHead)
     End Sub
 
     Public Shared Async Sub ThreadProcAsync()
@@ -167,8 +173,8 @@ Friend Class Program
             End If
 
             context.Response.SendChunked = False
-            Using sqlDavContext = New DavContext(context, listener.Prefixes, principal, engine.Logger)
-                Await engine.RunAsync(sqlDavContext)
+            Using sqlDavContext = New DavContext(context, listener.Prefixes, principal, webDavEngine.Logger)
+                Await webDavEngine.RunAsync(sqlDavContext)
                 Await gSuiteEngine.RunAsync(ContextConverter.ConvertToGSuiteContext(sqlDavContext))
             End Using
         Finally
