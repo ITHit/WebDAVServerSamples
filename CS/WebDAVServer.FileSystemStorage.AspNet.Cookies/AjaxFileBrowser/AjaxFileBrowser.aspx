@@ -55,7 +55,7 @@
 	            EditDocAuth: {
 	                Authentication: 'cookies',                           // Authentication to use when opening documents for editing: 'challenge', 'cookies'
 	                SearchIn: 'current',                                 // Web browsers to search and copy permanent cookies from: 'сurrent', 'none'.
-	                CookieNames: '.AspNet.ApplicationCookie',            // Coma separated list of cookie names to search for.
+                    CookieNames: '.ASPXAUTH',                            // Coma separated list of cookie names to search for.
 	                LoginUrl: '/Account/login/'                          // Login URL to redirect to in case any cookies specified in CookieNames parameter are not found.
 	            },
 	            Panels: {

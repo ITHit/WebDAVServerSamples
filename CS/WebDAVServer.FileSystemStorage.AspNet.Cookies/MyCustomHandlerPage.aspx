@@ -239,8 +239,8 @@
                         <div class="tab-pane fade" id="edit" role="tabpanel" aria-labelledby="edit-tab">
                             <div id="gSuiteEdit">
                             </div>
-                            <div class="background">
-                                Loading...
+                            <div id="gSuiteEditBackground" class="background">
+                                Select a document to edit.
                             </div>
                         </div>
                     </div>
@@ -256,8 +256,8 @@
             ApplicationPath: '<%=Request.ApplicationPath.TrimEnd('/')%>',
             ApplicationProtocolsPath: '<%=Request.ApplicationPath.TrimEnd('/')%>/wwwroot/js/node_modules/webdav.client/Plugins/',
             EditDocAuth: {
-				Authentication: 'cookies',                           // Authentication to use when opening documents for editing: 'anonymous', 'challenge', 'ms-ofba', 'cookies'
-                CookieNames: '.AspNet.ApplicationCookie',            // Coma separated list of cookie names to search for.
+                Authentication: 'cookies',                           // Authentication to use when opening documents for editing: 'anonymous', 'challenge', 'ms-ofba', 'cookies'
+                CookieNames: '.ASPXAUTH',                            // Coma separated list of cookie names to search for.
                 SearchIn: 'current',                                 // Web browsers to search and copy permanent cookies from: 'current', 'none'.
                 LoginUrl: '/Account/login/'                          // Login URL to redirect to in case any cookies specified in CookieNames parameter are not found.
            }
@@ -270,7 +270,7 @@
         function OpenTestsWindow() {
             var width = Math.round(screen.width * 0.5);
             var height = Math.round(screen.height * 0.8);
-            window.open("<%=Request.ApplicationPath.TrimEnd('/')%>/AjaxFileBrowser/AjaxIntegrationTests.aspx", "", "menubar=1,location=1,status=1,scrollbars=1,resizable=1,width=" + width + ",height=" + height);
+            window.open("<%=Request.ApplicationPath.TrimEnd('/')%>/AjaxFileBrowser/AjaxIntegrationTests.aspx#<%=Request.Url.GetLeftPart(UriPartial.Authority)%>/DAV", "", "menubar=1,location=1,status=1,scrollbars=1,resizable=1,width=" + width + ",height=" + height);
         }
     </script>
     <!--

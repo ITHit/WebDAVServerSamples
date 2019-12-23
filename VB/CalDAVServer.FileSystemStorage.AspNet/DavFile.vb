@@ -250,7 +250,7 @@ Public Class DavFile
         ' Move the file.
         Try
             File.Move(fileSystemInfo.FullName, newDirPath)
-            Dim newFileInfo = New FileInfo(newDirPath)
+            Dim newFileInfo As FileInfo = New FileInfo(newDirPath)
             If FileSystemInfoExtension.IsUsingFileSystemAttribute Then
                 Await fileSystemInfo.MoveExtendedAttributes(newFileInfo)
             End If

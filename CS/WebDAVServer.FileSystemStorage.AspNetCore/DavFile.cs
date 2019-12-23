@@ -305,7 +305,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
             {
                 File.Move(fileSystemInfo.FullName, newDirPath);
 
-                var newFileInfo = new FileInfo(newDirPath);
+                FileInfo newFileInfo = new FileInfo(newDirPath);
                 if (FileSystemInfoExtension.IsUsingFileSystemAttribute)
                 {
                     await fileSystemInfo.MoveExtendedAttributes(newFileInfo);

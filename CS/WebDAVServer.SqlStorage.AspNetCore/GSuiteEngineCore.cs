@@ -22,13 +22,12 @@ namespace WebDAVServer.SqlStorage.AspNetCore
         /// <summary>
         /// Initializes new instance of this class based on the WebDAV Engine configuration options and logger instance.
         /// </summary>
-        /// <param name="configOptions">WebDAV Engine configuration options.</param>
+        /// <param name="gSuiteOptions">GSuite Engine configuration options.</param>
         /// <param name="logger">Logger instance.</param>
-        /// <param name="env">IHostingEnvironment instance.</param>
-        public GSuiteEngineCore(IOptions<DavEngineOptions> engineOptions, IOptions<GSuiteEngineOptions> gDriveOptions,
-           ILogger logger) : base(gDriveOptions.Value.GoogleServiceAccountID, gDriveOptions.Value.GoogleServicePrivateKey)
+        public GSuiteEngineCore(IOptions<GSuiteEngineOptions> gSuiteOptions,
+            ILogger logger) : base(gSuiteOptions.Value.GoogleServiceAccountID, gSuiteOptions.Value.GoogleServicePrivateKey)
         {
-            DavEngineOptions options = engineOptions.Value;
+            GSuiteEngineOptions options = gSuiteOptions.Value;
 
             OutputXmlFormatting = options.OutputXmlFormatting;
             CorsAllowedFor = options.CorsAllowedFor;

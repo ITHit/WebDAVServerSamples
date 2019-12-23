@@ -112,6 +112,7 @@ th.sort {
 table.ithit-grid-container > tbody > tr > td {
     vertical-align: middle;
     white-space: nowrap;
+    cursor: default;
 }
 
     table.ithit-grid-container > thead > tr > th:nth-child(1),
@@ -148,6 +149,13 @@ table.ithit-grid-container > tbody > tr > td {
     table.ithit-grid-container > tbody > tr > td button.btn-delete .btn-label {
         padding-left: 5px;
     }
+
+@media (max-width: 320px) {
+    table.ithit-grid-container > thead > tr > th:nth-child(5),
+    table.ithit-grid-container > tbody > tr > td:nth-child(5) {
+        display: none;
+    }
+}
 
 .ithit-grid-icon-locked {
     color: #337ab7;
@@ -457,9 +465,13 @@ p.error-message {
 }
 
 .gsuite-container #gSuitePreview, .gsuite-container #gSuiteEdit {
-    height: 722px;
+    height: 714px;
     margin: -8px -8px 25px -8px;
 }
+
+    .gsuite-container #gSuitePreview .inner-container, .gsuite-container #gSuiteEdit .inner-container {
+        height: 714px;
+    }
 
 .gsuite-container {
     position: relative;
@@ -584,4 +596,8 @@ p.error-message {
 
 .nav-tabs .nav-item {
     line-height: 31px;
+}
+
+a.disabled {
+    pointer-events: none;
 }

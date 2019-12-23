@@ -1,6 +1,10 @@
-﻿﻿
+﻿﻿ 
 (function (WebdavCommon) {
     var sSearchErrorMessage = "Search is not supported.";
+    var sSupportedFeaturesErrorMessage = "Supported Features error.";
+    var sProfindErrorMessage = "Profind request error.";
+    var sGSuitePreviewErrorMessage = "Preview document with G Suite Online Tool error.";
+    var sGSuiteEditErrorMessage = "Edit document with G Suite Online Editor error.";
 
     ///////////////////
     // Folder Grid View
@@ -161,6 +165,9 @@
                                 $gSuiteEditPanel.empty();
                                 self.selectedItem = oItem;
 
+                                var $gSuiteEditContainer = $('<div class="inner-container"/>').appendTo($gSuiteEditPanel);
+                                var $gSuitePreviewContainer = $('<div class="inner-container"/>').appendTo($gSuitePreviewPanel);
+
                                 if ((oWebDAV.OptionsInfo.Features & ITHit.WebDAV.Client.Features.GSuite)) {
                                     var isEditLoaded = false;
                                     var isPreviewLoaded = false;
@@ -171,7 +178,11 @@
                                         if (ITHit.WebDAV.Client.DocManager.IsGSuiteDocument(oItem.Href)) {
                                             if (!isEditLoaded) {
                                                 $gSuiteEditBackground.text('Loading ...');
-                                                oWebDAV.GSuiteEditDoc(oItem.Href, $gSuiteEditPanel[0]);
+                                                oWebDAV.GSuiteEditDoc(oItem.Href, $gSuiteEditContainer[0], function (e) {
+                                                    $gSuiteEditPanel.empty();
+                                                    $gSuiteEditBackground.text('Select a document to edit.');
+                                                    WebdavCommon.ErrorModal.Show(sGSuiteEditErrorMessage, e);
+                                                });
                                                 isEditLoaded = true;
                                             }
                                         }
@@ -184,7 +195,11 @@
                                         self.activeSelectedTab = 'preview';
                                         if (!isPreviewLoaded) {
                                             $gSuitePreviewBackground.text('Loading preview...');
-                                            oWebDAV.GSuitePreviewDoc(oItem.Href, $gSuitePreviewPanel[0]);
+                                            oWebDAV.GSuitePreviewDoc(oItem.Href, $gSuitePreviewContainer[0], function (e) {
+                                                $gSuitePreviewPanel.empty();
+                                                $gSuitePreviewBackground.text('Select a document to preview.');
+                                                WebdavCommon.ErrorModal.Show(sGSuitePreviewErrorMessage, e);
+                                            });
                                             isPreviewLoaded = true;
                                         }
                                     }
@@ -255,7 +270,8 @@
             var actions = [];
             var isDavProtocolSupported = ITHit.WebDAV.Client.DocManager.IsDavProtocolSupported();
             var isMicrosoftOfficeDocument = ITHit.WebDAV.Client.DocManager.IsMicrosoftOfficeDocument(oItem.Href);
-            var isGSuiteDocument = ITHit.WebDAV.Client.DocManager.IsGSuiteDocument(oItem.Href) && (oWebDAV.OptionsInfo.Features & ITHit.WebDAV.Client.Features.GSuite);
+            var supportGSuiteFeature = oWebDAV.OptionsInfo.Features & ITHit.WebDAV.Client.Features.GSuite;
+            var isGSuiteDocument = ITHit.WebDAV.Client.DocManager.IsGSuiteDocument(oItem.Href);
 
             function _changeDefaultEditor() {
                 var $radioBtn = $(this);
@@ -268,6 +284,7 @@
                     if ($btn.parent().find('.actions input[type=radio]').length) {
                         $btn.find('i:first').attr('class', iconClassName);
                     }
+                    $btn.attr('title', _getDefaultToolText());
                 });
             }
 
@@ -290,6 +307,21 @@
                 return iconClassName;
             }
 
+            function _getDefaultToolText() {
+                var toolText = 'Edit document with desktop associated application.';
+                if (self._defaultEditor) {
+                    switch (self._defaultEditor) {
+                        case 'OSEditor':
+                            toolText = 'Edit with Microsoft Office Desktop';
+                            break;
+                        case 'GSuiteEditor':
+                            toolText = 'Edit document in G Suite Editor.';
+                            break;
+                    }
+                }
+                return toolText;
+            }
+
             if (oItem.IsFolder()) {
                 actions.push($('<button class="btn btn-primary btn-sm btn-labeled" type="button"/>').
                     html('<span class="btn-label"><i class="fas fa-window-maximize"></i></span> <span class="d-none d-lg-inline">Browse</span>').
@@ -299,7 +331,7 @@
                     }).prop("disabled", !isDavProtocolSupported));
             } else {
                 var $btnGroup = $('<div class="btn-group"></div>');
-                $('<button type="button" class="btn btn-primary btn-sm btn-labeled btn-default-edit" title="Edit document with desktop associated application."><span class="btn-label"><i class="' +
+                $('<button type="button" class="btn btn-primary btn-sm btn-labeled btn-default-edit" title="' + (isMicrosoftOfficeDocument && isGSuiteDocument ? _getDefaultToolText() : 'Edit document with desktop associated application.') + '"><span class="btn-label"><i class="' +
                     (isMicrosoftOfficeDocument && isGSuiteDocument ? _getDefaultEditorIcon() : 'fas fa-edit') + '"></i></span><span class="d-none d-lg-inline btn-edit-label">Edit</span></button>')
                     .appendTo($btnGroup).on('click', function () {
                         var $radio = $(this).parent().find('input[type=radio]:checked');
@@ -332,8 +364,8 @@
                 }
 
                 if (isGSuiteDocument) {
-                    $('<input type="radio" name="defaultEditor' + oItem.DisplayName + '" value="GSuiteEditor" ' + _isDefaultEditor('GSuiteEditor') + '/>').appendTo($dropdownMenu).change(_changeDefaultEditor);
-                    $('<a class="dropdown-item dropdown-radio" href="javascript:void()" title="Edit document in G Suite Editor."><i class="fab fa-google"></i>Edit with Google G Suite Online (Beta)</a>')
+                    $('<input type="radio" name="defaultEditor' + oItem.DisplayName + '" value="GSuiteEditor" ' + _isDefaultEditor('GSuiteEditor') + '/>').appendTo($dropdownMenu).change(_changeDefaultEditor).attr('disabled', !supportGSuiteFeature);
+                    $('<a class="dropdown-item dropdown-radio' + (supportGSuiteFeature ? '' : ' disabled') + '" href="javascript:void()" title="Edit document in G Suite Editor."><i class="fab fa-google"></i>Edit with Google G Suite Online (Beta)</a>')
                         .appendTo($dropdownMenu).on('click', function () {
                             oWebDAV.GSuiteEditDoc(oItem.Href);
                         });
@@ -765,7 +797,7 @@
             self.$alert.addClass('d-none');
             if (self.$txt.val() !== null && self.$txt.val().match(/^ *$/) === null) {
                 var oValidationMessage = WebdavCommon.Validators.ValidateName(self.$txt.val());
-                if(oValidationMessage) {
+                if (oValidationMessage) {
                     self.$alert.removeClass('d-none').text(oValidationMessage);
                     return false;
                 }
@@ -861,34 +893,46 @@
 
             this.WebDavSession.OpenFolderAsync(sPath, [], function (oResponse) {
                 var self = this;
-                this.CurrentFolder = oResponse.Result;
-                oBreadcrumbs.SetHierarchyItem(this.CurrentFolder);
+                if (oResponse.IsSuccess) {
+                    self.CurrentFolder = oResponse.Result;
+                    oBreadcrumbs.SetHierarchyItem(self.CurrentFolder);
 
-                // Detect search support. If search is not supported - disable search field.
-                this.CurrentFolder.GetSupportedFeaturesAsync(function (oResult) {
-                    /** @typedef {ITHit.WebDAV.Client.OptionsInfo} oOptionsInfo */
-                    self.OptionsInfo = oResult.Result;
+                    // Detect search support. If search is not supported - disable search field.
+                    this.CurrentFolder.GetSupportedFeaturesAsync(function (oResult) {
+                        /** @typedef {ITHit.WebDAV.Client.OptionsInfo} oOptionsInfo */
 
-                    oSearchForm.SetDisabled(!(self.OptionsInfo.Features & ITHit.WebDAV.Client.Features.Dasl));
-                });
-
-                this.CurrentFolder.GetPageAsync([], (currentPageNumber - 1) * pageSize, pageSize, sortColumns, function (oResult) {
-                    /** @type {ITHit.WebDAV.Client.HierarchyItem[]} aItems */
-                    var aItems = oResult.Result.Page;
-                    var aCountPages = Math.ceil(oResult.Result.TotalItems / pageSize);
-
-                    oFolderGrid.Render(aItems, false);
-                    oPagination.Render(currentPageNumber, aCountPages, function (pageNumber) {
-                        oWebDAV.NavigateFolder(null, pageNumber, null, null, true);
+                        if (oResult.IsSuccess) {
+                            self.OptionsInfo = oResult.Result;
+                            oSearchForm.SetDisabled(!(self.OptionsInfo.Features & ITHit.WebDAV.Client.Features.Dasl));
+                        } else {
+                            WebdavCommon.ErrorModal.Show(sSupportedFeaturesErrorMessage, oResult.Error);
+                        }
                     });
 
-                    if (aItems.length == 0 && pageNumber != 1) {
-                        oWebDAV.NavigateFolder(null, 1, null, null, true);
-                    }
+                    this.CurrentFolder.GetPageAsync([], (currentPageNumber - 1) * pageSize, pageSize, sortColumns, function (oResult) {
+                        /** @type {ITHit.WebDAV.Client.HierarchyItem[]} aItems */
+                        if (oResult.IsSuccess) {
+                            var aItems = oResult.Result.Page;
+                            var aCountPages = Math.ceil(oResult.Result.TotalItems / pageSize);
 
-                    if (fCallback)
-                        fCallback(aItems);
-                });
+                            oFolderGrid.Render(aItems, false);
+                            oPagination.Render(currentPageNumber, aCountPages, function (pageNumber) {
+                                oWebDAV.NavigateFolder(null, pageNumber, null, null, true);
+                            });
+
+                            if (aItems.length == 0 && pageNumber != 1) {
+                                oWebDAV.NavigateFolder(null, 1, null, null, true);
+                            }
+
+                            if (fCallback)
+                                fCallback(aItems);
+                        } else {
+                            WebdavCommon.ErrorModal.Show(sProfindErrorMessage, oResult.Error);
+                        }
+                    });
+                } else {
+                    WebdavCommon.ErrorModal.Show(sProfindErrorMessage, oResponse.Error);
+                }
             }.bind(this));
         },
 
@@ -946,10 +990,13 @@
             function _getSearchPageByQuery() {
                 oWebDAV.CurrentFolder.GetSearchPageByQueryAsync(searchQuery, (currentPageNumber - 1) * pageSize, pageSize, function (oResult) {
                     /** @type {ITHit.WebDAV.Client.AsyncResult} oResult */
-
                     /** @type {ITHit.WebDAV.Client.HierarchyItem[]} aItems */
 
-                    fCallback && fCallback(oResult);
+                    if (oResult.IsSuccess) {
+                        fCallback && fCallback(oResult);
+                    } else {
+                        WebdavCommon.ErrorModal.Show(sSearchErrorMessage, oResult.Error);
+                    }
                 });
             }
 
@@ -986,21 +1033,23 @@
         },
 
         /**		           
-         * Opens document for editing in online G Suite editor.
-         * @param {string} sDocumentUrl Must be full path including domain name: https://webdavserver.com/path/file.ext		
-         * @param {DOM} gSuiteEditPanel html DOM element
-       */
-        GSuiteEditDoc: function (sDocumentUrl, gSuiteEditPanel) {
-            ITHit.WebDAV.Client.DocManager.GSuiteEditDocument(sDocumentUrl, gSuiteEditPanel);
+          * Opens document for editing in online G Suite editor.
+          * @param {string} sDocumentUrl Must be full path including domain name: https://webdavserver.com/path/file.ext		
+          * @param {DOM} gSuiteEditPanel html DOM element
+          * @param {function} [errorCallback] Function to call if document opening failed.
+        */
+        GSuiteEditDoc: function (sDocumentUrl, gSuiteEditPanel, errorCallback) {
+            ITHit.WebDAV.Client.DocManager.GSuiteEditDocument(sDocumentUrl, gSuiteEditPanel, errorCallback);
         },
 
         /**		           
           * Opens document for preview in online G Suite editor.
           * @param {string} sDocumentUrl Must be full path including domain name: https://webdavserver.com/path/file.ext		
           * @param {DOM} gSuitePreviewPanel html DOM element
+          * @param {function} [errorCallback] Function to call if document opening failed.
         */
-        GSuitePreviewDoc: function (sDocumentUrl, gSuitePreviewPanel) {
-            ITHit.WebDAV.Client.DocManager.GSuitePreviewDocument(sDocumentUrl, gSuitePreviewPanel);
+        GSuitePreviewDoc: function (sDocumentUrl, gSuitePreviewPanel, errorCallback) {
+            ITHit.WebDAV.Client.DocManager.GSuitePreviewDocument(sDocumentUrl, gSuitePreviewPanel, errorCallback);
         },
 
         /**
