@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ITHit.WebDAV.Server.HttpListener" Version="9.2.6021-Beta2" />
+    <PackageReference Include="ITHit.WebDAV.Server.HttpListener" Version="9.2.6115" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="2.0.0" />

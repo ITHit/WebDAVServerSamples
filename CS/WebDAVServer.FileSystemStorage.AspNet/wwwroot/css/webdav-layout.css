@@ -1,4 +1,126 @@
 ﻿﻿
+header {
+    margin-bottom: 15px;
+}
+
+.breadcrumb {
+    background: none;
+}
+
+.bg-dark {
+    color: white;
+}
+
+    .bg-dark h3 {
+        font-size: 20px;
+        line-height: 27px;
+    }
+
+    .bg-dark p {
+        font-size: 16px;
+        line-height: 21px;
+    }
+
+.navbar-toggler .burger-icon {
+    width: 23px;
+    height: 20px;
+    position: relative;
+    margin: 0px;
+    -moz-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    -ms-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+    transition: 0.5s ease-in-out;
+    cursor: pointer;
+}
+
+.logo {
+    margin-right: 10px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .navbar-toggler .burger-icon {
+        transition: none;
+    }
+}
+
+.navbar-toggler .burger-icon span {
+    background: #fff;
+    display: block;
+    position: absolute;
+    height: 2px;
+    width: 100%;
+    border-radius: 9px;
+    opacity: 1;
+    left: 0;
+    -moz-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    -ms-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+    transition: 0.25s ease-in-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .navbar-toggler .burger-icon span {
+        transition: none;
+    }
+}
+
+.navbar-toggler .burger-icon span:nth-child(1) {
+    top: 1px;
+}
+
+.navbar-toggler .burger-icon span:nth-child(2) {
+    top: 8px;
+}
+
+.navbar-toggler .burger-icon span:nth-child(3) {
+    top: 16px;
+}
+
+.navbar-toggler[aria-expanded="true"] .burger-icon span:nth-child(1) {
+    top: 11px;
+    -moz-transform: rotate(135deg);
+    -o-transform: rotate(135deg);
+    -ms-transform: rotate(135deg);
+    -webkit-transform: rotate(135deg);
+    transform: rotate(135deg);
+}
+
+.navbar-toggler[aria-expanded="true"] .burger-icon span:nth-child(2) {
+    opacity: 0;
+    left: -60px;
+}
+
+.navbar-toggler[aria-expanded="true"] .burger-icon span:nth-child(3) {
+    top: 11px;
+    -moz-transform: rotate(-135deg);
+    -o-transform: rotate(-135deg);
+    -ms-transform: rotate(-135deg);
+    -webkit-transform: rotate(-135deg);
+    transform: rotate(-135deg);
+}
+
+.navbar-toggler, .navbar-toggler:focus {
+    border: none;
+    outline: 0;
+}
+
+.header-content {
+    padding: .5rem 1rem 1.5rem 1rem;
+}
+
+    .header-content .col > p {
+        padding-right: 5rem;
+    }
+
+    .header-content a {
+        font-weight: bold;
+        color: white;
+    }
+
 .navbar-header h1 {
     height: auto;
     padding: 15px;

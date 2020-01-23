@@ -11,27 +11,59 @@
     <link href="_webDavServerRoot_/wwwroot/css/webdav-layout.css" rel="stylesheet"/>
 </head>
 <body>
-    <nav class="navbar navbar-expand-md navbar-dark bg-dark mb-4">
-        <a class="navbar-brand" href="/">
-         IT Hit WebDAV Server Engine v_webDavServerVersion_        
-        </a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse justify-content-end" id="navbarCollapse">
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a href="javascript:void(0)" onclick="OpenTestsWindow()" class="btn btn-primary btn-sm nav-link" role="button">Run Integration Tests</a>                   
-                </li>
-                <li class="nav-item">
-                    <a href="javascript:void(0)" onclick="OpenAjaxFileBrowserWindow()" class="btn btn-primary btn-sm nav-link" role="button">Browse Using Ajax File Browser</a>
-                </li>
-                <li class="nav-item">
-                    <a href="javascript:void(0)" onclick="WebDAVController && WebDAVController.OpenCurrentFolderInOsFileManager()" class="btn btn-primary btn-sm nav-link" role="button">Browse Using OS File Manager</a>
-                </li>
-            </ul>          
+    <header>
+        <div class="navbar navbar-dark bg-dark shadow-sm">
+            <div class="container-fluid d-flex justify-content-between">
+                <a href="/" class="navbar-brand d-flex align-items-center">
+                    <img src="_webDavServerRoot_/wwwroot/images/logo.svg" alt="IT Hit logo" class="logo"/>
+                     IT Hit WebDAV Server Engine v_webDavServerVersion_        
+                </a>
+                <button class="navbar-toggler burger-button collapsed" type="button" data-toggle="collapse" data-target="#navbarHeader" aria-controls="navbarHeader" aria-expanded="false" aria-label="Toggle navigation">
+                    <div class="burger-icon"><span></span><span></span><span></span></div>
+                </button>
+            </div>
         </div>
-    </nav>
+        <div class="collapse bg-dark" id="navbarHeader">
+            <div class="header-content">
+                <div class="container-fluid justify-content-between">
+                    <div class="row">
+                        <div class="col">
+                            <p>
+                                This page is displayed when user accesses any folder on your WebDAV server in a web browser.
+                                You can customize this page to your needs.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <h3>Your Test Folder</h3>
+                            <p>
+                               To test your WebDAV server you can run Ajax integration tests right from this page.
+                            </p>
+                            <a href="javascript:void(0)" onclick="OpenTestsWindow()" class="btn btn-primary" role="button">Run Integration Tests</a>
+                        </div>
+                        <div class="col">
+                            <h3>Manage Docs with Ajax File Browser</h3>
+                            <p>
+                               Use the <a href="https://www.webdavsystem.com/ajaxfilebrowser/programming/">IT Hit Ajax File Browser</a> to browse your documents, open for editing from a web page and
+-                              uploading with pause/resume and auto-restore upload.
+                            </p>
+                            <a href="javascript:void(0)" onclick="OpenAjaxFileBrowserWindow()" class="btn btn-primary" role="button">Browse Using Ajax File Browser</a>
+                        </div>
+                        <div class="col">
+                            <h3>Connect with WebDAV Client</h3>
+                            <p>                               
+                               Use a WebDAV client provided with almost any OS. Refer to <a href="https://www.webdavsystem.com/server/access">Accessing WebDAV Server</a> page for
+                -              detailed instructions. The button below is using <a href="https://www.webdavsystem.com/ajax/">IT Hit WebDAV Ajax Library</a> to mount WebDAV
+                -              folder and open the default OS file manager.
+                            </p>
+                            <a href="javascript:void(0)" onclick="WebDAVController && WebDAVController.OpenCurrentFolderInOsFileManager()" class="btn btn-primary" role="button">Browse Using OS File Manager</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
     <main role="main" class="container-fluid">
          <div class="row no-gutters">
             <div id="leftPanel" class="col">

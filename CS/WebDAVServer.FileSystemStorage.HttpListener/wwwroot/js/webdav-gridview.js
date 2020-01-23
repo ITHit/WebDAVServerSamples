@@ -5,6 +5,7 @@
     var sProfindErrorMessage = "Profind request error.";
     var sGSuitePreviewErrorMessage = "Preview document with G Suite Online Tool error.";
     var sGSuiteEditErrorMessage = "Edit document with G Suite Online Editor error.";
+    var sCreateFolderErrorMessage = "Create folder error.";
 
     ///////////////////
     // Folder Grid View
@@ -312,7 +313,7 @@
                 if (self._defaultEditor) {
                     switch (self._defaultEditor) {
                         case 'OSEditor':
-                            toolText = 'Edit with Microsoft Office Desktop';
+                            toolText = 'Edit with Microsoft Office Desktop.';
                             break;
                         case 'GSuiteEditor':
                             toolText = 'Edit document in G Suite Editor.';
@@ -357,7 +358,7 @@
 
                 if (isMicrosoftOfficeDocument) {
                     $('<input type="radio" name="defaultEditor' + oItem.DisplayName + '" value="OSEditor" ' + _isDefaultEditor('OSEditor') + ' />').appendTo($dropdownMenu).change(_changeDefaultEditor);
-                    $('<a class="dropdown-item dropdown-radio" href="javascript:void()" title="Edit document with desktop associated application."><i class="fab fa-microsoft"></i>Edit with Microsoft Office Desktop</a>')
+                    $('<a class="dropdown-item dropdown-radio" href="javascript:void()" title="Edit with Microsoft Office Desktop."><i class="fab fa-microsoft"></i>Edit with Microsoft Office Desktop</a>')
                         .appendTo($dropdownMenu).on('click', function () {
                             oWebDAV.EditDoc(oItem.Href);
                         });
@@ -810,7 +811,7 @@
                         self.$alert.removeClass('d-none').text(oAsyncResult.Error.Error.Description ? oAsyncResult.Error.Error.Description : 'Folder already exists.');
                     }
                     else {
-                        self.$modal.modal('hide');
+                        WebdavCommon.ErrorModal.Show(sCreateFolderErrorMessage, oAsyncResult.Error);
                     }
                     self.$submitButton.removeAttr('disabled');
                 })
