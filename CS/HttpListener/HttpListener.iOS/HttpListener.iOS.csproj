@@ -114,11 +114,11 @@
     </InterfaceDefinition>
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="ITHit.WebDAV.Server, Version=9.2.6115, Culture=neutral, PublicKeyToken=d057f7b1134051b5, processorArchitecture=MSIL">
-      <HintPath>..\packages\ITHit.WebDAV.Server.9.2.6115\lib\netstandard1.6\ITHit.WebDAV.Server.dll</HintPath>
+    <Reference Include="ITHit.WebDAV.Server, Version=9.2.6128, Culture=neutral, PublicKeyToken=d057f7b1134051b5, processorArchitecture=MSIL">
+      <HintPath>..\packages\ITHit.WebDAV.Server.9.2.6128\lib\netstandard1.6\ITHit.WebDAV.Server.dll</HintPath>
     </Reference>
-    <Reference Include="ITHit.WebDAV.Server.HttpListener, Version=9.2.6115, Culture=neutral, PublicKeyToken=d057f7b1134051b5, processorArchitecture=MSIL">
-      <HintPath>..\packages\ITHit.WebDAV.Server.HttpListener.9.2.6115\lib\netstandard2.0\ITHit.WebDAV.Server.HttpListener.dll</HintPath>
+    <Reference Include="ITHit.WebDAV.Server.HttpListener, Version=9.2.6128, Culture=neutral, PublicKeyToken=d057f7b1134051b5, processorArchitecture=MSIL">
+      <HintPath>..\packages\ITHit.WebDAV.Server.HttpListener.9.2.6128\lib\netstandard2.0\ITHit.WebDAV.Server.HttpListener.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNetCore.Hosting, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNetCore.Hosting.2.0.0\lib\netstandard2.0\Microsoft.AspNetCore.Hosting.dll</HintPath>

@@ -118,7 +118,6 @@
         }, 3000);
     };
     FolderGridView.prototype = {
-
         Render: function (aItems, bIsSearchMode) {
             var self = this;
             this.IsSearchMode = bIsSearchMode || false;
@@ -126,24 +125,27 @@
             this.$el.find('tbody').html(
                 aItems.map(function (oItem) {
                     var locked = oItem.ActiveLocks.length > 0
-                        ? ('<span class="ithit-grid-icon-locked fas fa-lock"></span>' +
+                        ? ('<span class="ithit-grid-icon-locked"></span>' +
                             (oItem.ActiveLocks[0].LockScope === 'Shared' ? ('<span class="badge badge-pill badge-dark">' + oItem.ActiveLocks.length + '</span>') : ''))
                         : '';
                     /** @type {ITHit.WebDAV.Client.HierarchyItem} oItem */
+                    var $customCheckbox = $('<label class="custom-checkbox"><input type="checkbox" /><span class="checkmark"></span></label>');
+                    $customCheckbox.find('input').on('change', function () {
+                        if ($(this).is(':checked')) {
+                            self._AddSelectedItem(oItem);
+                        }
+                        else {
+                            self._RemoveSelectedItem(oItem);
+                        }
+                    }).attr('checked', this._IsSelectedItem(oItem));
+
                     return $('<div/>').html([
                         $('<tr />').html([
                             $('<td class="select-disabled"/>').html([
-                                $('<input type="checkbox" />').on('change', function () {
-                                    if ($(this).is(':checked')) {
-                                        self._AddSelectedItem(oItem);
-                                    }
-                                    else {
-                                        self._RemoveSelectedItem(oItem);
-                                    }
-                                }).attr('checked', this._IsSelectedItem(oItem))
+                                $customCheckbox
                             ]),
                             $('<td />').
-                                html(oItem.IsFolder() ? ('<span class="fas fa-folder">' + locked + '</span>') : locked),
+                                html(oItem.IsFolder() ? ('<span class="icon-folder">' + locked + '</span>') : locked),
                             this._RenderDisplayName(oItem),
                             $('<td class="d-none d-xl-table-cell" />').text(oItem.IsFolder() ? 'Folder' : ('File ' + WebdavCommon.Formatters.GetFileExtension(oItem.DisplayName))),
                             $('<td />').
@@ -165,6 +167,8 @@
                                 $gSuitePreviewPanel.empty();
                                 $gSuiteEditPanel.empty();
                                 self.selectedItem = oItem;
+                                // display file name
+                                $('#fileName').text(oItem.DisplayName);
 
                                 var $gSuiteEditContainer = $('<div class="inner-container"/>').appendTo($gSuiteEditPanel);
                                 var $gSuitePreviewContainer = $('<div class="inner-container"/>').appendTo($gSuitePreviewPanel);
@@ -172,7 +176,6 @@
                                 if ((oWebDAV.OptionsInfo.Features & ITHit.WebDAV.Client.Features.GSuite)) {
                                     var isEditLoaded = false;
                                     var isPreviewLoaded = false;
-                                    $gSuiteTabs.removeClass('invisible');
 
                                     function _loadEditEditor() {
                                         self.activeSelectedTab = 'edit';
@@ -226,7 +229,6 @@
                                 }
                                 else if (!(oWebDAV.OptionsInfo.Features & ITHit.WebDAV.Client.Features.GSuite)) {
                                     $gSuitePreviewBackground.text('GSuite preview and edit is not supported.');
-                                    $gSuiteTabs.addClass('invisible');
                                 }
                             }
                         }).addClass(self.selectedItem != null && oItem.Href == self.selectedItem.Href ? 'active' : ''),
@@ -276,9 +278,11 @@
 
             function _changeDefaultEditor() {
                 var $radioBtn = $(this);
-                var iconClassName = $radioBtn.next().find('i:first').attr('class');
+                var iconClassName = $radioBtn.parent().next().find('i:first').attr('class');
+
                 self._defaultEditor = $radioBtn.val();
                 $('input[value="' + self._defaultEditor + '"]').prop('checked', true);
+
                 // update button icon
                 $('.btn-default-edit').each(function () {
                     var $btn = $(this);
@@ -294,14 +298,14 @@
             }
 
             function _getDefaultEditorIcon() {
-                var iconClassName = 'fas fa-edit';
+                var iconClassName = 'icon-edit';
                 if (self._defaultEditor) {
                     switch (self._defaultEditor) {
                         case 'OSEditor':
-                            iconClassName = 'fab fa-microsoft';
+                            iconClassName = 'icon-microsoft-edit';
                             break;
                         case 'GSuiteEditor':
-                            iconClassName = 'fab fa-google';
+                            iconClassName = 'icon-gsuite-edit';
                             break;
                     }
                 }
@@ -325,7 +329,7 @@
 
             if (oItem.IsFolder()) {
                 actions.push($('<button class="btn btn-primary btn-sm btn-labeled" type="button"/>').
-                    html('<span class="btn-label"><i class="fas fa-window-maximize"></i></span> <span class="d-none d-lg-inline">Browse</span>').
+                    html('<span class="btn-label"><i class="icon-open-folder"></i></span> <span class="d-none d-lg-inline">Browse</span>').
                     attr('title', 'Open this folder in Operating System file manager.').
                     on('click', function () {
                         oWebDAV.OpenFolderInOsFileManager(oItem.Href);
@@ -333,7 +337,7 @@
             } else {
                 var $btnGroup = $('<div class="btn-group"></div>');
                 $('<button type="button" class="btn btn-primary btn-sm btn-labeled btn-default-edit" title="' + (isMicrosoftOfficeDocument && isGSuiteDocument ? _getDefaultToolText() : 'Edit document with desktop associated application.') + '"><span class="btn-label"><i class="' +
-                    (isMicrosoftOfficeDocument && isGSuiteDocument ? _getDefaultEditorIcon() : 'fas fa-edit') + '"></i></span><span class="d-none d-lg-inline btn-edit-label">Edit</span></button>')
+                    (isMicrosoftOfficeDocument && isGSuiteDocument ? _getDefaultEditorIcon() : 'icon-edit') + '"></i></span><span class="d-none d-lg-inline btn-edit-label">Edit</span></button>')
                     .appendTo($btnGroup).on('click', function () {
                         var $radio = $(this).parent().find('input[type=radio]:checked');
                         if ($radio.length) {
@@ -353,39 +357,35 @@
                 $btnGroup.on('hidden.bs.dropdown', function () {
                     self.ContextMenuID = null;
                 });
-
                 $dropdownMenu = $('<div class="dropdown-menu dropdown-menu-right actions ' + ((isMicrosoftOfficeDocument && isGSuiteDocument) ? 'dropdown-menu-radio-btns' : '') + '"></div>').appendTo($btnGroup);
-
                 if (isMicrosoftOfficeDocument) {
-                    $('<input type="radio" name="defaultEditor' + oItem.DisplayName + '" value="OSEditor" ' + _isDefaultEditor('OSEditor') + ' />').appendTo($dropdownMenu).change(_changeDefaultEditor);
-                    $('<a class="dropdown-item dropdown-radio" href="javascript:void()" title="Edit with Microsoft Office Desktop."><i class="fab fa-microsoft"></i>Edit with Microsoft Office Desktop</a>')
+                    $('<label class="custom-radiobtn"><input type="radio" name="defaultEditor' + oItem.DisplayName + '" value="OSEditor" ' + _isDefaultEditor('OSEditor') + ' /><span class="checkmark"></span></label>').appendTo($dropdownMenu).find('input[type=radio]').change(_changeDefaultEditor);
+                    $('<a class="dropdown-item dropdown-radio" href="javascript:void()" title="Edit with Microsoft Office Desktop."><i class="icon-microsoft-edit"></i>Edit with Microsoft Office Desktop</a>')
                         .appendTo($dropdownMenu).on('click', function () {
                             oWebDAV.EditDoc(oItem.Href);
                         });
                 }
 
                 if (isGSuiteDocument) {
-                    $('<input type="radio" name="defaultEditor' + oItem.DisplayName + '" value="GSuiteEditor" ' + _isDefaultEditor('GSuiteEditor') + '/>').appendTo($dropdownMenu).change(_changeDefaultEditor).attr('disabled', !supportGSuiteFeature);
-                    $('<a class="dropdown-item dropdown-radio' + (supportGSuiteFeature ? '' : ' disabled') + '" href="javascript:void()" title="Edit document in G Suite Editor."><i class="fab fa-google"></i>Edit with Google G Suite Online (Beta)</a>')
+                    $('<label class="custom-radiobtn"><input type="radio" name="defaultEditor' + oItem.DisplayName + '" value="GSuiteEditor" ' + _isDefaultEditor('GSuiteEditor') + '/><span class="checkmark"></span></label>').appendTo($dropdownMenu).find('input[type=radio]').change(_changeDefaultEditor).attr('disabled', !supportGSuiteFeature);
+                    $('<a class="dropdown-item dropdown-radio' + (supportGSuiteFeature ? '' : ' disabled') + '" href="javascript:void()" title="Edit document in G Suite Editor."><i class="icon-gsuite-edit"></i>Edit with Google G Suite Online (Beta)</a>')
                         .appendTo($dropdownMenu).on('click', function () {
                             oWebDAV.GSuiteEditDoc(oItem.Href);
                         });
                 }
 
-                if (isDavProtocolSupported) {
-                    if (!isMicrosoftOfficeDocument) {
-                        $('<a class="dropdown-item" href="javascript:void()" title="Edit document with desktop associated application."><i class="fas fa-edit"></i>Edit with Associated Desktop Application</a>')
-                            .appendTo($dropdownMenu).on('click', function () {
-                                oWebDAV.EditDoc(oItem.Href);
-                            });
-                    }
-
-                    $('<div class="dropdown-divider"></div>').appendTo($dropdownMenu);
-                    $('<a class="dropdown-item" href="javascript:void()" title="Select application to open this file with."><i class="fas fa-edit"></i>Select Desktop Application</a>')
+                if (!isMicrosoftOfficeDocument) {
+                    $('<a class="dropdown-item' + (isDavProtocolSupported ? '' : ' disabled') + '" href="javascript:void()" title="Edit document with desktop associated application."><i class="icon-edit-associated"></i>Edit with Associated Desktop Application</a>')
                         .appendTo($dropdownMenu).on('click', function () {
-                            oWebDAV.OpenDocWith(oItem.Href);
+                            oWebDAV.EditDoc(oItem.Href);
                         });
                 }
+
+                $('<div class="dropdown-divider"></div>').appendTo($dropdownMenu);
+                $('<a class="dropdown-item desktop-app' + (isDavProtocolSupported ? '' : ' disabled') + '" href="javascript:void()" title="Select application to open this file with.">Select Desktop Application</a>')
+                    .appendTo($dropdownMenu).on('click', function () {
+                        oWebDAV.OpenDocWith(oItem.Href);
+                    });
 
                 // open context menu if it was open before update
                 if (self.ContextMenuID && self.ContextMenuID == oItem.Href) {
@@ -582,7 +582,7 @@
 
             this.$el.html(aParts.map(function (sPart, i) {
                 var bIsLast = aParts.length === i + 1;
-                var oLabel = i === 0 ? $('<span />').addClass('fas fa-home') : $('<span />').text(decodeURIComponent(sPart));
+                var oLabel = i === 0 ? $('<span />').addClass('icon-home') : $('<span />').text(decodeURIComponent(sPart));
                 return $('<li class="breadcrumb-item"/>').toggleClass('active', bIsLast).append(
                     bIsLast ?
                         $('<span />').html(oLabel) :
@@ -590,7 +590,6 @@
                 );
             }));
         }
-
     };
 
     ///////////////////
@@ -755,7 +754,7 @@
     var ConfirmModal = function (selector) {
         var self = this;
         this.$el = $(selector);
-        this.$el.find('.btn-ok').click(function (e) {
+        this.$el.find('.btn-ok').click(function () {
             if (self.successfulCallback) {
                 self.successfulCallback();
             }
