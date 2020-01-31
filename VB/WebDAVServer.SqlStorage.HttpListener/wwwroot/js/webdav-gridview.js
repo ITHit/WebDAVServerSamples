@@ -341,7 +341,7 @@
                     .appendTo($btnGroup).on('click', function () {
                         var $radio = $(this).parent().find('input[type=radio]:checked');
                         if ($radio.length) {
-                            $radio.next().click();
+                            $radio.parent().next().click();
                         }
                         else {
                             oWebDAV.EditDoc(oItem.Href);
@@ -691,7 +691,15 @@
             } else {
                 $col.removeClass('ascending').addClass('descending');
             }
-        }
+        },
+
+        Disable: function () {
+            this.$headerCols.addClass('disabled');
+        },
+
+        Enable: function () {
+            this.$headerCols.removeClass('disabled');
+        } 
     }
 
     /////////////////////////
@@ -802,18 +810,22 @@
                     return false;
                 }
 
-
                 self.$txt.blur();
                 self.$submitButton.attr('disabled', 'disabled');
                 oWebDAV.CreateFolder(self.$txt.val().trim(), function (oAsyncResult) {
-                    if (oAsyncResult.Error instanceof ITHit.WebDAV.Client.Exceptions.MethodNotAllowedException) {
-                        self.$alert.removeClass('d-none').text(oAsyncResult.Error.Error.Description ? oAsyncResult.Error.Error.Description : 'Folder already exists.');
+                    if (!oAsyncResult.IsSuccess) {
+                        if (oAsyncResult.Error instanceof ITHit.WebDAV.Client.Exceptions.MethodNotAllowedException) {
+                            self.$alert.removeClass('d-none').text(oAsyncResult.Error.Error.Description ? oAsyncResult.Error.Error.Description : 'Folder already exists.');
+                        }
+                        else {
+                            WebdavCommon.ErrorModal.Show(sCreateFolderErrorMessage, oAsyncResult.Error);
+                        }
                     }
                     else {
-                        WebdavCommon.ErrorModal.Show(sCreateFolderErrorMessage, oAsyncResult.Error);
+                        self.$modal.modal('hide');
                     }
                     self.$submitButton.removeAttr('disabled');
-                })
+                });
             }
             else {
                 self.$alert.removeClass('d-none').text('Name is required!');
@@ -859,6 +871,8 @@
                 oFolderGrid.HideToolbar();
             }
 
+            //Enable sorting 
+            oTableSorting.Enable();
             if (sortColumn) {
                 this.CurrentSortColumn = sortColumn;
                 this.CurrentSortAscending = sortAscending;
@@ -969,6 +983,8 @@
             } else {
                 this.SetHashValue('page', '');
             }
+            //Disable sorting 
+            oTableSorting.Disable();
 
             // The DASL search phrase can contain wildcard characters and escape according to DASL rules:
             //   ‘%’ – to indicate one or more character.

@@ -90,8 +90,8 @@ a.disabled {
     content: "";
     display: block;
     background-color: #007BFF;
-    width: 10px;
-    height: 10px;
+    width: 9px;
+    height: 9px;
     position: absolute;
     top: 3px;
     left: 3px;
@@ -262,6 +262,10 @@ p.error-message {
 header {
     margin-bottom: 15px;
 }
+
+    header p {
+        word-break: break-word;
+    }
 
 .navbar-toggler .burger-icon {
     width: 23px;
@@ -767,6 +771,14 @@ table tr.tr-snippet-url td {
         border-bottom: none;
         margin-top: 13px;
     }
+
+    .ithit-grid-container th.sort.disabled {
+        pointer-events: none;
+    }
+
+        .ithit-grid-container th.sort.disabled:after {
+            display: none;
+        }
 
 .ithit-grid-container .column-action {
     text-align: right;
