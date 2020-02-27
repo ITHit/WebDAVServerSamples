@@ -46,14 +46,14 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-  <Reference Include="ITHit.Server, Version=9.2.6132.0, Culture=neutral, PublicKeyToken=d057f7b1134051b5, processorArchitecture=MSIL">
-      <HintPath>..\packages\ITHit.Server.9.2.6132\lib\net451\ITHit.Server.dll</HintPath>
+  <Reference Include="ITHit.Server, Version=9.2.6230.0, Culture=neutral, PublicKeyToken=d057f7b1134051b5, processorArchitecture=MSIL">
+      <HintPath>..\packages\ITHit.Server.9.2.6230\lib\net451\ITHit.Server.dll</HintPath>
     </Reference>
-    <Reference Include="ITHit.WebDAV.Server, Version=9.2.6132.0, Culture=neutral, PublicKeyToken=d057f7b1134051b5, processorArchitecture=MSIL">
-      <HintPath>..\packages\ITHit.WebDAV.Server.9.2.6132\lib\net451\ITHit.WebDAV.Server.dll</HintPath>
+    <Reference Include="ITHit.WebDAV.Server, Version=9.2.6230.0, Culture=neutral, PublicKeyToken=d057f7b1134051b5, processorArchitecture=MSIL">
+      <HintPath>..\packages\ITHit.WebDAV.Server.9.2.6230\lib\net451\ITHit.WebDAV.Server.dll</HintPath>
     </Reference>
-    <Reference Include="ITHit.Server.Web, Version=9.2.6132.0, Culture=neutral, PublicKeyToken=d057f7b1134051b5, processorArchitecture=MSIL">
-      <HintPath>..\packages\ITHit.Server.Web.9.2.6132\lib\net451\ITHit.Server.Web.dll</HintPath>
+    <Reference Include="ITHit.Server.Web, Version=9.2.6230.0, Culture=neutral, PublicKeyToken=d057f7b1134051b5, processorArchitecture=MSIL">
+      <HintPath>..\packages\ITHit.Server.Web.9.2.6230\lib\net451\ITHit.Server.Web.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=1.0.8.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.8\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
@@ -223,7 +223,9 @@
 <Content Include="wwwroot\web.config" />
 <Content Include="wwwroot\css\webdav-layout.css" />
 <Content Include="wwwroot\images\check-square.svg" />
+<Content Include="wwwroot\images\copy.svg" />
 <Content Include="wwwroot\images\create-folder.svg" />
+<Content Include="wwwroot\images\cut.svg" />
 <Content Include="wwwroot\images\delete.svg" />
 <Content Include="wwwroot\images\edit-associated.svg" />
 <Content Include="wwwroot\images\edit.svg" />
@@ -236,7 +238,9 @@
 <Content Include="wwwroot\images\menu-microsoft-edit.svg" />
 <Content Include="wwwroot\images\microsoft-edit.svg" />
 <Content Include="wwwroot\images\open-folder.svg" />
+<Content Include="wwwroot\images\paste.svg" />
 <Content Include="wwwroot\images\print.svg" />
+<Content Include="wwwroot\images\reload.svg" />
 <Content Include="wwwroot\images\search.svg" />
 <Content Include="wwwroot\js\webdav-common.js" />
 <Content Include="wwwroot\js\webdav-gridview.js" />

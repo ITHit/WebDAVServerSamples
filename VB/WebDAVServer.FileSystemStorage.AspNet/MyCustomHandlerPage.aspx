@@ -65,7 +65,7 @@
                     <div class="row mt-1">
                         <div class="col">
                             <p class="versions">
-                                IT Hit WebDAV Server Engine for .NET: v_webDavServerVersion_
+                                IT Hit WebDAV Server Engine for .NET: v<%=System.Reflection.Assembly.GetAssembly(typeof(ITHit.WebDAV.Server.DavEngineAsync)).GetName().Version%>
                             </p>
                             <p class="versions">
                                 IT Hit WebDAV AJAX Library: <span class="ithit-version-value"></span>
@@ -89,7 +89,13 @@
                     <div class="col">
                         <button class="btn-create-folder"><span class="d-none d-lg-inline">Create Folder</span></button>
                     </div>
-                    <div class="col-auto">
+                    <div class="col-auto px-0 px-md-3">
+                        <button class="btn-copy-items" disabled="disabled"></button>
+                        <button class="btn-cut-items" disabled="disabled"></button>
+                        <button class="btn-paste-items" disabled="disabled"></button>
+                        <button class="btn-reload-items"></button>
+                    </div>
+                    <div class="col-auto px-1 px-lg-3">
                         <button class="btn-print-items" disabled="disabled"><span class="d-none d-lg-inline">Print</span></button>
                         <button class="btn-delete-items" disabled="disabled"><span class="d-none d-lg-inline">Delete</span></button>
                     </div>

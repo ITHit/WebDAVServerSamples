@@ -52,6 +52,7 @@ a.disabled {
 .custom-radiobtn {
     display: inline-block;
     top: 9px;
+    left: 7px;
 }
 
     .custom-checkbox input, .custom-radiobtn input {
@@ -140,6 +141,7 @@ p.error-message {
     .btn-labeled span:last-child {
         padding: 0 10px 0 5px;
         vertical-align: text-bottom;
+        min-width: 42px;
     }
 
 .btn-edit-label {
@@ -147,13 +149,7 @@ p.error-message {
 }
 
 .dropdown-menu-radio-btns {
-    padding-left: 10px;
-    padding-right: 10px;
     margin-left: -10px;
-}
-
-.dropdown-item:focus, .dropdown-item:hover {
-    background: none;
 }
 
 .table-hover tbody tr.active {
@@ -172,17 +168,12 @@ p.error-message {
     z-index: 2;
     background-color: transparent;
     background-repeat: no-repeat;
-    background-position: 50%;
+    background-position: 10px 50%;
 }
 
     .gutter.gutter-horizontal {
         cursor: col-resize;
-        background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAeCAYAAADkftS9AAAAIklEQVQoU2M4c+bMfxAGAgYYmwGrIIiDjrELjpo5aiZeMwF+yNnOs5KSvgAAAABJRU5ErkJggg==');
-    }
-
-    .gutter.gutter-vertical {
-        cursor: row-resize;
-        background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAFAQMAAABo7865AAAABlBMVEVHcEzMzMzyAv2sAAAAAXRSTlMAQObYZgAAABBJREFUeF5jOAMEEAIEEFwAn3kMwcB6I2AAAAAASUVORK5CYII=');
+        background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAA1CAYAAAB4HnrFAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAF/SURBVHgB7VXLUcMwEJUcJVdSgkvIPZOQVABUgKkAOoB0QAeIDkwFduLxPSWoBHP1l/dkicmJiU8mM9nLvpVWO89Pu7LMsmwjpUwEDF4vl8sn4sPhoIMgeCTuum4biDNN1XVdTKdT4+Jvv4HqBZwRF2TSyfNhAym/IM8LMdbfEd+59QflDoTO3/gK0G6OBLvetu38bB0vwWSe5wv4ZxfvIY8mwHoEd0tcluVO8dMhQ2RPSUlnE5um2fg2U0p9DmqzI05sGVRVZfwGKvJmNDFzxHgmkyQJwTFigEY4rtfrmBjDdQ+OC8dRI0eFWHjlAuTQcLErwkQvTzpMnslkYmcZFcwvJ0iDy0iJIZUR45mVBxw3NgDH1WqVEnPoIFdIDI6xl8dPoYaziUiKfPewwCB5DKruGECO0y6JUdUQMEeMZ5RnDo62S/CVBYbL8nRdFYqeI6dALfwbLvrBsvcObd9OumfYG25ms5l28d5voGIK11l+/Xv+701ef3F/2Yi/uB95ycM47B+AqAAAAABJRU5ErkJggg==');
     }
 
     .split.split-horizontal, .gutter.gutter-horizontal {
@@ -246,8 +237,8 @@ p.error-message {
 .file-name {
     position: absolute;
     right: 0px;
-    top: 11px;
-    font-size: 20px;
+    top: 13px;
+    font-size: 16px;
     line-height: 27px;
     color: #212529;
 }
@@ -256,7 +247,7 @@ p.error-message {
     min-width: 75px;
 }
 
-/*Start Common styles*/
+/*End Common styles*/
 
 /*Start Header styles*/
 header {
@@ -307,11 +298,6 @@ header .versions {
     color: white;
     padding-right: 0 !important;
 }
-
-    header .versions a {
-        color: #007bff;
-        font-weight: normal;
-    }
 
 @media (prefers-reduced-motion: reduce) {
     .navbar-toggler .burger-icon span {
@@ -413,22 +399,12 @@ header .versions {
         padding-right: 5rem;
     }
 
+
     .header-content a {
         font-weight: bold;
         color: white;
         text-decoration: underline;
     }
-
-    .header-content .blocks > div {
-        padding-bottom: 40px;
-        margin-bottom: 15px;
-    }
-
-        .header-content .blocks > div .btn {
-            position: absolute;
-            bottom: 0;
-            text-decoration: none;
-        }
 /*End Header styles*/
 
 /*Start Main layout styles*/
@@ -442,6 +418,7 @@ ol.breadcrumb li .icon-home {
     height: 16px;
     width: 14px;
     margin-top: 3px;
+    margin-left: 2px;
 }
 
 /*Start Right Panel styles*/
@@ -536,6 +513,47 @@ ol.breadcrumb li .icon-home {
             background-color: #007BFF;
         }
 
+        .ithit-grid-toolbar button.btn-copy-items:before {
+            height: 20px;
+            width: 20px;
+            top: 3px;
+            margin: 0 4px;
+            -webkit-mask-image: url(/wwwroot/images/copy.svg);
+            mask-image: url(/wwwroot/images/copy.svg);
+            background-color: #007BFF;
+        }
+
+        .ithit-grid-toolbar button.btn-cut-items:before {
+            height: 18px;
+            width: 17px;
+            top: 3px;
+            margin: 0 4px;
+            -webkit-mask-image: url(/wwwroot/images/cut.svg);
+            mask-image: url(/wwwroot/images/cut.svg);
+            background-color: #007BFF;
+        }
+
+        .ithit-grid-toolbar button.btn-paste-items:before {
+            height: 21px;
+            width: 18px;
+            top: 4px;
+            margin: 0 4px;
+            -webkit-mask-image: url(/wwwroot/images/paste.svg);
+            mask-image: url(/wwwroot/images/paste.svg);
+            background-color: #007BFF;
+        }
+
+        .ithit-grid-toolbar button.btn-reload-items:before {
+            height: 22px;
+            width: 19px;
+            top: 4px;
+            margin: 0 4px;
+            -webkit-mask-image: url(/wwwroot/images/reload.svg);
+            mask-image: url(/wwwroot/images/reload.svg);
+            background-color: #007BFF;
+        }
+
+
         .ithit-grid-toolbar button.btn-print-items:before {
             height: 22px;
             top: 4px;
@@ -576,7 +594,7 @@ ol.breadcrumb li .icon-home {
         .ithit-search-container .twitter-typeahead:before {
             position: absolute;
             top: 10px;
-            left: 15px;
+            left: 16px;
             content: "";
             background-image: url(/wwwroot/images/search.svg);
             display: block;
@@ -586,7 +604,7 @@ ol.breadcrumb li .icon-home {
         }
 
         .ithit-search-container .twitter-typeahead input {
-            padding-left: 40px;
+            padding: .4rem .75rem .4rem 40px;
         }
 
     .ithit-search-container button {
@@ -693,14 +711,12 @@ table tr.tr-snippet-url td {
 .ithit-grid-container {
     width: 100%;
     margin-top: 35px;
-    overflow: hidden;
+    overflow-y: hidden;
 }
 
 @media (max-width: 767px) {
     .ithit-grid-container {
-        width: 100%;
         margin-top: 20px;
-        overflow: inherit;
     }
 }
 
@@ -872,12 +888,6 @@ table.ithit-grid-container > tbody > tr > td {
     display: inline-block;
 }
 
-.ithit-grid-container .actions .dropdown-radio {
-    margin-top: -20px;
-    z-index: 2;
-    padding-left: 35px;
-}
-
 .ithit-grid-container button.btn-labeled {
     border-radius: 5px;
 }
@@ -911,15 +921,22 @@ table.ithit-grid-container > tbody > tr > td {
 }
 
 .ithit-grid-container .actions .dropdown-item {
-    margin-left: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
 }
 
     .ithit-grid-container .actions .dropdown-item.desktop-app {
         padding-left: 61px;
     }
 
+.ithit-grid-container .actions.dropdown-menu-radio-btns .dropdown-item.desktop-app {
+    padding-left: 76px;
+}
+
 .ithit-grid-container .actions .dropdown-radio {
-    margin-left: 0px;
+    margin-top: -28px;
+    z-index: 2;
+    padding-left: 40px;
 }
 
 .ithit-grid-container .actions .icon-microsoft-edit, .ithit-grid-container .actions .icon-gsuite-edit {
