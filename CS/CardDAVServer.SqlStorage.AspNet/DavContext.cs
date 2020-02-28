@@ -151,7 +151,7 @@ namespace CardDAVServer.SqlStorage.AspNet
         /// </summary>
         public void CommitTransaction()
         {
-            if (transaction != null)
+            if (transaction != null && transaction.Connection != null)
             {
                 transaction.Commit();
             }

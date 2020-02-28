@@ -11,7 +11,7 @@ using WebDAVServer.SqlStorage.AspNetCore.Options;
 namespace WebDAVServer.SqlStorage.AspNetCore
 {
     /// <summary>
-    /// Represents WebDAV Engine. Processes WebDAV requests and generates responses. 
+    /// Represents GSuite Engine. Processes GSuite requests and generates responses. 
     /// Provides constructors specific for ASP.NET Core implementation, that can read configuration parameters.
     /// </summary>
     /// <remarks>
@@ -20,7 +20,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
     public class GSuiteEngineCore : GSuiteEngineAsync
     {
         /// <summary>
-        /// Initializes new instance of this class based on the WebDAV Engine configuration options and logger instance.
+        /// Initializes new instance of this class based on the GSuite Engine configuration options and logger instance.
         /// </summary>
         /// <param name="gSuiteOptions">GSuite Engine configuration options.</param>
         /// <param name="logger">Logger instance.</param>

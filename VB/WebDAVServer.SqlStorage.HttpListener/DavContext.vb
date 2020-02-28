@@ -143,7 +143,7 @@ Public Class DavContext
     ''' Commits active transaction.
     ''' </summary>
     Public Sub CommitTransaction()
-        If transaction IsNot Nothing Then
+        If transaction IsNot Nothing AndAlso transaction.Connection IsNot Nothing Then
             transaction.Commit()
         End If
     End Sub
