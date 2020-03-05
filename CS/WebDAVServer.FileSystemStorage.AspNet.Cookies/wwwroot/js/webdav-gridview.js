@@ -272,7 +272,6 @@
                         oWebDAV.EditDoc(oItem.Href);
                     });
             }
-
             if (isGSuiteDocument) {
                 if (displayRadioBtns) {
                     $('<label class="custom-radiobtn"><input type="radio" name="defaultEditor' + oItem.DisplayName + '" value="GSuiteEditor" ' +
@@ -284,7 +283,6 @@
                         oWebDAV.GSuiteEditDoc(oItem.Href);
                     });
             }
-
             if (!isMicrosoftOfficeDocument) {
                 $('<a class="dropdown-item' + (isDavProtocolSupported ? '' : ' disabled') + '" href="javascript:void()" title="Edit document with desktop associated application."><i class="icon-edit-associated"></i>Edit with Associated Desktop Application</a>')
                     .appendTo($dropdownMenu).on('click', function () {

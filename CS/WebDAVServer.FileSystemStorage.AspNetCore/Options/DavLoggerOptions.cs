@@ -34,7 +34,8 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore.Options
         /// </summary>
         /// <param name="configurationSection">Instance of <see cref="IConfigurationSection"/>.</param>
         /// <param name="options">WebDAV Logger configuration options.</param>
-        public static async Task ReadOptionsAsync(this IConfigurationSection configurationSection, DavLoggerOptions options, IHostingEnvironment env)
+        /// <param name="env">Instance of <see cref="IWebHostEnvironment"/>.</param>
+        public static async Task ReadOptionsAsync(this IConfigurationSection configurationSection, DavLoggerOptions options, IWebHostEnvironment env)
         {
             if (configurationSection == null)
             {

@@ -22,8 +22,8 @@ namespace WebDAVServer.SqlStorage.AspNetCore
         /// </summary>
         /// <param name="configOptions">WebDAV Engine configuration options.</param>
         /// <param name="logger">Logger instance.</param>
-        /// <param name="env">IHostingEnvironment instance.</param>
-        public DavEngineCore(IOptions<DavEngineOptions> configOptions, ILogger logger, IHostingEnvironment env) : base()
+        /// <param name="env">IWebHostEnvironment instance.</param>
+        public DavEngineCore(IOptions<DavEngineOptions> configOptions, ILogger logger, IWebHostEnvironment env) : base()
         {
             DavEngineOptions options = configOptions.Value;
 

@@ -26,8 +26,8 @@ namespace WebDAVServer.SqlStorage.AspNetCore.Options
         /// </summary>
         /// <param name="configurationSection">Instance of <see cref="IConfigurationSection"/>.</param>
         /// <param name="options">WebDAV Context configuration options.</param>
-        /// <param name="env">Instance of <see cref="IHostingEnvironment"/>.</param>
-        public static async Task ReadOptionsAsync(this IConfigurationSection configurationSection, DavContextOptions options, IHostingEnvironment env)
+        /// <param name="env">Instance of <see cref="IWebHostEnvironment"/>.</param>
+        public static async Task ReadOptionsAsync(this IConfigurationSection configurationSection, DavContextOptions options, IWebHostEnvironment env)
         {
             if (configurationSection == null)
             {

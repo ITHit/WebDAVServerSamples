@@ -57,8 +57,8 @@ namespace WebDAVServer.SqlStorage.AspNetCore
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/> instance.</param>
         /// <param name="configuration">The <see cref="IConfigurationRoot"/> instance.</param>
-        /// <param name="env">The <see cref="IHostingEnvironment"/> instance.</param>
-        public static void AddWebDav(this IServiceCollection services, IConfigurationRoot configuration, IHostingEnvironment env)
+        /// <param name="env">The <see cref="IWebHostEnvironment"/> instance.</param>
+        public static void AddWebDav(this IServiceCollection services, IConfigurationRoot configuration, IWebHostEnvironment env)
         {
             Configuration = configuration;
             services.AddSingleton<DavEngineCore>();
@@ -78,7 +78,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
         /// </summary>
         /// <param name="builder">The <see cref="IApplicationBuilder"/> instance.</param>
         /// <returns>The <see cref="IApplicationBuilder"/> instance. </returns>
-        public static IApplicationBuilder UseWebDav(this IApplicationBuilder builder, IHostingEnvironment env)
+        public static IApplicationBuilder UseWebDav(this IApplicationBuilder builder, IWebHostEnvironment env)
         {
             CreateDatabaseSchema(builder, env);
             return builder.UseMiddleware<DavEngineMiddleware>();
@@ -88,7 +88,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
         /// </summary>
         /// <param name="builder">The <see cref="IApplicationBuilder"/> instance.</param>
         /// <param name="env">The <see cref="IApplicationBuilder"/> instance.</param>
-        private static void CreateDatabaseSchema(IApplicationBuilder builder, IHostingEnvironment env)
+        private static void CreateDatabaseSchema(IApplicationBuilder builder, IWebHostEnvironment env)
         {
             bool databaseExists = false;
             DavContextOptions contextOptions = builder.ApplicationServices.GetService<IOptions<DavContextOptions>>().Value;

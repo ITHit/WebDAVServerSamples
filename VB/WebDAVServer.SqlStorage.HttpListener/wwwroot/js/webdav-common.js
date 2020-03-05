@@ -223,7 +223,6 @@ window.WebdavCommon = (function () {
     };
 
     ns.ErrorModal = new ErrorModal('#ErrorModal');
-
     function Spliter(selectorLeftPanel, selectorRightPanel) {
         // add spliter button
         Split([selectorLeftPanel, selectorRightPanel], {
@@ -362,6 +361,5 @@ window.WebdavCommon = (function () {
     };
 
     ns.GSuiteEditor = new GSuiteEditor('.gsuite-container');
-
     return ns;
 })();

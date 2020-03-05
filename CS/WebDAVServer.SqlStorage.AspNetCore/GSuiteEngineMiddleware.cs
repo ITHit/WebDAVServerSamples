@@ -62,8 +62,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/> instance.</param>
         /// <param name="configuration">The <see cref="IConfigurationRoot"/> instance.</param>
-        /// <param name="env">The <see cref="IHostingEnvironment"/> instance.</param>
-        public static void AddGSuite(this IServiceCollection services, IConfigurationRoot configuration, IHostingEnvironment env)
+        public static void AddGSuite(this IServiceCollection services, IConfigurationRoot configuration)
         {
             Configuration = configuration;
             services.AddSingleton<GSuiteEngineCore>();
@@ -76,9 +75,16 @@ namespace WebDAVServer.SqlStorage.AspNetCore
         /// </summary>
         /// <param name="builder">The <see cref="IApplicationBuilder"/> instance.</param>
         /// <returns>The <see cref="IApplicationBuilder"/> instance. </returns>
-        public static IApplicationBuilder UseGSuite(this IApplicationBuilder builder, IHostingEnvironment env)
+        public static IApplicationBuilder UseGSuite(this IApplicationBuilder builder)
         {
-            return builder.UseMiddleware<GSuiteEngineMiddleware>();
+            // adds a GSuite Engine middleware only if GoogleServiceAccountID and GoogleServicePrivateKey are not empty in config file.
+            var options = builder.ApplicationServices.GetService<IOptions<GSuiteEngineOptions>>();
+            if (!string.IsNullOrEmpty(options.Value.GoogleServiceAccountID) && !string.IsNullOrEmpty(options.Value.GoogleServicePrivateKey))
+            {
+                builder.UseMiddleware<GSuiteEngineMiddleware>();
+            }
+
+            return builder;
         }
     }
 }
