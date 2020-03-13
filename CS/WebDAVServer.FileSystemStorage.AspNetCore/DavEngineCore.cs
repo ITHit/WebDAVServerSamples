@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using ITHit.Server;
 using ITHit.WebDAV.Server;
 
-using WebDAVServer.FileSystemStorage.AspNetCore.Options;
+using WebDAVServer.FileSystemStorage.AspNetCore.Configuration;
 
 namespace WebDAVServer.FileSystemStorage.AspNetCore
 {
@@ -20,17 +20,17 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
         /// <summary>
         /// Initializes new instance of this class based on the WebDAV Engine configuration options and logger instance.
         /// </summary>
-        /// <param name="configOptions">WebDAV Engine configuration options.</param>
+        /// <param name="config">WebDAV Engine configuration.</param>
         /// <param name="logger">Logger instance.</param>
-        /// <param name="env">IWebHostEnvironment instance.</param>
-        public DavEngineCore(IOptions<DavEngineOptions> configOptions, ILogger logger, IWebHostEnvironment env) : base()
+        /// <param name="env">IHostingEnvironment instance.</param>
+        public DavEngineCore(IOptions<DavEngineConfig> config, ILogger logger, IHostingEnvironment env) : base()
         {
-            DavEngineOptions options = configOptions.Value;
+            DavEngineConfig engineConfig = config.Value;
 
-            OutputXmlFormatting         = options.OutputXmlFormatting; 
-            UseFullUris                 = options.UseFullUris;
-            CorsAllowedFor              = options.CorsAllowedFor;
-            License                     = options.License;
+            OutputXmlFormatting         = engineConfig.OutputXmlFormatting; 
+            UseFullUris                 = engineConfig.UseFullUris;
+            CorsAllowedFor              = engineConfig.CorsAllowedFor;
+            License                     = engineConfig.License;
 
             Logger                      = logger;
 

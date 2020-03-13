@@ -2,7 +2,7 @@ using Microsoft.Extensions.Options;
 
 using ITHit.WebDAV.Server.Logger;
 
-using WebDAVServer.SqlStorage.AspNetCore.Options;
+using WebDAVServer.SqlStorage.AspNetCore.Configuration;
 
 namespace WebDAVServer.SqlStorage.AspNetCore
 {
@@ -16,14 +16,14 @@ namespace WebDAVServer.SqlStorage.AspNetCore
     public class DavLoggerCore : DefaultLoggerImpl
     {
         /// <summary>
-        /// Initializes new instance of this class based on the WebDAV Logger configuration options.
+        /// Initializes new instance of this class based on the WebDAV Logger configuration.
         /// </summary>
-        /// <param name="configOptions">WebDAV Logger configuration options.</param>
-        public DavLoggerCore(IOptions<DavLoggerOptions> configOptions)
+        /// <param name="configOptions">WebDAV Logger configuration.</param>
+        public DavLoggerCore(IOptions<DavLoggerConfig> config)
         {
-            DavLoggerOptions options = configOptions.Value;
-            LogFile         = options.LogFile;
-            IsDebugEnabled  = options.IsDebugEnabled;
+            DavLoggerConfig loggerConfig = config.Value;
+            LogFile         = loggerConfig.LogFile;
+            IsDebugEnabled  = loggerConfig.IsDebugEnabled;
         }
     }
 }

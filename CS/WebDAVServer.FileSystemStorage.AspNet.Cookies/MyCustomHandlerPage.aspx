@@ -90,10 +90,10 @@
                         <button class="btn-create-folder"><span class="d-none d-lg-inline">Create Folder</span></button>
                     </div>
                     <div class="col-auto px-0 px-md-3">
-                        <button class="btn-copy-items" disabled="disabled"></button>
-                        <button class="btn-cut-items" disabled="disabled"></button>
-                        <button class="btn-paste-items" disabled="disabled"></button>
-                        <button class="btn-reload-items"></button>
+                        <button class="btn-copy-items" disabled="disabled" title="Copy"></button>
+                        <button class="btn-cut-items" disabled="disabled" title="Cut"></button>
+                        <button class="btn-paste-items" disabled="disabled" title="Paste"></button>
+                        <button class="btn-reload-items" title="Reload"></button>
                     </div>
                     <div class="col-auto px-1 px-lg-3">
                         <button class="btn-print-items" disabled="disabled"><span class="d-none d-lg-inline">Print</span></button>
@@ -312,7 +312,7 @@
         function OpenTestsWindow() {
             var width = Math.round(screen.width * 0.5);
             var height = Math.round(screen.height * 0.8);
-            window.open("<%=Request.ApplicationPath.TrimEnd('/')%>/AjaxFileBrowser/AjaxIntegrationTests.aspx#<%=Request.Url.GetLeftPart(UriPartial.Authority)%>/DAV", "", "menubar=1,location=1,status=1,scrollbars=1,resizable=1,width=" + width + ",height=" + height);
+            window.open("<%=Request.ApplicationPath.TrimEnd('/')%>/AjaxFileBrowser/AjaxIntegrationTests.aspx#" + window.location.origin + "/DAV", "", "menubar=1,location=1,status=1,scrollbars=1,resizable=1,width=" + width + ",height=" + height);
         }
     </script>
     <!--

@@ -13,7 +13,7 @@ using ITHit.Server;
 using ITHit.WebDAV.Server;
 using ITHit.WebDAV.Server.Class2;
 using ITHit.WebDAV.Server.Paging;
-using WebDAVServer.SqlStorage.AspNetCore.Options;
+using WebDAVServer.SqlStorage.AspNetCore.Configuration;
 
 namespace WebDAVServer.SqlStorage.AspNetCore
 {
@@ -28,10 +28,10 @@ namespace WebDAVServer.SqlStorage.AspNetCore
         , IDisposable
     {
         /// <summary>
-        /// Context options.
+        /// Context configuration.
         /// </summary>
-        private readonly DavContextOptions contextOptions;
-        public DavContextOptions ContextOptions { get { return contextOptions; } }
+        private readonly DavContextConfig contextConfig;
+        public DavContextConfig ContextConfig { get { return contextConfig; } }
 
         /// <summary>
         /// Id of root folder.
@@ -60,14 +60,14 @@ namespace WebDAVServer.SqlStorage.AspNetCore
         /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="httpContextAccessor">Http context.</param>
-        /// <param name="configOptions">WebDAV Context configuration options.</param>
+        /// <param name="config">WebDAV Context configuration.</param>
         /// <param name="socketService">Singleton instance of <see cref="WebSocketsService"/>.</param>
-        public DavContext(IHttpContextAccessor httpContextAccessor, IOptions<DavContextOptions> configOptions
+        public DavContext(IHttpContextAccessor httpContextAccessor, IOptions<DavContextConfig> config
             , WebSocketsService socketService
             )
             : base(httpContextAccessor.HttpContext)
         {
-            this.contextOptions = configOptions.Value;
+            this.contextConfig = config.Value;
             this.currentUser = httpContextAccessor.HttpContext.User;
             this.socketService = socketService;
         }
@@ -527,7 +527,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
         {
             if (this.connection == null)
             {
-                this.connection = new SqlConnection(ContextOptions.ConnectionString);
+                this.connection = new SqlConnection(ContextConfig.ConnectionString);
                
                 this.connection.Open();
                 this.transaction = this.connection.BeginTransaction(IsolationLevel.ReadUncommitted);

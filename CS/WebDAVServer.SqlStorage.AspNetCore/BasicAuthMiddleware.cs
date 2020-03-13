@@ -30,8 +30,8 @@ namespace WebDAVServer.SqlStorage.AspNetCore
         /// Initializes new instance of this class.
         /// </summary>
         /// <param name="next">Next middleware instance.</param>
-        /// <param name="options">Users Options.</param>
-        public BasicAuthMiddleware(RequestDelegate next, IOptions<DavUsersOptions> options) : base(options)
+        /// <param name="options">Users config.</param>
+        public BasicAuthMiddleware(RequestDelegate next, IOptions<DavUsersConfig> config) : base(config)
         {
             this.next = next;
         }

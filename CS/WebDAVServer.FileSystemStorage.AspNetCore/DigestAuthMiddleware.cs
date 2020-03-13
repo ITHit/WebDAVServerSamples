@@ -34,8 +34,8 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
         /// Initializes new instance of this class.
         /// </summary>
         /// <param name="next">Next middleware instance.</param>
-        /// <param name="options">Users Options.</param>
-        public DigestAuthMiddleware(RequestDelegate next, IOptions<DavUsersOptions> options) : base(options)
+        /// <param name="config">Users config.</param>
+        public DigestAuthMiddleware(RequestDelegate next, IOptions<DavUsersConfig> config) : base(config)
         {
             this.next = next;
         }

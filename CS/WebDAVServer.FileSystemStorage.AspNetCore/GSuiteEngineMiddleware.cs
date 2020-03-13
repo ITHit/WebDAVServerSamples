@@ -10,7 +10,7 @@ using ITHit.Server;
 using ITHit.WebDAV.Server;
 using ITHit.GSuite.Server;
 
-using WebDAVServer.FileSystemStorage.AspNetCore.Options;
+using WebDAVServer.FileSystemStorage.AspNetCore.Configuration;
 
 namespace WebDAVServer.FileSystemStorage.AspNetCore
 {
@@ -67,7 +67,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
             Configuration = configuration;
             services.AddSingleton<GSuiteEngineCore>();
 
-            services.Configure<GSuiteEngineOptions>(options => Configuration.GetSection("GSuiteEngineOptions").Bind(options));           
+            services.Configure<GSuiteEngineConfig>(config => Configuration.GetSection("GSuiteEngine").Bind(config));           
         }
 
         /// <summary>
@@ -78,7 +78,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
         public static IApplicationBuilder UseGSuite(this IApplicationBuilder builder)
         {
             // adds a GSuite Engine middleware only if GoogleServiceAccountID and GoogleServicePrivateKey are not empty in config file.
-            var options = builder.ApplicationServices.GetService<IOptions<GSuiteEngineOptions>>();
+            var options = builder.ApplicationServices.GetService<IOptions<GSuiteEngineConfig>>();
             if (!string.IsNullOrEmpty(options.Value.GoogleServiceAccountID) && !string.IsNullOrEmpty(options.Value.GoogleServicePrivateKey))
             {
                 builder.UseMiddleware<GSuiteEngineMiddleware>();

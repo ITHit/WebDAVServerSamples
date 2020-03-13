@@ -24,7 +24,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
     /// <summary>
     /// Class for reading user credentials from json.
     /// </summary>
-    public class DavUsersOptions
+    public class DavUsersConfig
     {
         /// <summary>
         /// Represents array of users from storage.

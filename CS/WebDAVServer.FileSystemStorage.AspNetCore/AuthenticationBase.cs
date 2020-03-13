@@ -27,10 +27,10 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
         /// Fills UserCollection with values from storage.
         /// </summary>
         /// <param name="options">Users Options.</param>
-        protected AuthenticationBase(IOptions<DavUsersOptions> options)
+        protected AuthenticationBase(IOptions<DavUsersConfig> config)
         {
             UserCollection = new Dictionary<string, string>();
-            foreach (DavUser user in options.Value.Users)
+            foreach (DavUser user in config.Value.Users)
             {
                 if (!UserCollection.ContainsKey(user.UserName))
                     UserCollection.Add(user.UserName, user.Password);

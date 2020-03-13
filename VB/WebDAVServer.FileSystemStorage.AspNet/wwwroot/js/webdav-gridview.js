@@ -4,6 +4,11 @@
     var sSupportedFeaturesErrorMessage = "Supported Features error.";
     var sProfindErrorMessage = "Profind request error.";
     var sCreateFolderErrorMessage = "Create folder error.";
+    var sCopyItemsErrorMessage = "Copy items error.";
+    var sCutItemsErrorMessage = "Cut items error.";
+    var sCutItemsSameNameErrorMessage = "The source and destination file names are the same.";
+    var sCutItemsLockedErrorMessage = "Items are locked.";
+    var sCopyPrefixName = 'Copy';
 
     ///////////////////
     // Folder Grid View
@@ -380,15 +385,70 @@
             var self = this;
             if (self.isCopiedItems) {
                 $.each(self.storedItems, function (index) {
-                    oWebDAV.Copy(self.storedItems[index]);
+                    self._ExecuteCopy(self.storedItems[index]);
                 });
             } else {
                 $.each(self.storedItems, function (index) {
-                    oWebDAV.Move(self.storedItems[index]);
+                    oWebDAV.Move(self.storedItems[index], function (oAsyncResult) {
+                        if (!oAsyncResult.IsSuccess) {
+                            if (oAsyncResult.Error instanceof ITHit.WebDAV.Client.Exceptions.ForbiddenException) {
+                                WebdavCommon.ErrorModal.Show(sCutItemsSameNameErrorMessage, oAsyncResult.Error);
+                            }
+                            else if (oAsyncResult.Error instanceof ITHit.WebDAV.Client.Exceptions.LockedException) {
+                                WebdavCommon.ErrorModal.Show(sCutItemsLockedErrorMessage, oAsyncResult.Error);
+                            }
+                            else {
+                                WebdavCommon.ErrorModal.Show(sCutItemsErrorMessage, oAsyncResult.Error);
+                            }
+                        }
+                    });
                 });
                 self.storedItems = [];
             }
             self._UpdateToolbarButtons();
+        },
+
+        _ExecuteCopy: function (oItem) {
+            var self = this;
+            self._DoCopy(oItem, self._GetAppendCopySuffix(oItem.DisplayName));
+        },
+
+        _DoCopy: function (oItem, oItemName) {
+            var self = this;
+            oWebDAV.Copy(oItem, oItemName, function (oAsyncResult) {
+                if (!oAsyncResult.IsSuccess) {
+                    if (oAsyncResult.Error instanceof ITHit.WebDAV.Client.Exceptions.ForbiddenException || oAsyncResult.Error instanceof ITHit.WebDAV.Client.Exceptions.PreconditionFailedException) {
+                        self._DoCopy(oItem, self._GetAppendCopySuffix(oItemName));
+                    }
+                    else {
+                        WebdavCommon.ErrorModal.Show(sCopyItemsErrorMessage, oAsyncResult.Error);
+                    }
+                }
+            });
+        },
+
+        _GetAppendCopySuffix: function (oItemName) {
+            var that = this;
+
+            var aExtensionMatches = /\.[^\.]+$/.exec(oItemName);
+            var sName = aExtensionMatches !== null ? oItemName.replace(aExtensionMatches[0], '') : oItemName;
+            var sDotAndExtension = aExtensionMatches !== null ? aExtensionMatches[0] : '';
+
+            var sLangCopy = sCopyPrefixName;
+            var oSuffixPattern = new RegExp('- ' + sLangCopy + '( \\(([0-9]+)\\))?$', 'i');
+
+            var aSuffixMatches = oSuffixPattern.exec(sName);
+            if (aSuffixMatches === null) {
+                sName += ' - ' + sLangCopy;
+            } else if (!aSuffixMatches[1]) {
+                sName += ' (2)';
+            } else {
+                var iNextNumber = parseInt(aSuffixMatches[2]) + 1;
+                sName = sName.replace(oSuffixPattern, '- ' + sLangCopy + ' (' + iNextNumber + ')');
+            }
+
+            oItemName = sName + sDotAndExtension;
+            return oItemName;
         },
 
         /**
@@ -1065,22 +1125,18 @@
         /**
         * Copies files or folders.
         */
-        Copy: function (oItem) {
-            oItem.CopyToAsync(this.CurrentFolder, oItem.DisplayName, true, null, null, function (oAsyncResult) {
-                if (!oAsyncResult.IsSuccess) {
-                    WebdavCommon.ErrorModal.Show(sProfindErrorMessage, oAsyncResult.Error);
-                }
+        Copy: function (oItem, oItemName, fCallback) {
+            oItem.CopyToAsync(this.CurrentFolder, oItemName, true, null, null, function (oAsyncResult) {
+                fCallback(oAsyncResult);
             });
         },
 
         /**
         * Moves files or folders.
         */
-        Move: function (oItem) {
+        Move: function (oItem, fCallback) {
             oItem.MoveToAsync(this.CurrentFolder, oItem.DisplayName, null, null, function (oAsyncResult) {
-                if (!oAsyncResult.IsSuccess) {
-                    WebdavCommon.ErrorModal.Show(sProfindErrorMessage, oAsyncResult.Error);
-                }
+                fCallback(oAsyncResult);
             });
         },
 

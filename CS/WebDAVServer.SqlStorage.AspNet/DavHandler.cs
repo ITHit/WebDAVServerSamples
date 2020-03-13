@@ -143,6 +143,11 @@ namespace WebDAVServer.SqlStorage.AspNet
             //we don't use any double check lock pattern here because nothing wrong
             //is going to happen if we created occasionally several engines.
             const string ENGINE_KEY = "$GSuiteEngine$";
+            if (string.IsNullOrEmpty(googleServiceAccountID) || string.IsNullOrEmpty(googleServicePrivateKey))
+            {
+                return null;
+            }
+
             if (context.Application[ENGINE_KEY] == null)
             {
                 var gSuiteEngine = new GSuiteEngineAsync(googleServiceAccountID, googleServicePrivateKey)

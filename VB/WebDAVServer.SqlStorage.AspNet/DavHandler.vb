@@ -124,6 +124,10 @@ Public Class DavHandler
         'we don't use any double check lock pattern here because nothing wrong
         'is going to happen if we created occasionally several engines.
         Const ENGINE_KEY As String = "$GSuiteEngine$"
+        If String.IsNullOrEmpty(googleServiceAccountID) OrElse String.IsNullOrEmpty(googleServicePrivateKey) Then
+            Return Nothing
+        End If
+
         If context.Application(ENGINE_KEY) Is Nothing Then
             Dim gSuiteEngine = New GSuiteEngineAsync(googleServiceAccountID, googleServicePrivateKey) With {.License = gSuiteLicense, 
                                                                                                       .Logger = WebDAVServer.SqlStorage.AspNet.Logger.Instance

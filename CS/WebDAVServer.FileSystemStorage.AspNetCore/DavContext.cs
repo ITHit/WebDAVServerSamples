@@ -12,7 +12,7 @@ using ITHit.Server;
 using ITHit.WebDAV.Server;
 using ITHit.WebDAV.Server.Acl;
 using ITHit.WebDAV.Server.Quota;
-using WebDAVServer.FileSystemStorage.AspNetCore.Options;
+using WebDAVServer.FileSystemStorage.AspNetCore.Configuration;
 using WebDAVServer.FileSystemStorage.AspNetCore.ExtendedAttributes;
 
 
@@ -46,15 +46,15 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
         /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="httpContextAccessor">Http context.</param>
-        /// <param name="configOptions">WebDAV Context configuration options.</param>
+        /// <param name="config">WebDAV Context configuration.</param>
         /// <param name="logger">WebDAV Logger instance.</param>
         /// <param name="socketService">Singleton instance of <see cref="WebSocketsService"/>.</param>
-        public DavContext(IHttpContextAccessor httpContextAccessor, IOptions<DavContextOptions> configOptions, ILogger logger
+        public DavContext(IHttpContextAccessor httpContextAccessor, IOptions<DavContextConfig> config, ILogger logger
             , WebSocketsService socketService
             )
             : base(httpContextAccessor.HttpContext)
         {
-            RepositoryPath = configOptions.Value.RepositoryPath;
+            RepositoryPath = config.Value.RepositoryPath;
             Logger = logger;
             this.socketService = socketService;
         }

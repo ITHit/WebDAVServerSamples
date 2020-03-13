@@ -5,7 +5,7 @@ using ITHit.Server;
 using ITHit.WebDAV.Server;
 using ITHit.GSuite.Server;
 
-using WebDAVServer.SqlStorage.AspNetCore.Options;
+using WebDAVServer.SqlStorage.AspNetCore.Configuration;
 
 
 namespace WebDAVServer.SqlStorage.AspNetCore
@@ -20,18 +20,18 @@ namespace WebDAVServer.SqlStorage.AspNetCore
     public class GSuiteEngineCore : GSuiteEngineAsync
     {
         /// <summary>
-        /// Initializes new instance of this class based on the GSuite Engine configuration options and logger instance.
+        /// Initializes new instance of this class based on the GSuite Engine configuration and logger instance.
         /// </summary>
-        /// <param name="gSuiteOptions">GSuite Engine configuration options.</param>
+        /// <param name="gSuiteConf">GSuite Engine configuration.</param>
         /// <param name="logger">Logger instance.</param>
-        public GSuiteEngineCore(IOptions<GSuiteEngineOptions> gSuiteOptions,
-            ILogger logger) : base(gSuiteOptions.Value.GoogleServiceAccountID, gSuiteOptions.Value.GoogleServicePrivateKey)
+        public GSuiteEngineCore(IOptions<GSuiteEngineConfig> gSuiteConf,
+            ILogger logger) : base(gSuiteConf.Value.GoogleServiceAccountID, gSuiteConf.Value.GoogleServicePrivateKey)
         {
-            GSuiteEngineOptions options = gSuiteOptions.Value;
+            GSuiteEngineConfig config = gSuiteConf.Value;
 
-            OutputXmlFormatting = options.OutputXmlFormatting;
-            CorsAllowedFor = options.CorsAllowedFor;
-            License = options.License;
+            OutputXmlFormatting = config.OutputXmlFormatting;
+            CorsAllowedFor = config.CorsAllowedFor;
+            License = config.License;
             Logger = logger;
         }
     }
