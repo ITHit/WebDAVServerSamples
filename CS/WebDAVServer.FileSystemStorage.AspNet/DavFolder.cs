@@ -398,6 +398,7 @@ namespace WebDAVServer.FileSystemStorage.AspNet
             }
 
             return new PageResults(offset.HasValue && nResults.HasValue ? subtreeItems.Skip((int)offset.Value).Take((int)nResults.Value) : subtreeItems, subtreeItems.Count);
+            
         }
         /// <summary>
         /// Converts path on disk to encoded relative path.

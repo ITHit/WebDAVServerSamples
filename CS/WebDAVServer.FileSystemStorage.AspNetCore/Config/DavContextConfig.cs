@@ -17,9 +17,14 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore.Configuration
         public string RepositoryPath { get; set; } = string.Empty;
 
         /// <summary>
+        /// File system search provider. 
+        /// </summary>
+        public string WindowsSearchProvider { get; set; } = string.Empty;
+        /// <summary>
         /// This folder used for extended attributes storage.
         /// </summary>
         public string AttrStoragePath { get; set; } = string.Empty;
+       
     }
 
     /// <summary>

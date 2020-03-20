@@ -28,9 +28,13 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
     {
 
         /// <summary>
+        /// Context configuration
+        /// </summary>
+        public DavContextConfig Config { get; private set; }
+        /// <summary>
         /// Path to the folder which become available via WebDAV.
         /// </summary>
-        public string RepositoryPath { get; private set; }
+        public string RepositoryPath { get => Config.RepositoryPath; }
 
         /// <summary>
         /// Gets WebDAV Logger instance.
@@ -54,7 +58,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
             )
             : base(httpContextAccessor.HttpContext)
         {
-            RepositoryPath = config.Value.RepositoryPath;
+            Config = config.Value;
             Logger = logger;
             this.socketService = socketService;
         }

@@ -15,6 +15,7 @@ using WebDAVServer.FileSystemStorage.AspNetCore.ExtendedAttributes;
 using ITHit.WebDAV.Server.Search;
 using ITHit.WebDAV.Server.ResumableUpload;
 using ITHit.WebDAV.Server.Paging;
+using System.Data.OleDb;
 
 namespace WebDAVServer.FileSystemStorage.AspNetCore
 {
@@ -337,9 +338,122 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
         /// <returns>Items satisfying search request and a total number.</returns>
         public async Task<PageResults> SearchAsync(string searchString, SearchOptions options, List<PropertyName> propNames, long? offset, long? nResults)
         {
-            // Not implemented currently. .NET Core on Mac OS X does not provide a OLEDB driver at this time.
-            // To generate a Windows-specific search code use the 'ASP.NET WebDAV Server Application' wizard for Visual Studio.
-            return new PageResults(null, 0);
+            bool includeSnippet = propNames.Any(s => s.Name == snippetProperty);
+
+            // search both in file name and content
+            string commandText =
+                @"SELECT System.ItemPathDisplay" + (includeSnippet ? " ,System.Search.AutoSummary" : string.Empty) + " FROM SystemIndex " +
+                @"WHERE scope ='file:@Path' AND (System.ItemNameDisplay LIKE '@Name' OR FREETEXT('""@Content""')) " +
+                @"ORDER BY System.Search.Rank DESC";
+
+            commandText = PrepareCommand(commandText,
+                "@Path", this.dirInfo.FullName,
+                "@Name", searchString,
+                "@Content", searchString);
+
+            Dictionary<string, string> foundItems = new Dictionary<string, string>();
+            try
+            {
+                // Sending SQL request to Windows Search. To get search results file system indexing must be enabled.
+                // To find how to enable indexing follow this link: http://windows.microsoft.com/en-us/windows/improve-windows-searches-using-index-faq
+                using (OleDbConnection connection = new OleDbConnection(context.Config.WindowsSearchProvider))
+                using (OleDbCommand command = new OleDbCommand(commandText, connection))
+                {
+                    connection.Open();
+                    using (OleDbDataReader reader = command.ExecuteReader())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            string snippet = string.Empty;
+                            if (includeSnippet)
+                                snippet = reader.GetValue(1) != DBNull.Value ? reader.GetString(1) : null;
+                            foundItems.Add(reader.GetString(0), snippet);
+                        }
+                    }
+                }
+            }
+            catch (OleDbException ex) // explaining OleDbException
+            {
+                context.Logger.LogError(ex.Message, ex);
+                switch (ex.ErrorCode)
+                {
+                    case -2147217900: throw new DavException("Illegal symbols in search phrase.", DavStatus.CONFLICT);
+                    default: throw new DavException("Unknown error.", DavStatus.INTERNAL_ERROR);
+                }
+            }
+
+            IList<IHierarchyItemAsync> subtreeItems = new List<IHierarchyItemAsync>();
+            foreach (string path in foundItems.Keys)
+            {
+                IHierarchyItemAsync item = await context.GetHierarchyItemAsync(GetRelativePath(path)) as IHierarchyItemAsync;
+                if (includeSnippet && item is DavFile)
+                    (item as DavFile).Snippet = HighlightKeywords(searchString.Trim('%'), foundItems[path]);
+
+                subtreeItems.Add(item);
+            }
+
+            return new PageResults(offset.HasValue && nResults.HasValue ? subtreeItems.Skip((int)offset.Value).Take((int)nResults.Value) : subtreeItems, subtreeItems.Count);
+            
+        }
+        /// <summary>
+        /// Converts path on disk to encoded relative path.
+        /// </summary>
+        /// <param name="filePath">Path returned by Windows Search.</param>
+        /// <remarks>
+        /// The Search.CollatorDSO provider returns "documents" as "my documents". 
+        /// There is no any real solution for this, so to build path we just replace "my documents" manually.
+        /// </remarks>
+        /// <returns>Returns relative encoded path for an item.</returns>
+        private string GetRelativePath(string filePath)
+        {
+            string itemPath = filePath.ToLower().Replace("\\my documents\\", "\\documents\\");
+            string repoPath = this.fileSystemInfo.FullName.ToLower().Replace("\\my documents\\", "\\documents\\");
+            int relPathLength = itemPath.Substring(repoPath.Length).TrimStart('\\').Length;
+            string relPath = filePath.Substring(filePath.Length - relPathLength); // to save upper symbols
+            IEnumerable<string> encodedParts = relPath.Split('\\').Select(EncodeUtil.EncodeUrlPart);
+            return this.Path + String.Join("/", encodedParts.ToArray());
+        }
+
+        /// <summary>
+        /// Highlight the search terms in a text.
+        /// </summary>
+        /// <param name="keywords">Search keywords.</param>
+        /// <param name="text">File content.</param>
+        private static string HighlightKeywords(string searchTerms, string text)
+        {
+            Regex exp = new Regex(@"\b(" + string.Join("|", searchTerms.Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)) + @")\b",
+                RegexOptions.IgnoreCase | RegexOptions.Multiline);
+            return !string.IsNullOrEmpty(text) ? exp.Replace(text, "<b>$0</b>") : text;
+        }
+
+        /// <summary>
+        /// Inserts parameters into the command text.
+        /// </summary>
+        /// <param name="commandText">Command text.</param>
+        /// <param name="prms">Command parameters in pairs: name, value</param>
+        /// <returns>Command text with values inserted.</returns>
+        /// <remarks>
+        /// The ICommandWithParameters interface is not supported by the 'Search.CollatorDSO' provider.
+        /// </remarks>
+        private string PrepareCommand(string commandText, params object[] prms)
+        {
+            if (prms.Length % 2 != 0)
+                throw new ArgumentException("Incorrect number of parameters");
+
+            for (int i = 0; i < prms.Length; i += 2)
+            {
+                if (!(prms[i] is string))
+                    throw new ArgumentException(prms[i] + "is invalid parameter name");
+
+                string value = (string)prms[i + 1];
+
+                // Search.CollatorDSO provider ignores ' and " chars, but we will remove them anyway
+                value = value.Replace(@"""", String.Empty);
+                value = value.Replace("'", String.Empty);
+
+                commandText = commandText.Replace((string)prms[i], value);
+            }
+            return commandText;
         }
 
         /// <summary>

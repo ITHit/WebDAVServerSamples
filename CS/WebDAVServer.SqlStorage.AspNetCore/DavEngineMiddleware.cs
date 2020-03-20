@@ -87,7 +87,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
         /// </summary>
         /// <param name="builder">The <see cref="IApplicationBuilder"/> instance.</param>
         /// <param name="env">The <see cref="IApplicationBuilder"/> instance.</param>
-        private static void CreateDatabaseSchema(IApplicationBuilder builder, IWebHostEnvironment env)
+        public static void CreateDatabaseSchema(IApplicationBuilder builder, IHostingEnvironment env)
         {
             bool databaseExists = false;
             DavContextConfig contextConfig = builder.ApplicationServices.GetService<IOptions<DavContextConfig>>().Value;
@@ -107,7 +107,11 @@ namespace WebDAVServer.SqlStorage.AspNetCore
 
                 if (!databaseExists)
                 {
-                    RunScript(sqlConnection, File.ReadAllText(env.ContentRootPath + "\\DB.sql"));
+                    var scriptFi = new FileInfo(Path.Combine(env.ContentRootPath, "WebDAVServerImpl\\DB.sql"));
+                    if (!scriptFi.Exists)
+                        scriptFi = new FileInfo(Path.Combine(env.ContentRootPath, "DB.sql"));
+                    if (scriptFi.Exists)
+                        RunScript(sqlConnection, File.ReadAllText(scriptFi.FullName));
                 }
             }
         }
