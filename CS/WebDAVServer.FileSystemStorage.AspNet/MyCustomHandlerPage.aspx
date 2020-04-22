@@ -16,10 +16,10 @@
     <header>
         <div class="navbar navbar-dark bg-dark shadow-sm">
             <div class="container-fluid d-flex justify-content-between">
-                <a href="/" class="navbar-brand d-flex align-items-center ellipsis">
+                <span class="navbar-brand d-flex align-items-center ellipsis">
                     <img src="<%=Request.ApplicationPath.TrimEnd('/')%>/wwwroot/images/logo.svg" alt="IT Hit logo" class="logo"/>
                      <span>IT Hit WebDAV Server Engine v<%=System.Reflection.Assembly.GetAssembly(typeof(ITHit.WebDAV.Server.DavEngineAsync)).GetName().Version%></span>        
-                </a>
+                </span>
                 <button class="navbar-toggler burger-button collapsed" type="button" data-toggle="collapse" data-target="#navbarHeader" aria-controls="navbarHeader" aria-expanded="false" aria-label="Toggle navigation">
                     <div class="burger-icon"><span></span><span></span><span></span></div>
                 </button>
@@ -37,29 +37,29 @@
                         </div>
                     </div>
                     <div class="row blocks">
-                        <div class="col-12 col-lg-4">
+                        <div class="col-12 col-lg-4 d-flex flex-column">
                             <h3>Your Test Folder</h3>
                             <p>
                                To test your WebDAV server you can run Ajax integration tests right from this page.
                             </p>
-                            <a href="javascript:void(0)" onclick="OpenTestsWindow()" class="btn btn-primary" role="button">Run Integration Tests</a>
+                            <a href="javascript:void(0)" onclick="OpenTestsWindow()" class="align-self-start btn btn-primary" role="button">Run Integration Tests</a>
                         </div>
-                        <div class="col-12 col-lg-4">
+                        <div class="col-12 col-lg-4 d-flex flex-column">
                             <h3>Manage Docs with Ajax File Browser</h3>
                             <p>
                                Use the <a href="https://www.webdavsystem.com/ajaxfilebrowser/programming/">IT Hit Ajax File Browser</a> to browse your documents, open for editing from a web page and
 -                              uploading with pause/resume and auto-restore upload.
                             </p>
-                            <a href="javascript:void(0)" onclick="OpenAjaxFileBrowserWindow()" class="btn btn-primary" role="button">Browse Using Ajax File Browser</a>
+                            <a href="javascript:void(0)" onclick="OpenAjaxFileBrowserWindow()" class="align-self-start btn btn-primary" role="button">Browse Using Ajax File Browser</a>
                         </div>
-                        <div class="col-12 col-lg-4">
+                        <div class="col-12 col-lg-4 d-flex flex-column">
                             <h3>Connect with WebDAV Client</h3>
                             <p>                               
                                Use a WebDAV client provided with almost any OS. Refer to <a href="https://www.webdavsystem.com/server/access">Accessing WebDAV Server</a> page for
                 -              detailed instructions. The button below is using <a href="https://www.webdavsystem.com/ajax/">IT Hit WebDAV Ajax Library</a> to mount WebDAV
                 -              folder and open the default OS file manager.
                             </p>
-                            <a href="javascript:void(0)" onclick="WebDAVController && WebDAVController.OpenCurrentFolderInOsFileManager()" class="btn btn-primary" role="button">Browse Using OS File Manager</a>
+                            <a href="javascript:void(0)" onclick="WebDAVController && WebDAVController.OpenCurrentFolderInOsFileManager()" class="align-self-start btn btn-primary" role="button">Browse Using OS File Manager</a>
                         </div>
                     </div>
                     <div class="row mt-1">

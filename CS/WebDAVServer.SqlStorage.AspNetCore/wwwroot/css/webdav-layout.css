@@ -404,6 +404,8 @@ header .versions {
         font-weight: bold;
         color: white;
         text-decoration: underline;
+        margin-top: auto;
+        margin-bottom: 20px;
     }
 /*End Header styles*/
 
