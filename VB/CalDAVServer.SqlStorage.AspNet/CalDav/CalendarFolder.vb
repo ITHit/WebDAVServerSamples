@@ -433,7 +433,7 @@ Namespace CalDav
         Private Async Function GetPropertyValuesAsync(command As String, ParamArray prms As Object()) As Task(Of IList(Of PropertyValue))
             Dim l As List(Of PropertyValue) = New List(Of PropertyValue)()
             Using reader As SqlDataReader = Await Context.ExecuteReaderAsync(command, prms)
-                While reader.Read()
+                While Await reader.ReadAsync()
                     Dim name As String = reader.GetString(reader.GetOrdinal("Name"))
                     Dim ns As String = reader.GetString(reader.GetOrdinal("Namespace"))
                     Dim value As String = reader.GetString(reader.GetOrdinal("PropVal"))

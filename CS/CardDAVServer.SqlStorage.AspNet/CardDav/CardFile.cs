@@ -103,7 +103,7 @@ namespace CardDAVServer.SqlStorage.AspNet.CardDav
 
             Stopwatch stopWatch = Stopwatch.StartNew();
 
-            using (SqlDataReader reader = await context.ExecuteReaderAsync(sql, prms))
+            using (SqlDataReader reader = await context.ExecuteReaderAsync(sql, prms))            
             {
                 DataTable cards = new DataTable();
                 cards.Load(reader);
@@ -358,7 +358,7 @@ namespace CardDAVServer.SqlStorage.AspNet.CardDav
             string vCard;
             using (StreamReader reader = new StreamReader(stream))
             {
-                vCard = reader.ReadToEnd();
+                vCard = await reader.ReadToEndAsync();
             }
 
             // Typically the stream contains a single vCard.

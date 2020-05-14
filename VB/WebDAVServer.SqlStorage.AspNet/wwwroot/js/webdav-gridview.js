@@ -1250,22 +1250,49 @@
          * @private
          */
         _ProtocolInstallMessage: function () {
-            var installerFilePath = this.GetInstallerFileUrl();
-
             if (ITHit.WebDAV.Client.DocManager.IsDavProtocolSupported()) {
-                oConfirmModal.Confirm('This action requires a protocol installation. <br/><br/>' +
-                    'Make sure a web browser extension is enabled after protocol installation.<br/>' +
-                    '<a href="https://www.webdavsystem.com/ajax/programming/open-doc-webpage/install/' +
-                    (ITHit.DetectBrowser.Browser ? ('#' + ITHit.DetectBrowser.Browser.toLowerCase()) : '') +
-                    '">How to check that the web browser extension is enabled.</a><br/><br/>' +
-                    'Select OK to download the protocol installer.', function () {
-                        // IT Hit WebDAV Ajax Library protocol installers path.
-                        // Used to open non-MS Office documents or if MS Office is
-                        // not installed as well as to open OS File Manager.     
+                var $currentOS = $('#DownloadProtocolModal .current-os');
+                var $currentBrowser = $('#DownloadProtocolModal .current-browser');
 
+                // initialization browsers extension panel
+                if ($currentBrowser.children().length === 0) {
+                    let isChrome = !!window['chrome'] && (!!window['chrome']['webstore'] || !!window['chrome']['runtime']);
 
-                        window.open(installerFilePath);
-                    }, { size: 'lg' });
+                    // Edge (based on chromium) detection
+                    if (isChrome && (navigator.userAgent.indexOf('Edg') !== -1)) {
+                        $('#DownloadProtocolModal .edge-chromium').appendTo($currentBrowser);
+                    } else if (isChrome) {
+                        $('#DownloadProtocolModal .goole-chrome').appendTo($currentBrowser);
+                    } else if (typeof InstallTrigger !== 'undefined') {
+                        $('#DownloadProtocolModal .mozilla-firefox').appendTo($currentBrowser);
+                    }
+                    else {
+                        $('#DownloadProtocolModal .not-required-internet-explorer').show();
+                    }
+                }
+
+                // initialization custom protocol installers panel
+                if ($currentOS.children().length === 0) {
+                    if (ITHit.DetectOS.OS === 'Windows') {
+                        $('#DownloadProtocolModal .window').appendTo($currentOS);
+                    } else if (ITHit.DetectOS.OS === 'Linux') {
+                        $('#DownloadProtocolModal .linux').appendTo($currentOS);
+                    } else if (ITHit.DetectOS.OS === 'MacOS') {
+                        $('#DownloadProtocolModal .mac-os').appendTo($currentOS);
+                    }
+                }
+
+                $('#DownloadProtocolModal').modal('show');
+                $('#DownloadProtocolModal .more-lnk').click(function () {
+                    var $pnl = $(this).next();
+                    if ($pnl.is(':visible')) {
+                        $(this).find('span').text('+');
+                        $pnl.hide();
+                    } else {
+                        $(this).find('span').text('-');
+                        $pnl.show();
+                    }
+                });
             }
         }
     };

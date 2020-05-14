@@ -219,7 +219,7 @@ Public MustInherit Class DavHierarchyItem
     Public Async Function GetActiveLocksAsync() As Task(Of IEnumerable(Of LockInfo)) Implements ILockAsync.GetActiveLocksAsync
         Dim entryId As Guid = ItemId
         Dim l As List(Of LockInfo) = New List(Of LockInfo)()
-        l.AddRange(GetLocks(entryId, False))
+        l.AddRange(Await GetLocksAsync(entryId, False))
         While True
             entryId = Await Context.ExecuteScalarAsync(Of Guid)("SELECT ParentItemId FROM Item WHERE ItemId = @ItemId",
                                                                "@ItemId", entryId)
@@ -227,7 +227,7 @@ Public MustInherit Class DavHierarchyItem
                 Exit While
             End If
 
-            l.AddRange(GetLocks(entryId, True))
+            l.AddRange(Await GetLocksAsync(entryId, True))
         End While
 
         Return l
@@ -378,21 +378,21 @@ Public MustInherit Class DavHierarchyItem
         End If
     End Function
 
-    Private Function GetLocks(itemId As Guid, onlyDeep As Boolean) As List(Of LockInfo)
+    Private Async Function GetLocksAsync(itemId As Guid, onlyDeep As Boolean) As Task(Of List(Of LockInfo))
         If onlyDeep Then
             Dim command As String = "SELECT Token, Shared, Deep, Expires, Owner
                       FROM Lock
                       WHERE ItemID = @ItemID AND Deep = @Deep AND (Expires IS NULL OR Expires > GetUtcDate())"
-            Return Context.ExecuteLockInfo(command,
-                                          "@ItemID", itemId,
-                                          "@Deep", True)
+            Return Await Context.ExecuteLockInfo(command,
+                                                "@ItemID", itemId,
+                                                "@Deep", True)
         End If
 
         Dim selectCommand As String = "SELECT Token, Shared, Deep, Expires, Owner
                  FROM Lock
                  WHERE ItemID = @ItemID AND (Expires IS NULL OR Expires > GetUtcDate())"
-        Return Context.ExecuteLockInfo(selectCommand,
-                                      "@ItemID", itemId)
+        Return Await Context.ExecuteLockInfo(selectCommand,
+                                            "@ItemID", itemId)
     End Function
 
     Friend Async Function ClientHasTokenAsync() As Task(Of Boolean)

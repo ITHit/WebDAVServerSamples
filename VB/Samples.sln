@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26430.6
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28803.156
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "WebDAVServer.FileSystemStorage.HttpListener", "WebDAVServer.FileSystemStorage.HttpListener\WebDAVServer.FileSystemStorage.HttpListener.vbproj", "{3AE7FD8E-2D31-44D5-B70C-441E8B6F070B}"
 EndProject

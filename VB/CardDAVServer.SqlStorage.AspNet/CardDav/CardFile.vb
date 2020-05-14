@@ -315,7 +315,7 @@ Namespace CardDav
             System.Web.HttpContext.Current.Server.ScriptTimeout = Integer.MaxValue
             Dim vCard As String
             Using reader As StreamReader = New StreamReader(stream)
-                vCard = reader.ReadToEnd()
+                vCard = Await reader.ReadToEndAsync()
             End Using
 
             ' Typically the stream contains a single vCard.

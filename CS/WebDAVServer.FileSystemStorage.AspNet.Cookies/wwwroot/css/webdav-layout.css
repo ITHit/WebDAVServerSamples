@@ -362,6 +362,11 @@ header .versions {
 .navbar-brand.ellipsis {
     width: calc(100% - 48px);
     margin-right: 0;
+    cursor: pointer;
+}
+
+.modal-open .navbar-toggler.burger-button {
+    margin-right: 0px !important;
 }
 
     .navbar-brand.ellipsis span {
@@ -407,6 +412,10 @@ header .versions {
         margin-top: auto;
         margin-bottom: 20px;
     }
+
+     .header-content a.btn {
+         text-decoration: none;
+     }
 /*End Header styles*/
 
 /*Start Main layout styles*/
@@ -519,35 +528,35 @@ ol.breadcrumb li .icon-home {
         }
 
         .ithit-grid-toolbar button.btn-create-folder:before {
-            background-image: url(/images/create-folder.svg);
+            background-image: url(/wwwroot/images/create-folder.svg);
         }
 
         .ithit-grid-toolbar button.btn-copy-items:before {
             margin: 0 4px;
-            background-image: url(/images/copy.svg);
+            background-image: url(/wwwroot/images/copy.svg);
         }
 
         .ithit-grid-toolbar button.btn-cut-items:before {
             margin: 0 4px;
-            background-image: url(/images/cut.svg);
+            background-image: url(/wwwroot/images/cut.svg);
         }
 
         .ithit-grid-toolbar button.btn-paste-items:before {
             margin: 0 4px;
-            background-image: url(/images/paste.svg);
+            background-image: url(/wwwroot/images/paste.svg);
         }
 
         .ithit-grid-toolbar button.btn-reload-items:before {
             margin: 0 4px;
-            background-image: url(/images/reload.svg);
+            background-image: url(/wwwroot/images/reload.svg);
         }
 
         .ithit-grid-toolbar button.btn-print-items:before {
-            background-image: url(/images/print.svg);
+            background-image: url(/wwwroot/images/print.svg);
         }
 
         .ithit-grid-toolbar button.btn-delete-items:before {
-            background-image: url(/images/delete.svg);
+            background-image: url(/wwwroot/images/delete.svg);
         }
 
         .ithit-grid-toolbar button:hover:before, .ithit-grid-toolbar button:focus:before {
@@ -1025,4 +1034,13 @@ table tr.hover {
         padding-right: 8px;
     }
 
+.more-lnk {
+    margin: 15px 0;
+    display: inline-block;
+}
+
+.more-pnl {
+    padding-left: 15px;
+    display: none;
+}
 /*End Main layout styles*/

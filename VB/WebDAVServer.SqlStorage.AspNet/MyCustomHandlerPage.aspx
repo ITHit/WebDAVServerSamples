@@ -15,7 +15,7 @@
 <body>
     <header>
         <div class="navbar navbar-dark bg-dark shadow-sm">
-            <div class="container-fluid d-flex justify-content-between">
+            <div class="container-fluid d-flex justify-content-between" data-toggle="collapse" data-target="#navbarHeader" aria-controls="navbarHeader" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-brand d-flex align-items-center ellipsis">
                     <img src="<%=Request.ApplicationPath.TrimEnd('/')%>/wwwroot/images/logo.svg" alt="IT Hit logo" class="logo"/>
                      <span>IT Hit WebDAV Server Engine v<%=System.Reflection.Assembly.GetAssembly(typeof(ITHit.WebDAV.Server.DavEngineAsync)).GetName().Version%></span>        
@@ -257,6 +257,51 @@
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="DownloadProtocolModal" class="modal" tabindex="-1" role="dialog" aria-labelledby="DownloadProtocolModalLabel">
+                    <div class="modal-dialog modal-lg" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Install a Custom Protocol</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="container-fluid">
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <p>To open this document, you must install a custom protocol on a client machine and enable a web browser extension.</p>
+                                            <ol>
+                                                <li>Download and install the file below:<br /> 
+                                                    <span class="current-os"></span>                                                   
+                                                    <a href="javascript:void(0)" class="more-lnk"><span>+</span>Other OS:</a>
+                                                    <p class="more-pnl">
+                                                        <span class="window">Windows:&nbsp;&nbsp;<a target="_blank" href="<%=Request.ApplicationPath.TrimEnd('/')%>/wwwroot/js/node_modules/webdav.client/Plugins/ITHitEditDocumentOpener.msi">ITHitEditDocumentOpener.msi</a><br /></span>
+                                                        <span class="linux">Linux:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a target="_blank" href="<%=Request.ApplicationPath.TrimEnd('/')%>/wwwroot/js/node_modules/webdav.client/Plugins/ITHitEditDocumentOpener.deb">ITHitEditDocumentOpener.deb</a><br /></span>
+                                                        <span class="mac-os">Mac OS:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a target="_blank" href="<%=Request.ApplicationPath.TrimEnd('/')%>/wwwroot/js/node_modules/webdav.client/Plugins/ITHitEditDocumentOpener.pkg">ITHitEditDocumentOpener.pkg</a><br /></span>
+                                                    </p>
+                                                </li>
+                                                <li>Enable the IT Hit Edit Document Opener web browser extension:<br />            
+                                                    <span class="not-required-internet-explorer">The extension is not required for Internet Explorer.<br /></span>
+                                                    <span class="current-browser"></span>                                                  
+                                                    <a href="javascript:void(0)" class="more-lnk"><span>+</span> Other web browsers:</a>
+                                                    <p class="more-pnl">
+                                                        <span class="goole-chrome"><a href="https://chrome.google.com/webstore/detail/it-hit-edit-doc-opener-5/nakgflbblpkdafokdokmjdfglijajhlp" target="_blank">Extension for Google Chrome.</a><br /></span>
+                                                        <span class="mozilla-firefox"><a href="https://addons.mozilla.org/en-CA/firefox/addon/it-hit-edit-doc-opener-5/" target="_blank">Extension for Mozilla Firefox.</a><br /></span>
+                                                        <span class="edge-chromium"><a href="https://microsoftedge.microsoft.com/addons/detail/mdfaonmaoigngflemfmkboffllkopopm" target="_blank">Extension for Microsoft Edge Chromium.</a><br /></span>
+                                                    </p>
+                                                </li>
+                                            </ol>
+                                            <br />
+                                            See <a href="https://www.webdavsystem.com/ajax/programming/open-doc-webpage/install/windows/" target="_blank">how to install the protocol app</a> and&nbsp;
+                                            <a href="https://www.webdavsystem.com/ajax/programming/open-doc-webpage/install/web_browser_extensions/" target="_blank">install and verify web browser extensions.</a>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

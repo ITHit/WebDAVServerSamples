@@ -179,8 +179,8 @@ namespace CalDAVServer.SqlStorage.AspNet.CalDav
             IList<ICalendarFileAsync> items = new List<ICalendarFileAsync>();
 
             Stopwatch stopWatch = Stopwatch.StartNew();
-
-            using (SqlDataReader reader = await context.ExecuteReaderAsync(sql, prms))
+           
+            using (SqlDataReader reader = await context.ExecuteReaderAsync(sql, prms))           
             {
                 DataTable calendarFiles = new DataTable();
                 calendarFiles.Load(reader);
@@ -459,7 +459,7 @@ namespace CalDAVServer.SqlStorage.AspNet.CalDav
             string iCalendar;
             using (StreamReader reader = new StreamReader(stream))
             {
-                iCalendar = reader.ReadToEnd();
+                iCalendar = await reader.ReadToEndAsync();
             }
 
             // Typically the stream contains a single iCalendar that contains one or more event or to-do components.
@@ -1502,8 +1502,8 @@ namespace CalDAVServer.SqlStorage.AspNet.CalDav
                 
                 Guid eventComponentId = rowsAttachments.First().Field<Guid>("EventComponentId");
                 string sql = "SELECT [AttachmentId], [MediaType], [ExternalUrl], [Content] FROM [cal_Attachment] WHERE [EventComponentId]=@EventComponentId";
-
-                using (SqlDataReader reader = await context.ExecuteReaderAsync(CommandBehavior.SequentialAccess, sql, "@EventComponentId", eventComponentId))
+                
+                using (SqlDataReader reader = await context.ExecuteReaderAsync(CommandBehavior.SequentialAccess, sql, "@EventComponentId", eventComponentId))                
                 {
                     while(await reader.ReadAsync())
                     {
@@ -1530,7 +1530,7 @@ namespace CalDAVServer.SqlStorage.AspNet.CalDav
                         {
                             using (Stream stream = reader.GetStream(ordContent))
                             {
-                                using (MemoryStream memory = new MemoryStream())
+                                using(MemoryStream memory = new MemoryStream())
                                 {
                                     await stream.CopyToAsync(memory);
                                     attachment.Base64Data = Convert.ToBase64String(memory.ToArray());

@@ -107,7 +107,7 @@ Public Class DavFile
         Using reader As SqlDataReader = Await Context.ExecuteReaderAsync(CommandBehavior.SequentialAccess,
                                                                         "SELECT Content FROM Item WHERE ItemId = @ItemId",
                                                                         "@ItemId", ItemId)
-            reader.Read()
+            Await reader.ReadAsync()
             Dim bufSize As Long = 1048576
             Dim buf = New Byte(bufSize - 1) {}
             Dim retval As Long
@@ -118,7 +118,7 @@ Public Class DavFile
                                                                   buf,
                                                                   0,
                                                                   CInt((If(count > bufSize, bufSize, count)))))) > 0
-                    output.Write(buf, 0, CInt(retval))
+                    Await output.WriteAsync(buf, 0, CInt(retval))
                     startIndex += retval
                     count -= retval
                 End While
@@ -177,7 +177,7 @@ Public Class DavFile
         Dim bytes As Long = 0
         Dim lastBytesRead As Integer
         Try
-            While(__InlineAssignHelper(lastBytesRead, segment.Read(buffer, 0, bufSize))) > 0
+            While(__InlineAssignHelper(lastBytesRead, Await segment.ReadAsync(buffer, 0, bufSize))) > 0
                 Dim dataParm As SqlParameter = New SqlParameter("@Data", SqlDbType.VarBinary, bufSize)
                 Dim offsetParm As SqlParameter = New SqlParameter("@Offset", SqlDbType.Int)
                 Dim bytesParm As SqlParameter = New SqlParameter("@Bytes", SqlDbType.Int, bufSize)

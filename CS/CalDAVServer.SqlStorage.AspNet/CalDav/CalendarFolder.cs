@@ -77,8 +77,8 @@ namespace CalDAVServer.SqlStorage.AspNet.CalDav
         private static async Task<IEnumerable<ICalendarFolderAsync>> LoadAsync(DavContext context, string sql, params object[] prms)
         {
             IList<ICalendarFolderAsync> calendarFolders = new List<ICalendarFolderAsync>();
-
-            using (SqlDataReader reader = await context.ExecuteReaderAsync(sql, prms))
+            
+            using (SqlDataReader reader = await context.ExecuteReaderAsync(sql, prms))                    
             {
                 DataTable calendars = new DataTable();
                 calendars.Load(reader);
@@ -480,9 +480,9 @@ namespace CalDAVServer.SqlStorage.AspNet.CalDav
         {
             List<PropertyValue> l = new List<PropertyValue>();
             
-            using (SqlDataReader reader = await Context.ExecuteReaderAsync(command, prms))
+            using (SqlDataReader reader = await Context.ExecuteReaderAsync(command, prms))            
             {
-                while (reader.Read())
+                while (await reader.ReadAsync())
                 {
                     string name = reader.GetString(reader.GetOrdinal("Name"));
                     string ns = reader.GetString(reader.GetOrdinal("Namespace"));

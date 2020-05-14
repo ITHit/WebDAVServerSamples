@@ -115,13 +115,13 @@ namespace WebDAVServer.SqlStorage.AspNetCore
             {
                 AddContentDisposition(Context, Name);
             }
-
+            
             using (SqlDataReader reader = await Context.ExecuteReaderAsync(
                 CommandBehavior.SequentialAccess,
                 @"SELECT Content FROM Item WHERE ItemId = @ItemId",
-                "@ItemId", ItemId))
+                "@ItemId", ItemId))                        
             {
-                reader.Read();
+                await reader.ReadAsync();
 
                 long bufSize = 1048576; // 1Mb
                 var buf = new byte[bufSize];
@@ -134,7 +134,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
                         0,
                         (int)(count > bufSize ? bufSize : count))) > 0)
                     {
-                        output.Write(buf, 0, (int)retval);
+                        await output.WriteAsync(buf, 0, (int)retval);
                         startIndex += retval;
                         count -= retval;
                     }
@@ -197,7 +197,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
             long bytes = 0;
 
             int lastBytesRead;
-                while ((lastBytesRead = segment.Read(buffer, 0, bufSize)) > 0)
+                while ((lastBytesRead = await segment.ReadAsync(buffer, 0, bufSize)) > 0)
                 {
                     SqlParameter dataParm = new SqlParameter("@Data", SqlDbType.VarBinary, bufSize);
                     SqlParameter offsetParm = new SqlParameter("@Offset", SqlDbType.Int);

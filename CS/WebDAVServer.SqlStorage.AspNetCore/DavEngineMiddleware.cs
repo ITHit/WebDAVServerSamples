@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -40,6 +41,14 @@ namespace WebDAVServer.SqlStorage.AspNetCore
         /// </summary>
         public async Task Invoke(HttpContext context, ContextCoreAsync<IHierarchyItemAsync> davContext, IOptions<DavContextConfig> config, ILogger logger)
         {
+            if (context.Request.Method == "PUT")
+            {
+                // To enable file upload > 2Gb in case you are running .NET Core server in IIS:
+                // 1. Unlock RequestFilteringModule on server level in IIS.
+                // 2. Remove RequestFilteringModule on site level. Uncomment code in web.config to remove the module.
+                // 3. Set MaxRequestBodySize = null.
+                context.Features.Get<IHttpMaxRequestBodySizeFeature>().MaxRequestBodySize = null;
+            }
             await engine.RunAsync(davContext);
         }
     }
@@ -96,7 +105,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
             string databaseName = sqlConnectionStringBuilder.InitialCatalog;
             // sets initial catalog to master 
             sqlConnectionStringBuilder.InitialCatalog = "master";
-
+           
             using (SqlConnection sqlConnection = new SqlConnection(sqlConnectionStringBuilder.ConnectionString))
             {
                 sqlConnection.Open();

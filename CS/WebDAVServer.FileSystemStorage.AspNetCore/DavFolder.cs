@@ -130,6 +130,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
         virtual public async Task CreateFolderAsync(string name)
         {
             await RequireHasTokenAsync();
+
             dirInfo.CreateSubdirectory(name);
             await context.socketService.NotifyRefreshAsync(Path);
         }
@@ -357,10 +358,10 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
                 // Sending SQL request to Windows Search. To get search results file system indexing must be enabled.
                 // To find how to enable indexing follow this link: http://windows.microsoft.com/en-us/windows/improve-windows-searches-using-index-faq
                 using (OleDbConnection connection = new OleDbConnection(context.Config.WindowsSearchProvider))
-                using (OleDbCommand command = new OleDbCommand(commandText, connection))
+                using(OleDbCommand command = new OleDbCommand(commandText, connection))
                 {
                     connection.Open();
-                    using (OleDbDataReader reader = command.ExecuteReader())
+                    using(OleDbDataReader reader = command.ExecuteReader())
                     {
                         while (await reader.ReadAsync())
                         {
@@ -386,6 +387,11 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
             foreach (string path in foundItems.Keys)
             {
                 IHierarchyItemAsync item = await context.GetHierarchyItemAsync(GetRelativePath(path)) as IHierarchyItemAsync;
+                if (item == null)
+                {
+                    continue;
+                }
+
                 if (includeSnippet && item is DavFile)
                     (item as DavFile).Snippet = HighlightKeywords(searchString.Trim('%'), foundItems[path]);
 

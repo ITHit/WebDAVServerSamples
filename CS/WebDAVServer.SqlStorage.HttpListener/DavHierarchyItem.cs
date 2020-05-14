@@ -274,7 +274,7 @@ namespace WebDAVServer.SqlStorage.HttpListener
             Guid entryId = ItemId;
             List<LockInfo> l = new List<LockInfo>();
 
-            l.AddRange(GetLocks(entryId, false)); // get all locks
+            l.AddRange(await GetLocksAsync(entryId, false)); // get all locks
             while (true)
             {
                 entryId = await Context.ExecuteScalarAsync<Guid>(
@@ -286,7 +286,7 @@ namespace WebDAVServer.SqlStorage.HttpListener
                     break;
                 }
 
-                l.AddRange(GetLocks(entryId, true)); // get only deep locks
+                l.AddRange(await GetLocksAsync(entryId, true)); // get only deep locks
             }
 
             return l;
@@ -485,7 +485,7 @@ namespace WebDAVServer.SqlStorage.HttpListener
                 await parentFolder.UpdateModifiedAsync();
             }
         }
-        private List<LockInfo> GetLocks(Guid itemId, bool onlyDeep)
+        private async Task<List<LockInfo>> GetLocksAsync(Guid itemId, bool onlyDeep)
         {
             if (onlyDeep)
             {
@@ -494,7 +494,7 @@ namespace WebDAVServer.SqlStorage.HttpListener
                       FROM Lock
                       WHERE ItemID = @ItemID AND Deep = @Deep AND (Expires IS NULL OR Expires > GetUtcDate())";
 
-                return Context.ExecuteLockInfo(
+                return await Context.ExecuteLockInfo(
                     command,
                     "@ItemID", itemId,
                     "@Deep", true);
@@ -505,7 +505,7 @@ namespace WebDAVServer.SqlStorage.HttpListener
                  FROM Lock
                  WHERE ItemID = @ItemID AND (Expires IS NULL OR Expires > GetUtcDate())";
 
-            return Context.ExecuteLockInfo(
+            return await Context.ExecuteLockInfo(
                 selectCommand,
                 "@ItemID", itemId);
         }

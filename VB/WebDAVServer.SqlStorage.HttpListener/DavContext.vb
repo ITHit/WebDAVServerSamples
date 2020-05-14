@@ -179,7 +179,7 @@ Public Class DavContext
     Public Async Function ExecuteItemAsync(Of T As {Class, IHierarchyItemAsync})(parentPath As String, command As String, ParamArray prms As Object()) As Task(Of IList(Of T))
         Dim children As IList(Of T) = New List(Of T)()
         Using reader As SqlDataReader = Await prepareCommand(command, prms).ExecuteReaderAsync()
-            While reader.Read()
+            While Await reader.ReadAsync()
                 Dim itemId As Guid = CType(reader("ItemID"), Guid)
                 Dim parentId As Guid = CType(reader("ParentItemID"), Guid)
                 Dim itemType As ItemType = CType(reader.GetInt32(reader.GetOrdinal("ItemType")), ItemType)
@@ -225,7 +225,7 @@ Public Class DavContext
         Dim totalRowsCount As Long? = Nothing
         Dim children As IList(Of IHierarchyItemAsync) = New List(Of IHierarchyItemAsync)()
         Using reader As SqlDataReader = Await prepareCommand(command, prms).ExecuteReaderAsync()
-            While reader.Read()
+            While Await reader.ReadAsync()
                 Dim itemId As Guid = CType(reader("ItemID"), Guid)
                 Dim parentId As Guid = CType(reader("ParentItemID"), Guid)
                 Dim itemType As ItemType = CType(reader.GetInt32(reader.GetOrdinal("ItemType")), ItemType)
@@ -285,7 +285,7 @@ Public Class DavContext
     Public Async Function ExecutePropertyValueAsync(command As String, ParamArray prms As Object()) As Task(Of IList(Of PropertyValue))
         Dim l As List(Of PropertyValue) = New List(Of PropertyValue)()
         Using reader As SqlDataReader = Await prepareCommand(command, prms).ExecuteReaderAsync()
-            While reader.Read()
+            While Await reader.ReadAsync()
                 Dim name As String = reader.GetString(reader.GetOrdinal("Name"))
                 Dim ns As String = reader.GetString(reader.GetOrdinal("Namespace"))
                 Dim value As String = reader.GetString(reader.GetOrdinal("PropVal"))
@@ -368,10 +368,10 @@ Public Class DavContext
     ''' <param name="command">Command text.</param>
     ''' <param name="prms">Pairs of parameter name, parameter value.</param>
     ''' <returns>List of <see cref="LockInfo"/> .</returns>
-    Public Function ExecuteLockInfo(command As String, ParamArray prms As Object()) As List(Of LockInfo)
+    Public Async Function ExecuteLockInfo(command As String, ParamArray prms As Object()) As Task(Of List(Of LockInfo))
         Dim l As List(Of LockInfo) = New List(Of LockInfo)()
-        Using reader As SqlDataReader = prepareCommand(command, prms).ExecuteReader()
-            While reader.Read()
+        Using reader As SqlDataReader = Await prepareCommand(command, prms).ExecuteReaderAsync()
+            While Await reader.ReadAsync()
                 Dim li As LockInfo = New LockInfo()
                 li.Token = reader.GetString(reader.GetOrdinal("Token"))
                 li.Level = If(reader.GetBoolean(reader.GetOrdinal("Shared")), LockLevel.Shared, LockLevel.Exclusive)

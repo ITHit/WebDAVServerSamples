@@ -37,7 +37,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
         /// Id of root folder.
         /// </summary>
         private readonly Guid rootId = new Guid("00000000-0000-0000-0000-000000000001");
-        
+
         /// <summary>
         /// Currently authenticated user.
         /// </summary>
@@ -169,8 +169,6 @@ namespace WebDAVServer.SqlStorage.AspNetCore
                 connection.Close();
             }
         }
-
-        
         /// <summary>
         /// Reads <see cref="DavFile"/> or <see cref="DavFolder"/> depending on type 
         /// <typeparamref name="T"/> from database.
@@ -181,13 +179,14 @@ namespace WebDAVServer.SqlStorage.AspNetCore
         /// <param name="prms">Sequence: sql parameter1 name, sql parameter1 value, sql parameter2 name,
         /// sql parameter2 value...</param>
         /// <returns>List of requested items.</returns>
-        public async Task<IList<T>> ExecuteItemAsync<T>(string parentPath, string command, params object[] prms) 
+        public async Task<IList<T>> ExecuteItemAsync<T>(string parentPath, string command, params object[] prms)
             where T : class, IHierarchyItemAsync
         {
             IList<T> children = new List<T>();
+
             using (SqlDataReader reader = await prepareCommand(command, prms).ExecuteReaderAsync())
             {
-                while (reader.Read())
+                while (await reader.ReadAsync())
                 {
                     Guid itemId = (Guid)reader["ItemID"];
                     Guid parentId = (Guid)reader["ParentItemID"];
@@ -241,9 +240,10 @@ namespace WebDAVServer.SqlStorage.AspNetCore
         {
             long? totalRowsCount = null;
             IList<IHierarchyItemAsync> children = new List<IHierarchyItemAsync>();
+
             using (SqlDataReader reader = await prepareCommand(command, prms).ExecuteReaderAsync())
             {
-                while (reader.Read())
+                while (await reader.ReadAsync())
                 {
                     Guid itemId = (Guid)reader["ItemID"];
                     Guid parentId = (Guid)reader["ParentItemID"];
@@ -255,7 +255,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
                         reader.GetOrdinal("FileAttributes"));
                     string relativePath = reader.GetString(reader.GetOrdinal("RelativePath"));
                     string relativePathEncoded = string.Join("/", relativePath.Split('/').Select(EncodeUtil.EncodeUrlPart));
-                    if(!totalRowsCount.HasValue)
+                    if (!totalRowsCount.HasValue)
                     {
                         totalRowsCount = reader.GetInt32(reader.GetOrdinal("TotalRowsCount"));
                     }
@@ -292,12 +292,12 @@ namespace WebDAVServer.SqlStorage.AspNetCore
             }
 
             IEnumerable<IHierarchyItemAsync> pagedResult = children.AsEnumerable();
-            if(offset.HasValue)
+            if (offset.HasValue)
             {
                 pagedResult = pagedResult.Skip((int)offset.Value);
             }
 
-            if(nResults.HasValue)
+            if (nResults.HasValue)
             {
                 pagedResult = pagedResult.Take((int)nResults.Value);
             }
@@ -314,9 +314,10 @@ namespace WebDAVServer.SqlStorage.AspNetCore
         public async Task<IList<PropertyValue>> ExecutePropertyValueAsync(string command, params object[] prms)
         {
             List<PropertyValue> l = new List<PropertyValue>();
+
             using (SqlDataReader reader = await prepareCommand(command, prms).ExecuteReaderAsync())
             {
-                while (reader.Read())
+                while (await reader.ReadAsync())
                 {
                     string name = reader.GetString(reader.GetOrdinal("Name"));
                     string ns = reader.GetString(reader.GetOrdinal("Namespace"));
@@ -404,18 +405,19 @@ namespace WebDAVServer.SqlStorage.AspNetCore
         /// <param name="command">Command text.</param>
         /// <param name="prms">Pairs of parameter name, parameter value.</param>
         /// <returns>List of <see cref="LockInfo"/>.</returns>
-        public List<LockInfo> ExecuteLockInfo(string command, params object[] prms)
+        public async Task<List<LockInfo>> ExecuteLockInfo(string command, params object[] prms)
         {
             List<LockInfo> l = new List<LockInfo>();
-            using (SqlDataReader reader = prepareCommand(command, prms).ExecuteReader())
+
+            using (SqlDataReader reader = await prepareCommand(command, prms).ExecuteReaderAsync())
             {
-                while (reader.Read())
+                while (await reader.ReadAsync())
                 {
                     LockInfo li = new LockInfo();
                     li.Token = reader.GetString(reader.GetOrdinal("Token"));
                     li.Level = reader.GetBoolean(reader.GetOrdinal("Shared")) ? LockLevel.Shared : LockLevel.Exclusive;
                     li.IsDeep = reader.GetBoolean(reader.GetOrdinal("Deep"));
-                    
+
                     DateTime expires = reader.GetDateTime(reader.GetOrdinal("Expires"));
                     if (expires <= DateTime.UtcNow)
                     {
@@ -555,12 +557,12 @@ namespace WebDAVServer.SqlStorage.AspNetCore
             cmd.CommandText = command;
             for (int i = 0; i < prms.Length; i += 2)
             {
-               if (!(prms[i] is string))
-               {
-                  throw new ArgumentException(prms[i] + "is invalid parameter name");
-               }
+                if (!(prms[i] is string))
+                {
+                    throw new ArgumentException(prms[i] + "is invalid parameter name");
+                }
 
-               cmd.Parameters.AddWithValue((string)prms[i], prms[i + 1]);
+                cmd.Parameters.AddWithValue((string)prms[i], prms[i + 1]);
             }
 
             return cmd;

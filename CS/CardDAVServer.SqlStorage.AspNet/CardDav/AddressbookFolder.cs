@@ -74,7 +74,7 @@ namespace CardDAVServer.SqlStorage.AspNet.CardDav
         {
             IList<IAddressbookFolderAsync> addressbookFolders = new List<IAddressbookFolderAsync>();
 
-            using (SqlDataReader reader = await context.ExecuteReaderAsync(sql, prms))
+            using (SqlDataReader reader = await context.ExecuteReaderAsync(sql, prms))            
             {
                 DataTable addressbooks = new DataTable();
                 addressbooks.Load(reader);
@@ -404,8 +404,8 @@ namespace CardDAVServer.SqlStorage.AspNet.CardDav
         private async Task<IList<PropertyValue>> GetPropertyValuesAsync(string command, params object[] prms)
         {
             List<PropertyValue> l = new List<PropertyValue>();
-            
-            using (SqlDataReader reader = await Context.ExecuteReaderAsync(command, prms))
+
+            using (SqlDataReader reader = await Context.ExecuteReaderAsync(command, prms))            
             {
                 while (reader.Read())
                 {

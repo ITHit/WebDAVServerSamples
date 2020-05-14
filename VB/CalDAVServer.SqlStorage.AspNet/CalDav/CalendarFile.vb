@@ -406,7 +406,7 @@ Namespace CalDav
             System.Web.HttpContext.Current.Server.ScriptTimeout = Integer.MaxValue
             Dim iCalendar As String
             Using reader As StreamReader = New StreamReader(stream)
-                iCalendar = reader.ReadToEnd()
+                iCalendar = Await reader.ReadToEndAsync()
             End Using
 
             ' Typically the stream contains a single iCalendar that contains one or more event or to-do components.

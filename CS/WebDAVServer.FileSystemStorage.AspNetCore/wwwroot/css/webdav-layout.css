@@ -362,6 +362,11 @@ header .versions {
 .navbar-brand.ellipsis {
     width: calc(100% - 48px);
     margin-right: 0;
+    cursor: pointer;
+}
+
+.modal-open .navbar-toggler.burger-button {
+    margin-right: 0px !important;
 }
 
     .navbar-brand.ellipsis span {
@@ -407,6 +412,10 @@ header .versions {
         margin-top: auto;
         margin-bottom: 20px;
     }
+
+     .header-content a.btn {
+         text-decoration: none;
+     }
 /*End Header styles*/
 
 /*Start Main layout styles*/
@@ -1025,4 +1034,13 @@ table tr.hover {
         padding-right: 8px;
     }
 
+.more-lnk {
+    margin: 15px 0;
+    display: inline-block;
+}
+
+.more-pnl {
+    padding-left: 15px;
+    display: none;
+}
 /*End Main layout styles*/

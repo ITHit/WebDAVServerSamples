@@ -125,6 +125,7 @@ namespace CardDAVServer.FileSystemStorage.AspNet
         /// <param name="name">Name of the new folder.</param>
         virtual public async Task CreateFolderAsync(string name)
         {
+
             dirInfo.CreateSubdirectory(name);
         }
 

@@ -314,6 +314,10 @@ Public Class DavFolder
         Dim subtreeItems As IList(Of IHierarchyItemAsync) = New List(Of IHierarchyItemAsync)()
         For Each path As String In foundItems.Keys
             Dim item As IHierarchyItemAsync = TryCast(Await context.GetHierarchyItemAsync(GetRelativePath(path)), IHierarchyItemAsync)
+            If item Is Nothing Then
+                Continue For
+            End If
+
             If includeSnippet AndAlso TypeOf item Is DavFile Then TryCast(item, DavFile).Snippet = HighlightKeywords(searchString.Trim("%"c), foundItems(path))
             subtreeItems.Add(item)
         Next
