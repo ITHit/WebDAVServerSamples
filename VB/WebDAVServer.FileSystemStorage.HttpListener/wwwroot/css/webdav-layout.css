@@ -275,6 +275,8 @@ header {
 header .logo {
     margin-right: 10px;
     position: absolute;
+    left: 0px;
+    top: 2px;
 }
 
 .navbar-toggler .burger-icon span {
@@ -371,6 +373,7 @@ header .versions {
 
     .navbar-brand.ellipsis span {
         left: 45px;
+        top: 5px;
     }
 
 .navbar {

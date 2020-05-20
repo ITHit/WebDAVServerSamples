@@ -1266,7 +1266,7 @@
                     } else if (typeof InstallTrigger !== 'undefined') {
                         $('#DownloadProtocolModal .mozilla-firefox').appendTo($currentBrowser);
                     }
-                    else {
+                    else if (navigator.userAgent.indexOf("MSIE ") > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./)) {
                         $('#DownloadProtocolModal .not-required-internet-explorer').show();
                     }
                 }
@@ -1283,7 +1283,7 @@
                 }
 
                 $('#DownloadProtocolModal').modal('show');
-                $('#DownloadProtocolModal .more-lnk').click(function () {
+                $('#DownloadProtocolModal .more-lnk').unbind().click(function () {
                     var $pnl = $(this).next();
                     if ($pnl.is(':visible')) {
                         $(this).find('span').text('+');

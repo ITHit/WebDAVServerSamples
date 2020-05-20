@@ -150,9 +150,7 @@ Friend Class MyCustomGetHandler
         context.Response.ContentType = "application/x-apple-aspen-config"
         context.Response.AddHeader("Content-Disposition", "attachment; filename=profile.mobileconfig")
         context.Response.ContentLength = profileBytes.Length
-        Using writer As BinaryWriter = New BinaryWriter(context.Response.OutputStream)
-            writer.Write(profileBytes)
-        End Using
+        Await context.Response.OutputStream.WriteAsync(profileBytes, 0, profileBytes.Length)
     End Function
 
     ''' <summary>

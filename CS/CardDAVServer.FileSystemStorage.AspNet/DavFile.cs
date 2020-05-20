@@ -181,8 +181,7 @@ namespace CardDAVServer.FileSystemStorage.AspNet
                     lastBytesRead = await content.ReadAsync(buffer, 0, bufSize);
                     while (lastBytesRead > 0)
                     {
-                        await fileStream.WriteAsync(buffer, 0, lastBytesRead);
-                        await fileStream.FlushAsync();
+                        await fileStream.WriteAsync(buffer, 0, lastBytesRead);                        
                         lastBytesRead = await content.ReadAsync(buffer, 0, bufSize);
                     }
                 }

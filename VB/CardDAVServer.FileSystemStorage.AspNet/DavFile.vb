@@ -164,7 +164,6 @@ Public Class DavFile
                 lastBytesRead = Await content.ReadAsync(buffer, 0, bufSize)
                 While lastBytesRead > 0
                     Await fileStream.WriteAsync(buffer, 0, lastBytesRead)
-                    Await fileStream.FlushAsync()
                     lastBytesRead = Await content.ReadAsync(buffer, 0, bufSize)
                 End While
             Catch __unusedHttpException1__ As HttpException

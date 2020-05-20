@@ -22,7 +22,7 @@ namespace CardDAVServer.SqlStorage.AspNet
     /// </summary>
     public class DavContext :
         ContextWebAsync<IHierarchyItemAsync>
-        , IDisposable
+         , IDisposable
     {
         /// <summary>
         /// Database connection string.
@@ -129,11 +129,13 @@ namespace CardDAVServer.SqlStorage.AspNet
             if (Exception != null)
             {
                 //rollback the transaction if something went wrong.
+                
                 RollBackTransaction();
             }
             else
             {
                 //commit the transaction if everything is ok.
+                
                 CommitTransaction();
             }
         }
@@ -145,7 +147,7 @@ namespace CardDAVServer.SqlStorage.AspNet
         {
             CloseConnection();
         }
-
+     
         /// <summary>
         /// Commits active transaction.
         /// </summary>
@@ -156,7 +158,7 @@ namespace CardDAVServer.SqlStorage.AspNet
                 transaction.Commit();
             }
         }
-
+     
         /// <summary>
         /// Rollbacks active transaction.
         /// </summary>
@@ -178,7 +180,7 @@ namespace CardDAVServer.SqlStorage.AspNet
                 connection.Close();
             }
         }
-        
+
         /// <summary>
         /// Executes SQL command which returns scalar result.
         /// </summary>

@@ -171,10 +171,7 @@ namespace CalDAVServer.SqlStorage.AspNet
             context.Response.ContentType = "application/x-apple-aspen-config";
             context.Response.AddHeader("Content-Disposition", "attachment; filename=profile.mobileconfig");
             context.Response.ContentLength = profileBytes.Length;
-            using (BinaryWriter writer = new BinaryWriter(context.Response.OutputStream))
-            {
-                writer.Write(profileBytes);
-            }
+            await context.Response.OutputStream.WriteAsync(profileBytes, 0, profileBytes.Length);
         }
 
         /// <summary>

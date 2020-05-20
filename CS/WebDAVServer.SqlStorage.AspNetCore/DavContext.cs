@@ -120,15 +120,16 @@ namespace WebDAVServer.SqlStorage.AspNetCore
             if (Exception != null)
             {
                 //rollback the transaction if something went wrong.
+                
                 RollBackTransaction();
             }
             else
             {
                 //commit the transaction if everything is ok.
+                
                 CommitTransaction();
             }
         }
-
         /// <summary>
         /// We implement <see cref="IDisposable"/> to have connection closed.
         /// </summary>
@@ -136,7 +137,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
         {
             CloseConnection();
         }
-
+     
         /// <summary>
         /// Commits active transaction.
         /// </summary>
@@ -147,7 +148,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
                 transaction.Commit();
             }
         }
-
+     
         /// <summary>
         /// Rollbacks active transaction.
         /// </summary>
@@ -159,6 +160,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
             }
         }
 
+
         /// <summary>
         /// Closes connection.
         /// </summary>
@@ -169,6 +171,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
                 connection.Close();
             }
         }
+
         /// <summary>
         /// Reads <see cref="DavFile"/> or <see cref="DavFolder"/> depending on type 
         /// <typeparamref name="T"/> from database.
