@@ -72,7 +72,9 @@ Public Class DavHandler
         Dim gSuiteEngine As GSuiteEngineAsync = getOrInitializeGSuiteEngine(context)
         Using sqlDavContext = New DavContext(context)
             Await webDavEngine.RunAsync(sqlDavContext)
-            Await gSuiteEngine.RunAsync(ContextConverter.ConvertToGSuiteContext(sqlDavContext))
+            If gSuiteEngine IsNot Nothing Then
+                Await gSuiteEngine.RunAsync(ContextConverter.ConvertToGSuiteContext(sqlDavContext))
+            End If
         End Using
     End Function
 

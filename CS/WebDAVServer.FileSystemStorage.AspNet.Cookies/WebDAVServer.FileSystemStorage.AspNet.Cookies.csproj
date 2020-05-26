@@ -46,17 +46,17 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-  <Reference Include="ITHit.Server, Version=10.0.7032-Beta.0, Culture=neutral, PublicKeyToken=d057f7b1134051b5, processorArchitecture=MSIL">
-      <HintPath>..\packages\ITHit.Server.10.0.7032-Beta\lib\net451\ITHit.Server.dll</HintPath>
+  <Reference Include="ITHit.Server, Version=10.0.7047-Beta.0, Culture=neutral, PublicKeyToken=d057f7b1134051b5, processorArchitecture=MSIL">
+      <HintPath>..\packages\ITHit.Server.10.0.7047-Beta\lib\net451\ITHit.Server.dll</HintPath>
     </Reference>
-    <Reference Include="ITHit.WebDAV.Server, Version=10.0.7032-Beta.0, Culture=neutral, PublicKeyToken=d057f7b1134051b5, processorArchitecture=MSIL">
-      <HintPath>..\packages\ITHit.WebDAV.Server.10.0.7032-Beta\lib\net451\ITHit.WebDAV.Server.dll</HintPath>
+    <Reference Include="ITHit.WebDAV.Server, Version=10.0.7047-Beta.0, Culture=neutral, PublicKeyToken=d057f7b1134051b5, processorArchitecture=MSIL">
+      <HintPath>..\packages\ITHit.WebDAV.Server.10.0.7047-Beta\lib\net451\ITHit.WebDAV.Server.dll</HintPath>
     </Reference>
-    <Reference Include="ITHit.Server.Web, Version=10.0.7032-Beta.0, Culture=neutral, PublicKeyToken=d057f7b1134051b5, processorArchitecture=MSIL">
-      <HintPath>..\packages\ITHit.Server.Web.10.0.7032-Beta\lib\net451\ITHit.Server.Web.dll</HintPath>
+    <Reference Include="ITHit.Server.Web, Version=10.0.7047-Beta.0, Culture=neutral, PublicKeyToken=d057f7b1134051b5, processorArchitecture=MSIL">
+      <HintPath>..\packages\ITHit.Server.Web.10.0.7047-Beta\lib\net451\ITHit.Server.Web.dll</HintPath>
     </Reference>
-	<Reference Include="ITHit.GSuite.Server, Version=10.0.7032-Beta.0, Culture=neutral, PublicKeyToken=d057f7b1134051b5, processorArchitecture=MSIL">
-      <HintPath>..\packages\ITHit.GSuite.Server.10.0.7032-Beta\lib\net451\ITHit.GSuite.Server.dll</HintPath>
+	<Reference Include="ITHit.GSuite.Server, Version=10.0.7047-Beta.0, Culture=neutral, PublicKeyToken=d057f7b1134051b5, processorArchitecture=MSIL">
+      <HintPath>..\packages\ITHit.GSuite.Server.10.0.7047-Beta\lib\net451\ITHit.GSuite.Server.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=1.0.8.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.8\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>

@@ -79,7 +79,10 @@ namespace CardDAVServer.SqlStorage.AspNet
             using (var sqlDavContext = new DavContext(context))
             {
                 await webDavEngine.RunAsync(sqlDavContext);
-                await gSuiteEngine.RunAsync(ContextConverter.ConvertToGSuiteContext(sqlDavContext));
+                if (gSuiteEngine != null)
+                {
+                    await gSuiteEngine.RunAsync(ContextConverter.ConvertToGSuiteContext(sqlDavContext));
+                }
             }
         }
 
