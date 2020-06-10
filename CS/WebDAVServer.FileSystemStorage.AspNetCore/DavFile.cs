@@ -119,7 +119,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
             }
 
             byte[] buffer = new byte[bufSize];
-            using (FileStream fileStream = fileInfo.Open(FileMode.Open, FileAccess.Read, FileShare.Read))
+            await using (FileStream fileStream = fileInfo.Open(FileMode.Open, FileAccess.Read, FileShare.Read))
             {
                 fileStream.Seek(startIndex, SeekOrigin.Begin);
                 int bytesRead;
@@ -161,12 +161,12 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
             await RequireHasTokenAsync();
             if (startIndex == 0 && fileInfo.Length > 0)
             {
-                using (FileStream filestream = fileInfo.Open(FileMode.Truncate)) { }
+                await using (FileStream filestream = fileInfo.Open(FileMode.Truncate)) { }
             }
             await fileInfo.SetExtendedAttributeAsync("TotalContentLength", (object)totalFileSize);
             await fileInfo.SetExtendedAttributeAsync("SerialNumber", ++this.serialNumber);
 
-            using (FileStream fileStream = fileInfo.Open(FileMode.OpenOrCreate, FileAccess.Write, FileShare.Read))
+            await using (FileStream fileStream = fileInfo.Open(FileMode.OpenOrCreate, FileAccess.Write, FileShare.Read))
             {
                 if (fileStream.Length < startIndex)
                 {

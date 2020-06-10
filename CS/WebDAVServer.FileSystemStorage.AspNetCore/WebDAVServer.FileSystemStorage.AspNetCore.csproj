@@ -1,9 +1,11 @@
 
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
-    <VersionPrefix>10.0.7047-Beta</VersionPrefix>
+    <VersionPrefix>10.0.7059-Beta</VersionPrefix>
     <AssemblyName>WebDAVServer.FileSystemStorage.AspNetCore</AssemblyName>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <LangVersion>8.0</LangVersion>
+    <NullableContextOptions>enable</NullableContextOptions>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <NoWarn>1701;1702;1705;1998</NoWarn>
@@ -99,10 +101,6 @@
     <Content Include="App_Data\WebDav\Storage\Templates\template2013.xltx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <PackageReference Include="Microsoft.AspNetCore.App" />
-    <PackageReference Include="System.IO.FileSystem.DriveInfo" Version="4.3.1" />
-    <PackageReference Include="System.Text.Encodings.Web" Version="4.5.0" />
-    <PackageReference Include="System.Xml.XmlSerializer" Version="4.3.0" />
     <Content Include="MyCustomHandlerPage.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -126,10 +124,10 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="ITHit.Server" Version="10.0.7047-Beta" />
-    <PackageReference Include="ITHit.Server.Core" Version="10.0.7047-Beta" />
-    <PackageReference Include="ITHit.WebDAV.Server" Version="10.0.7047-Beta" />
-    <PackageReference Include="ITHit.GSuite.Server" Version="10.0.7047-Beta" />
+    <PackageReference Include="ITHit.Server" Version="10.0.7059-Beta" />
+    <PackageReference Include="ITHit.Server.Core" Version="10.0.7059-Beta" />
+    <PackageReference Include="ITHit.WebDAV.Server" Version="10.0.7059-Beta" />
+    <PackageReference Include="ITHit.GSuite.Server" Version="10.0.7059-Beta" />
     <PackageReference Include="System.Data.OleDb" Version="4.7.0" />
   </ItemGroup>
   <ItemGroup>

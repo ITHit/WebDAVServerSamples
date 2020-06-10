@@ -27,6 +27,8 @@ Public Class DavFolder
     ''' </summary>
     Private Shared ReadOnly windowsSearchProvider As String = ConfigurationManager.AppSettings("WindowsSearchProvider")
 
+    Private Shared ReadOnly invalidXmlCharsPattern As Regex = New Regex("[^\x09\x0A\x0D\x20-\xD7FF\xE000-\xFFFD\x10000-x10FFFF]", RegexOptions.IgnoreCase)
+
     ''' <summary>
     ''' Corresponding instance of <see cref="DirectoryInfo"/> .
     ''' </summary>
@@ -271,7 +273,13 @@ Public Class DavFolder
                     Using reader As OleDbDataReader = command.ExecuteReader()
                         While Await reader.ReadAsync()
                             Dim snippet As String = String.Empty
-                            If includeSnippet Then snippet = If(reader.GetValue(1) <> DBNull.Value, reader.GetString(1), Nothing)
+                            If includeSnippet Then
+                                snippet = If(reader.GetValue(1) <> DBNull.Value, reader.GetString(1), Nothing)
+                                If Not String.IsNullOrEmpty(snippet) AndAlso invalidXmlCharsPattern.IsMatch(snippet) Then
+                                    snippet = invalidXmlCharsPattern.Replace(snippet, [String].Empty)
+                                End If
+                            End If
+
                             foundItems.Add(reader.GetString(0), snippet)
                         End While
                     End Using

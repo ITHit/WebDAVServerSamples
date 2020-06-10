@@ -81,7 +81,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore.ExtendedAttributes
 
             string attrPath = this.GetAttrFullPath(path, attribName);
 
-            using (FileStream fileStream = File.Open(attrPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            await using (FileStream fileStream = File.Open(attrPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             using (StreamReader reader = new StreamReader(fileStream, Encoding.UTF8))
             {
                 return await reader.ReadToEndAsync();

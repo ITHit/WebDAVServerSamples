@@ -34,8 +34,8 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore.Configuration
         /// </summary>
         /// <param name="configurationSection">Instance of <see cref="IConfigurationSection"/>.</param>
         /// <param name="config">WebDAV Logger configuration.</param>
-        /// <param name="env">Instance of <see cref="IHostingEnvironment"/>.</param>
-        public static async Task ReadConfigurationAsync(this IConfigurationSection configurationSection, DavLoggerConfig config, IHostingEnvironment env)
+        /// <param name="env">Instance of <see cref="IWebHostEnvironment"/>.</param>
+        public static async Task ReadConfigurationAsync(this IConfigurationSection configurationSection, DavLoggerConfig config, IWebHostEnvironment env)
         {
             if (configurationSection == null)
             {
@@ -63,7 +63,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore.Configuration
                     logInfo.Directory.Create();
                 }
 
-                using (FileStream stream = logInfo.Create()) { }
+                await using (FileStream stream = logInfo.Create()) { }
             }
         }
     }

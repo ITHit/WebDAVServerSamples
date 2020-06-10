@@ -25,7 +25,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
     /// </summary>
     public class DavContext :
         ContextCoreAsync<IHierarchyItemAsync>
-        , IDisposable
+        , IDisposable, IAsyncDisposable
     {
         /// <summary>
         /// Context configuration.
@@ -120,15 +120,17 @@ namespace WebDAVServer.SqlStorage.AspNetCore
             if (Exception != null)
             {
                 //rollback the transaction if something went wrong.
-                
-                RollBackTransaction();
+                await RollBackTransactionAsync();
             }
             else
             {
                 //commit the transaction if everything is ok.
-                
-                CommitTransaction();
+                await CommitTransactionAsync();
             }
+        }
+        public async ValueTask DisposeAsync()
+        {
+            await CloseConnectionAsync();
         }
         /// <summary>
         /// We implement <see cref="IDisposable"/> to have connection closed.
@@ -137,26 +139,24 @@ namespace WebDAVServer.SqlStorage.AspNetCore
         {
             CloseConnection();
         }
-     
         /// <summary>
-        /// Commits active transaction.
+        /// Asynchronously commits active transaction.
         /// </summary>
-        public void CommitTransaction()
+        public async Task CommitTransactionAsync()
         {
             if (transaction != null && transaction.Connection != null)
             {
-                transaction.Commit();
+                await transaction.CommitAsync();
             }
         }
-     
         /// <summary>
-        /// Rollbacks active transaction.
+        /// Asynchronously rollbacks active transaction.
         /// </summary>
-        public void RollBackTransaction()
+        public async Task RollBackTransactionAsync()
         {
             if (transaction != null)
             {
-                transaction.Rollback();
+                await transaction.RollbackAsync();
             }
         }
 
@@ -169,6 +169,16 @@ namespace WebDAVServer.SqlStorage.AspNetCore
             if (connection != null && connection.State != ConnectionState.Closed)
             {
                 connection.Close();
+            }
+        }
+        /// <summary>
+        /// Asynchronously closes the connection to the database.
+        /// </summary>
+        public async Task CloseConnectionAsync()
+        {
+            if (connection != null && connection.State != ConnectionState.Closed)
+            {
+                await connection.CloseAsync();
             }
         }
 
@@ -187,7 +197,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
         {
             IList<T> children = new List<T>();
 
-            using (SqlDataReader reader = await prepareCommand(command, prms).ExecuteReaderAsync())
+            await using (SqlDataReader reader = await prepareCommand(command, prms).ExecuteReaderAsync())
             {
                 while (await reader.ReadAsync())
                 {
@@ -244,7 +254,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
             long? totalRowsCount = null;
             IList<IHierarchyItemAsync> children = new List<IHierarchyItemAsync>();
 
-            using (SqlDataReader reader = await prepareCommand(command, prms).ExecuteReaderAsync())
+            await using (SqlDataReader reader = await prepareCommand(command, prms).ExecuteReaderAsync())
             {
                 while (await reader.ReadAsync())
                 {
@@ -318,7 +328,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
         {
             List<PropertyValue> l = new List<PropertyValue>();
 
-            using (SqlDataReader reader = await prepareCommand(command, prms).ExecuteReaderAsync())
+            await using (SqlDataReader reader = await prepareCommand(command, prms).ExecuteReaderAsync())
             {
                 while (await reader.ReadAsync())
                 {
@@ -412,7 +422,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
         {
             List<LockInfo> l = new List<LockInfo>();
 
-            using (SqlDataReader reader = await prepareCommand(command, prms).ExecuteReaderAsync())
+            await using (SqlDataReader reader = await prepareCommand(command, prms).ExecuteReaderAsync())
             {
                 while (await reader.ReadAsync())
                 {

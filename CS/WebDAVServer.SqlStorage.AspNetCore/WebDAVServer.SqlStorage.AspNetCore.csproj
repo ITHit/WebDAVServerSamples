@@ -1,9 +1,11 @@
 
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
-    <VersionPrefix>10.0.7047-Beta</VersionPrefix>
+    <VersionPrefix>10.0.7059-Beta</VersionPrefix>
     <AssemblyName>WebDAVServer.SqlStorage.AspNetCore</AssemblyName>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <LangVersion>8.0</LangVersion>
+    <NullableContextOptions>enable</NullableContextOptions>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <NoWarn>1701;1702;1705;1998</NoWarn>
@@ -12,8 +14,6 @@
     <None Remove="MyCustomHandlerPage.html" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.App" />
-    <PackageReference Include="System.Data.SqlClient" Version="4.6.0" />
     <Content Include="DB.sql">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -40,10 +40,10 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="ITHit.Server" Version="10.0.7047-Beta" />
-    <PackageReference Include="ITHit.Server.Core" Version="10.0.7047-Beta" />
-    <PackageReference Include="ITHit.WebDAV.Server" Version="10.0.7047-Beta" />
-    <PackageReference Include="ITHit.GSuite.Server" Version="10.0.7047-Beta" />
+    <PackageReference Include="ITHit.Server" Version="10.0.7059-Beta" />
+    <PackageReference Include="ITHit.Server.Core" Version="10.0.7059-Beta" />
+    <PackageReference Include="ITHit.WebDAV.Server" Version="10.0.7059-Beta" />
+    <PackageReference Include="ITHit.GSuite.Server" Version="10.0.7059-Beta" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.1" />
   </ItemGroup>
   <ItemGroup>

@@ -30,6 +30,8 @@ namespace WebDAVServer.FileSystemStorage.AspNet.Cookies
         /// </summary>
         private static readonly string windowsSearchProvider = ConfigurationManager.AppSettings["WindowsSearchProvider"];
 
+        private static readonly Regex invalidXmlCharsPattern = new Regex(@"[^\x09\x0A\x0D\x20-\xD7FF\xE000-\xFFFD\x10000-x10FFFF]", RegexOptions.IgnoreCase);
+
         /// <summary>
         /// Corresponding instance of <see cref="DirectoryInfo"/>.
         /// </summary>
@@ -372,7 +374,13 @@ namespace WebDAVServer.FileSystemStorage.AspNet.Cookies
                         {
                             string snippet = string.Empty;
                             if (includeSnippet)
+                            {
                                 snippet = reader.GetValue(1) != DBNull.Value ? reader.GetString(1) : null;
+                                if (!string.IsNullOrEmpty(snippet) && invalidXmlCharsPattern.IsMatch(snippet))
+                                {
+                                    snippet = invalidXmlCharsPattern.Replace(snippet, String.Empty);
+                                }
+                            }
                             foundItems.Add(reader.GetString(0), snippet);
                         }
                     }

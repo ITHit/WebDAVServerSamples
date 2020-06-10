@@ -20,6 +20,8 @@ Public Class DavFolder
     Inherits DavHierarchyItem
     Implements IFolderAsync
 
+    Private Shared ReadOnly invalidXmlCharsPattern As Regex = New Regex("[^\x09\x0A\x0D\x20-\xD7FF\xE000-\xFFFD\x10000-x10FFFF]", RegexOptions.IgnoreCase)
+
     ''' <summary>
     ''' Corresponding instance of <see cref="DirectoryInfo"/> .
     ''' </summary>

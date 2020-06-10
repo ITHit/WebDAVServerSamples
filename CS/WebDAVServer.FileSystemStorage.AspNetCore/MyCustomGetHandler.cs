@@ -118,7 +118,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
             // Return file content in case of GET request, in case of HEAD just return headers.
             if (context.Request.HttpMethod == "GET")
             {               
-                using (var writer = new StreamWriter(context.Response.OutputStream, encoding))
+                await using (var writer = new StreamWriter(context.Response.OutputStream, encoding))
                 {
                     await writer.WriteAsync(content);
                 }

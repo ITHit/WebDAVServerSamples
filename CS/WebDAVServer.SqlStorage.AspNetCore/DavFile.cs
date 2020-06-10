@@ -116,7 +116,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
                 AddContentDisposition(Context, Name);
             }
             
-            using (SqlDataReader reader = await Context.ExecuteReaderAsync(
+            await using (SqlDataReader reader = await Context.ExecuteReaderAsync(
                 CommandBehavior.SequentialAccess,
                 @"SELECT Content FROM Item WHERE ItemId = @ItemId",
                 "@ItemId", ItemId))                        

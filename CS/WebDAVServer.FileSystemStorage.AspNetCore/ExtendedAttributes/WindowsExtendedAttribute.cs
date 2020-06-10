@@ -113,7 +113,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore.ExtendedAttributes
 
             using (SafeFileHandle safeHandler = GetSafeHandler(fullPath, FileAccess.Read, FileMode.Open, FileShare.ReadWrite))
             {
-                using (FileStream fileStream = Open(safeHandler, FileAccess.Read))
+                await using (FileStream fileStream = Open(safeHandler, FileAccess.Read))
                 {
                     using (StreamReader streamReader = new StreamReader(fileStream))
                     {
@@ -155,9 +155,9 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore.ExtendedAttributes
                     ThrowLastError();
                 }
 
-                using (FileStream fileStream = Open(safeHandler, FileAccess.Write))
+                await using (FileStream fileStream = Open(safeHandler, FileAccess.Write))
                 {
-                    using (StreamWriter streamWriter = new StreamWriter(fileStream))
+                    await using (StreamWriter streamWriter = new StreamWriter(fileStream))
                     {
                         await streamWriter.WriteAsync(attribValue);
                     }

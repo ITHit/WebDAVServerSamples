@@ -25,6 +25,8 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
     public class DavFolder : DavHierarchyItem, IFolderAsync, IQuotaAsync, ISearchAsync, IResumableUploadBase
     {
 
+        private static readonly Regex invalidXmlCharsPattern = new Regex(@"[^\x09\x0A\x0D\x20-\xD7FF\xE000-\xFFFD\x10000-x10FFFF]", RegexOptions.IgnoreCase);
+
         /// <summary>
         /// Corresponding instance of <see cref="DirectoryInfo"/>.
         /// </summary>
@@ -115,7 +117,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
             await RequireHasTokenAsync();
             string fileName = System.IO.Path.Combine(fileSystemInfo.FullName, name);
 
-            using (FileStream stream = new FileStream(fileName, FileMode.CreateNew))
+            await using (FileStream stream = new FileStream(fileName, FileMode.CreateNew))
             {
             }
             await context.socketService.NotifyRefreshAsync(Path);
@@ -357,17 +359,23 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
             {
                 // Sending SQL request to Windows Search. To get search results file system indexing must be enabled.
                 // To find how to enable indexing follow this link: http://windows.microsoft.com/en-us/windows/improve-windows-searches-using-index-faq
-                using (OleDbConnection connection = new OleDbConnection(context.Config.WindowsSearchProvider))
-                using(OleDbCommand command = new OleDbCommand(commandText, connection))
+                await using (OleDbConnection connection = new OleDbConnection(context.Config.WindowsSearchProvider))
+                await using(OleDbCommand command = new OleDbCommand(commandText, connection))
                 {
                     connection.Open();
-                    using(OleDbDataReader reader = command.ExecuteReader())
+                    await using(OleDbDataReader reader = command.ExecuteReader())
                     {
                         while (await reader.ReadAsync())
                         {
                             string snippet = string.Empty;
                             if (includeSnippet)
+                            {
                                 snippet = reader.GetValue(1) != DBNull.Value ? reader.GetString(1) : null;
+                                if (!string.IsNullOrEmpty(snippet) && invalidXmlCharsPattern.IsMatch(snippet))
+                                {
+                                    snippet = invalidXmlCharsPattern.Replace(snippet, String.Empty);
+                                }
+                            }
                             foundItems.Add(reader.GetString(0), snippet);
                         }
                     }
