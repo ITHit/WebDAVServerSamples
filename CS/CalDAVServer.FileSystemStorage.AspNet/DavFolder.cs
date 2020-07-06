@@ -23,6 +23,7 @@ namespace CalDAVServer.FileSystemStorage.AspNet
     public class DavFolder : DavHierarchyItem, IFolderAsync
     {
 
+        // Control characters and permanently undefined Unicode characters to be removed from search snippet.
         private static readonly Regex invalidXmlCharsPattern = new Regex(@"[^\x09\x0A\x0D\x20-\xD7FF\xE000-\xFFFD\x10000-x10FFFF]", RegexOptions.IgnoreCase);
 
         /// <summary>

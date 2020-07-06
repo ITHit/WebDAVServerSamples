@@ -28,6 +28,7 @@ Public Class DavFolder
     ''' </summary>
     Private Shared ReadOnly windowsSearchProvider As String = ConfigurationManager.AppSettings("WindowsSearchProvider")
 
+    ' Control characters and permanently undefined Unicode characters to be removed from search snippet.
     Private Shared ReadOnly invalidXmlCharsPattern As Regex = New Regex("[^\x09\x0A\x0D\x20-\xD7FF\xE000-\xFFFD\x10000-x10FFFF]", RegexOptions.IgnoreCase)
 
     ''' <summary>
@@ -298,6 +299,7 @@ Public Class DavFolder
                             Dim snippet As String = String.Empty
                             If includeSnippet Then
                                 snippet = If(reader.GetValue(1) <> DBNull.Value, reader.GetString(1), Nothing)
+                                ' XML does not support control characters or permanently undefined Unicode characters. Removing them from snippet. https:'www.w3.org/TR/xml/#charsets
                                 If Not String.IsNullOrEmpty(snippet) AndAlso invalidXmlCharsPattern.IsMatch(snippet) Then
                                     snippet = invalidXmlCharsPattern.Replace(snippet, [String].Empty)
                                 End If

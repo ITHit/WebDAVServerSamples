@@ -1,7 +1,7 @@
 
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
-    <VersionPrefix>10.0.7062</VersionPrefix>
+    <VersionPrefix>10.1.8941</VersionPrefix>
     <AssemblyName>WebDAVServer.SqlStorage.AspNetCore</AssemblyName>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <LangVersion>8.0</LangVersion>
@@ -40,10 +40,10 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="ITHit.Server" Version="10.0.7062" />
-    <PackageReference Include="ITHit.Server.Core" Version="10.0.7062" />
-    <PackageReference Include="ITHit.WebDAV.Server" Version="10.0.7062" />
-    <PackageReference Include="ITHit.GSuite.Server" Version="10.0.7062" />
+    <PackageReference Include="ITHit.Server" Version="10.1.8941" />
+    <PackageReference Include="ITHit.Server.Core" Version="10.1.8941" />
+    <PackageReference Include="ITHit.WebDAV.Server" Version="10.1.8941" />
+    <PackageReference Include="ITHit.GSuite.Server" Version="10.1.8941" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.1" />
   </ItemGroup>
   <ItemGroup>
