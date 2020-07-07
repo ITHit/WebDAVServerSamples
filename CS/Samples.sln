@@ -25,7 +25,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebDAVServer.SqlStorage.Asp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebDAVServer.FileSystemStorage.AspNet.Cookies", "WebDAVServer.FileSystemStorage.AspNet.Cookies\WebDAVServer.FileSystemStorage.AspNet.Cookies.csproj", "{F04D1B74-4943-4EC3-9B39-0A468AA3926E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureDataLakeStorage", "AzureDataLakeStorage\AzureDataLakeStorage.csproj", "{35D51C72-362E-4692-B247-184EEBB59A89}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebDAVServer.AzureDataLakeStorage.AspNetCore", "WebDAVServer.AzureDataLakeStorage.AspNetCore\WebDAVServer.AzureDataLakeStorage.AspNetCore.csproj", "{35D51C72-362E-4692-B247-184EEBB59A89}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
