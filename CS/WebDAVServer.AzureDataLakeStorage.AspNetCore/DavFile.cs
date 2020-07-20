@@ -5,11 +5,10 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Azure;
-using Azure.Storage.Files.DataLake;
 using ITHit.WebDAV.Server;
 using ITHit.WebDAV.Server.Class1;
 using ITHit.WebDAV.Server.ResumableUpload;
-using WebDAVServer.AzureDataLakeStorage.AspNetCore.ExtendedAttributes;
+using WebDAVServer.AzureDataLakeStorage.AspNetCore.DataLake;
 
 namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
 {
@@ -19,27 +18,21 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
     public class DavFile : DavHierarchyItem, IFileAsync, IResumableUploadAsync, IUploadProgressAsync
     {
         /// <summary>
-        /// Corresponding <see cref="DLItem"/>.
+        /// Corresponding <see cref="DataLakeItem"/>.
         /// </summary>
-        private readonly DLItem dlItem;
-        /// <summary>
-        /// Corresponding <see cref="DataLakeFileClient"/>
-        /// </summary>
-        private readonly DataLakeFileClient dataLakeFileClient;
+        private readonly DataLakeItem dataLakeItem;
         /// <summary>
         /// Value updated every time this file is updated. Used to form Etag.
         /// </summary>
         private int serialNumber;
-
         /// <summary>
         /// Gets content type.
         /// </summary>
-        public string ContentType => dlItem.ContentType;
-
+        public string ContentType => dataLakeItem.ContentType;
         /// <summary>
         /// Gets length of the file.
         /// </summary>
-        public long ContentLength => dlItem.ContentLength;
+        public long ContentLength => dataLakeItem.ContentLength;
 
         /// <summary>
         /// Gets entity tag - string that identifies current state of resource's content.
@@ -55,25 +48,8 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
         /// <returns>File instance or null if physical file is not found in file system.</returns>
         public static async Task<DavFile> GetFileAsync(DavContext context, string path)
         {
-            DataLakeFileClient dataLakeFileClient = await context.GetFileClient(path);
-
-            if (dataLakeFileClient == null)
-            {
-                return null;
-            }
-
-            var properties = await dataLakeFileClient.GetPropertiesAsync();
-            var dlItem = new DLItem
-            {
-                ContentLength = properties.Value.ContentLength,
-                ContentType = properties.Value.ContentType,
-                Name = EncodeUtil.DecodeUrlPart(dataLakeFileClient.Name),
-                Path = dataLakeFileClient.Path,
-                CreatedUtc = properties.Value.CreatedOn.UtcDateTime,
-                ModifiedUtc = properties.Value.LastModified.UtcDateTime,
-                Properties = properties.Value.Metadata
-            };
-            DavFile davFile = new DavFile(dataLakeFileClient, dlItem, context, path)
+            DataLakeItem dlItem = await context.DataLakeStoreService.GetItemAsync(path);
+            DavFile davFile = new DavFile(dlItem, context, path)
             {
                 serialNumber = dlItem.Properties.TryGetValue("SerialNumber", out var sNumber) ? int.Parse(sNumber) : 0,
                 TotalContentLength = dlItem.Properties.TryGetValue("TotalContentLength", out var value)
@@ -87,15 +63,13 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
         /// <summary>
         /// Initializes a new instance of this class.
         /// </summary>
-        /// <param name="dataLakeFileClient">Corresponding data lake file client.</param>
-        /// <param name="dlItem">Corresponding data lake item.</param>
+        /// <param name="dataLakeItem">Corresponding data lake item.</param>
         /// <param name="context">WebDAV Context.</param>
         /// <param name="path">Encoded path relative to WebDAV root folder.</param>
-        internal DavFile(DataLakeFileClient dataLakeFileClient, DLItem dlItem, DavContext context, string path)
-            : base(dataLakeFileClient, dlItem, context, path)
+        internal DavFile(DataLakeItem dataLakeItem, DavContext context, string path)
+            : base(dataLakeItem, context, path)
         {
-            this.dataLakeFileClient = dataLakeFileClient;
-            this.dlItem = dlItem;
+            this.dataLakeItem = dataLakeItem;
         }
 
         /// <summary>
@@ -112,8 +86,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
             }
             try
             {
-                var readData = await dataLakeFileClient.ReadAsync(new HttpRange(startIndex, count));
-                await readData.Value.Content.CopyToAsync(output);
+                await context.DataLakeStoreService.ReadItemAsync(Path, output, startIndex, count);
             }
             catch (RequestFailedException ex)
             {
@@ -135,12 +108,10 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
         public virtual async Task<bool> WriteAsync(Stream content, string contentType, long startIndex, long totalFileSize)
         {
             await RequireHasTokenAsync();
-            await dataLakeFileClient.UploadAsync(content, true);
-            await dataLakeFileClient.FlushAsync(totalFileSize);
-            await dataLakeFileClient.SetMetadataAsync(dlItem.Properties);
+            await context.DataLakeStoreService.WriteItemAsync(Path, content, totalFileSize, dataLakeItem.Properties);
             await UpdateLastModified(DateTime.UtcNow);
-            await dlItem.SetExtendedAttributeAsync("TotalContentLength", totalFileSize);
-            await dlItem.SetExtendedAttributeAsync("SerialNumber", ++serialNumber);
+            await context.DataLakeStoreService.SetExtendedAttributeAsync(dataLakeItem, "TotalContentLength", totalFileSize);
+            await context.DataLakeStoreService.SetExtendedAttributeAsync(dataLakeItem, "SerialNumber", ++serialNumber);
             await context.socketService.NotifyRefreshAsync(GetParentPath(Path));
             return true;
         }
@@ -155,8 +126,8 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
         public override async Task CopyToAsync(IItemCollectionAsync destFolder, string destName, bool deep, MultistatusException multistatus)
         {
             DavFolder targetFolder = (DavFolder)destFolder;
-
-            if (targetFolder == null || await context.GetDirectoryClient(targetFolder.Path) == null)
+            var existenceResult = await context.DataLakeStoreService.ExistsAsync(targetFolder.Path);
+            if (!existenceResult.Exists)
             {
                 throw new DavException("Target directory doesn't exist", DavStatus.CONFLICT);
             }
@@ -176,21 +147,8 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
                 multistatus.AddInnerException(targetPath, ex);
                 return;
             }
-            
-            // Copy the file together with all extended attributes (custom props and locks).
-            var file = await targetFolder.CreateFileAsync(destName);
-            var memoryStream = new MemoryStream();
-            await dataLakeFileClient.ReadToAsync(memoryStream);
-            memoryStream.Position = 0;
-            await file.WriteAsync(memoryStream, ContentType, 0, ContentLength);
-            var destFileClient = await context.GetFileClient(targetPath, true);
-            await dlItem.CopyExtendedAttributes(destFileClient);
-            var destItem = new DLItem
-            {
-                Name = destFileClient.Name,
-                Path = destFileClient.Path
-            };
-            await destItem.DeleteExtendedAttributeAsync("Locks");
+
+            await context.DataLakeStoreService.CopyItemAsync(Path, targetFolder.Path, destName, ContentLength, dataLakeItem.Properties);
             await context.socketService.NotifyRefreshAsync(targetFolder.Path);
         }
 
@@ -205,8 +163,9 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
             await RequireHasTokenAsync();
 
             DavFolder targetFolder = (DavFolder)destFolder;
-            
-            if (targetFolder == null || await context.GetDirectoryClient(targetFolder.Path) == null)
+
+            var existenceResult = await context.DataLakeStoreService.ExistsAsync(targetFolder.Path);
+            if (!existenceResult.Exists)
             {
                 throw new DavException("Target directory doesn't exist", DavStatus.CONFLICT);
             }
@@ -227,20 +186,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
                 return;
             }
 
-            var file = await targetFolder.CreateFileAsync(destName);
-            var memoryStream = new MemoryStream();
-            await dataLakeFileClient.ReadToAsync(memoryStream);
-            memoryStream.Position = 0;
-            await file.WriteAsync(memoryStream, ContentType, 0, ContentLength);
-            var destFileClient = await context.GetFileClient(targetPath, true);
-            await dlItem.CopyExtendedAttributes(destFileClient);
-
-            var destItem = new DLItem
-            {
-                Name = destFileClient.Name,
-                Path = destFileClient.Path
-            };
-            await destItem.DeleteExtendedAttributeAsync("Locks");
+            await context.DataLakeStoreService.CopyItemAsync(Path, targetFolder.Path, destName, ContentLength, dataLakeItem.Properties);
             await DeleteAsync(multistatus);
             // Refresh client UI.
             await context.socketService.NotifyRefreshAsync(GetParentPath(Path));
@@ -256,7 +202,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
             await RequireHasTokenAsync();
             try
             {
-                await dataLakeFileClient.DeleteAsync();
+                await context.DataLakeStoreService.DeleteItemAsync(Path);
             }
             catch (RequestFailedException ex)
             {
@@ -279,7 +225,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
         /// <summary>
         /// Gets date when last chunk was saved to this file.
         /// </summary>
-        public DateTime LastChunkSaved => dlItem?.ModifiedUtc ?? DateTime.MinValue;
+        public DateTime LastChunkSaved => dataLakeItem?.ModifiedUtc ?? DateTime.MinValue;
 
         /// <summary>
         /// Gets number of bytes uploaded so far.
@@ -300,10 +246,10 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
         /// <returns>Just returns this class.</returns>
         public async Task<IEnumerable<IResumableUploadAsync>> GetUploadProgressAsync()
         {
-            return new[] { this };
+            return await Task.Run(() => new[] { this });
         }
 
-        internal static bool ContainsDownloadParam(string url)
+        private static bool ContainsDownloadParam(string url)
         {
             int ind = url.IndexOf('?');
             if (ind > 0 && ind < url.Length - 1)

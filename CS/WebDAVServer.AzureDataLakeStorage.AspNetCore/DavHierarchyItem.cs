@@ -1,13 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Azure.Storage.Files.DataLake;
 using ITHit.WebDAV.Server;
 using ITHit.WebDAV.Server.Class2;
-using WebDAVServer.AzureDataLakeStorage.AspNetCore.ExtendedAttributes;
+using WebDAVServer.AzureDataLakeStorage.AspNetCore.DataLake;
 
 namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
 {
@@ -30,16 +27,15 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
         /// Name of LastModified attribute.
         /// </summary>
         private const string lastModifiedProperty = "LastModified";
-
         /// <summary>
         /// Gets name of the item.
         /// </summary>
-        public string Name => dlItem.Name;
+        public string Name => dataLakeItem.Name;
 
         /// <summary>
         /// Gets date when the item was created in UTC.
         /// </summary>
-        public DateTime Created => dlItem.CreatedUtc;
+        public DateTime Created => dataLakeItem.CreatedUtc;
 
         /// <summary>
         /// Gets date when the item was last modified in UTC.
@@ -48,14 +44,14 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
         {
             get
             {
-                bool exists = dlItem.Properties.TryGetValue(lastModifiedProperty, out string lastModified);
+                bool exists = dataLakeItem.Properties.TryGetValue(lastModifiedProperty, out string lastModified);
                 if (exists)
                 {
                     DateTime start = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
                     return start.AddMilliseconds(long.Parse(lastModified)).ToUniversalTime();
                 }
                 
-                return dlItem.ModifiedUtc;
+                return dataLakeItem.ModifiedUtc;
             }
         }
 
@@ -65,13 +61,9 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
         public string Path { get; private set; }
 
         /// <summary>
-        /// Corresponding file or folder client for data lake.
-        /// </summary>
-        private readonly DataLakePathClient dataLakePathClient;
-        /// <summary>
         /// Corresponding DLItem.
         /// </summary>
-        private readonly DLItem dlItem;
+        private readonly DataLakeItem dataLakeItem;
 
         /// <summary>
         /// WebDAV Context.
@@ -81,14 +73,12 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
         /// <summary>
         /// Initializes a new instance of this class.
         /// </summary>
-        /// <param name="dataLakePathClient">Data lake directory client.</param>
-        /// <param name="dlItem">Corresponding DLItem.</param>
+        /// <param name="dataLakeItem">Corresponding DLItem.</param>
         /// <param name="context">WebDAV Context.</param>
         /// <param name="path">Encoded path relative to WebDAV root folder.</param>
-        protected DavHierarchyItem(DataLakePathClient dataLakePathClient, DLItem dlItem, DavContext context, string path)
+        protected DavHierarchyItem(DataLakeItem dataLakeItem, DavContext context, string path)
         {
-            this.dataLakePathClient = dataLakePathClient;
-            this.dlItem = dlItem;
+            this.dataLakeItem = dataLakeItem;
             this.context = context;
             this.Path = path;
         }
@@ -128,7 +118,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
         /// <summary>
         /// Retrieves user defined property values.
         /// </summary>
-        /// <param name="names">Names of dead properties which values to retrieve.</param>
+        /// <param name="props">Names of dead properties which values to retrieve.</param>
         /// <param name="allprop">Whether all properties shall be retrieved.</param>
         /// <returns>Property values.</returns>
         public async Task<IEnumerable<PropertyValue>> GetPropertiesAsync(IList<PropertyName> props, bool allprop)
@@ -158,7 +148,8 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
         /// <returns>List of user defined properties.</returns>
         private async Task<List<PropertyValue>> GetPropertyValuesAsync()
         {
-            return await dlItem.GetExtendedAttributeAsync<List<PropertyValue>>(propertiesAttributeName);
+            return await context.DataLakeStoreService.GetExtendedAttributeAsync<List<PropertyValue>>(dataLakeItem,
+                propertiesAttributeName);
         }
 
         /// <summary>
@@ -182,21 +173,21 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
                 // in the Created and Modified fields in your storage 
                 if (propToSet.QualifiedName.Namespace == "urn:schemas-microsoft-com:")
                 {
-                    // switch (propToSet.QualifiedName.Name)
-                    // {
-                    //     case "Win32CreationTime":
-                    //         fileSystemInfo.CreationTimeUtc = DateTime.Parse(propToSet.Value,
-                    //             new System.Globalization.CultureInfo("en-US")).ToUniversalTime();
-                    //         break;
-                    //     case "Win32LastModifiedTime":
-                    //         fileSystemInfo.LastWriteTimeUtc = DateTime.Parse(propToSet.Value,
-                    //             new System.Globalization.CultureInfo("en-US")).ToUniversalTime();
-                    //         break;
-                    //     default:
-                    //         context.Logger.LogDebug(string.Format("Unspecified case: DavHierarchyItem.UpdateProperties {0} from {1} namesapce",
-                    //             propToSet.QualifiedName.Name, propToSet.QualifiedName.Namespace));
-                    //         break;
-                    // }
+                    switch (propToSet.QualifiedName.Name)
+                    {
+                        // case "Win32CreationTime":
+                        //     fileSystemInfo.CreationTimeUtc = DateTime.Parse(propToSet.Value,
+                        //         new System.Globalization.CultureInfo("en-US")).ToUniversalTime();
+                        //     break;
+                        case "Win32LastModifiedTime":
+                            await UpdateLastModified(DateTime.Parse(propToSet.Value,
+                                new System.Globalization.CultureInfo("en-US")).ToUniversalTime());
+                            break;
+                        default:
+                            context.Logger.LogDebug(
+                                $"Unspecified case: DavHierarchyItem.UpdateProperties {propToSet.QualifiedName.Name} from {propToSet.QualifiedName.Namespace} namespace");
+                            break;
+                    }
                 }
                 else
                 {
@@ -215,7 +206,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
 
             propertyValues.RemoveAll(prop => delProps.Contains(prop.QualifiedName));
 
-            await dlItem.SetExtendedAttributeAsync(propertiesAttributeName, propertyValues);
+            await context.DataLakeStoreService.SetExtendedAttributeAsync(dataLakeItem, propertiesAttributeName, propertyValues);
             await context.socketService.NotifyRefreshAsync(GetParentPath(Path));
         }
 
@@ -320,7 +311,6 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
                     lockInfo.TimeOut = requestedTimeOut.Value;
                 }
 
-
                 lockInfo.Expiration = DateTime.UtcNow + lockInfo.TimeOut;
 
                 await SaveLockAsync(lockInfo);
@@ -356,7 +346,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
         /// <summary>
         /// Check that if the item is locked then client has submitted correct lock token.
         /// </summary>
-        public async Task RequireHasTokenAsync(bool skipShared = false)
+        protected async Task RequireHasTokenAsync(bool skipShared = false)
         {
             List<DateLockInfo> locks = await GetLocksAsync();
             if (locks != null && locks.Any())
@@ -373,7 +363,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
         /// Ensure that there are no active locks on the item.
         /// </summary>
         /// <param name="skipShared">Whether shared locks shall be checked.</param>
-        public async Task RequireUnlockedAsync(bool skipShared)
+        private async Task RequireUnlockedAsync(bool skipShared)
         {
             List<DateLockInfo> locks = await GetLocksAsync();
 
@@ -394,18 +384,10 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
         /// <returns>List of locks with their expiration dates.</returns>
         private async Task<List<DateLockInfo>> GetLocksAsync(bool getAllWithExpired = false)
         {
-            Trace.TraceWarning("GetLocksAsync " + Path);
-            var watch = Stopwatch.StartNew();
+
             List<DateLockInfo> locks = new List<DateLockInfo>();
-
-            // if (await dataLakePathClient.HasExtendedAttributeAsync(locksAttributeName))
-            // {
-                locks = await dlItem.GetExtendedAttributeAsync<List<DateLockInfo>>(locksAttributeName);
-
-                locks?.ForEach(l => l.LockRoot = Path);
-            // }
-            watch.Stop();
-            Trace.TraceWarning("GetLocksAsync " + Path + " - " + watch.ElapsedMilliseconds);
+            locks = await context.DataLakeStoreService.GetExtendedAttributeAsync<List<DateLockInfo>>(dataLakeItem, locksAttributeName);
+            locks?.ForEach(l => l.LockRoot = Path);
             if (getAllWithExpired)
             {
                 return locks;
@@ -446,7 +428,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
                 locks.Add(lockInfo);
             }
 
-            await dlItem.SetExtendedAttributeAsync(locksAttributeName, locks);
+            await context.DataLakeStoreService.SetExtendedAttributeAsync(dataLakeItem, locksAttributeName, locks);
         }
 
         private async Task RemoveExpiredLocksAsync(string unlockedToken)
@@ -462,7 +444,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
                 locks.RemoveAll(x => x.LockToken == unlockedToken);
             }
 
-            await dlItem.SetExtendedAttributeAsync(locksAttributeName, locks);
+            await context.DataLakeStoreService.SetExtendedAttributeAsync(dataLakeItem, locksAttributeName, locks);
         }
 
         /// <summary>
@@ -484,7 +466,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
         /// <param name="time">Time to update with.</param>
         protected async Task UpdateLastModified(DateTime time)
         {
-            await dlItem.SetExtendedAttributeAsync(lastModifiedProperty,
+            await context.DataLakeStoreService.SetExtendedAttributeAsync(dataLakeItem, lastModifiedProperty,
                 (long) (time.Subtract(new DateTime(1970, 1, 1))).TotalMilliseconds);
         }
     }

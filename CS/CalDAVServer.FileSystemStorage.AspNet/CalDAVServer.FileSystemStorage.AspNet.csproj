@@ -6,7 +6,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>0F4C8E93-21E7-49A1-9E4D-C4DAB6D5698A</ProjectGuid>
+    <ProjectGuid>AFC40E95-E1E4-4666-A05F-4B8EA7A59E74</ProjectGuid>
     <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
@@ -47,8 +47,8 @@
     <Reference Include="System.Runtime.InteropServices.RuntimeInformation">
       <HintPath>..\packages\System.Runtime.InteropServices.RuntimeInformation.4.3.0\lib\net45\System.Runtime.InteropServices.RuntimeInformation.dll</HintPath>
     </Reference>
-    <Reference Include="ITHit.Collab, Version=1.0.0.732, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\ITHit.Collab.1.0.0.732\lib\net45\ITHit.Collab.dll</HintPath>
+    <Reference Include="ITHit.Collab, Version=1.0.0.746, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ITHit.Collab.1.0.0.746\lib\net45\ITHit.Collab.dll</HintPath>
     </Reference>
     <Reference Include="Google.Apis, Version=1.40.2.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
       <HintPath>..\packages\Google.Apis.1.40.2\lib\net45\Google.Apis.dll</HintPath>
@@ -145,16 +145,16 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="ITHit.WebDAV.Server">
-      <HintPath>..\packages\ITHit.WebDAV.Server.10.1.8954\lib\net451\ITHit.WebDAV.Server.dll</HintPath>
+      <HintPath>..\packages\ITHit.WebDAV.Server.10.1.8967\lib\net451\ITHit.WebDAV.Server.dll</HintPath>
     </Reference>
     <Reference Include="ITHit.Server">
-      <HintPath>..\packages\ITHit.Server.10.1.8954\lib\net451\ITHit.Server.dll</HintPath>
+      <HintPath>..\packages\ITHit.Server.10.1.8967\lib\net451\ITHit.Server.dll</HintPath>
     </Reference>
     <Reference Include="ITHit.Server.Web">
-      <HintPath>..\packages\ITHit.Server.Web.10.1.8954\lib\net451\ITHit.Server.Web.dll</HintPath>
+      <HintPath>..\packages\ITHit.Server.Web.10.1.8967\lib\net451\ITHit.Server.Web.dll</HintPath>
     </Reference>
     <Reference Include="ITHit.GSuite.Server">
-      <HintPath>..\packages\ITHit.GSuite.Server.10.1.8954\lib\net451\ITHit.GSuite.Server.dll</HintPath>
+      <HintPath>..\packages\ITHit.GSuite.Server.10.1.8967\lib\net451\ITHit.GSuite.Server.dll</HintPath>
     </Reference>
   </ItemGroup>
   <PropertyGroup>
@@ -172,7 +172,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>9658</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:43564/</IISUrl>
+          <IISUrl>http://localhost:41947/</IISUrl>
           <NTLMAuthentication>True</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

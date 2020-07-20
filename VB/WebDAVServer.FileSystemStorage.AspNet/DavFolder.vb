@@ -359,8 +359,7 @@ Public Class DavFolder
     ''' <param name="keywords">Search keywords.</param>
     ''' <param name="text">File content.</param>
     Private Shared Function HighlightKeywords(searchTerms As String, text As String) As String
-        Dim exp As Regex = New Regex("\b(" & String.Join("|", searchTerms.Split(New Char() {","c, " "c}, StringSplitOptions.RemoveEmptyEntries)) & ")\b",
-                                    RegexOptions.IgnoreCase Or RegexOptions.Multiline)
+        Dim exp As Regex = New Regex("\b(" & String.Join("|", searchTerms.Split(New Char() {","c, " "c}, StringSplitOptions.RemoveEmptyEntries).Select(Function(str) Regex.Escape(str.Replace("\_", "_").Replace("\%", "%").Replace("\\", "\")))) & ")\b", RegexOptions.IgnoreCase Or RegexOptions.Multiline)
         Return If(Not String.IsNullOrEmpty(text), exp.Replace(text, "<b>$0</b>"), text)
     End Function
 

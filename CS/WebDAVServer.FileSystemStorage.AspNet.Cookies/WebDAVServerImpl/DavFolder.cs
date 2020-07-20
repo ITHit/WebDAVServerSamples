@@ -442,8 +442,9 @@ namespace WebDAVServer.FileSystemStorage.AspNet.Cookies
         /// <param name="text">File content.</param>
         private static string HighlightKeywords(string searchTerms, string text)
         {
-            Regex exp = new Regex(@"\b(" + string.Join("|", searchTerms.Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)) + @")\b",
-                RegexOptions.IgnoreCase | RegexOptions.Multiline);
+            Regex exp = new Regex(@"\b(" + string.Join("|", searchTerms.Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
+               // replace �\%�, �\_� and �\\� to �%�, �_� and �\�
+               .Select(str => Regex.Escape(str.Replace("\\_", "_").Replace("\\%", "%").Replace("\\\\", "\\")))) + @")\b", RegexOptions.IgnoreCase | RegexOptions.Multiline);
             return !string.IsNullOrEmpty(text) ? exp.Replace(text, "<b>$0</b>") : text;
         }
 

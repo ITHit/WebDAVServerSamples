@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Hosting;
@@ -7,10 +6,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System.Threading.Tasks;
-using WebDAVServer.AzureDataLakeStorage.AspNetCore.Config;
 using ITHit.Server;
 using ITHit.WebDAV.Server;
 using WebDAVServer.AzureDataLakeStorage.AspNetCore.Configuration;
+using Microsoft.AspNetCore.Authentication;
 
 namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
 {
@@ -37,7 +36,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
         /// <summary>
         /// Processes WebDAV request.
         /// </summary>
-        public async Task Invoke(HttpContext context, ContextCoreAsync<IHierarchyItemAsync> davContext, IOptions<DavContextConfig> config, ILogger logger)
+        public async Task Invoke(HttpContext context, ContextCoreAsync<IHierarchyItemAsync> davContext, ILogger logger)
         {
             if (context.Request.Method == "PUT")
             {
@@ -48,11 +47,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
                 context.Features.Get<IHttpMaxRequestBodySizeFeature>().MaxRequestBodySize = null;
             }
 
-            var watch = Stopwatch.StartNew();
-            Trace.TraceWarning("All Engine" + context.Request.Method);
             await engine.RunAsync(davContext);
-            watch.Stop();
-            Trace.TraceWarning("All Engine run for " + context.Request.Method + ": " + watch.ElapsedMilliseconds);
         }
     }
 
@@ -79,7 +74,6 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
 
             services.AddScoped<ContextCoreAsync<IHierarchyItemAsync>, DavContext>();
             services.Configure<DavEngineConfig>(async config => await Configuration.GetSection("WebDAVEngine").ReadConfigurationAsync(config));
-            services.Configure<DavContextConfig>(async config => await Configuration.GetSection("Context").ReadConfigurationAsync(config, env));
             services.Configure<DavLoggerConfig>(async config => await Configuration.GetSection("Logger").ReadConfigurationAsync(config, env));
         }
 
@@ -93,5 +87,6 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
             return builder.UseMiddleware<DavEngineMiddleware>();
         }
     }
+
 }
 

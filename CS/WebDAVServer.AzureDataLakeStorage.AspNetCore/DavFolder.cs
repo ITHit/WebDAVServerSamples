@@ -9,8 +9,7 @@ using ITHit.WebDAV.Server;
 using ITHit.WebDAV.Server.Class1;
 using ITHit.WebDAV.Server.ResumableUpload;
 using ITHit.WebDAV.Server.Paging;
-using Azure.Storage.Files.DataLake;
-using Azure.Storage.Files.DataLake.Models;
+using WebDAVServer.AzureDataLakeStorage.AspNetCore.DataLake;
 
 namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
 {
@@ -21,11 +20,6 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
     {
 
         /// <summary>
-        /// Corresponding instance of <see cref="DataLakeDirectoryClient"/>.
-        /// </summary>
-        private readonly DataLakeDirectoryClient dataLakeDirectoryClient;
-
-        /// <summary>
         /// Returns folder that corresponds to path.
         /// </summary>
         /// <param name="context">WebDAV Context.</param>
@@ -33,33 +27,19 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
         /// <returns>Folder instance or null if physical folder not found in file system.</returns>
         public static async Task<DavFolder> GetFolderAsync(DavContext context, string path)
         {
-            DataLakeDirectoryClient dataLakeDirectoryClient = await context.GetDirectoryClient(path);
-            if (dataLakeDirectoryClient == null) return null;
-            var properties = await dataLakeDirectoryClient.GetPropertiesAsync();
-            var dlItem = new DLItem
-            {
-                ContentLength = properties.Value.ContentLength,
-                ContentType = properties.Value.ContentType,
-                Name = EncodeUtil.DecodeUrlPart(dataLakeDirectoryClient.Name),
-                Path = dataLakeDirectoryClient.Path,
-                CreatedUtc = properties.Value.CreatedOn.UtcDateTime,
-                ModifiedUtc = properties.Value.LastModified.UtcDateTime,
-                Properties = properties.Value.Metadata
-            };
-            return new DavFolder(dataLakeDirectoryClient, dlItem, context, path);
+            DataLakeItem dlItem = await context.DataLakeStoreService.GetItemAsync(path);
+            return new DavFolder(dlItem, context, path);
         }
 
         /// <summary>
         /// Initializes a new instance of this class.
         /// </summary>
-        /// <param name="dataLakeDirectoryClient">Corresponding data lake folder client.</param>
-        /// <param name="dlItem">Corresponding DLItem.</param>
+        /// <param name="dataLakeItem">Corresponding DLItem.</param>
         /// <param name="context">WebDAV Context.</param>
         /// <param name="path">Encoded path relative to WebDAV root folder.</param>
-        protected DavFolder(DataLakeDirectoryClient dataLakeDirectoryClient, DLItem dlItem, DavContext context, string path)
-            : base(dataLakeDirectoryClient, dlItem, context, path.TrimEnd('/') + "/")
+        private DavFolder(DataLakeItem dataLakeItem, DavContext context, string path)
+            : base(dataLakeItem, context, path.TrimEnd('/') + "/")
         {
-            this.dataLakeDirectoryClient = dataLakeDirectoryClient;
         }   
 
         /// <summary>
@@ -77,7 +57,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
             // return only items that you want to be visible for this 
             // particular user.
             IList<IHierarchyItemAsync> children = new List<IHierarchyItemAsync>();
-            var childData = await GetChildrenAsync(dataLakeDirectoryClient);
+            var childData = await context.DataLakeStoreService.GetChildrenAsync(Path);
             long totalItems = childData.Count;
             // Apply sorting.
             childData = SortChildren(childData, orderProps);
@@ -86,35 +66,19 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
             {
                 childData = childData.Skip((int)offset.Value).Take((int)nResults.Value).ToArray();
             }
-            foreach (PathItem pathItem in childData)
+            foreach (DataLakeItem dataLakeItem in childData)
             {
                 IHierarchyItemAsync child;
-                var path = pathItem.Name;
-                var realName = path;
-                if (path.Contains("/"))
+                if (dataLakeItem.IsDirectory)
                 {
-                    realName = path.Substring(path.LastIndexOf("/", StringComparison.Ordinal) + 1);
-                }
-                var dlItem = new DLItem
-                {
-                    ContentLength = pathItem.ContentLength ?? 0,
-                    // ContentType = pathItem.,
-                    Name = realName,
-                    Path = EncodePath(pathItem.Name),
-                    CreatedUtc = pathItem.LastModified.UtcDateTime,
-                    ModifiedUtc = pathItem.LastModified.UtcDateTime,
-                };
-                if (pathItem.IsDirectory.HasValue && pathItem.IsDirectory.Value)
-                {
-                    child = new DavFolder(await context.GetDirectoryClient(path, true), dlItem, context, dlItem.Path);
+                    child = new DavFolder(dataLakeItem, context, dataLakeItem.Path);
                 }
                 else
                 {
-                    var dataLakeFileClient = await context.GetFileClient(path, true);
-                    var propertiesAsync = await dataLakeFileClient.GetPropertiesAsync();
-                    dlItem.Properties =  propertiesAsync.Value.Metadata;
-                    dlItem.ContentType =  propertiesAsync.Value.ContentType;
-                    child = new DavFile(dataLakeFileClient, dlItem, context, dlItem.Path);
+                    var item = await context.DataLakeStoreService.GetItemAsync(dataLakeItem.Path);
+                    dataLakeItem.Properties =  item.Properties;
+                    dataLakeItem.ContentType =  item.ContentType;
+                    child = new DavFile(dataLakeItem, context, dataLakeItem.Path);
                 }
                 children.Add(child);
             }
@@ -131,22 +95,13 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
             await RequireHasTokenAsync();
             try
             {
-                if (Path == "/")
-                {
-                    await CreateFileInRootAsync(name);
-                }
-                else
-                {
-                    await dataLakeDirectoryClient.CreateFileAsync(name);
-                }
+                await context.DataLakeStoreService.CreateFileAsync(Path, name);
             }
             catch (Exception e)
             {
                 throw new DavException($"Cannot create file {name}", e);
             }
-            
             await context.socketService.NotifyRefreshAsync(Path);
-
             return (IFileAsync)await context.GetHierarchyItemAsync(Path + EncodeUtil.EncodeUrlPart(name));
         }
 
@@ -157,16 +112,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
         public virtual async Task CreateFolderAsync(string name)
         {
             await RequireHasTokenAsync();
-            // 
-            if (Path == "/")
-            {
-                await CreateFolderInRootAsync(name);
-            }
-            else
-            {
-                await dataLakeDirectoryClient.CreateSubDirectoryAsync(name);
-            }
-            
+            await context.DataLakeStoreService.CreateDirectoryAsync(Path, name);
             await context.socketService.NotifyRefreshAsync(Path);
         }
 
@@ -183,22 +129,20 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
             {
                 throw new DavException("Target folder doesn't exist", DavStatus.CONFLICT);
             }
-            
             DavFolder targetFolder = (DavFolder)destFolder;
-            
             if (IsRecursive(targetFolder))
             {
                 throw new DavException("Cannot copy to subfolder", DavStatus.FORBIDDEN);
             }
 
-            
             // string newDirLocalPath = System.IO.Path.Combine(targetFolder.FullPath, destName);
             string targetPath = targetFolder.Path + EncodeUtil.EncodeUrlPart(destName);
             
             // Create folder at the destination.
             try
             {
-                if (await context.GetDirectoryClient(targetPath) == null)
+                var existsResponse = await context.DataLakeStoreService.ExistsAsync(targetPath);
+                if (!existsResponse.Exists)
                 {
                     await targetFolder.CreateFolderAsync(destName);
                 }
@@ -217,7 +161,6 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
                 {
                     continue;
                 }
-            
                 try
                 {
                     await item.CopyToAsync(createdFolder, item.Name, deep, multistatus);
@@ -244,9 +187,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
             {
                 throw new DavException("Target folder doesn't exist", DavStatus.CONFLICT);
             }
-            
             DavFolder targetFolder = (DavFolder)destFolder;
-            
             if (IsRecursive(targetFolder))
             {
                 throw new DavException("Cannot move folder to its subtree.", DavStatus.FORBIDDEN);
@@ -310,7 +251,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
             }
             */
             await RequireHasTokenAsync();
-            await dataLakeDirectoryClient.DeleteAsync();
+            await context.DataLakeStoreService.DeleteItemAsync(Path);
             await context.socketService.NotifyDeleteAsync(Path);
         }
 
@@ -330,13 +271,13 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
         /// <param name="fileInfos">Array of files and folders to sort.</param>
         /// <param name="orderProps">Sorting order.</param>
         /// <returns>Sorted list of files and folders.</returns>
-        private IList<PathItem> SortChildren(IList<PathItem> fileInfos, IList<OrderProperty> orderProps)
+        private IList<DataLakeItem> SortChildren(IList<DataLakeItem> fileInfos, IList<OrderProperty> orderProps)
         {
             if (orderProps != null && orderProps.Count() != 0)
             {
                 // map DAV properties to FileSystemInfo 
                 Dictionary<string, string> mappedProperties = new Dictionary<string, string>()
-                { { "displayname", "Name" }, { "getlastmodified", "LastModified" }, { "getcontenttype", "Extension" },
+                { { "displayname", "Name" }, { "getlastmodified", "ModifiedUtc" }, { "getcontenttype", "Extension" },
                   { "quota-used-bytes", "ContentLength" }, { "is-directory", "IsDirectory" } };
                 if (orderProps.Count != 0)
                 {
@@ -346,8 +287,8 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
                     foreach (OrderProperty ordProp in orderProps)
                     {
                         string propertyName = mappedProperties[ordProp.Property.Name];
-                        Func<PathItem, object> sortFunc = p => p.Name; // default sorting by item Name
-                        PropertyInfo propertyInfo = typeof(PathItem).GetProperties().FirstOrDefault(p => p.Name.Equals(propertyName, StringComparison.InvariantCultureIgnoreCase));
+                        Func<DataLakeItem, object> sortFunc = p => p.Name; // default sorting by item Name
+                        PropertyInfo propertyInfo = typeof(DataLakeItem).GetProperties().FirstOrDefault(p => p.Name.Equals(propertyName, StringComparison.InvariantCultureIgnoreCase));
 
                         if (propertyInfo != null)
                         {
@@ -359,7 +300,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
                         }
                         else if (propertyName == "ContentLength")
                         {
-                            sortFunc = p => p is PathItem ? ((PathItem)p).ContentLength : 0;
+                            sortFunc = p => p is DataLakeItem ? p.ContentLength : 0;
                         }
                         else if (propertyName == "Extension")
                         {
@@ -387,50 +328,6 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
             }
 
             return fileInfos;
-        }
-
-        /// <summary>
-        /// Returns list of child items in current folder.
-        /// </summary>
-        /// <param name="client"><see cref="DataLakeDirectoryClient"/></param>
-        /// <returns>Returns list of child items in current folder.</returns>
-        private async Task<IList<PathItem>> GetChildrenAsync(DataLakeDirectoryClient client)
-        {
-            IList<PathItem> children = new List<PathItem>();
-            await foreach (var pathItem in context.GetFileSystemClient().GetPathsAsync(EncodeUtil.DecodeUrlPart(client.Path)))
-            {
-                children.Add(pathItem);
-            }
-            return children;
-        }
-
-        /// <summary>
-        /// Creates folder in the root folder.
-        /// </summary>
-        /// <param name="name">Name of new subfolder.</param>
-        private async Task CreateFolderInRootAsync(string name)
-        {
-            await context.GetFileSystemClient().CreateDirectoryAsync(name);
-        }
-
-        /// <summary>
-        /// Creates file in the root folder.
-        /// </summary>
-        /// <param name="name">Name of new file.</param>
-        private async Task CreateFileInRootAsync(string name)
-        {
-            await context.GetFileSystemClient().CreateFileAsync(name);
-        }
-
-        /// <summary>
-        /// Encodes parts of the path.
-        /// </summary>
-        /// <param name="relativePath">Relative path to encode.</param>
-        private static string EncodePath(string relativePath)
-        {
-            string[] decodedParts = relativePath.Split(new[] { "/" }, StringSplitOptions.RemoveEmptyEntries);
-            string[] encodedParts = decodedParts.Select(EncodeUtil.EncodeUrlPart).ToArray();
-            return "/" +  string.Join("/", encodedParts);
         }
     }
 }
