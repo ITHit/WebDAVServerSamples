@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
+using System.Text;
 using System.Web;
 using System.Configuration;
 using System.Threading.Tasks;
@@ -70,7 +71,9 @@ namespace WebDAVServer.FileSystemStorage.AspNet.Cookies
         public DavContext(HttpContext httpContext) : base(httpContext)
         {
             Logger = WebDAVServer.FileSystemStorage.AspNet.Cookies.Logger.Instance;
-            string configRepositoryPath = (ConfigurationManager.AppSettings["RepositoryPath"] ?? string.Empty).TrimEnd(Path.DirectorySeparatorChar);
+            RepositoryPath = ConfigurationManager.AppSettings["RepositoryPath"] ?? string.Empty;
+            bool isRoot = new DirectoryInfo(RepositoryPath).Parent == null;
+            string configRepositoryPath = isRoot ? RepositoryPath : RepositoryPath.TrimEnd(Path.DirectorySeparatorChar);
             RepositoryPath = configRepositoryPath.StartsWith("~") ?
                 HttpContext.Current.Server.MapPath(configRepositoryPath) : configRepositoryPath;
 
@@ -142,7 +145,7 @@ namespace WebDAVServer.FileSystemStorage.AspNet.Cookies
             //Convert to local file system path by decoding every part, reversing slashes and appending
             //to repository root.
             string[] encodedParts = relativePath.Split(new[] { "/" }, StringSplitOptions.RemoveEmptyEntries);
-            string[] decodedParts = encodedParts.Select<string, string>(EncodeUtil.DecodeUrlPart).ToArray();
+            string[] decodedParts = encodedParts.Select<string, string>(p => EncodeUtil.DecodeUrlPart(p).Normalize(NormalizationForm.FormC)).ToArray();
             return Path.Combine(RepositoryPath, string.Join(Path.DirectorySeparatorChar.ToString(), decodedParts));
         }
     }

@@ -1,5 +1,6 @@
 Imports System
 Imports System.Collections.Generic
+Imports System.Text
 Imports System.Threading.Tasks
 Imports ITHit.WebDAV.Server
 Imports ITHit.WebDAV.Server.Paging
@@ -27,7 +28,7 @@ Public Class LogicalFolder
         Me.children = If(children, New IHierarchyItemAsync(-1) {})
         path = path.TrimEnd("/"c)
         Dim encodedName As String = path.Substring(path.LastIndexOf("/"c) + 1)
-        Me.displayName = EncodeUtil.DecodeUrlPart(encodedName)
+        Me.displayName = EncodeUtil.DecodeUrlPart(encodedName).Normalize(NormalizationForm.FormC)
     End Sub
 
     Public Overrides Async Function DeleteAsync(multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.DeleteAsync

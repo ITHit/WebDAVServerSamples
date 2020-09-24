@@ -7,6 +7,7 @@ using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Security.Principal;
+using System.Text;
 using System.Threading.Tasks;
 
 using ITHit.Server;
@@ -475,7 +476,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
                              ItemId
                           FROM Item
                           WHERE Name = @Name AND ParentItemId = @Parent",
-                        "@Name", EncodeUtil.DecodeUrlPart(names[i]),
+                        "@Name", EncodeUtil.DecodeUrlPart(names[i]).Normalize(NormalizationForm.FormC),
                         "@Parent", id);
 
                     if (result != null)
@@ -504,7 +505,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
             IList<DavHierarchyItem> davHierarchyItems = await ExecuteItemAsync<DavHierarchyItem>(
                 string.Join("/", names, 0, last) + "/",
                 command,
-                "@Name", EncodeUtil.DecodeUrlPart(names[last]),
+                "@Name", EncodeUtil.DecodeUrlPart(names[last]).Normalize(NormalizationForm.FormC),
                 "@Parent", id);
             return davHierarchyItems.FirstOrDefault();
         }

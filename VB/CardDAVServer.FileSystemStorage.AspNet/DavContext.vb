@@ -5,6 +5,7 @@ Imports System.Linq
 Imports System.Net
 Imports System.Runtime.InteropServices
 Imports System.Security.Principal
+Imports System.Text
 Imports System.Web
 Imports System.Configuration
 Imports System.Threading.Tasks
@@ -150,7 +151,9 @@ Public Class DavContext
     Public Sub New(httpContext As HttpContext)
         MyBase.New(httpContext)
         Logger = CardDAVServer.FileSystemStorage.AspNet.Logger.Instance
-        Dim configRepositoryPath As String =(If(ConfigurationManager.AppSettings("RepositoryPath"), String.Empty)).TrimEnd(Path.DirectorySeparatorChar)
+        RepositoryPath = If(ConfigurationManager.AppSettings("RepositoryPath"), String.Empty)
+        Dim isRoot As Boolean = New DirectoryInfo(RepositoryPath).Parent Is Nothing
+        Dim configRepositoryPath As String = If(isRoot, RepositoryPath, RepositoryPath.TrimEnd(Path.DirectorySeparatorChar))
         RepositoryPath = If(configRepositoryPath.StartsWith("~"), HttpContext.Current.Server.MapPath(configRepositoryPath), configRepositoryPath)
         Dim attrStoragePath As String =(If(ConfigurationManager.AppSettings("AttrStoragePath"), String.Empty)).TrimEnd(Path.DirectorySeparatorChar)
         attrStoragePath = If(attrStoragePath.StartsWith("~"), HttpContext.Current.Server.MapPath(attrStoragePath), attrStoragePath)
@@ -210,7 +213,7 @@ Public Class DavContext
         'Convert to local file system path by decoding every part, reversing slashes and appending
         'to repository root.
         Dim encodedParts As String() = relativePath.Split({"/"}, StringSplitOptions.RemoveEmptyEntries)
-        Dim decodedParts As String() = encodedParts.Select(Of String)(AddressOf EncodeUtil.DecodeUrlPart).ToArray()
+        Dim decodedParts As String() = encodedParts.Select(Of String)(Function(p) EncodeUtil.DecodeUrlPart(p).Normalize(NormalizationForm.FormC)).ToArray()
         Return Path.Combine(RepositoryPath, String.Join(Path.DirectorySeparatorChar.ToString(), decodedParts))
     End Function
 

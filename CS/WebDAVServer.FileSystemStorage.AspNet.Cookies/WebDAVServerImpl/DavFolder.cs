@@ -139,7 +139,9 @@ namespace WebDAVServer.FileSystemStorage.AspNet.Cookies
         {
             await RequireHasTokenAsync();
 
-            dirInfo.CreateSubdirectory(name);
+            bool isRoot = dirInfo.Parent == null;
+            DirectoryInfo di = isRoot ? new DirectoryInfo(@"\\?\" + context.RepositoryPath.TrimEnd(System.IO.Path.DirectorySeparatorChar)) : dirInfo;
+            di.CreateSubdirectory(name);
             await context.socketService.NotifyRefreshAsync(Path);
         }
 

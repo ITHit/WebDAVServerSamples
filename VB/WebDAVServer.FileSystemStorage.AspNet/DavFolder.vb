@@ -120,7 +120,9 @@ Public Class DavFolder
     ''' <param name="name">Name of the new folder.</param>
     Overridable Public Async Function CreateFolderAsync(name As String) As Task Implements IFolderAsync.CreateFolderAsync
         Await RequireHasTokenAsync()
-        dirInfo.CreateSubdirectory(name)
+        Dim isRoot As Boolean = dirInfo.Parent Is Nothing
+        Dim di As DirectoryInfo = If(isRoot, New DirectoryInfo("\\?\" & context.RepositoryPath.TrimEnd(System.IO.Path.DirectorySeparatorChar)), dirInfo)
+        di.CreateSubdirectory(name)
         Await context.socketService.NotifyRefreshAsync(Path)
     End Function
 

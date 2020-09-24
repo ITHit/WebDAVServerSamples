@@ -129,7 +129,9 @@ namespace CardDAVServer.FileSystemStorage.AspNet
         virtual public async Task CreateFolderAsync(string name)
         {
 
-            dirInfo.CreateSubdirectory(name);
+            bool isRoot = dirInfo.Parent == null;
+            DirectoryInfo di = isRoot ? new DirectoryInfo(@"\\?\" + context.RepositoryPath.TrimEnd(System.IO.Path.DirectorySeparatorChar)) : dirInfo;
+            di.CreateSubdirectory(name);
         }
 
         /// <summary>

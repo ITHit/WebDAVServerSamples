@@ -27,18 +27,18 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
         /// <returns>Folder instance or null if physical folder not found in file system.</returns>
         public static async Task<DavFolder> GetFolderAsync(DavContext context, string path)
         {
-            DataLakeItem dlItem = await context.DataLakeStoreService.GetItemAsync(path);
+            DataCloudItem dlItem = await context.DataLakeStoreService.GetItemAsync(path);
             return new DavFolder(dlItem, context, path);
         }
 
         /// <summary>
         /// Initializes a new instance of this class.
         /// </summary>
-        /// <param name="dataLakeItem">Corresponding DLItem.</param>
+        /// <param name="dataCloudItem">Corresponding DLItem.</param>
         /// <param name="context">WebDAV Context.</param>
         /// <param name="path">Encoded path relative to WebDAV root folder.</param>
-        private DavFolder(DataLakeItem dataLakeItem, DavContext context, string path)
-            : base(dataLakeItem, context, path.TrimEnd('/') + "/")
+        private DavFolder(DataCloudItem dataCloudItem, DavContext context, string path)
+            : base(dataCloudItem, context, path.TrimEnd('/') + "/")
         {
         }   
 
@@ -66,7 +66,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
             {
                 childData = childData.Skip((int)offset.Value).Take((int)nResults.Value).ToArray();
             }
-            foreach (DataLakeItem dataLakeItem in childData)
+            foreach (DataCloudItem dataLakeItem in childData)
             {
                 IHierarchyItemAsync child;
                 if (dataLakeItem.IsDirectory)
@@ -141,8 +141,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
             // Create folder at the destination.
             try
             {
-                var existsResponse = await context.DataLakeStoreService.ExistsAsync(targetPath);
-                if (!existsResponse.Exists)
+                if (!await context.DataLakeStoreService.ExistsAsync(targetPath))
                 {
                     await targetFolder.CreateFolderAsync(destName);
                 }
@@ -271,7 +270,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
         /// <param name="fileInfos">Array of files and folders to sort.</param>
         /// <param name="orderProps">Sorting order.</param>
         /// <returns>Sorted list of files and folders.</returns>
-        private IList<DataLakeItem> SortChildren(IList<DataLakeItem> fileInfos, IList<OrderProperty> orderProps)
+        private IList<DataCloudItem> SortChildren(IList<DataCloudItem> fileInfos, IList<OrderProperty> orderProps)
         {
             if (orderProps != null && orderProps.Count() != 0)
             {
@@ -287,8 +286,8 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
                     foreach (OrderProperty ordProp in orderProps)
                     {
                         string propertyName = mappedProperties[ordProp.Property.Name];
-                        Func<DataLakeItem, object> sortFunc = p => p.Name; // default sorting by item Name
-                        PropertyInfo propertyInfo = typeof(DataLakeItem).GetProperties().FirstOrDefault(p => p.Name.Equals(propertyName, StringComparison.InvariantCultureIgnoreCase));
+                        Func<DataCloudItem, object> sortFunc = p => p.Name; // default sorting by item Name
+                        PropertyInfo propertyInfo = typeof(DataCloudItem).GetProperties().FirstOrDefault(p => p.Name.Equals(propertyName, StringComparison.InvariantCultureIgnoreCase));
 
                         if (propertyInfo != null)
                         {
@@ -300,7 +299,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
                         }
                         else if (propertyName == "ContentLength")
                         {
-                            sortFunc = p => p is DataLakeItem ? p.ContentLength : 0;
+                            sortFunc = p => p is DataCloudItem ? p.ContentLength : 0;
                         }
                         else if (propertyName == "Extension")
                         {

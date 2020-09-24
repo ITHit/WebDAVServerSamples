@@ -1,5 +1,6 @@
 Imports System
 Imports System.Linq
+Imports System.Text
 Imports System.Threading.Tasks
 Imports ITHit.WebDAV.Server
 
@@ -30,7 +31,7 @@ Namespace Acl
             ' If this is [DAVLocation]/acl/users/[UserID] - return instance of User.
             If path.StartsWith(UsersFolder.UsersFolderPath.Trim("/"c), System.StringComparison.InvariantCultureIgnoreCase) Then
                 Dim segments As String() = path.Split({"/"c}, StringSplitOptions.RemoveEmptyEntries)
-                Dim userId As String = EncodeUtil.DecodeUrlPart(segments.Last())
+                Dim userId As String = EncodeUtil.DecodeUrlPart(segments.Last()).Normalize(NormalizationForm.FormC)
                 Return Await User.GetUserAsync(context, userId)
             End If
 

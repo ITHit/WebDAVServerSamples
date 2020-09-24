@@ -27,7 +27,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
         /// <summary>
         /// Singleton instance of <see cref="DataLakeStoreService"/>
         /// </summary>
-        public IDataLakeStoreService DataLakeStoreService { get; }
+        public IDataCloudStoreService DataLakeStoreService { get; }
 
         /// <summary>
         /// Initializes a new instance of the class.
@@ -35,15 +35,15 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
         /// <param name="httpContextAccessor">Http context.</param>
         /// <param name="logger">WebDAV Logger instance.</param>
         /// <param name="socketService">Singleton instance of <see cref="WebSocketsService"/>.</param>
-        /// <param name="dataLakeStoreService">Singleton instance of <see cref="IDataLakeStoreService"/></param>
+        /// <param name="dataCloudStoreService">Singleton instance of <see cref="IDataCloudStoreService"/></param>
         public DavContext(IHttpContextAccessor httpContextAccessor, ILogger logger
-            , WebSocketsService socketService, IDataLakeStoreService dataLakeStoreService
+            , WebSocketsService socketService, IDataCloudStoreService dataCloudStoreService
             )
             : base(httpContextAccessor.HttpContext)
         {
             Logger = logger;
             this.socketService = socketService;
-            DataLakeStoreService = dataLakeStoreService;
+            DataLakeStoreService = dataCloudStoreService;
         }
 
         /// <summary>
@@ -61,16 +61,14 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
             {
                 path = path.Remove(ind);
             }
-
-            ExistenceResult result = await DataLakeStoreService.ExistsAsync(path);
-            if (!result.Exists)
+            if (!await DataLakeStoreService.ExistsAsync(path))
             {
                 Logger.LogDebug("Could not find item that corresponds to path: " + path);
                 return null; // no hierarchy item that corresponds to path parameter was found in the repository
             }
 
             IHierarchyItemAsync item;
-            if (result.IsDirectory)
+            if (await DataLakeStoreService.IsDirectoryAsync(path))
             {
                 item = await DavFolder.GetFolderAsync(this, path);
             }

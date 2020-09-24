@@ -1,5 +1,6 @@
 Imports System
 Imports System.Linq
+Imports System.Text
 Imports System.Threading.Tasks
 Imports ITHit.WebDAV.Server
 
@@ -22,7 +23,7 @@ Namespace CardDav
             Dim segments As String() = path.Split({"/"c}, StringSplitOptions.RemoveEmptyEntries)
             ' If URL ends with .vcf - return address book file, which contains vCard.
             If path.EndsWith(CardFile.Extension, System.StringComparison.InvariantCultureIgnoreCase) Then
-                Dim fileName As String = EncodeUtil.DecodeUrlPart(System.IO.Path.GetFileNameWithoutExtension(segments.Last()))
+                Dim fileName As String = EncodeUtil.DecodeUrlPart(System.IO.Path.GetFileNameWithoutExtension(segments.Last())).Normalize(NormalizationForm.FormC)
                 Return(Await CardFile.LoadByFileNamesAsync(context, {fileName}, PropsToLoad.All)).FirstOrDefault()
             End If
 

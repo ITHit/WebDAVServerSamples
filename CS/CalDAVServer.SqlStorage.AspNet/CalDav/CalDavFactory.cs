@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 using ITHit.WebDAV.Server;
@@ -28,7 +29,7 @@ namespace CalDAVServer.SqlStorage.AspNet.CalDav
             // If URL ends with .ics - return calendar file, which contains event or to-do.
             if (itemPath.EndsWith(CalendarFile.Extension, System.StringComparison.InvariantCultureIgnoreCase))
             {
-                string uid = EncodeUtil.DecodeUrlPart(Path.GetFileNameWithoutExtension(segments.Last()));
+                string uid = EncodeUtil.DecodeUrlPart(Path.GetFileNameWithoutExtension(segments.Last())).Normalize(NormalizationForm.FormC);
                 return (await CalendarFile.LoadByUidsAsync(context, new[] { uid }, PropsToLoad.All)).FirstOrDefault();
             }
 

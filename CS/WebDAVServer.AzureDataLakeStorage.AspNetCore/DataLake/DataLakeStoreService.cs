@@ -1,13 +1,16 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Azure;
+using Azure.Core;
 using Azure.Storage;
 using Azure.Storage.Files.DataLake;
 using ITHit.WebDAV.Server;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using WebDAVServer.AzureDataLakeStorage.AspNetCore.Config;
@@ -17,9 +20,11 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore.DataLake
     /// <summary>
     /// Provides method for interacting with Azure Data Lake.
     /// </summary>
-    public class DataLakeStoreService : IDataLakeStoreService
+    public class DataLakeStoreService : IDataCloudStoreService
     {
         private readonly DataLakeFileSystemClient dataLakeClient;
+        private readonly bool notAuthorized;
+
         /// <summary>
         /// Name of the custom attribute for LastModified property.
         /// </summary>
@@ -29,41 +34,61 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore.DataLake
         /// Initializes new instance of DataLakeExtendedAttribute.
         /// </summary>
         /// <param name="configuration">Context configuration.</param>
-        public DataLakeStoreService(IOptions<DavContextConfig> configuration)
+        /// <param name="httpContextAccessor">Http context.</param>
+        public DataLakeStoreService(IOptions<DavContextConfig> configuration, IHttpContextAccessor httpContextAccessor)
         {
+            // var token = httpContextAccessor.HttpContext.User.Claims.FirstOrDefault(x => x.Type == "access_token")?.Value;
+            // if (token == null)
+            // {
+            //     notAuthorized = true;
+            // }
             DavContextConfig config = configuration.Value;
-            var sharedKeyCredential = new StorageSharedKeyCredential(config.AzureStorageAccountName, config.AzureStorageAccessKey);
+            // var credential = new DataLakeTokenCredential(token, DateTimeOffset.MaxValue);
+            var credential = new StorageSharedKeyCredential(config.AzureStorageAccountName, config.AzureStorageAccessKey);
             var dfsUri = "https://" + config.AzureStorageAccountName + ".dfs.core.windows.net";
-            var dataLakeServiceClient = new DataLakeServiceClient(new Uri(dfsUri), sharedKeyCredential);
-            dataLakeClient = dataLakeServiceClient.GetFileSystemClient(config.DataLakeContainerName);
+            dataLakeClient = new DataLakeServiceClient(new Uri(dfsUri), credential).GetFileSystemClient(config.DataLakeContainerName);
         }
         /// <summary>
         /// Check item for existence.
         /// </summary>
         /// <param name="path">Path to item.</param>
         /// <returns>Existence result.</returns>
-        public async Task<ExistenceResult> ExistsAsync(string path)
+        public async Task<bool> ExistsAsync(string path)
         {
-            var client = dataLakeClient.GetFileClient(path == "" ? "%2F" : path);
-            var exists = await client.ExistsAsync();
-            var isDirectory = false;
-            if (exists.Value)
+            if (notAuthorized)
             {
-                var props = await client.GetPropertiesAsync();
-                isDirectory = props.Value.IsDirectory;
+                return false;
             }
-            return new ExistenceResult {Exists = exists, IsDirectory = isDirectory};
+
+            path = path == "" || path =="/" ? "%2F" : path;
+            var client = dataLakeClient.GetFileClient(path);
+            try
+            {
+                return await client.ExistsAsync();
+            }
+            catch (Exception)
+            {
+                Trace.TraceWarning("Cannot find path: ");
+                return false;
+            }
+        }
+
+        public async Task<bool> IsDirectoryAsync(string path)
+        {
+            var client = dataLakeClient.GetFileClient(path == "" || path == "/" ? "%2F" : path);
+            var props = await client.GetPropertiesAsync();
+            return props.Value.IsDirectory;
         }
         /// <summary>
         /// Returns item info for the path. Doesn't check if item exists.
         /// </summary>
         /// <param name="path">Path to item.</param>
-        /// <returns><see cref="DataLakeItem"/></returns>
-        public async Task<DataLakeItem> GetItemAsync(string path)
+        /// <returns><see cref="DataCloudItem"/></returns>
+        public async Task<DataCloudItem> GetItemAsync(string path)
         {
-            var client = await GetFileClient(path);
+            var client = GetFileClient(path);
             var properties = await client.GetPropertiesAsync();
-            var dlItem = new DataLakeItem
+            var dlItem = new DataCloudItem
             {
                 ContentLength = properties.Value.ContentLength,
                 ContentType = properties.Value.ContentType,
@@ -86,7 +111,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore.DataLake
         /// <returns></returns>
         public async Task ReadItemAsync(string path, Stream output, long startIndex, long count)
         {
-            var client = await GetFileClient(path);
+            var client = GetFileClient(path);
             var readData = await client.ReadAsync(new HttpRange(startIndex, count));
             await readData.Value.Content.CopyToAsync(output);
         }
@@ -100,7 +125,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore.DataLake
         /// <returns></returns>
         public async Task WriteItemAsync(string path, Stream content, long totalFileSize, IDictionary<string, string> customProps)
         {
-            var client = await GetFileClient(path);
+            var client = GetFileClient(path);
             await client.UploadAsync(content, true);
             await client.FlushAsync(totalFileSize);
             await client.SetMetadataAsync(customProps);
@@ -116,16 +141,16 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore.DataLake
         /// <returns></returns>
         public async Task CopyItemAsync(string path, string destFolder, string destName, long contentLength, IDictionary<string, string> sourceProps)
         {
-            var sourceClient = await GetFileClient(path);
-            var targetFolder = await GetDirectoryClient(destFolder);
+            var sourceClient = GetFileClient(path);
+            var targetFolder = GetDirectoryClient(destFolder);
             await CreateFileAsync(destFolder, destName);
-            var memoryStream = new MemoryStream();
+            await using var memoryStream = new MemoryStream();
             await sourceClient.ReadToAsync(memoryStream);
             memoryStream.Position = 0;
             string targetPath = targetFolder.Path + "/" + EncodeUtil.EncodeUrlPart(destName);
             await WriteItemAsync(targetPath, memoryStream, contentLength, sourceProps);
-            await CopyExtendedAttributes(new DataLakeItem{Properties = sourceProps}, targetPath);
-            var destItem = new DataLakeItem
+            await CopyExtendedAttributes(new DataCloudItem{Properties = sourceProps}, targetPath);
+            var destItem = new DataCloudItem
             {
                 Name = destName,
                 Path = targetPath
@@ -138,9 +163,9 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore.DataLake
         /// </summary>
         /// <param name="relativePath">Relative path.</param>
         /// <returns>Returns list of child items in current folder.</returns>
-        public async Task<IList<DataLakeItem>> GetChildrenAsync(string relativePath)
+        public async Task<IList<DataCloudItem>> GetChildrenAsync(string relativePath)
         {
-            IList<DataLakeItem> children = new List<DataLakeItem>();
+            IList<DataCloudItem> children = new List<DataCloudItem>();
             await foreach (var pathItem in dataLakeClient.GetPathsAsync((EncodeUtil.DecodeUrlPart(relativePath))))
             {
                 var path = pathItem.Name;
@@ -149,7 +174,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore.DataLake
                 {
                     realName = path.Substring(path.LastIndexOf("/", StringComparison.Ordinal) + 1);
                 }
-                children.Add(new DataLakeItem
+                children.Add(new DataCloudItem
                 {
                     ContentLength = pathItem.ContentLength ?? 0,
                     Name = realName,
@@ -175,8 +200,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore.DataLake
             }
             else
             {
-                var dataLakeDirectoryClient = await GetDirectoryClient(path);
-                await dataLakeDirectoryClient.CreateFileAsync(name);
+                await GetDirectoryClient(path).CreateFileAsync(name);
             }
         }
         /// <summary>
@@ -193,8 +217,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore.DataLake
             }
             else
             {
-                var dataLakeDirectoryClient = await GetDirectoryClient(path);
-                await dataLakeDirectoryClient.CreateSubDirectoryAsync(name);
+                await GetDirectoryClient(path).CreateSubDirectoryAsync(name);
             }
         }
         /// <summary>
@@ -208,34 +231,32 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore.DataLake
             {
                 path = path.Substring(1);
             }
-            DataLakePathClient client = await GetFileClient(path);
-            await client.DeleteAsync(true);
+            await GetFileClient(path).DeleteAsync(true);
         }
 
         /// <summary>
         /// Gets extended attribute.
         /// </summary>
-        /// <param name="dataLakeItem"><see cref="DataLakeItem"/></param>
+        /// <param name="dataCloudItem"><see cref="DataCloudItem"/></param>
         /// <param name="attribName">Attribute name.</param>
         /// <returns>Attribute value.</returns>
-        public async Task<T> GetExtendedAttributeAsync<T>(DataLakeItem dataLakeItem, string attribName) where T : new()
+        public async Task<T> GetExtendedAttributeAsync<T>(DataCloudItem dataCloudItem, string attribName) where T : new()
         {
             if (string.IsNullOrEmpty(attribName))
             {
                 throw new ArgumentNullException("attribName");
             }
-
-            dataLakeItem.Properties.TryGetValue(attribName, out string value);
-            return await Task.Run(() => Deserialize<T>(value));
+            dataCloudItem.Properties.TryGetValue(attribName, out var value);
+            return Deserialize<T>(value);
         }
 
         /// <summary>
         /// Sets extended attribute.
         /// </summary>
-        /// <param name="dataLakeItem"><see cref="DataLakeItem"/></param>
+        /// <param name="dataCloudItem"><see cref="DataCloudItem"/></param>
         /// <param name="attribName">Attribute name.</param>
         /// <param name="attribValue">Attribute value.</param>
-        public async Task SetExtendedAttributeAsync(DataLakeItem dataLakeItem, string attribName, object attribValue)
+        public async Task SetExtendedAttributeAsync(DataCloudItem dataCloudItem, string attribName, object attribValue)
         {
             if (string.IsNullOrEmpty(attribName))
             {
@@ -246,65 +267,62 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore.DataLake
             {
                 throw new ArgumentNullException("attribValue");
             }
-            if (!dataLakeItem.Properties.ContainsKey(LastModifiedProperty))
+            if (!dataCloudItem.Properties.ContainsKey(LastModifiedProperty))
             {
-                DateTime lastWriteTimeUtc = dataLakeItem.ModifiedUtc;
-                dataLakeItem.Properties[LastModifiedProperty] = (lastWriteTimeUtc.Subtract(new DateTime(1970, 1, 1))).TotalMilliseconds.ToString(CultureInfo.InvariantCulture);
+                dataCloudItem.Properties[LastModifiedProperty] = (dataCloudItem.ModifiedUtc.Subtract(new DateTime(1970, 1, 1))).TotalMilliseconds.ToString(CultureInfo.InvariantCulture);
             }
-            var fileClient = dataLakeClient.GetFileClient(dataLakeItem.Path);
-            string serializedValue = Serialize(attribValue);
-            dataLakeItem.Properties[attribName] = serializedValue;
-            await fileClient.SetMetadataAsync(dataLakeItem.Properties);
+            var fileClient = dataLakeClient.GetFileClient(dataCloudItem.Path);
+            dataCloudItem.Properties[attribName] = Serialize(attribValue);
+            await fileClient.SetMetadataAsync(dataCloudItem.Properties);
         }
 
         /// <summary>
         /// Deletes extended attribute.
         /// </summary>
-        /// <param name="dataLakeItem"><see cref="DataLakeItem"/></param>
+        /// <param name="dataCloudItem"><see cref="DataCloudItem"/></param>
         /// <param name="attribName">Attribute name.</param>
-        public async Task DeleteExtendedAttributeAsync(DataLakeItem dataLakeItem, string attribName)
+        public async Task DeleteExtendedAttributeAsync(DataCloudItem dataCloudItem, string attribName)
         {
             if (string.IsNullOrEmpty(attribName))
             {
                 throw new ArgumentNullException("attribName");
             }
 
-            var fileClient = dataLakeClient.GetFileClient(dataLakeItem.Path);
-            dataLakeItem.Properties.Remove(attribName);
-            await fileClient.SetMetadataAsync(dataLakeItem.Properties);
+            var fileClient = dataLakeClient.GetFileClient(dataCloudItem.Path);
+            dataCloudItem.Properties.Remove(attribName);
+            await fileClient.SetMetadataAsync(dataCloudItem.Properties);
         }
 
         /// <summary>
         /// Deletes all extended attributes.
         /// </summary>
-        /// <param name="dataLakeItem"><see cref="DataLakeItem"/></param>
-        public async Task DeleteExtendedAttributes(DataLakeItem dataLakeItem)
+        /// <param name="dataCloudItem"><see cref="DataCloudItem"/></param>
+        public async Task DeleteExtendedAttributes(DataCloudItem dataCloudItem)
         {
-            var fileClient = dataLakeClient.GetFileClient(dataLakeItem.Path);
-            dataLakeItem.Properties.Clear();
-            await fileClient.SetMetadataAsync(dataLakeItem.Properties);
+            var fileClient = dataLakeClient.GetFileClient(dataCloudItem.Path);
+            dataCloudItem.Properties.Clear();
+            await fileClient.SetMetadataAsync(dataCloudItem.Properties);
         }
 
         /// <summary>
         /// Copies all extended attributes.
         /// </summary>
-        /// <param name="dataLakeItem"><see cref="DataLakeItem"/></param>
+        /// <param name="dataCloudItem"><see cref="DataCloudItem"/></param>
         /// <param name="destPath">Destination path.</param>
-        public async Task CopyExtendedAttributes(DataLakeItem dataLakeItem, string destPath)
+        public async Task CopyExtendedAttributes(DataCloudItem dataCloudItem, string destPath)
         {
-            var destClient = await GetFileClient(destPath);
-            await destClient.SetMetadataAsync(dataLakeItem.Properties);
+            await GetFileClient(destPath).SetMetadataAsync(dataCloudItem.Properties);
         }
 
         /// <summary>
         /// Moves all extended attributes.
         /// </summary>
-        /// <param name="dataLakeItem"><see cref="DataLakeItem"/></param>
+        /// <param name="dataCloudItem"><see cref="DataCloudItem"/></param>
         /// <param name="destPath">Destination path.</param>
-        public async Task MoveExtendedAttributes(DataLakeItem dataLakeItem, string destPath)
+        public async Task MoveExtendedAttributes(DataCloudItem dataCloudItem, string destPath)
         {
-            await CopyExtendedAttributes(dataLakeItem, destPath);
-            await DeleteExtendedAttributes(dataLakeItem);
+            await CopyExtendedAttributes(dataCloudItem, destPath);
+            await DeleteExtendedAttributes(dataCloudItem);
         }
 
         /// <summary>
@@ -318,7 +336,6 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore.DataLake
             {
                 throw new ArgumentNullException("data");
             }
-
             return JsonConvert.SerializeObject(data);
         }
 
@@ -334,7 +351,6 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore.DataLake
             {
                 return new T();
             }
-
             return JsonConvert.DeserializeObject<T>(xmlString);
         }
 
@@ -354,9 +370,9 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore.DataLake
         /// </summary>
         /// <param name="relativePath">Relative path of item.</param>
         /// <returns>DataLakeFileSystemClient or null if item is not exists.</returns>
-        private async Task<DataLakeDirectoryClient> GetDirectoryClient(string relativePath)
+        private DataLakeDirectoryClient GetDirectoryClient(string relativePath)
         {
-            return await Task.Run(() => dataLakeClient.GetDirectoryClient(relativePath == "" ? "%2F" : relativePath));
+            return dataLakeClient.GetDirectoryClient(relativePath == "" ? "%2F" : relativePath);
         }
 
         /// <summary>
@@ -364,9 +380,9 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore.DataLake
         /// </summary>
         /// <param name="relativePath">Relative path of item.</param>
         /// <returns>DataLakeFileClient or null if item is not exists.</returns>
-        private async Task<DataLakeFileClient> GetFileClient(string relativePath)
+        private DataLakeFileClient GetFileClient(string relativePath)
         {
-            return await Task.Run(() => dataLakeClient.GetFileClient(relativePath == "" ? "%2F" : relativePath));
+            return dataLakeClient.GetFileClient(relativePath == "" ? "%2F" : relativePath);
         }
     }
 }

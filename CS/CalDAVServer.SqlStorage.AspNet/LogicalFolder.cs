@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading.Tasks;
 
 using ITHit.WebDAV.Server;
@@ -31,7 +32,7 @@ namespace CalDAVServer.SqlStorage.AspNet
             
             path = path.TrimEnd('/');
             string encodedName = path.Substring(path.LastIndexOf('/') + 1);
-            this.displayName = EncodeUtil.DecodeUrlPart(encodedName);
+            this.displayName = EncodeUtil.DecodeUrlPart(encodedName).Normalize(NormalizationForm.FormC);
         }
 
         public override async Task DeleteAsync(MultistatusException multistatus)

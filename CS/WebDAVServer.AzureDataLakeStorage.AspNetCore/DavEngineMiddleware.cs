@@ -4,12 +4,13 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using System.Threading.Tasks;
 using ITHit.Server;
 using ITHit.WebDAV.Server;
 using WebDAVServer.AzureDataLakeStorage.AspNetCore.Configuration;
 using Microsoft.AspNetCore.Authentication;
+using WebDAVServer.AzureDataLakeStorage.AspNetCore.Config;
+using WebDAVServer.AzureDataLakeStorage.AspNetCore.DataLake;
 
 namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
 {
@@ -46,7 +47,11 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
                 // 3. Set MaxRequestBodySize = null.
                 context.Features.Get<IHttpMaxRequestBodySizeFeature>().MaxRequestBodySize = null;
             }
-
+            if (!context.User.Identity.IsAuthenticated)
+            {
+                await context.ChallengeAsync();
+                return;
+            }
             await engine.RunAsync(davContext);
         }
     }
@@ -75,6 +80,9 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
             services.AddScoped<ContextCoreAsync<IHierarchyItemAsync>, DavContext>();
             services.Configure<DavEngineConfig>(async config => await Configuration.GetSection("WebDAVEngine").ReadConfigurationAsync(config));
             services.Configure<DavLoggerConfig>(async config => await Configuration.GetSection("Logger").ReadConfigurationAsync(config, env));
+
+            services.AddScoped<IDataCloudStoreService, DataLakeStoreService>();
+            services.Configure<DavContextConfig>(async config => await configuration.GetSection("Context").ReadConfigurationAsync(config, env));
         }
 
         /// <summary>

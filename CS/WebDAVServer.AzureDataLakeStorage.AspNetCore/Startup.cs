@@ -1,4 +1,6 @@
+using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
@@ -9,6 +11,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using WebDAVServer.AzureDataLakeStorage.AspNetCore.DataLake;
 
 namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
@@ -35,9 +38,17 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
         // For more information on how to configure your application, visit http://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            
+            // Configure Azure AD authentication.
+            services.AddAuthentication(AzureADDefaults.AuthenticationScheme)
+                .AddAzureAD(options => Configuration.Bind("AzureAd", options));
+            services.Configure<OpenIdConnectOptions>(AzureADDefaults.OpenIdScheme, options =>
+            {
+                var config = Configuration.GetSection("AzureAd").Get<OpenIdConnectOptions>();
+                options.ResponseType = config.ResponseType;
+                options.Resource = config.Resource;
+                options.SaveTokens = config.SaveTokens;
+            });
             services.AddWebDav(Configuration, HostingEnvironment);
-            services.AddDataLake(Configuration, HostingEnvironment);
             //Enables web sockets. Web sockets are used to update the documents list in case of any changes on the server.
             services.AddSingleton<WebSocketsService>();
         }

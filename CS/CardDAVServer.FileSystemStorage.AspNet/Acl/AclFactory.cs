@@ -1,5 +1,6 @@
 using System.Web.Hosting;
 using System.DirectoryServices.AccountManagement;
+using System.Text;
 using System.Threading.Tasks;
 
 using ITHit.WebDAV.Server;
@@ -38,7 +39,7 @@ namespace CardDAVServer.FileSystemStorage.AspNet.Acl
             //if this is /acl/users/<user name> - return instance of User.
             if (path.StartsWith(UserFolder.PATH))
             {
-                string name = EncodeUtil.DecodeUrlPart(path.Substring(UserFolder.PATH.Length));
+                string name = EncodeUtil.DecodeUrlPart(path.Substring(UserFolder.PATH.Length)).Normalize(NormalizationForm.FormC);
                 //we don't need an exception here - so check for validity.
                 if (PrincipalBase.IsValidUserName(name))
                 {
@@ -49,7 +50,7 @@ namespace CardDAVServer.FileSystemStorage.AspNet.Acl
             //if this is /acl/groups/<group name> - return instance of Group.
             if (path.StartsWith(GroupFolder.PATH))
             {
-                string name = EncodeUtil.DecodeUrlPart(path.Substring(GroupFolder.PATH.Length));
+                string name = EncodeUtil.DecodeUrlPart(path.Substring(GroupFolder.PATH.Length)).Normalize(NormalizationForm.FormC);
                 if (PrincipalBase.IsValidUserName(name))
                 {
                     return Group.FromName(name, context);
