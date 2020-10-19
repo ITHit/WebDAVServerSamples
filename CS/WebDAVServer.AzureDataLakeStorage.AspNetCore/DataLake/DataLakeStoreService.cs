@@ -10,6 +10,7 @@ using Azure.Core;
 using Azure.Storage;
 using Azure.Storage.Files.DataLake;
 using ITHit.WebDAV.Server;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -37,14 +38,13 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore.DataLake
         /// <param name="httpContextAccessor">Http context.</param>
         public DataLakeStoreService(IOptions<DavContextConfig> configuration, IHttpContextAccessor httpContextAccessor)
         {
-            // var token = httpContextAccessor.HttpContext.User.Claims.FirstOrDefault(x => x.Type == "access_token")?.Value;
-            // if (token == null)
-            // {
-            //     notAuthorized = true;
-            // }
+            var token = httpContextAccessor.HttpContext.User.Claims.FirstOrDefault(x => x.Type == "access_token")?.Value;
+            if (token == null)
+            {
+                notAuthorized = true;
+            }
             DavContextConfig config = configuration.Value;
-            // var credential = new DataLakeTokenCredential(token, DateTimeOffset.MaxValue);
-            var credential = new StorageSharedKeyCredential(config.AzureStorageAccountName, config.AzureStorageAccessKey);
+            var credential = new DataLakeTokenCredential(token, DateTimeOffset.MaxValue);
             var dfsUri = "https://" + config.AzureStorageAccountName + ".dfs.core.windows.net";
             dataLakeClient = new DataLakeServiceClient(new Uri(dfsUri), credential).GetFileSystemClient(config.DataLakeContainerName);
         }

@@ -3,29 +3,29 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.28803.156
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebDAVServer.FileSystemStorage.HttpListener", "WebDAVServer.FileSystemStorage.HttpListener\WebDAVServer.FileSystemStorage.HttpListener.csproj", "{18F87019-1436-4658-8EB5-2054ED7279C2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebDAVServer.FileSystemStorage.HttpListener", "WebDAVServer.FileSystemStorage.HttpListener\WebDAVServer.FileSystemStorage.HttpListener.csproj", "{BE73058B-EB36-4084-9164-A7A14CD3EE6D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebDAVServer.SqlStorage.HttpListener", "WebDAVServer.SqlStorage.HttpListener\WebDAVServer.SqlStorage.HttpListener.csproj", "{6CA9D156-C9F0-4CF4-B32C-C1C8737F1463}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebDAVServer.SqlStorage.HttpListener", "WebDAVServer.SqlStorage.HttpListener\WebDAVServer.SqlStorage.HttpListener.csproj", "{61E2DF5E-33EF-4D3D-9B1E-52AE8534BDA2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CalDAVServer.FileSystemStorage.AspNet", "CalDAVServer.FileSystemStorage.AspNet\CalDAVServer.FileSystemStorage.AspNet.csproj", "{E2DBE2D9-4405-4811-A8A3-34A22E0EA50A}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CalDAVServer.SqlStorage.AspNet", "CalDAVServer.SqlStorage.AspNet\CalDAVServer.SqlStorage.AspNet.csproj", "{493AC084-1001-483C-8978-136F2B62FE00}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CardDAVServer.FileSystemStorage.AspNet", "CardDAVServer.FileSystemStorage.AspNet\CardDAVServer.FileSystemStorage.AspNet.csproj", "{316C4E21-8409-4B64-ACBF-93C280961EE8}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CardDAVServer.SqlStorage.AspNet", "CardDAVServer.SqlStorage.AspNet\CardDAVServer.SqlStorage.AspNet.csproj", "{238DCE57-627C-4FC2-BED1-749BF14009FC}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebDAVServer.FileSystemStorage.AspNet", "WebDAVServer.FileSystemStorage.AspNet\WebDAVServer.FileSystemStorage.AspNet.csproj", "{B4A79CD6-C49C-459B-839F-660579D08F26}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebDAVServer.FileSystemStorage.AspNet", "WebDAVServer.FileSystemStorage.AspNet\WebDAVServer.FileSystemStorage.AspNet.csproj", "{A27DF707-E1CE-4835-9FB6-91E939E95631}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebDAVServer.FileSystemStorage.AspNetCore", "WebDAVServer.FileSystemStorage.AspNetCore\WebDAVServer.FileSystemStorage.AspNetCore.csproj", "{7882E99E-DCD0-4F3E-BE04-548723FB12C1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebDAVServer.SqlStorage.AspNet", "WebDAVServer.SqlStorage.AspNet\WebDAVServer.SqlStorage.AspNet.csproj", "{01B9861A-CE29-4529-B5E5-1EC2028F5EC8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebDAVServer.SqlStorage.AspNet", "WebDAVServer.SqlStorage.AspNet\WebDAVServer.SqlStorage.AspNet.csproj", "{9F2F69D6-8DA0-4C16-801B-4DDBAFFBDB0F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebDAVServer.SqlStorage.AspNetCore", "WebDAVServer.SqlStorage.AspNetCore\WebDAVServer.SqlStorage.AspNetCore.csproj", "{F4F9511F-2FF8-42AC-88FB-B70197AD20D2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebDAVServer.FileSystemStorage.AspNet.Cookies", "WebDAVServer.FileSystemStorage.AspNet.Cookies\WebDAVServer.FileSystemStorage.AspNet.Cookies.csproj", "{F04D1B74-4943-4EC3-9B39-0A468AA3926E}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebDAVServer.AzureDataLakeStorage.AspNetCore", "WebDAVServer.AzureDataLakeStorage.AspNetCore\WebDAVServer.AzureDataLakeStorage.AspNetCore.csproj", "{35D51C72-362E-4692-B247-184EEBB59A89}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebDAVServer.FileSystemStorage.AspNetCore.Cookies", "WebDAVServer.FileSystemStorage.AspNetCore.Cookies\WebDAVServer.FileSystemStorage.AspNetCore.Cookies.csproj", "{0AF19DED-BC02-416C-8026-08528E5809C3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CalDAVServer.FileSystemStorage.AspNetCore", "CalDAVServer.FileSystemStorage.AspNetCore\CalDAVServer.FileSystemStorage.AspNetCore.csproj", "{B025F71B-484D-44AF-81AB-6A5E9D8DD912}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CalDAVServer.SqlStorage.AspNetCore", "CalDAVServer.SqlStorage.AspNetCore\CalDAVServer.SqlStorage.AspNetCore.csproj", "{9A007132-A885-4627-8752-040343D321CB}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CardDAVServer.FileSystemStorage.AspNetCore", "CardDAVServer.FileSystemStorage.AspNetCore\CardDAVServer.FileSystemStorage.AspNetCore.csproj", "{6A1C7862-63AD-41AA-9238-C1F0F17EC29A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CardDAVServer.SqlStorage.AspNetCore", "CardDAVServer.SqlStorage.AspNetCore\CardDAVServer.SqlStorage.AspNetCore.csproj", "{048FFB7A-D269-4E75-A9BD-9D0529B26FCB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,54 +33,54 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{18F87019-1436-4658-8EB5-2054ED7279C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{18F87019-1436-4658-8EB5-2054ED7279C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{18F87019-1436-4658-8EB5-2054ED7279C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{18F87019-1436-4658-8EB5-2054ED7279C2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6CA9D156-C9F0-4CF4-B32C-C1C8737F1463}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6CA9D156-C9F0-4CF4-B32C-C1C8737F1463}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6CA9D156-C9F0-4CF4-B32C-C1C8737F1463}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6CA9D156-C9F0-4CF4-B32C-C1C8737F1463}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E2DBE2D9-4405-4811-A8A3-34A22E0EA50A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E2DBE2D9-4405-4811-A8A3-34A22E0EA50A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E2DBE2D9-4405-4811-A8A3-34A22E0EA50A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E2DBE2D9-4405-4811-A8A3-34A22E0EA50A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{493AC084-1001-483C-8978-136F2B62FE00}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{493AC084-1001-483C-8978-136F2B62FE00}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{493AC084-1001-483C-8978-136F2B62FE00}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{493AC084-1001-483C-8978-136F2B62FE00}.Release|Any CPU.Build.0 = Release|Any CPU
-		{316C4E21-8409-4B64-ACBF-93C280961EE8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{316C4E21-8409-4B64-ACBF-93C280961EE8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{316C4E21-8409-4B64-ACBF-93C280961EE8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{316C4E21-8409-4B64-ACBF-93C280961EE8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{238DCE57-627C-4FC2-BED1-749BF14009FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{238DCE57-627C-4FC2-BED1-749BF14009FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{238DCE57-627C-4FC2-BED1-749BF14009FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{238DCE57-627C-4FC2-BED1-749BF14009FC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B4A79CD6-C49C-459B-839F-660579D08F26}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B4A79CD6-C49C-459B-839F-660579D08F26}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B4A79CD6-C49C-459B-839F-660579D08F26}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B4A79CD6-C49C-459B-839F-660579D08F26}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BE73058B-EB36-4084-9164-A7A14CD3EE6D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BE73058B-EB36-4084-9164-A7A14CD3EE6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BE73058B-EB36-4084-9164-A7A14CD3EE6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BE73058B-EB36-4084-9164-A7A14CD3EE6D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{61E2DF5E-33EF-4D3D-9B1E-52AE8534BDA2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{61E2DF5E-33EF-4D3D-9B1E-52AE8534BDA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{61E2DF5E-33EF-4D3D-9B1E-52AE8534BDA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{61E2DF5E-33EF-4D3D-9B1E-52AE8534BDA2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A27DF707-E1CE-4835-9FB6-91E939E95631}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A27DF707-E1CE-4835-9FB6-91E939E95631}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A27DF707-E1CE-4835-9FB6-91E939E95631}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A27DF707-E1CE-4835-9FB6-91E939E95631}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7882E99E-DCD0-4F3E-BE04-548723FB12C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7882E99E-DCD0-4F3E-BE04-548723FB12C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7882E99E-DCD0-4F3E-BE04-548723FB12C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7882E99E-DCD0-4F3E-BE04-548723FB12C1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{01B9861A-CE29-4529-B5E5-1EC2028F5EC8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{01B9861A-CE29-4529-B5E5-1EC2028F5EC8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{01B9861A-CE29-4529-B5E5-1EC2028F5EC8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{01B9861A-CE29-4529-B5E5-1EC2028F5EC8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9F2F69D6-8DA0-4C16-801B-4DDBAFFBDB0F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9F2F69D6-8DA0-4C16-801B-4DDBAFFBDB0F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9F2F69D6-8DA0-4C16-801B-4DDBAFFBDB0F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9F2F69D6-8DA0-4C16-801B-4DDBAFFBDB0F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F4F9511F-2FF8-42AC-88FB-B70197AD20D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F4F9511F-2FF8-42AC-88FB-B70197AD20D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F4F9511F-2FF8-42AC-88FB-B70197AD20D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F4F9511F-2FF8-42AC-88FB-B70197AD20D2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F04D1B74-4943-4EC3-9B39-0A468AA3926E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F04D1B74-4943-4EC3-9B39-0A468AA3926E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F04D1B74-4943-4EC3-9B39-0A468AA3926E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F04D1B74-4943-4EC3-9B39-0A468AA3926E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{35D51C72-362E-4692-B247-184EEBB59A89}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{35D51C72-362E-4692-B247-184EEBB59A89}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{35D51C72-362E-4692-B247-184EEBB59A89}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{35D51C72-362E-4692-B247-184EEBB59A89}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0AF19DED-BC02-416C-8026-08528E5809C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0AF19DED-BC02-416C-8026-08528E5809C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0AF19DED-BC02-416C-8026-08528E5809C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0AF19DED-BC02-416C-8026-08528E5809C3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B025F71B-484D-44AF-81AB-6A5E9D8DD912}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B025F71B-484D-44AF-81AB-6A5E9D8DD912}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B025F71B-484D-44AF-81AB-6A5E9D8DD912}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B025F71B-484D-44AF-81AB-6A5E9D8DD912}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9A007132-A885-4627-8752-040343D321CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9A007132-A885-4627-8752-040343D321CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9A007132-A885-4627-8752-040343D321CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9A007132-A885-4627-8752-040343D321CB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6A1C7862-63AD-41AA-9238-C1F0F17EC29A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A1C7862-63AD-41AA-9238-C1F0F17EC29A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A1C7862-63AD-41AA-9238-C1F0F17EC29A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A1C7862-63AD-41AA-9238-C1F0F17EC29A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{048FFB7A-D269-4E75-A9BD-9D0529B26FCB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{048FFB7A-D269-4E75-A9BD-9D0529B26FCB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{048FFB7A-D269-4E75-A9BD-9D0529B26FCB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{048FFB7A-D269-4E75-A9BD-9D0529B26FCB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

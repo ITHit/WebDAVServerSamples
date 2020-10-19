@@ -83,6 +83,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
 
             services.AddScoped<IDataCloudStoreService, DataLakeStoreService>();
             services.Configure<DavContextConfig>(async config => await configuration.GetSection("Context").ReadConfigurationAsync(config, env));
+            services.Configure<AzureAdConfig>(async config => await configuration.GetSection("AzureAD").ReadConfigurationAsync(config));
         }
 
         /// <summary>

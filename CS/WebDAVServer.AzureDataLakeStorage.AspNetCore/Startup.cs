@@ -1,6 +1,4 @@
 using System;
-using System.Diagnostics;
-using System.Globalization;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
@@ -11,8 +9,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
-using WebDAVServer.AzureDataLakeStorage.AspNetCore.DataLake;
 
 namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
 {
@@ -47,6 +43,28 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
                 options.ResponseType = config.ResponseType;
                 options.Resource = config.Resource;
                 options.SaveTokens = config.SaveTokens;
+                // options.
+                options.Events = new OpenIdConnectEvents
+                {
+                    OnTokenValidated = context =>
+                    {
+                        var accessToken = context.ProtocolMessage.AccessToken;
+                        if (accessToken != null)
+                        {
+                            if (context.Principal.Identity is ClaimsIdentity identity)
+                            {
+                                identity.AddClaim(new Claim("access_token", accessToken));
+                            }
+                        }
+                        return Task.CompletedTask;
+                    },
+                    OnTicketReceived = context =>
+                    {
+                        context.Properties.IsPersistent = true;
+                        context.Properties.ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(5);
+                        return Task.FromResult(0);
+                    }
+                };
             });
             services.AddWebDav(Configuration, HostingEnvironment);
             //Enables web sockets. Web sockets are used to update the documents list in case of any changes on the server.
@@ -60,9 +78,11 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
 
             if (env.IsDevelopment())
                 app.UseDeveloperExceptionPage();
+            // app.UseOfficeAuth();
+            
             app.UseAuthentication();
             app.UseAuthorization();
-
+            app.UseMSOFBasicAuth();
             //Enables web sockets. Web sockets are used to update the documents list in case of any changes on the server.
             app.UseWebSockets();
             app.UseWebSocketsMiddleware();

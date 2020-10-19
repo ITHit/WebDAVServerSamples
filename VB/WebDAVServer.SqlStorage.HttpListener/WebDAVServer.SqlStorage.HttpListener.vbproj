@@ -6,7 +6,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>26D6DDEB-E34D-46D9-9F1D-5A73A1C8A586</ProjectGuid>
+    <ProjectGuid>6B0C07E4-953E-463F-ACD5-62BBB4A15684</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>WebDAVServer.SqlStorage.HttpListener</RootNamespace>
@@ -152,28 +152,28 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="ITHit.WebDAV.Server">
-      <HintPath>..\packages\ITHit.WebDAV.Server.10.1.9137\lib\net451\ITHit.WebDAV.Server.dll</HintPath>
+      <HintPath>..\packages\ITHit.WebDAV.Server.10.2.8991\lib\net451\ITHit.WebDAV.Server.dll</HintPath>
     </Reference>
     <Reference Include="ITHit.Server">
-      <HintPath>..\packages\ITHit.Server.10.1.9137\lib\net451\ITHit.Server.dll</HintPath>
+      <HintPath>..\packages\ITHit.Server.10.2.8991\lib\net451\ITHit.Server.dll</HintPath>
     </Reference>
     <Reference Include="ITHit.Server.HttpListener">
-      <HintPath>..\packages\ITHit.Server.HttpListener.10.1.9137\lib\net451\ITHit.Server.HttpListener.dll</HintPath>
+      <HintPath>..\packages\ITHit.Server.HttpListener.10.2.8991\lib\net451\ITHit.Server.HttpListener.dll</HintPath>
     </Reference>
     <Reference Include="ITHit.GSuite.Server">
-      <HintPath>..\packages\ITHit.GSuite.Server.10.1.9137\lib\net451\ITHit.GSuite.Server.dll</HintPath>
+      <HintPath>..\packages\ITHit.GSuite.Server.10.2.8991\lib\net451\ITHit.GSuite.Server.dll</HintPath>
     </Reference>
     <Reference Include="ITHit.WebDAV.Server">
-      <HintPath>..\packages\ITHit.WebDAV.Server.10.1.9137\lib\net451\ITHit.WebDAV.Server.dll</HintPath>
+      <HintPath>..\packages\ITHit.WebDAV.Server.10.2.8991\lib\net451\ITHit.WebDAV.Server.dll</HintPath>
     </Reference>
     <Reference Include="ITHit.Server">
-      <HintPath>..\packages\ITHit.Server.10.1.9137\lib\net451\ITHit.Server.dll</HintPath>
+      <HintPath>..\packages\ITHit.Server.10.2.8991\lib\net451\ITHit.Server.dll</HintPath>
     </Reference>
     <Reference Include="ITHit.Server.HttpListener">
-      <HintPath>..\packages\ITHit.Server.HttpListener.10.1.9137\lib\net451\ITHit.Server.HttpListener.dll</HintPath>
+      <HintPath>..\packages\ITHit.Server.HttpListener.10.2.8991\lib\net451\ITHit.Server.HttpListener.dll</HintPath>
     </Reference>
     <Reference Include="ITHit.GSuite.Server">
-      <HintPath>..\packages\ITHit.GSuite.Server.10.1.9137\lib\net451\ITHit.GSuite.Server.dll</HintPath>
+      <HintPath>..\packages\ITHit.GSuite.Server.10.2.8991\lib\net451\ITHit.GSuite.Server.dll</HintPath>
     </Reference>
   </ItemGroup>
   <PropertyGroup>
