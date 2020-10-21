@@ -16,11 +16,6 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore.Config
         public string AzureStorageAccountName { get; set; } = string.Empty;
 
         /// <summary>
-        /// Access key for the Storage Account. You can get it from Azure Portal.
-        /// </summary>
-        public string AzureStorageAccessKey { get; set; } = string.Empty;
-
-        /// <summary>
         /// That is name of the data lake storage container. Must be created first. You can create/get it from Azure Portal.
         /// </summary>
         public string DataLakeContainerName { get; set; } = string.Empty;
@@ -55,11 +50,6 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore.Config
             if (string.IsNullOrEmpty(config.AzureStorageAccountName))
             {
                 throw new ArgumentNullException("DavContextConfig.AzureStorageAccountName");
-            }
-
-            if (string.IsNullOrEmpty(config.AzureStorageAccessKey))
-            {
-                throw new ArgumentNullException("DavContextConfig.AzureStorageAccessKey");
             }
         }
     }
