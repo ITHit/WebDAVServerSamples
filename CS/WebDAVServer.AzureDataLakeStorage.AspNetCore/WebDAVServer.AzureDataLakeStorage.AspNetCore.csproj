@@ -37,7 +37,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Azure.Storage.Files.DataLake" Version="12.2.1" />
+    <PackageReference Include="Azure.Storage.Files.DataLake" Version="12.4.0" />
     <PackageReference Include="ITHit.Server" Version="10.1.8941" />
     <PackageReference Include="ITHit.Server.Core" Version="10.1.8941" />
     <PackageReference Include="ITHit.WebDAV.Server" Version="10.1.8941" />

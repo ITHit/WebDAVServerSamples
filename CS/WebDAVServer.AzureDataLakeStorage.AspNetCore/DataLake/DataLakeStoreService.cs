@@ -60,8 +60,8 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore.DataLake
                 return false;
             }
 
-            path = path == "" || path =="/" ? "%2F" : path;
-            var client = dataLakeClient.GetFileClient(path);
+            path = path == "" || path =="/" ? "\\/" : path;
+            var client = GetFileClient(path);
             try
             {
                 return await client.ExistsAsync();
@@ -75,7 +75,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore.DataLake
 
         public async Task<bool> IsDirectoryAsync(string path)
         {
-            var client = dataLakeClient.GetFileClient(path == "" || path == "/" ? "%2F" : path);
+            var client = GetFileClient(path == "" || path == "/" ? "\\/" : path);
             var props = await client.GetPropertiesAsync();
             return props.Value.IsDirectory;
         }
@@ -166,7 +166,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore.DataLake
         public async Task<IList<DataCloudItem>> GetChildrenAsync(string relativePath)
         {
             IList<DataCloudItem> children = new List<DataCloudItem>();
-            await foreach (var pathItem in dataLakeClient.GetPathsAsync((EncodeUtil.DecodeUrlPart(relativePath))))
+            await foreach (var pathItem in dataLakeClient.GetPathsAsync(EncodeUtil.DecodeUrlPart(relativePath)))
             {
                 var path = pathItem.Name;
                 var realName = path;
@@ -271,7 +271,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore.DataLake
             {
                 dataCloudItem.Properties[LastModifiedProperty] = (dataCloudItem.ModifiedUtc.Subtract(new DateTime(1970, 1, 1))).TotalMilliseconds.ToString(CultureInfo.InvariantCulture);
             }
-            var fileClient = dataLakeClient.GetFileClient(dataCloudItem.Path);
+            var fileClient = GetFileClient(dataCloudItem.Path);
             dataCloudItem.Properties[attribName] = Serialize(attribValue);
             await fileClient.SetMetadataAsync(dataCloudItem.Properties);
         }
@@ -288,7 +288,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore.DataLake
                 throw new ArgumentNullException("attribName");
             }
 
-            var fileClient = dataLakeClient.GetFileClient(dataCloudItem.Path);
+            var fileClient = GetFileClient(dataCloudItem.Path);
             dataCloudItem.Properties.Remove(attribName);
             await fileClient.SetMetadataAsync(dataCloudItem.Properties);
         }
@@ -299,7 +299,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore.DataLake
         /// <param name="dataCloudItem"><see cref="DataCloudItem"/></param>
         public async Task DeleteExtendedAttributes(DataCloudItem dataCloudItem)
         {
-            var fileClient = dataLakeClient.GetFileClient(dataCloudItem.Path);
+            var fileClient = GetFileClient(dataCloudItem.Path);
             dataCloudItem.Properties.Clear();
             await fileClient.SetMetadataAsync(dataCloudItem.Properties);
         }
@@ -372,7 +372,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore.DataLake
         /// <returns>DataLakeFileSystemClient or null if item is not exists.</returns>
         private DataLakeDirectoryClient GetDirectoryClient(string relativePath)
         {
-            return dataLakeClient.GetDirectoryClient(relativePath == "" ? "%2F" : relativePath);
+            return dataLakeClient.GetDirectoryClient(EncodeUtil.DecodeUrlPart(relativePath == "" ? "\\/" : relativePath));
         }
 
         /// <summary>
@@ -382,7 +382,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore.DataLake
         /// <returns>DataLakeFileClient or null if item is not exists.</returns>
         private DataLakeFileClient GetFileClient(string relativePath)
         {
-            return dataLakeClient.GetFileClient(relativePath == "" ? "%2F" : relativePath);
+            return dataLakeClient.GetFileClient(EncodeUtil.DecodeUrlPart(relativePath == "" ? "\\/" : relativePath));
         }
     }
 }
