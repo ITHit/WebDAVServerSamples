@@ -1,22 +1,22 @@
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-
 using ITHit.WebDAV.Server;
 using ITHit.WebDAV.Server.Class1;
 using ITHit.WebDAV.Server.ResumableUpload;
 using ITHit.WebDAV.Server.Paging;
+using ITHit.WebDAV.Server.Search;
 using WebDAVServer.AzureDataLakeStorage.AspNetCore.DataLake;
+using WebDAVServer.AzureDataLakeStorage.AspNetCore.Search;
 
 namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
 {
     /// <summary>
     /// Folder in WebDAV repository.
     /// </summary>
-    public class DavFolder : DavHierarchyItem, IFolderAsync, IResumableUploadBase
+    public class DavFolder : DavHierarchyItem, IFolderAsync, IResumableUploadBase, ISearchAsync
     {
 
         /// <summary>
@@ -57,7 +57,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
             // return only items that you want to be visible for this 
             // particular user.
             IList<IHierarchyItemAsync> children = new List<IHierarchyItemAsync>();
-            var childData = await context.DataLakeStoreService.GetChildrenAsync(Path);
+            IList<DataCloudItem> childData = await context.DataLakeStoreService.GetChildrenAsync(Path);
             long totalItems = childData.Count;
             // Apply sorting.
             childData = SortChildren(childData, orderProps);
@@ -75,7 +75,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
                 }
                 else
                 {
-                    var item = await context.DataLakeStoreService.GetItemAsync(dataLakeItem.Path);
+                    DataCloudItem item = await context.DataLakeStoreService.GetItemAsync(dataLakeItem.Path);
                     dataLakeItem.Properties =  item.Properties;
                     dataLakeItem.ContentType =  item.ContentType;
                     child = new DavFile(dataLakeItem, context, dataLakeItem.Path);
@@ -252,6 +252,41 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
             await RequireHasTokenAsync();
             await context.DataLakeStoreService.DeleteItemAsync(Path);
             await context.socketService.NotifyDeleteAsync(Path);
+        }
+
+        /// <summary>
+        /// Represents an item that supports search according to DASL standard.
+        /// </summary>
+        public async Task<PageResults> SearchAsync(string searchString, SearchOptions options, List<PropertyName> propNames, long? offset, long? nResults)
+        {
+            bool includeSnippet = propNames.Any(s => s.Name == snippetProperty);
+            List<IHierarchyItemAsync> searchResponse = new List<IHierarchyItemAsync>();
+            IList<SearchResult> searchResults = await context.CognitiveSearchService.SearchAsync(searchString, options, includeSnippet);
+            long totalItems = searchResults.Count;
+            if (offset.HasValue && nResults.HasValue)
+            {
+                searchResults = searchResults.Skip((int)offset.Value).Take((int)nResults.Value).ToArray();
+            }
+            foreach (SearchResult searchResult in searchResults)
+            {
+                DataCloudItem dataLakeItem = await context.DataLakeStoreService.GetItemAsync(searchResult.Path);
+                dataLakeItem.Snippet = searchResult.Snippet;
+                IHierarchyItemAsync child;
+                if (dataLakeItem.IsDirectory)
+                {
+                    child = new DavFolder(dataLakeItem, context, dataLakeItem.Path);
+                }
+                else
+                {
+                    child = new DavFile(dataLakeItem, context, dataLakeItem.Path);
+                    if (includeSnippet)
+                    {
+                        (child as DavFile).Snippet = dataLakeItem.Snippet;
+                    }
+                }
+                searchResponse.Add(child);
+            }
+            return new PageResults(searchResponse, totalItems);
         }
 
         /// <summary>

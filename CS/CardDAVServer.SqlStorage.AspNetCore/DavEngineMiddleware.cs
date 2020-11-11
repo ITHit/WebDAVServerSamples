@@ -109,9 +109,9 @@ namespace CardDAVServer.SqlStorage.AspNetCore
             using (SqlConnection sqlConnection = new SqlConnection(sqlConnectionStringBuilder.ConnectionString))
             {
                 sqlConnection.Open();
-                using (SqlCommand sqlCommand = new SqlCommand($"SELECT db_id('{databaseName}')", sqlConnection))
+                using (SqlCommand sqlCommand = new SqlCommand($"SELECT count(*) from dbo.sysdatabases where name = '{databaseName}'", sqlConnection))
                 {
-                    databaseExists = (sqlCommand.ExecuteScalar() != DBNull.Value);
+                    databaseExists = ((int)sqlCommand.ExecuteScalar() != 0);
                 }
 
                 if (!databaseExists)

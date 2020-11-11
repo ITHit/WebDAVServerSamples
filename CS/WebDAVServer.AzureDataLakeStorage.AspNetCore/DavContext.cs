@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using ITHit.Server;
 using ITHit.WebDAV.Server;
 using WebDAVServer.AzureDataLakeStorage.AspNetCore.DataLake;
+using WebDAVServer.AzureDataLakeStorage.AspNetCore.Search;
 
 namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
 {
@@ -28,6 +29,10 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
         /// Singleton instance of <see cref="DataLakeStoreService"/>
         /// </summary>
         public IDataCloudStoreService DataLakeStoreService { get; }
+        /// <summary>
+        /// Singleton instance of <see cref="CognitiveSearchService"/>
+        /// </summary>
+        public ICognitiveSearchService CognitiveSearchService { get; }
 
         /// <summary>
         /// Initializes a new instance of the class.
@@ -36,14 +41,18 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
         /// <param name="logger">WebDAV Logger instance.</param>
         /// <param name="socketService">Singleton instance of <see cref="WebSocketsService"/>.</param>
         /// <param name="dataCloudStoreService">Singleton instance of <see cref="IDataCloudStoreService"/></param>
+        /// <param name="cognitiveSearchService">Singleton instance of <see cref="ICognitiveSearchService"/></param>
         public DavContext(IHttpContextAccessor httpContextAccessor, ILogger logger
-            , WebSocketsService socketService, IDataCloudStoreService dataCloudStoreService
+            , WebSocketsService socketService
+            , IDataCloudStoreService dataCloudStoreService
+            , ICognitiveSearchService cognitiveSearchService
             )
             : base(httpContextAccessor.HttpContext)
         {
             Logger = logger;
             this.socketService = socketService;
             DataLakeStoreService = dataCloudStoreService;
+            CognitiveSearchService = cognitiveSearchService;
         }
 
         /// <summary>

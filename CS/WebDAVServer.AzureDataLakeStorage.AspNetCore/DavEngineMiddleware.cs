@@ -11,6 +11,7 @@ using WebDAVServer.AzureDataLakeStorage.AspNetCore.Configuration;
 using Microsoft.AspNetCore.Authentication;
 using WebDAVServer.AzureDataLakeStorage.AspNetCore.Config;
 using WebDAVServer.AzureDataLakeStorage.AspNetCore.DataLake;
+using WebDAVServer.AzureDataLakeStorage.AspNetCore.Search;
 
 namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
 {
@@ -82,7 +83,9 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
             services.Configure<DavLoggerConfig>(async config => await Configuration.GetSection("Logger").ReadConfigurationAsync(config, env));
 
             services.AddScoped<IDataCloudStoreService, DataLakeStoreService>();
+            services.AddScoped<ICognitiveSearchService, CognitiveSearchService>();
             services.Configure<DavContextConfig>(async config => await configuration.GetSection("Context").ReadConfigurationAsync(config, env));
+            services.Configure<SearchConfig>(async config => await configuration.GetSection("Search").ReadConfigurationAsync(config, env));
             services.Configure<AzureAdConfig>(async config => await configuration.GetSection("AzureAD").ReadConfigurationAsync(config));
         }
 

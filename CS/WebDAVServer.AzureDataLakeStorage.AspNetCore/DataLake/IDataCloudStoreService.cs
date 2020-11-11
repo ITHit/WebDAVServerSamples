@@ -16,7 +16,11 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore.DataLake
         /// <param name="path">Path to item.</param>
         /// <returns>True if exists, false otherwise.</returns>
         Task<bool> ExistsAsync(string path);
-
+        /// <summary>
+        /// Checks if item is directory under provided path
+        /// </summary>
+        /// <param name="path">Path to check</param>
+        /// <returns></returns>
         Task<bool> IsDirectoryAsync(string path);
         /// <summary>
         /// Returns item info for the path. Doesn't check if item exists.
@@ -157,5 +161,9 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore.DataLake
         /// Custom properties of the item.
         /// </summary>
         public IDictionary<string, string> Properties { get; set; } = new Dictionary<string, string>();
+        /// <summary>
+        /// Gets or Sets snippet of file content that matches search conditions.
+        /// </summary>
+        public string Snippet { get; set; }
     }
 }

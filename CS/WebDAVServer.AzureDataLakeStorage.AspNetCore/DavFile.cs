@@ -246,6 +246,11 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
             return new[] { this };
         }
 
+        /// <summary>
+        /// Gets or Sets snippet of file content that matches search conditions.
+        /// </summary>
+        public string Snippet { get; set; }
+
         private static bool ContainsDownloadParam(string url)
         {
             int ind = url.IndexOf('?');

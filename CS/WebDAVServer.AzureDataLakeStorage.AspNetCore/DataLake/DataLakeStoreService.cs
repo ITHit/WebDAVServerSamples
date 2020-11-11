@@ -6,11 +6,8 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Azure;
-using Azure.Core;
-using Azure.Storage;
 using Azure.Storage.Files.DataLake;
 using ITHit.WebDAV.Server;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -32,7 +29,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore.DataLake
         private const string LastModifiedProperty = "LastModified";
 
         /// <summary>
-        /// Initializes new instance of DataLakeExtendedAttribute.
+        /// Initializes new instance of DataLakeStoreService.
         /// </summary>
         /// <param name="configuration">Context configuration.</param>
         /// <param name="httpContextAccessor">Http context.</param>
@@ -324,7 +321,6 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore.DataLake
             await CopyExtendedAttributes(dataCloudItem, destPath);
             await DeleteExtendedAttributes(dataCloudItem);
         }
-
         /// <summary>
         /// Serializes object to XML string.
         /// </summary>
