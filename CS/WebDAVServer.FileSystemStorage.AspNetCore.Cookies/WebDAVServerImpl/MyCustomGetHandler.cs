@@ -91,7 +91,15 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore.Cookies
                     string html = await reader.ReadToEndAsync();
                     html = html.Replace("_webDavServerRoot_", "");
                     html = html.Replace("_webDavServerVersion_",
-                        typeof(DavEngineAsync).GetTypeInfo().Assembly.GetName().Version.ToString());           
+                        typeof(DavEngineAsync).GetTypeInfo().Assembly.GetName().Version.ToString());
+
+                    // Set list of cookie names for ajax lib.
+                    if (context.Request.Headers.ContainsKey("Cookie"))
+                    {
+                        html = html.Replace("_webDavAuthCookieNames_", string.Join(",", context.Request.Headers["Cookie"]
+                                    .TrimEnd(';').Split(';').Select(p => p.Split(new[] { '=' }, 2)[0].Trim())
+                                    .Where(p => p.StartsWith(".AspNetCore.Identity.Application") || p.StartsWith(".AspNetCore.Cookies") || p.StartsWith(".AspNetCore.AzureADCookie"))));
+                    }
 
                     await WriteFileContentAsync(context, html, htmlName);
                 }

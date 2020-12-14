@@ -102,7 +102,7 @@ namespace CardDAVServer.FileSystemStorage.AspNetCore
                     html = html.Replace("_BOOKS_", await AllUserAddressbooksUrlAsync(context));
                     html = html.Replace("_webDavServerRoot_", context.Request.ApplicationPath.TrimEnd('/'));
                     html = html.Replace("_webDavServerVersion_",
-                        typeof(DavEngineAsync).GetTypeInfo().Assembly.GetName().Version.ToString());           
+                        typeof(DavEngineAsync).GetTypeInfo().Assembly.GetName().Version.ToString());
 
                     await WriteFileContentAsync(context, html, htmlName);
                 }

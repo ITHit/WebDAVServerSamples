@@ -91,7 +91,7 @@ namespace WebDAVServer.FileSystemStorage.HttpListener
                     string html = await reader.ReadToEndAsync();
                     html = html.Replace("_webDavServerRoot_", context.Request.ApplicationPath.TrimEnd('/'));
                     html = html.Replace("_webDavServerVersion_",
-                        typeof(DavEngineAsync).GetTypeInfo().Assembly.GetName().Version.ToString());           
+                        typeof(DavEngineAsync).GetTypeInfo().Assembly.GetName().Version.ToString());
 
                     await WriteFileContentAsync(context, html, htmlName);
                 }
