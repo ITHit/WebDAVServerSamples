@@ -1,6 +1,5 @@
 Imports System.Web.Hosting
 Imports System.DirectoryServices.AccountManagement
-Imports System.Text
 Imports System.Threading.Tasks
 Imports ITHit.WebDAV.Server
 Imports ITHit.WebDAV.Server.Acl
@@ -33,7 +32,7 @@ Namespace Acl
 
             'if this is /acl/users/<user name> - return instance of User.
             If path.StartsWith(UserFolder.PATH) Then
-                Dim name As String = EncodeUtil.DecodeUrlPart(path.Substring(UserFolder.PATH.Length)).Normalize(NormalizationForm.FormC)
+                Dim name As String = EncodeUtil.DecodeUrlPart(path.Substring(UserFolder.PATH.Length))
                 'we don't need an exception here - so check for validity.
                 If PrincipalBase.IsValidUserName(name) Then
                     Return User.FromName(name, context)
@@ -42,7 +41,7 @@ Namespace Acl
 
             'if this is /acl/groups/<group name> - return instance of Group.
             If path.StartsWith(GroupFolder.PATH) Then
-                Dim name As String = EncodeUtil.DecodeUrlPart(path.Substring(GroupFolder.PATH.Length)).Normalize(NormalizationForm.FormC)
+                Dim name As String = EncodeUtil.DecodeUrlPart(path.Substring(GroupFolder.PATH.Length))
                 If PrincipalBase.IsValidUserName(name) Then
                     Return Group.FromName(name, context)
                 End If

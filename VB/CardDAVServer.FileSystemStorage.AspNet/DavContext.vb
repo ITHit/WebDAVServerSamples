@@ -5,7 +5,6 @@ Imports System.Linq
 Imports System.Net
 Imports System.Runtime.InteropServices
 Imports System.Security.Principal
-Imports System.Text
 Imports System.Web
 Imports System.Configuration
 Imports System.Threading.Tasks
@@ -213,7 +212,7 @@ Public Class DavContext
         'Convert to local file system path by decoding every part, reversing slashes and appending
         'to repository root.
         Dim encodedParts As String() = relativePath.Split({"/"}, StringSplitOptions.RemoveEmptyEntries)
-        Dim decodedParts As String() = encodedParts.Select(Of String)(Function(p) EncodeUtil.DecodeUrlPart(p).Normalize(NormalizationForm.FormC)).ToArray()
+        Dim decodedParts As String() = encodedParts.Select(Of String)(AddressOf EncodeUtil.DecodeUrlPart).ToArray()
         Return Path.Combine(RepositoryPath, String.Join(Path.DirectorySeparatorChar.ToString(), decodedParts))
     End Function
 

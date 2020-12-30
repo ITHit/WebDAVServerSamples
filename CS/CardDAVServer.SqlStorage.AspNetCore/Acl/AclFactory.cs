@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 using ITHit.WebDAV.Server;
@@ -37,7 +36,7 @@ namespace CardDAVServer.SqlStorage.AspNetCore.Acl
             if (path.StartsWith(UsersFolder.UsersFolderPath.Trim('/'), System.StringComparison.InvariantCultureIgnoreCase))
             {
                 string[] segments = path.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
-                string userId = EncodeUtil.DecodeUrlPart(segments.Last()).Normalize(NormalizationForm.FormC);
+                string userId = EncodeUtil.DecodeUrlPart(segments.Last());
                 return await User.GetUserAsync(context, userId);
             }
 

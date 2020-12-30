@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
@@ -151,7 +150,7 @@ namespace CardDAVServer.FileSystemStorage.AspNetCore
             //Convert to local file system path by decoding every part, reversing slashes and appending
             //to repository root.
             string[] encodedParts = relativePath.Split(new[] { "/" }, StringSplitOptions.RemoveEmptyEntries);
-            string[] decodedParts = encodedParts.Select<string, string>(p => EncodeUtil.DecodeUrlPart(p).Normalize(NormalizationForm.FormC)).ToArray();
+            string[] decodedParts = encodedParts.Select<string, string>(EncodeUtil.DecodeUrlPart).ToArray();
             return Path.Combine(RepositoryPath, string.Join(Path.DirectorySeparatorChar.ToString(), decodedParts));
         }
 

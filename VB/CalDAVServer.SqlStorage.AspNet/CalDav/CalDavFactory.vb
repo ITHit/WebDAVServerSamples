@@ -1,7 +1,6 @@
 Imports System
 Imports System.IO
 Imports System.Linq
-Imports System.Text
 Imports System.Threading.Tasks
 Imports ITHit.WebDAV.Server
 
@@ -24,7 +23,7 @@ Namespace CalDav
             Dim segments As String() = itemPath.Split({"/"c}, StringSplitOptions.RemoveEmptyEntries)
             ' If URL ends with .ics - return calendar file, which contains event or to-do.
             If itemPath.EndsWith(CalendarFile.Extension, System.StringComparison.InvariantCultureIgnoreCase) Then
-                Dim uid As String = EncodeUtil.DecodeUrlPart(Path.GetFileNameWithoutExtension(segments.Last())).Normalize(NormalizationForm.FormC)
+                Dim uid As String = EncodeUtil.DecodeUrlPart(Path.GetFileNameWithoutExtension(segments.Last()))
                 Return(Await CalendarFile.LoadByUidsAsync(context, {uid}, PropsToLoad.All)).FirstOrDefault()
             End If
 

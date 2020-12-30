@@ -8,7 +8,6 @@ Imports System.Linq
 Imports System.Net
 Imports System.Reflection
 Imports System.Security.Principal
-Imports System.Text
 Imports System.Web
 Imports System.Threading.Tasks
 Imports ITHit.Server
@@ -401,7 +400,7 @@ Public Class DavContext
                              ItemId
                           FROM Item
                           WHERE Name = @Name AND ParentItemId = @Parent",
-                                                                          "@Name", EncodeUtil.DecodeUrlPart(names(i)).Normalize(NormalizationForm.FormC),
+                                                                          "@Name", EncodeUtil.DecodeUrlPart(names(i)),
                                                                           "@Parent", id)
                 If result IsNot Nothing Then
                     id = CType(result, Guid)
@@ -424,7 +423,7 @@ Public Class DavContext
                   WHERE Name = @Name AND ParentItemId = @Parent"
         Dim davHierarchyItems As IList(Of DavHierarchyItem) = Await ExecuteItemAsync(Of DavHierarchyItem)(String.Join("/", names, 0, last) & "/",
                                                                                                          command,
-                                                                                                         "@Name", EncodeUtil.DecodeUrlPart(names(last)).Normalize(NormalizationForm.FormC),
+                                                                                                         "@Name", EncodeUtil.DecodeUrlPart(names(last)),
                                                                                                          "@Parent", id)
         Return davHierarchyItems.FirstOrDefault()
     End Function

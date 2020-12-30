@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 using ITHit.WebDAV.Server;
@@ -28,7 +27,7 @@ namespace CardDAVServer.SqlStorage.AspNetCore.CardDav
             // If URL ends with .vcf - return address book file, which contains vCard.
             if (path.EndsWith(CardFile.Extension, System.StringComparison.InvariantCultureIgnoreCase))
             {
-                string fileName = EncodeUtil.DecodeUrlPart(System.IO.Path.GetFileNameWithoutExtension(segments.Last())).Normalize(NormalizationForm.FormC);
+                string fileName = EncodeUtil.DecodeUrlPart(System.IO.Path.GetFileNameWithoutExtension(segments.Last()));
                 return (await CardFile.LoadByFileNamesAsync(context, new[] { fileName }, PropsToLoad.All)).FirstOrDefault();
             }
 

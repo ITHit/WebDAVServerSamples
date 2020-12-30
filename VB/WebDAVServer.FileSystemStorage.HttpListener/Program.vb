@@ -15,6 +15,7 @@ Imports WebDAVServer.FileSystemStorage.HttpListener
 Imports System.Net.WebSockets
 Imports System.Threading
 Imports WebDAVServer.FileSystemStorage.HttpListener.ExtendedAttributes
+Imports ITHit.Server
 Imports ITHit.GSuite.Server
 
 ''' <summary>
