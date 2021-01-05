@@ -3,12 +3,7 @@
     var sSearchErrorMessage = "Search is not supported.";
     var sSupportedFeaturesErrorMessage = "Supported Features error.";
     var sProfindErrorMessage = "Profind request error.";
-    var sCreateFolderErrorMessage = "Create folder error.";
-    var sCopyItemsErrorMessage = "Copy items error.";
-    var sCutItemsErrorMessage = "Cut items error.";
-    var sCutItemsSameNameErrorMessage = "The source and destination file names are the same.";
-    var sCutItemsLockedErrorMessage = "Items are locked.";
-    var sCopyPrefixName = 'Copy';
+
 
     ///////////////////
     // Folder Grid View
@@ -23,8 +18,6 @@
         this.activeSelectedTab = 'preview';
         this.isSearchMode = false;
         this._defaultEditor = 'OSEditor';
-
-        this._RenderToolbar(selectorTableToolbar);
 
         this.$el.on({
             mouseenter: function () {
@@ -113,45 +106,6 @@
                             this._RenderSnippetAndUrl(oItem)])]).children();
                 }.bind(this))
             );
-        },
-
-        _RenderToolbar: function (selectorTableToolbar) {
-            var self = this;
-            this.$elToolbar = $(selectorTableToolbar);
-
-            this.$elToolbar.find('.btn-print-items').on('click', function () {
-                oConfirmModal.Confirm('Are you sure want to print selected items?', function () {
-                    var filesUrls = [];
-                    $.each(self.selectedItems, function () {
-                        if (!this.IsFolder()) {
-                            filesUrls.push(this.Href);
-                        }
-                    });
-                    oWebDAV.PrintDocs(filesUrls);
-                });
-            });
-            this.$elToolbar.find('.btn-paste-items').on('click', function () {
-                self._MoveOrPasteItems();
-            });
-
-            this.$elToolbar.find('.btn-reload-items').on('click', function () {
-                oWebDAV.Reload();
-            });
-
-            this.$elToolbar.find('.btn-copy-items, .btn-cut-items').on('click', function () {
-                $(this).hasClass('btn-copy-items') ? self.isCopiedItems = true : self.isCopiedItems = false;
-                self._StoreItems();
-            });
-
-            this.$elToolbar.find('.btn-delete-items').on('click', function () {
-                oConfirmModal.Confirm('Are you sure want to delete selected items?', function () {
-                    $.each(self.selectedItems, function (index) {
-                        self.selectedItems[index].DeleteAsync(null);
-                    });
-
-                    self.ResetToolbar();
-                });
-            });
         },
 
         /**
@@ -258,6 +212,7 @@
                     cssClassName = 'icon-gsuite-edit';
                     break;
             }
+
             return cssClassName;
         },
 
@@ -325,7 +280,7 @@
 
         _AddSelectedItem: function (oItem) {
             this.selectedItems.push(oItem);
-            this._UpdateToolbarButtons();
+            oToolbar.UpdateToolbarButtons();
         },
 
         _RemoveSelectedItem: function (oItem) {
@@ -337,7 +292,7 @@
                 }
             });
 
-            this._UpdateToolbarButtons();
+            oToolbar.UpdateToolbarButtons();
         },
 
         _IsSelectedItem: function (oItem) {
@@ -352,113 +307,12 @@
             return isSelected;
         },
 
-        _UpdateToolbarButtons: function () {
-            this.$elToolbar.find('.btn-delete-items').attr('disabled', this.selectedItems.length == 0);
-            this.$elToolbar.find('.btn-copy-items').attr('disabled', this.selectedItems.length == 0);
-            this.$elToolbar.find('.btn-cut-items').attr('disabled', this.selectedItems.length == 0);
-            this.$elToolbar.find('.btn-paste-items').attr('disabled', this.storedItems.length == 0);
-
-            if (ITHit.Environment.OS == 'Windows') {
-                this.$elToolbar.find('.btn-print-items').attr('disabled',
-                    this.selectedItems.filter(function (item) { return !item.IsFolder(); }).length == 0);
-            }
-        },
-
-        _UncheckTableCheckboxs: function () {
+        UncheckTableCheckboxs: function () {
             this.selectedItems = [];
             this.$el.find('input[type="checkbox"]').prop('checked', false);
         },
-
-        _StoreItems: function () {
-            var self = this;
-            if (self.storedItems.length != 0) {
-                self.storedItems = [];
-            }
-            $.each(self.selectedItems, function (index) {
-                self.storedItems.push(self.selectedItems[index]);
-            });
-
-            self._UpdateToolbarButtons();
-        },
-
-        _MoveOrPasteItems: function () {
-            var self = this;
-            if (self.isCopiedItems) {
-                $.each(self.storedItems, function (index) {
-                    self._ExecuteCopy(self.storedItems[index]);
-                });
-            } else {
-                $.each(self.storedItems, function (index) {
-                    oWebDAV.Move(self.storedItems[index], function (oAsyncResult) {
-                        if (!oAsyncResult.IsSuccess) {
-                            if (oAsyncResult.Error instanceof ITHit.WebDAV.Client.Exceptions.ForbiddenException) {
-                                WebdavCommon.ErrorModal.Show(sCutItemsSameNameErrorMessage, oAsyncResult.Error);
-                            }
-                            else if (oAsyncResult.Error instanceof ITHit.WebDAV.Client.Exceptions.LockedException) {
-                                WebdavCommon.ErrorModal.Show(sCutItemsLockedErrorMessage, oAsyncResult.Error);
-                            }
-                            else {
-                                WebdavCommon.ErrorModal.Show(sCutItemsErrorMessage, oAsyncResult.Error);
-                            }
-                        }
-                    });
-                });
-                self.storedItems = [];
-            }
-            self._UpdateToolbarButtons();
-        },
-
-        _ExecuteCopy: function (oItem) {
-            var self = this;
-            self._DoCopy(oItem, self._GetAppendCopySuffix(oItem.DisplayName));
-        },
-
-        _DoCopy: function (oItem, oItemName) {
-            var self = this;
-            oWebDAV.Copy(oItem, oItemName, function (oAsyncResult) {
-                if (!oAsyncResult.IsSuccess) {
-                    if (oAsyncResult.Error instanceof ITHit.WebDAV.Client.Exceptions.ForbiddenException || oAsyncResult.Error instanceof ITHit.WebDAV.Client.Exceptions.PreconditionFailedException) {
-                        self._DoCopy(oItem, self._GetAppendCopySuffix(oItemName));
-                    }
-                    else {
-                        WebdavCommon.ErrorModal.Show(sCopyItemsErrorMessage, oAsyncResult.Error);
-                    }
-                }
-            });
-        },
-
-        _GetAppendCopySuffix: function (oItemName) {
-            var that = this;
-
-            var aExtensionMatches = /\.[^\.]+$/.exec(oItemName);
-            var sName = aExtensionMatches !== null ? oItemName.replace(aExtensionMatches[0], '') : oItemName;
-            var sDotAndExtension = aExtensionMatches !== null ? aExtensionMatches[0] : '';
-
-            var sLangCopy = sCopyPrefixName;
-            var oSuffixPattern = new RegExp('- ' + sLangCopy + '( \\(([0-9]+)\\))?$', 'i');
-
-            var aSuffixMatches = oSuffixPattern.exec(sName);
-            if (aSuffixMatches === null) {
-                sName += ' - ' + sLangCopy;
-            } else if (!aSuffixMatches[1]) {
-                sName += ' (2)';
-            } else {
-                var iNextNumber = parseInt(aSuffixMatches[2]) + 1;
-                sName = sName.replace(oSuffixPattern, '- ' + sLangCopy + ' (' + iNextNumber + ')');
-            }
-
-            oItemName = sName + sDotAndExtension;
-            return oItemName;
-        },
-
-        /**
-         * Hide toolbar.
-         **/
-        ResetToolbar: function () {
-            this._UncheckTableCheckboxs();
-            this._UpdateToolbarButtons();
-        }
     };
+
 
     ///////////////////
     // Search Form View
@@ -709,7 +563,7 @@
 
         Enable: function () {
             this.$headerCols.removeClass('disabled');
-        } 
+        }
     }
 
     /////////////////////////
@@ -793,57 +647,6 @@
         }
     }
 
-    ///////////////////
-    // Create Folder Bootstrap Modal
-    var CreateFolderModal = function (modalSelector, buttonSelector) {
-        var self = this;
-        this.$modal = $(modalSelector);
-        this.$txt = $(modalSelector).find('input[type="text"]');
-        this.$submitButton = $(modalSelector).find('.btn-submit');
-        this.$alert = $(modalSelector).find('.alert-danger');
-
-        $(buttonSelector).click(function () {
-            self.$txt.val('');
-            self.$alert.addClass('d-none');
-            self.$modal.modal('show');
-        });
-
-        this.$modal.on('shown.bs.modal', function () {
-            self.$txt.focus();
-        })
-        this.$modal.find('form').submit(function () {
-            self.$alert.addClass('d-none');
-            if (self.$txt.val() !== null && self.$txt.val().match(/^ *$/) === null) {
-                var oValidationMessage = WebdavCommon.Validators.ValidateName(self.$txt.val());
-                if (oValidationMessage) {
-                    self.$alert.removeClass('d-none').text(oValidationMessage);
-                    return false;
-                }
-
-                self.$txt.blur();
-                self.$submitButton.attr('disabled', 'disabled');
-                oWebDAV.CreateFolder(self.$txt.val().trim(), function (oAsyncResult) {
-                    if (!oAsyncResult.IsSuccess) {
-                        if (oAsyncResult.Error instanceof ITHit.WebDAV.Client.Exceptions.MethodNotAllowedException) {
-                            self.$alert.removeClass('d-none').text(oAsyncResult.Error.Error.Description ? oAsyncResult.Error.Error.Description : 'Folder already exists.');
-                        }
-                        else {
-                            WebdavCommon.ErrorModal.Show(sCreateFolderErrorMessage, oAsyncResult.Error);
-                        }
-                    }
-                    else {
-                        self.$modal.modal('hide');
-                    }
-                    self.$submitButton.removeAttr('disabled');
-                });
-            }
-            else {
-                self.$alert.removeClass('d-none').text('Name is required!');
-            }
-            return false;
-        });
-    }
-
     var WebDAVController = function () {
         this.PageSize = 10; // set size items of page
         this.CurrentFolder = null;
@@ -878,7 +681,7 @@
             }
 
             if (resetSelectedItem) {
-                oFolderGrid.ResetToolbar();
+                oToolbar.ResetToolbar();
             }
 
             //Enable sorting 
@@ -978,7 +781,7 @@
             }
 
             if (resetSelectedItem) {
-                oFolderGrid.ResetToolbar();
+                oToolbar.ResetToolbar();
             }
 
             // update page number
@@ -1057,7 +860,7 @@
                 else {
                     ITHit.WebDAV.Client.DocManager.DavProtocolEditDocument(sDocumentUrl, this.GetMountUrl(), this._ProtocolInstallMessage.bind(this), null, webDavSettings.EditDocAuth.SearchIn,
                         webDavSettings.EditDocAuth.CookieNames, webDavSettings.EditDocAuth.LoginUrl);
-                }         
+                }
             }
             else {
                 ITHit.WebDAV.Client.DocManager.EditDocument(sDocumentUrl, this.GetMountUrl(), this._ProtocolInstallMessage.bind(this));
@@ -1094,15 +897,6 @@
         },
 
         /**
-           * Print documents.
-           * @param {string} sDocumentUrls Array of document URLs
-        */
-        PrintDocs: function (sDocumentUrls) {
-            ITHit.WebDAV.Client.DocManager.DavProtocolEditDocument(sDocumentUrls, this.GetMountUrl(), this._ProtocolInstallMessage.bind(this), null, webDavSettings.EditDocAuth.SearchIn,
-                webDavSettings.EditDocAuth.CookieNames, webDavSettings.EditDocAuth.LoginUrl, 'Print');
-        },
-
-        /**
          * Opens current folder in OS file manager.
          */
         OpenCurrentFolderInOsFileManager: function () {
@@ -1126,33 +920,6 @@
             var port = window.location.port || (window.location.protocol == 'http:' ? 80 : 443);
 
             return window.location.protocol + '//' + window.location.hostname + ':' + port + webDavSettings.ApplicationPath + '/';
-        },
-
-        /**
-        * Copies files or folders.
-        */
-        Copy: function (oItem, oItemName, fCallback) {
-            oItem.CopyToAsync(this.CurrentFolder, oItemName, true, null, null, function (oAsyncResult) {
-                fCallback(oAsyncResult);
-            });
-        },
-
-        /**
-        * Moves files or folders.
-        */
-        Move: function (oItem, fCallback) {
-            oItem.MoveToAsync(this.CurrentFolder, oItem.DisplayName, null, null, function (oAsyncResult) {
-                fCallback(oAsyncResult);
-            });
-        },
-
-        /**
-        * Creates new folder in current folder.
-        */
-        CreateFolder: function (sFolderName, fCallback) {
-            this.CurrentFolder.CreateFolderAsync(sFolderName, null, null, function (oAsyncResult) {
-                fCallback(oAsyncResult);
-            });
         },
 
         /**
@@ -1302,16 +1069,17 @@
             }
         }
     };
-
+    var oWebDAV = window.WebDAVController = new WebDAVController();
+    var oConfirmModal = new ConfirmModal('#ConfirmModal');
     var oFolderGrid = new FolderGridView('.ithit-grid-container', '.ithit-grid-toolbar');
+    var oToolbar = new Toolbar('.ithit-grid-toolbar', oFolderGrid, oConfirmModal, oWebDAV);
     var oSearchForm = new SearchFormView('.ithit-search-container');
     var oBreadcrumbs = new BreadcrumbsView('.ithit-breadcrumb-container');
     var oPagination = new PaginationView('.ithit-pagination-container');
     var oTableSorting = new TableSortingView('.ithit-grid-container th.sort');
     var oHistoryApi = new HistoryApiController('.ithit-grid-container, .ithit-breadcrumb-container');
-    var oWebDAV = window.WebDAVController = new WebDAVController();
-    var oConfirmModal = new ConfirmModal('#ConfirmModal');
-    var oCreateFolderModal = new CreateFolderModal('#CreateFolderModal', '.btn-create-folder');
+
+
     // List files on a WebDAV server using WebDAV Ajax Library
     if (oWebDAV.GetHashValue('search')) {
         oWebDAV.NavigateFolder(window.location.href.split("#")[0], null, null, null, true, function () {

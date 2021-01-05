@@ -77,33 +77,33 @@
         <div class="row no-gutters">
             <div id="leftPanel" class="col">
                 <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb ithit-breadcrumb-container"></ol>
+                   <ol class="breadcrumb ithit-breadcrumb-container"></ol>
                 </nav>
                 <div class="ithit-search-container">
                     <input class="form-control" type="text" />
                 </div>
                 <div class="ithit-grid-toolbar row">
-                    <div class="col">
-                        <button class="btn-create-folder"><span class="d-none d-lg-inline">Create Folder</span></button>
+                    <div class="first-section col">
+                        <!-- Toolbar buttons here -->
                     </div>
-                    <div class="col-auto px-0 px-md-3">
-                        <button class="btn-copy-items" disabled="disabled" title="Copy"></button>
-                        <button class="btn-cut-items" disabled="disabled" title="Cut"></button>
-                        <button class="btn-paste-items" disabled="disabled" title="Paste"></button>
-                        <button class="btn-reload-items" title="Reload"></button>
+                    <div class="second-section col-auto px-0 px-md-3">
+                        <!-- Toolbar buttons here -->
                     </div>
-                    <div class="col-auto px-1 px-lg-3">
-                        <button class="btn-print-items" disabled="disabled"><span class="d-none d-lg-inline">Print</span></button>
-                        <button class="btn-delete-items" disabled="disabled"><span class="d-none d-lg-inline">Delete</span></button>
+                    <div class="third-section col-auto px-0 px-md-3">
+                        <!-- Toolbar buttons here -->
+                    </div>
+                    <div class="fourth-section col-auto px-1 px-lg-3">
+                        <!-- Toolbar buttons here -->
+                    </div>
+                    <div class="fifth-section col-auto px-1 px-lg-3">
+                        <!-- Toolbar buttons here -->
                     </div>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-hover ithit-grid-container">
                         <thead>
                             <tr>
-                                <th scope="col">
-                                    <label class="custom-checkbox">
-                                        <input type="checkbox" /><span class="checkmark"></span></label></th>
+                                <th scope="col"><label class="custom-checkbox"><input type="checkbox" /><span class="checkmark"></span></label></th>
                                 <th scope="col"></th>
                                 <th class="ellipsis sort" scope="col" data-sort-column="displayname"><span>Display Name</span></th>
                                 <th class="d-none d-xl-table-cell sort" scope="col" data-sort-column="getcontenttype">Type</th>
@@ -178,6 +178,31 @@
                                 <div class="modal-body">
                                     <div class="form-group">
                                         <input type="text" class="form-control" id="NameFolder" placeholder="Folder Name" />
+                                        <div class="alert alert-danger d-none">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="submit" class="btn btn-primary btn-submit">OK</button>
+                                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div id="RenameItemModal" class="modal" tabindex="-1" role="dialog" aria-labelledby="RenameItemModalLabel">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <form action="/" method="post">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Rename Item</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" id="NameItem" placeholder="Item Name" />
                                         <div class="alert alert-danger d-none">
                                         </div>
                                     </div>
@@ -394,6 +419,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
     <script src="_webDavServerRoot_/wwwroot/js/webdav-common.js"></script>
+    <script src="_webDavServerRoot_/wwwroot/js/toolbar/webdav-basebutton.js"></script>
+    <script src="_webDavServerRoot_/wwwroot/js/toolbar/webdav-deletebutton.js"></script>
+    <script src="_webDavServerRoot_/wwwroot/js/toolbar/webdav-copypastecutbuttons.js"></script>
+    <script src="_webDavServerRoot_/wwwroot/js/toolbar/webdav-printbutton.js"></script>
+    <script src="_webDavServerRoot_/wwwroot/js/toolbar/webdav-reloadbutton.js"></script>
+    <script src="_webDavServerRoot_/wwwroot/js/toolbar/webdav-renamebutton.js"></script>
+    <script src="_webDavServerRoot_/wwwroot/js/toolbar/webdav-createfolderbutton.js"></script>
+    <script src="_webDavServerRoot_/wwwroot/js/toolbar/webdav-toolbar.js"></script>
     <script src="_webDavServerRoot_/wwwroot/js/webdav-gridview.js"></script>
     <script src="_webDavServerRoot_/wwwroot/js/webdav-uploader.js"></script>
     <script src="_webDavServerRoot_/wwwroot/js/webdav-websocket.js"></script>

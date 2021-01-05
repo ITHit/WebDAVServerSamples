@@ -367,10 +367,6 @@ header .versions {
     cursor: pointer;
 }
 
-.modal-open .navbar-toggler.burger-button {
-    margin-right: 0px !important;
-}
-
     .navbar-brand.ellipsis span {
         left: 45px;
         top: 5px;
@@ -424,6 +420,8 @@ header .versions {
 /*Start Main layout styles*/
 .breadcrumb {
     background: none;
+    padding: 10px 7px;
+    margin-bottom: 15px;
 }
 
 ol.breadcrumb li .icon-home {
@@ -493,6 +491,10 @@ ol.breadcrumb li .icon-home {
     padding: 0 10px;
 }
 
+    .ithit-grid-toolbar .first-section {
+        padding-left: 5px;
+    }
+
     .ithit-grid-toolbar button {
         color: #007BFF;
         border: none;
@@ -554,6 +556,10 @@ ol.breadcrumb li .icon-home {
             background-image: url(/images/reload.svg);
         }
 
+        .ithit-grid-toolbar button.btn-rename-item:before {
+            background-image: url(/images/rename.svg);
+        }
+
         .ithit-grid-toolbar button.btn-print-items:before {
             background-image: url(/images/print.svg);
         }
@@ -585,8 +591,8 @@ ol.breadcrumb li .icon-home {
 
         .ithit-search-container .twitter-typeahead:before {
             position: absolute;
-            top: 10px;
-            left: 16px;
+            top: 9px;
+            left: 7px;
             content: "";
             background-image: url(/images/search.svg);
             display: block;
@@ -702,14 +708,8 @@ table tr.tr-snippet-url td {
 /*Grid Items*/
 .ithit-grid-container {
     width: 100%;
-    margin-top: 35px;
+    margin-top: 20px;
     overflow-y: hidden;
-}
-
-@media (max-width: 767px) {
-    .ithit-grid-container {
-        margin-top: 20px;
-    }
 }
 
 .ithit-grid-container .icon-folder {

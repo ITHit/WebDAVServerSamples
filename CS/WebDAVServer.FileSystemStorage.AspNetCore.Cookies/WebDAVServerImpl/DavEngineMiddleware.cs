@@ -47,11 +47,14 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore.Cookies
                 // 3. Set MaxRequestBodySize = null.
                 context.Features.Get<IHttpMaxRequestBodySizeFeature>().MaxRequestBodySize = null;
             }
-            if (!context.User.Identity.IsAuthenticated)
+            if (!context.User.Identity.IsAuthenticated && context.Request.Method != "OPTIONS")
             {
                 await context.ChallengeAsync();
             }
-            await engine.RunAsync(davContext);
+            else
+            {
+                await engine.RunAsync(davContext);
+            }
         }
     }
 
