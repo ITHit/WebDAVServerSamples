@@ -231,7 +231,7 @@ namespace WebDAVServer.FileSystemStorage.HttpListener
                 MacOsXPreprocessor.Process(context.Request); // fixes headers for Mac OS X v10.5.3 or later
 
                 IPrincipal principal = null;
-                if (context.Request.IsWebSocketRequest)
+                if (context.Request.IsWebSocketRequest && context.Request.RawUrl.StartsWith("/dav"))
                 {
                     // If current request is web socket request.
                     await ProcessWebSocketRequestAsync(context);

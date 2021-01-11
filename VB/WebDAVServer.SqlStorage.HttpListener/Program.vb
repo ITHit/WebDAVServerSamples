@@ -167,7 +167,7 @@ Friend Class Program
         Try
             MacOsXPreprocessor.Process(context.Request)
             Dim principal As IPrincipal = Nothing
-            If context.Request.IsWebSocketRequest Then
+            If context.Request.IsWebSocketRequest AndAlso context.Request.RawUrl.StartsWith("/dav") Then
                 ' If current request is web socket request.
                 Await ProcessWebSocketRequestAsync(context)
                 Return
