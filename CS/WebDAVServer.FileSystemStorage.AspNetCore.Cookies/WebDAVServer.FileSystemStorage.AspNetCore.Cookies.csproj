@@ -7,10 +7,10 @@
 
 
   <ItemGroup>
-	<PackageReference Include="ITHit.Server" Version="11.0.10281" />
-    <PackageReference Include="ITHit.Server.Core" Version="11.0.10281" />
-    <PackageReference Include="ITHit.WebDAV.Server" Version="11.0.10281" />
-	<PackageReference Include="ITHit.GSuite.Server" Version="11.0.10281" />
+	<PackageReference Include="ITHit.Server" Version="11.1.10398" />
+    <PackageReference Include="ITHit.Server.Core" Version="11.1.10398" />
+    <PackageReference Include="ITHit.WebDAV.Server" Version="11.1.10398" />
+	<PackageReference Include="ITHit.GSuite.Server" Version="11.1.10398" />
 	<PackageReference Include="System.Data.OleDb" Version="4.7.0" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="3.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="3.1.0" />

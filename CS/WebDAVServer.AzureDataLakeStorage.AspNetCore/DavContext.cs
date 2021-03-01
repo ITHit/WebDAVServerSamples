@@ -42,10 +42,10 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
         /// <param name="socketService">Singleton instance of <see cref="WebSocketsService"/>.</param>
         /// <param name="dataCloudStoreService">Singleton instance of <see cref="IDataCloudStoreService"/></param>
         /// <param name="cognitiveSearchService">Singleton instance of <see cref="ICognitiveSearchService"/></param>
-        public DavContext(IHttpContextAccessor httpContextAccessor, ILogger logger
-            , WebSocketsService socketService
-            , IDataCloudStoreService dataCloudStoreService
-            , ICognitiveSearchService cognitiveSearchService
+        public DavContext(IHttpContextAccessor httpContextAccessor, ILogger logger, 
+            WebSocketsService socketService, 
+            IDataCloudStoreService dataCloudStoreService, 
+            ICognitiveSearchService cognitiveSearchService
             )
             : base(httpContextAccessor.HttpContext)
         {

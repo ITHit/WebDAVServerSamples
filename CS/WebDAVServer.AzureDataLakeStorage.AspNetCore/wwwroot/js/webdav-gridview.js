@@ -1038,9 +1038,15 @@
          * @param {string} sDocumentUrl Must be full path including domain name: https://webdavserver.com/path/file.ext
          */
         EditDoc: function (sDocumentUrl) {
-            if (webDavSettings.EditDocAuth.Authentication.toLowerCase() == 'cookies') {
-                ITHit.WebDAV.Client.DocManager.DavProtocolEditDocument(sDocumentUrl, this.GetMountUrl(), this._ProtocolInstallMessage.bind(this), null, webDavSettings.EditDocAuth.SearchIn,
-                    webDavSettings.EditDocAuth.CookieNames, webDavSettings.EditDocAuth.LoginUrl);
+            if (['cookies', 'ms-ofba'].indexOf(webDavSettings.EditDocAuth.Authentication.toLowerCase()) != -1) {
+                if (webDavSettings.EditDocAuth.Authentication.toLowerCase() == 'ms-ofba' &&
+                    ITHit.WebDAV.Client.DocManager.IsMicrosoftOfficeDocument(sDocumentUrl)) {
+                    ITHit.WebDAV.Client.DocManager.EditDocument(sDocumentUrl, this.GetMountUrl(), this._ProtocolInstallMessage.bind(this));
+                }
+                else {
+                    ITHit.WebDAV.Client.DocManager.DavProtocolEditDocument(sDocumentUrl, this.GetMountUrl(), this._ProtocolInstallMessage.bind(this), null, webDavSettings.EditDocAuth.SearchIn,
+                        webDavSettings.EditDocAuth.CookieNames, webDavSettings.EditDocAuth.LoginUrl);
+                }
             }
             else {
                 ITHit.WebDAV.Client.DocManager.EditDocument(sDocumentUrl, this.GetMountUrl(), this._ProtocolInstallMessage.bind(this));

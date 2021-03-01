@@ -321,8 +321,10 @@ Namespace CardDav
             ' Typically the stream contains a single vCard.
             Dim cards As IEnumerable(Of IComponent) = New vFormatter().Deserialize(vCard)
             Dim card As ICard2 = TryCast(cards.First(), ICard2)
-            ' Card file UID which is equal to file name.
-            Dim uid As String = card.Uid.Text
+            ' Card file UID which is equal to file name (??).
+            ' The type is used to uniquely identify the object that the vCard represents. The "uuid" URN namespace defined in 
+            ' [RFC4122] is particularly well-suited to this task, but other URI schemes MAY be used.
+            Dim uid As String = If(card.Uid?.Text, "UID:urn:uuid:" & Guid.NewGuid().ToString())
             ' Check if this CardDAV client application requires properties conversion.
             If AppleCardInteroperability.NeedsConversion(Context.Request.UserAgent) Then
                 ''' Replace "itemX.PROP" properties created by iOS and OS X with "PROP", so they 
@@ -333,7 +335,7 @@ Namespace CardDav
             ' The client app name is stored in DB to update and extract only custom props created by the client making a request.
             Dim clientAppName As String = AppleCardInteroperability.GetClientAppName(Context.Request.UserAgent)
             ' Save data to [card_CardFile] table.
-            Await WriteCardFileAsync(Context, card, addressbookFolderId, isNew, clientAppName)
+            Await WriteCardFileAsync(Context, card, addressbookFolderId, isNew, uid, clientAppName)
             ' Save emails.
             Await WriteEmailsAsync(Context, card.Emails, uid, clientAppName)
             ' Save addresses.
@@ -364,7 +366,7 @@ Namespace CardDav
         ''' [card_Telephone], [card_Url] tables if the card should be updated. Values from the [card_CustomProperty] table 
         ''' is being deleted if updated by the same client that created a specific custom property.
         ''' </remarks>
-        Private Async Function WriteCardFileAsync(context As DavContext, card As ICard2, addressbookFolderId As Guid, isNew As Boolean, clientAppName As String) As Task
+        Private Async Function WriteCardFileAsync(context As DavContext, card As ICard2, addressbookFolderId As Guid, isNew As Boolean, uid As String, clientAppName As String) As Task
             Dim sql As String
             If isNew Then
                 sql = "IF EXISTS (SELECT 1 FROM [card_Access] WHERE [AddressbookFolderId]=@AddressbookFolderId AND [UserId]=@UserId AND [Write]=1)
@@ -497,7 +499,6 @@ Namespace CardDav
             ' [ClientAppName] = @ClientAppName -> delete all custom props created by this client.
             ' [ParentId] != [UID]              -> delete all custom params from multiple props: EMAIL, ADR, TEL, IMPP. Keep custom params for any single props in [card_Card].
             ' [ClientAppName] IS NULL          -> delete all custom props created by some unknown CardDAV client.
-            Dim uid As String = card.Uid.Text
             If Await context.ExecuteNonQueryAsync(sql,
                                                  "@UID", uid,                                                                   ' UID
                                                  "UserId", context.UserId,
@@ -523,7 +524,7 @@ Namespace CardDav
                                                  New SqlParameter("@Birthday", If(card.BirthDate?.Value?.DateVal, TryCast(DBNull.Value, Object))) With {.SqlDbType = SqlDbType.DateTime2}, New SqlParameter("@Anniversary", If(TryCast(card, ICard4)?.Anniversary?.Value?.DateVal, TryCast(DBNull.Value, Object))) With {.SqlDbType = SqlDbType.DateTime2}, "@Gender", TryCast(card, ICard4)?.Gender?.Sex,                                         ' GENDER       (vCard 4.0)
                                                  "@RevisionUtc", card.Revision?.Value.DateVal,                                          ' REV
                                                  "@SortString", card.SortString?.Text,                                                 ' SORT-STRING
-                                                 "@Language", TryCast(card, ICard4)?.ContactLanguages.PreferedOrFirstProperty.Text,       ' LANG         (vCard 4.0)     Here we assume only 1 prop for the sake of simplicity.
+                                                 "@Language", TryCast(card, ICard4)?.ContactLanguages.PreferedOrFirstProperty?.Text,      ' LANG         (vCard 4.0)     Here we assume only 1 prop for the sake of simplicity.
                                                  "@TimeZone", card.TimeZones.PreferedOrFirstProperty?.Text,                          ' TZ
                                                  "@Geo", Nothing, "@Title", card.Titles.PreferedOrFirstProperty?.Text,                             ' TITLE
                                                  "@Role", card.Roles.PreferedOrFirstProperty?.Text,                              ' ROLE

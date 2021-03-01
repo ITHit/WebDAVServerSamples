@@ -46,19 +46,6 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore.Config
             }
 
             configurationSection.Bind(config);
-
-            if (string.IsNullOrEmpty(config.ServiceName))
-            {
-                throw new ArgumentNullException("SearchConfig.ServiceName");
-            }
-            if (string.IsNullOrEmpty(config.IndexName))
-            {
-                throw new ArgumentNullException("SearchConfig.IndexName");
-            }
-            if (string.IsNullOrEmpty(config.ApiKey))
-            {
-                throw new ArgumentNullException("SearchConfig.ApiKey");
-            }
         }
     }
 }

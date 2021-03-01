@@ -26,11 +26,15 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore.Search
         public CognitiveSearchService(IOptions<SearchConfig> searchConfig, IOptions<DavContextConfig> davConfig)
         {
             SearchConfig config = searchConfig.Value;
-            DavContextConfig dcConfig = davConfig.Value;
-            string searchServiceUri = "https://" + config.ServiceName + ".search.windows.net";
-            searchClient = new SearchClient(new Uri(searchServiceUri), config.IndexName,
-                new AzureKeyCredential(config.ApiKey));
-            contextPath = "https://" + dcConfig.AzureStorageAccountName + ".blob.core.windows.net" + "/" + dcConfig.DataLakeContainerName;
+
+            if (!string.IsNullOrEmpty(config.ApiKey))
+            {        
+                DavContextConfig dcConfig = davConfig.Value;
+                string searchServiceUri = "https://" + config.ServiceName + ".search.windows.net";
+                searchClient = new SearchClient(new Uri(searchServiceUri), config.IndexName,
+                    new AzureKeyCredential(config.ApiKey));
+                contextPath = "https://" + dcConfig.AzureStorageAccountName + ".blob.core.windows.net" + "/" + dcConfig.DataLakeContainerName;
+            }
         }
         /// <summary>
         /// Check item for existence.

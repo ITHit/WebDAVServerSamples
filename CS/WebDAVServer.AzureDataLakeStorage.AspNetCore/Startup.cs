@@ -10,6 +10,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
+using WebDAVServer.AzureDataLakeStorage.AspNetCore.MSOFBAuthentication;
+
 namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
 {
     public class Startup
@@ -43,7 +45,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
                 options.ResponseType = config.ResponseType;
                 options.Resource = config.Resource;
                 options.SaveTokens = config.SaveTokens;
-                // options.
+
                 options.Events = new OpenIdConnectEvents
                 {
                     OnTokenValidated = context =>
@@ -61,12 +63,17 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
                     OnTicketReceived = context =>
                     {
                         context.Properties.IsPersistent = true;
-                        context.Properties.ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(5);
+                        context.Properties.ExpiresUtc = DateTimeOffset.UtcNow.AddMonths(1);
                         return Task.FromResult(0);
                     }
                 };
-            });
+            });  
+
             services.AddWebDav(Configuration, HostingEnvironment);
+
+            //Adds a MS-OFBA configuration to the specified <see cref = "IServiceCollection"/>.
+            services.AddMSOFBA(Configuration);
+
             //Enables web sockets. Web sockets are used to update the documents list in case of any changes on the server.
             services.AddSingleton<WebSocketsService>();
         }
@@ -78,11 +85,13 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
 
             if (env.IsDevelopment())
                 app.UseDeveloperExceptionPage();
-            // app.UseOfficeAuth();
             
             app.UseAuthentication();
             app.UseAuthorization();
-            app.UseMSOFBasicAuth();
+
+            //Add Microsoft Office Forms Based Authentication middleware.
+            app.UseMSOFBA();
+
             //Enables web sockets. Web sockets are used to update the documents list in case of any changes on the server.
             app.UseWebSockets();
             app.UseWebSocketsMiddleware();

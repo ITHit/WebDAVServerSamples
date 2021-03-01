@@ -363,8 +363,10 @@ namespace CardDAVServer.SqlStorage.AspNetCore.CardDav
             IEnumerable<IComponent> cards = new vFormatter().Deserialize(vCard);
             ICard2 card = cards.First() as ICard2;
 
-            // Card file UID which is equal to file name.
-            string uid = card.Uid.Text;
+            // Card file UID which is equal to file name (??).
+            // The type is used to uniquely identify the object that the vCard represents. The "uuid" URN namespace defined in 
+            // [RFC4122] is particularly well-suited to this task, but other URI schemes MAY be used.
+            string uid = card.Uid?.Text ?? "UID:urn:uuid:" + Guid.NewGuid().ToString();
 
             // Check if this CardDAV client application requires properties conversion.
             if (AppleCardInteroperability.NeedsConversion(Context.Request.UserAgent))
@@ -378,7 +380,7 @@ namespace CardDAVServer.SqlStorage.AspNetCore.CardDav
             string clientAppName = AppleCardInteroperability.GetClientAppName(Context.Request.UserAgent);
 
             // Save data to [card_CardFile] table.
-            await WriteCardFileAsync(Context, card, addressbookFolderId, isNew, clientAppName);
+            await WriteCardFileAsync(Context, card, addressbookFolderId, isNew, uid, clientAppName);
 
             // Save emails.
             await WriteEmailsAsync(Context, card.Emails, uid, clientAppName);
@@ -415,7 +417,7 @@ namespace CardDAVServer.SqlStorage.AspNetCore.CardDav
         /// [card_Telephone], [card_Url] tables if the card should be updated. Values from the [card_CustomProperty] table 
         /// is being deleted if updated by the same client that created a specific custom property.
         /// </remarks>
-        private async Task WriteCardFileAsync(DavContext context, ICard2 card, Guid addressbookFolderId, bool isNew, string clientAppName)
+        private async Task WriteCardFileAsync(DavContext context, ICard2 card, Guid addressbookFolderId, bool isNew, string uid, string clientAppName)
         {
             string sql;
             if (isNew)
@@ -557,7 +559,6 @@ namespace CardDAVServer.SqlStorage.AspNetCore.CardDav
             // [ParentId] != [UID]              -> delete all custom params from multiple props: EMAIL, ADR, TEL, IMPP. Keep custom params for any single props in [card_Card].
             // [ClientAppName] IS NULL          -> delete all custom props created by some unknown CardDAV client.
 
-            string uid = card.Uid.Text;
                                                                                                         
             if (await context.ExecuteNonQueryAsync(sql,
                   "@UID"            , uid                                                                   // UID
@@ -586,7 +587,7 @@ namespace CardDAVServer.SqlStorage.AspNetCore.CardDav
                 , "@Gender"         , (card as ICard4)?.Gender?.Sex                                         // GENDER       (vCard 4.0)
                 , "@RevisionUtc"    , card.Revision?.Value.DateVal                                          // REV
                 , "@SortString"     , card.SortString?.Text                                                 // SORT-STRING
-                , "@Language"       , (card as ICard4)?.ContactLanguages.PreferedOrFirstProperty.Text       // LANG         (vCard 4.0)     Here we assume only 1 prop for the sake of simplicity.
+                , "@Language"       , (card as ICard4)?.ContactLanguages.PreferedOrFirstProperty?.Text      // LANG         (vCard 4.0)     Here we assume only 1 prop for the sake of simplicity.
                 , "@TimeZone"       , card.TimeZones.PreferedOrFirstProperty?.Text                          // TZ
                 , "@Geo"            , null                                                                  // GEO
                 , "@Title"          , card.Titles.PreferedOrFirstProperty?.Text                             // TITLE

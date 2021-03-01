@@ -11,9 +11,6 @@
     <NoWarn>1701;1702;1705;1998</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <None Remove="MyCustomHandlerPage.html" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="MyCustomHandlerPage.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -32,7 +29,16 @@
     <Content Include="wwwroot\js\node_modules\webdav.client\Plugins\ITHitEditDocumentOpener.rpm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\**\*.*">
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\index.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\ITHitTests.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\qunit-runner\highlight\github.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\qunit-runner\qunit\qunit.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -51,6 +57,128 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\WebDAV\Logs\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\DocManager\MsOfficeEditExtensions.js" >
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\Helper.js" >
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\HierarchyItems\CopyMove.js" >
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\HierarchyItems\CreateFile.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\HierarchyItems\CreateFolder.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\HierarchyItems\Delete.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\HierarchyItems\GetFolderItems.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\HierarchyItems\GetHeadRequests.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\HierarchyItems\GetItemByFolder.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\HierarchyItems\GetItemBySession.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\HierarchyItems\GetParent.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\HierarchyItems\ItemExists.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\HierarchyItems\MicrosoftOfficeDiscovery.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\HierarchyItems\NameCheck.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\HierarchyItems\Progress.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\HierarchyItems\Quota.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\HierarchyItems\Refresh.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\HierarchyItems\Search.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\HierarchyItems\SupportedFeatures.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\HierarchyProperties\GetProperties.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\HierarchyProperties\UpdateFolderProperties.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\HierarchyProperties\UpdateProperties.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\ITHitTests.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\Locks\CheckSupport.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\Locks\CopyLock.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\Locks\Etag.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\Locks\GetLocks.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\Locks\Lock.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\Locks\RefreshLock.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\qunit-runner\highlight\highlight.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\qunit-runner\main.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\qunit-runner\qunit\jquery.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\qunit-runner\qunit\qunit.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\Upload\CancelUpload.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\Upload\GetBytesUploaded.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\Versions\GetVersions.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\Versions\ManageVersions.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\Versions\PutUnderVersion.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\Versions\ReadContent.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\WebDavSession\Events.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
     <!-- Ensure Node.js is installed -->
