@@ -367,10 +367,6 @@ header .versions {
     cursor: pointer;
 }
 
-.modal-open .navbar-toggler.burger-button {
-    margin-right: 0px !important;
-}
-
     .navbar-brand.ellipsis span {
         left: 45px;
         top: 5px;
@@ -416,14 +412,16 @@ header .versions {
         margin-bottom: 20px;
     }
 
-     .header-content a.btn {
-         text-decoration: none;
-     }
+        .header-content a.btn {
+            text-decoration: none;
+        }
 /*End Header styles*/
 
 /*Start Main layout styles*/
 .breadcrumb {
     background: none;
+    padding: 10px 7px;
+    margin-bottom: 15px;
 }
 
 ol.breadcrumb li .icon-home {
@@ -493,6 +491,10 @@ ol.breadcrumb li .icon-home {
     padding: 0 10px;
 }
 
+    .ithit-grid-toolbar .first-section {
+        padding-left: 5px;
+    }
+
     .ithit-grid-toolbar button {
         color: #007BFF;
         border: none;
@@ -554,6 +556,10 @@ ol.breadcrumb li .icon-home {
             background-image: url(/images/reload.svg);
         }
 
+        .ithit-grid-toolbar button.btn-rename-item:before {
+            background-image: url(/images/rename.svg);
+        }
+
         .ithit-grid-toolbar button.btn-print-items:before {
             background-image: url(/images/print.svg);
         }
@@ -585,8 +591,8 @@ ol.breadcrumb li .icon-home {
 
         .ithit-search-container .twitter-typeahead:before {
             position: absolute;
-            top: 10px;
-            left: 16px;
+            top: 9px;
+            left: 7px;
             content: "";
             background-image: url(/images/search.svg);
             display: block;
@@ -702,127 +708,121 @@ table tr.tr-snippet-url td {
 /*Grid Items*/
 .ithit-grid-container {
     width: 100%;
-    margin-top: 35px;
+    margin-top: 20px;
     overflow-y: hidden;
 }
 
-@media (max-width: 767px) {
-    .ithit-grid-container {
-        margin-top: 20px;
-    }
-}
-
-.ithit-grid-container .icon-folder {
-    background-image: url(/images/folder.svg);
-    display: inline-block;
-    height: 14px;
-    width: 16px;
-}
-
-.ithit-grid-container .icon-open-folder, .ithit-grid-container .icon-edit,
-.ithit-grid-container .icon-microsoft-edit, .icon-gsuite-edit,
-.ithit-grid-container .icon-edit-associated {
-    background-image: url(/images/open-folder.svg);
-    background-repeat: no-repeat;
-    display: inline-block;
-    height: 19px;
-    width: 19px;
-    position: relative;
-    top: 5px;
-}
-
-.ithit-grid-container .icon-edit {
-    background-image: url(/images/edit.svg);
-    top: 2px;
-}
-
-.ithit-grid-container .icon-microsoft-edit, .ithit-grid-container .icon-gsuite-edit {
-    background: none;
-    -webkit-mask-image: url(/images/menu-microsoft-edit.svg);
-    mask-image: url(/images/menu-microsoft-edit.svg);
-    background-color: white;
-    -webkit-mask-size: cover;
-    top: 2px;
-}
-
-.ithit-grid-container .icon-gsuite-edit {
-    -webkit-mask-image: url(/images/menu-gsuit-edit.svg);
-    mask-image: url(/images/menu-gsuit-edit.svg);
-}
-
-.ithit-grid-container th.sort {
-    position: relative;
-    cursor: pointer;
-}
-
-    .ithit-grid-container th.sort.ascending, th.sort.descending {
-        padding-right: 15px;
+    .ithit-grid-container .icon-folder {
+        background-image: url(/images/folder.svg);
+        display: inline-block;
+        height: 14px;
+        width: 16px;
     }
 
-        .ithit-grid-container th.sort.ascending:after, th.sort.descending:after {
-            content: "";
-            display: inline-block;
-            position: absolute;
-            left: -5px;
-            width: 0px;
-            height: 0px;
-            margin-top: 6px;
+    .ithit-grid-container .icon-open-folder, .ithit-grid-container .icon-edit,
+    .ithit-grid-container .icon-microsoft-edit, .icon-gsuite-edit,
+    .ithit-grid-container .icon-edit-associated {
+        background-image: url(/images/open-folder.svg);
+        background-repeat: no-repeat;
+        display: inline-block;
+        height: 19px;
+        width: 19px;
+        position: relative;
+        top: 5px;
+    }
+
+    .ithit-grid-container .icon-edit {
+        background-image: url(/images/edit.svg);
+        top: 2px;
+    }
+
+    .ithit-grid-container .icon-microsoft-edit, .ithit-grid-container .icon-gsuite-edit {
+        background: none;
+        -webkit-mask-image: url(/images/menu-microsoft-edit.svg);
+        mask-image: url(/images/menu-microsoft-edit.svg);
+        background-color: white;
+        -webkit-mask-size: cover;
+        top: 2px;
+    }
+
+    .ithit-grid-container .icon-gsuite-edit {
+        -webkit-mask-image: url(/images/menu-gsuit-edit.svg);
+        mask-image: url(/images/menu-gsuit-edit.svg);
+    }
+
+    .ithit-grid-container th.sort {
+        position: relative;
+        cursor: pointer;
+    }
+
+        .ithit-grid-container th.sort.ascending, th.sort.descending {
+            padding-right: 15px;
+        }
+
+            .ithit-grid-container th.sort.ascending:after, th.sort.descending:after {
+                content: "";
+                display: inline-block;
+                position: absolute;
+                left: -5px;
+                width: 0px;
+                height: 0px;
+                margin-top: 6px;
+                border-left: 5px solid transparent;
+                border-right: 5px solid transparent;
+                border-bottom: 5px solid #2f2f2f;
+            }
+
+        .ithit-grid-container th.sort.descending:after {
             border-left: 5px solid transparent;
             border-right: 5px solid transparent;
-            border-bottom: 5px solid #2f2f2f;
+            border-top: 5px solid #2f2f2f;
+            border-bottom: none;
+            margin-top: 13px;
         }
 
-    .ithit-grid-container th.sort.descending:after {
-        border-left: 5px solid transparent;
-        border-right: 5px solid transparent;
-        border-top: 5px solid #2f2f2f;
-        border-bottom: none;
-        margin-top: 13px;
-    }
-
-    .ithit-grid-container th.sort.disabled {
-        pointer-events: none;
-    }
-
-        .ithit-grid-container th.sort.disabled:after {
-            display: none;
+        .ithit-grid-container th.sort.disabled {
+            pointer-events: none;
         }
 
-.ithit-grid-container .column-action {
-    text-align: right;
-    padding-left: 0;
-    padding-right: 0;
-}
+            .ithit-grid-container th.sort.disabled:after {
+                display: none;
+            }
 
-    .ithit-grid-container .column-action a {
-        display: inline-block;
-        padding: 2px 8px;
+    .ithit-grid-container .column-action {
+        text-align: right;
+        padding-left: 0;
+        padding-right: 0;
     }
 
-        .ithit-grid-container .column-action a:last-child {
-            margin-right: 0;
+        .ithit-grid-container .column-action a {
+            display: inline-block;
+            padding: 2px 8px;
         }
 
-    .ithit-grid-container .column-action button.browse-lnk span:last-child {
-        margin-right: 10px;
-    }
+            .ithit-grid-container .column-action a:last-child {
+                margin-right: 0;
+            }
 
-    .ithit-grid-container .column-action button span {
-        vertical-align: middle;
-    }
+        .ithit-grid-container .column-action button.browse-lnk span:last-child {
+            margin-right: 10px;
+        }
 
-.ithit-grid-container .badge {
-    left: 22px;
-    font-size: 55%;
-    position: absolute;
-    top: 27px;
-    background: #FFFFFF;
-    border: 1px solid #409CFF;
-    box-sizing: border-box;
-    border-radius: 6px;
-    padding: 1px 5px;
-    color: #212529;
-}
+        .ithit-grid-container .column-action button span {
+            vertical-align: middle;
+        }
+
+    .ithit-grid-container .badge {
+        left: 22px;
+        font-size: 55%;
+        position: absolute;
+        top: 27px;
+        background: #FFFFFF;
+        border: 1px solid #409CFF;
+        box-sizing: border-box;
+        border-radius: 6px;
+        padding: 1px 5px;
+        color: #212529;
+    }
 
 table.ithit-grid-container > tbody > tr > td {
     vertical-align: middle;

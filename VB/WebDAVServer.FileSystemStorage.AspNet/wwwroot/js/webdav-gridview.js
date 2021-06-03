@@ -2,7 +2,7 @@
 (function (WebdavCommon) {
     var sSearchErrorMessage = "Search is not supported.";
     var sSupportedFeaturesErrorMessage = "Supported Features error.";
-    var sProfindErrorMessage = "Profind request error.";
+    var sProfindErrorMessage = "PROPFIND request error.";
 
 
     ///////////////////
@@ -11,6 +11,7 @@
         var self = this;
         this.$el = $(selectorTableContainer);
         this.selectedItems = [];
+
         //Copied or cut items
         this.storedItems = [];
         this.isCopiedItems = false;
@@ -428,8 +429,9 @@
 
     ///////////////////
     // Breadcrumbs View
-    var BreadcrumbsView = function (selector) {
+    var BreadcrumbsView = function (selector, upOneLevelBtn) {
         this.$el = $(selector);
+        this.$upOneLevelBtn = $(upOneLevelBtn);
     };
     BreadcrumbsView.prototype = {
 
@@ -453,6 +455,18 @@
                         $('<a />').attr('href', location.protocol + '//' + aParts.slice(0, i + 1).join('/') + '/').html(oLabel)
                 );
             }));
+
+            if (this.$upOneLevelBtn) {
+                var $lastLnk = this.$el.find('a').last();
+                if ($lastLnk.length) {
+                    this.$upOneLevelBtn.attr('href', $lastLnk.attr('href'));
+                    this.$upOneLevelBtn.removeClass('disabled');
+                } else {
+                    this.$upOneLevelBtn.attr('href', 'javascript.void()');
+                    this.$upOneLevelBtn.addClass('disabled');
+                }
+
+            }
         }
     };
 
@@ -650,6 +664,7 @@
     var WebDAVController = function () {
         this.PageSize = 10; // set size items of page
         this.CurrentFolder = null;
+        this.AllowReloadGrid = true;
         this.WebDavSession = new ITHit.WebDAV.Client.WebDavSession();
         this.SnippetPropertyName = new ITHit.WebDAV.Client.PropertyName('snippet', 'ithit');
     };
@@ -657,7 +672,7 @@
     WebDAVController.prototype = {
 
         Reload: function () {
-            if (this.CurrentFolder) {
+            if (this.CurrentFolder && this.AllowReloadGrid) {
                 if (this.GetHashValue('search')) {
                     oSearchForm.LoadFromHash();
                 }
@@ -1074,7 +1089,7 @@
     var oFolderGrid = new FolderGridView('.ithit-grid-container', '.ithit-grid-toolbar');
     var oToolbar = new Toolbar('.ithit-grid-toolbar', oFolderGrid, oConfirmModal, oWebDAV);
     var oSearchForm = new SearchFormView('.ithit-search-container');
-    var oBreadcrumbs = new BreadcrumbsView('.ithit-breadcrumb-container');
+    var oBreadcrumbs = new BreadcrumbsView('.ithit-breadcrumb-container .breadcrumb', '.btn-up-one-level');
     var oPagination = new PaginationView('.ithit-pagination-container');
     var oTableSorting = new TableSortingView('.ithit-grid-container th.sort');
     var oHistoryApi = new HistoryApiController('.ithit-grid-container, .ithit-breadcrumb-container');
