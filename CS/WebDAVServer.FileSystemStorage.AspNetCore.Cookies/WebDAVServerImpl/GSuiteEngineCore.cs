@@ -25,7 +25,8 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore.Cookies
         /// <param name="gSuiteConf">GSuite Engine configuration.</param>
         /// <param name="logger">Logger instance.</param>
         public GSuiteEngineCore(IOptions<GSuiteEngineConfig> gSuiteConf,
-            ILogger logger) : base(gSuiteConf.Value.GoogleServiceAccountID, gSuiteConf.Value.GoogleServicePrivateKey)
+            ILogger logger) : base(gSuiteConf.Value.GoogleServiceAccountID, gSuiteConf.Value.GoogleServicePrivateKey, 
+                                   gSuiteConf.Value.GoogleNotificationsRelativeUrl)
         {
             GSuiteEngineConfig config = gSuiteConf.Value;
 

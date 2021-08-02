@@ -42,7 +42,7 @@ namespace CardDAVServer.SqlStorage.AspNetCore
             if(IsAuthorizationPresent(context.Request))
             {
                 ClaimsPrincipal userPrincipal = AuthenticateRequest(context.Request);
-                if (userPrincipal.Identity != null)
+                if (userPrincipal.Identity != null && !string.IsNullOrEmpty(userPrincipal.Identity.Name))
                 {
                     // Authenticated succesfully.
                     context.User = userPrincipal;

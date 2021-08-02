@@ -34,6 +34,11 @@ Public Class DavHandler
     Private Shared ReadOnly googleServicePrivateKey As String = ConfigurationManager.AppSettings("GoogleServicePrivateKey")
 
     ''' <summary>
+    ''' Relative Url of "Webhook" callback. It handles the API notification messages that are triggered when a resource changes.
+    ''' </summary>
+    Private Shared ReadOnly googleNotificationsRelativeUrl As String = ConfigurationManager.AppSettings("GoogleNotificationsRelativeUrl")
+
+    ''' <summary>
     ''' This license file is used to activate G Suite Documents Editing for IT Hit WebDAV Server
     ''' </summary>
     Private ReadOnly gSuiteLicense As String = File.ReadAllText(HttpContext.Current.Request.PhysicalApplicationPath & "GSuiteLicense.lic")
@@ -130,9 +135,9 @@ Public Class DavHandler
         End If
 
         If context.Application(ENGINE_KEY) Is Nothing Then
-            Dim gSuiteEngine = New GSuiteEngineAsync(googleServiceAccountID, googleServicePrivateKey) With {.License = gSuiteLicense, 
-                                                                                                      .Logger = WebDAVServer.FileSystemStorage.AspNet.Logger.Instance
-                                                                                                      }
+            Dim gSuiteEngine = New GSuiteEngineAsync(googleServiceAccountID, googleServicePrivateKey, googleNotificationsRelativeUrl) With {.License = gSuiteLicense, 
+                                                                                                                                      .Logger = WebDAVServer.FileSystemStorage.AspNet.Logger.Instance
+                                                                                                                                      }
             context.Application(ENGINE_KEY) = gSuiteEngine
         End If
 

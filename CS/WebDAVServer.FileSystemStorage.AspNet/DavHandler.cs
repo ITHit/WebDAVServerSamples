@@ -35,6 +35,11 @@ namespace WebDAVServer.FileSystemStorage.AspNet
         private static readonly string googleServicePrivateKey = ConfigurationManager.AppSettings["GoogleServicePrivateKey"];
 
         /// <summary>
+        /// Relative Url of "Webhook" callback. It handles the API notification messages that are triggered when a resource changes.
+        /// </summary>
+        private static readonly string googleNotificationsRelativeUrl = ConfigurationManager.AppSettings["GoogleNotificationsRelativeUrl"];
+
+        /// <summary>
         /// This license file is used to activate G Suite Documents Editing for IT Hit WebDAV Server
         /// </summary>
         private readonly string gSuiteLicense = File.ReadAllText(HttpContext.Current.Request.PhysicalApplicationPath + "GSuiteLicense.lic");
@@ -150,7 +155,7 @@ namespace WebDAVServer.FileSystemStorage.AspNet
 
             if (context.Application[ENGINE_KEY] == null)
             {
-                var gSuiteEngine = new GSuiteEngineAsync(googleServiceAccountID, googleServicePrivateKey)
+                var gSuiteEngine = new GSuiteEngineAsync(googleServiceAccountID, googleServicePrivateKey, googleNotificationsRelativeUrl)
                 {
                     License = gSuiteLicense, 
                     Logger = WebDAVServer.FileSystemStorage.AspNet.Logger.Instance

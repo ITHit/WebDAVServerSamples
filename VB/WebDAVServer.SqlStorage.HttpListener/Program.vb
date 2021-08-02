@@ -40,6 +40,11 @@ Friend Class Program
     Private Shared ReadOnly googleServicePrivateKey As String = ConfigurationManager.AppSettings("GoogleServicePrivateKey")
 
     ''' <summary>
+    ''' Relative Url of "Webhook" callback. It handles the API notification messages that are triggered when a resource changes.
+    ''' </summary>
+    Private Shared ReadOnly googleNotificationsRelativeUrl As String = ConfigurationManager.AppSettings("GoogleNotificationsRelativeUrl")
+
+    ''' <summary>
     ''' Whether requests/responses shall be logged.
     ''' </summary>
     Private Shared ReadOnly debugLoggingEnabled As Boolean = ConfigurationManager.AppSettings("DebugLoggingEnabled").Equals("true",
@@ -102,9 +107,9 @@ Friend Class Program
         webDavEngine.License = license
         ''' This license file is used to activate G Suite Documents Editing for IT Hit WebDAV Server
         Dim gSuiteLicense As String = File.ReadAllText(Path.Combine(contentRootPath, "GSuiteLicense.lic"))
-        gSuiteEngine = New GSuiteEngineAsync(googleServiceAccountID, googleServicePrivateKey) With {.License = gSuiteLicense,
-                                                                                              .Logger = logger
-                                                                                              }
+        gSuiteEngine = New GSuiteEngineAsync(googleServiceAccountID, googleServicePrivateKey, googleNotificationsRelativeUrl) With {.License = gSuiteLicense,
+                                                                                                                              .Logger = logger
+                                                                                                                              }
         ' Set custom handler to process GET and HEAD requests to folders and display 
         ' info about how to connect to server. We are using the same custom handler 
         ' class (but different instances) here to process both GET and HEAD because 

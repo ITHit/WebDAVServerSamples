@@ -16,5 +16,10 @@ namespace CardDAVServer.FileSystemStorage.AspNetCore.Configuration
         /// </summary>
         public string GoogleServicePrivateKey { get; set; }
 
+        /// <summary>
+        /// Relative Url of "Webhook" callback. It handles the API notification messages that are triggered when a resource changes.
+        /// </summary>
+        public string GoogleNotificationsRelativeUrl { get; set; }
+
     }
 }
