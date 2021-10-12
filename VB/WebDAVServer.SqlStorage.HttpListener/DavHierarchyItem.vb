@@ -129,7 +129,7 @@ Public MustInherit Class DavHierarchyItem
         Next
 
         ' You should not update modification date/time here. Mac OS X Finder expects that properties update do not change the file modification date.
-        Await Context.socketService.NotifyRefreshAsync(GetParentPath(Path))
+        Await Context.socketService.NotifyUpdatedAsync(Path)
     End Function
 
     Public Async Function GetPropertyNamesAsync() As Task(Of IEnumerable(Of PropertyName)) Implements IHierarchyItemAsync.GetPropertyNamesAsync
@@ -176,7 +176,7 @@ Public MustInherit Class DavHierarchyItem
                                           "@Deep", isDeep,
                                           "@Expires", expires,
                                           "@Owner", owner)
-        Await Context.socketService.NotifyRefreshAsync(GetParentPath(Path))
+        Await Context.socketService.NotifyLockedAsync(Path)
         Return New LockResult(token, timeout.Value)
     End Function
 
@@ -200,7 +200,7 @@ Public MustInherit Class DavHierarchyItem
         Await Context.ExecuteNonQueryAsync("UPDATE Lock SET Expires = @Expires WHERE Token = @Token",
                                           "@Expires", expires,
                                           "@Token", token)
-        Await Context.socketService.NotifyRefreshAsync(GetParentPath(Path))
+        Await Context.socketService.NotifyLockedAsync(Path)
         Return New RefreshLockResult(l.Level, l.IsDeep, CType(l.TimeOut, TimeSpan), l.Owner)
     End Function
 
@@ -213,7 +213,7 @@ Public MustInherit Class DavHierarchyItem
         ' remove lock from existing item
         Await Context.ExecuteNonQueryAsync("DELETE FROM Lock WHERE Token = @Token",
                                           "@Token", lockToken)
-        Await Context.socketService.NotifyRefreshAsync(GetParentPath(Path))
+        Await Context.socketService.NotifyUnLockedAsync(Path)
     End Function
 
     Public Async Function GetActiveLocksAsync() As Task(Of IEnumerable(Of LockInfo)) Implements ILockAsync.GetActiveLocksAsync

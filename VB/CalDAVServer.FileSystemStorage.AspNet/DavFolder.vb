@@ -166,6 +166,7 @@ Public Class DavFolder
     ''' <param name="destName">New name of this folder.</param>
     ''' <param name="multistatus">Information about child items that failed to move.</param>
     Public Overrides Async Function MoveToAsync(destFolder As IItemCollectionAsync, destName As String, multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.MoveToAsync
+        ' in this function we move item by item, because we want to check if each item is not locked.
         If Not(TypeOf destFolder Is DavFolder) Then
             Throw New DavException("Target folder doesn't exist", DavStatus.CONFLICT)
         End If

@@ -178,7 +178,7 @@ Public Class DavFile
                  End Try
         End Using
 
-        Await context.socketService.NotifyRefreshAsync(GetParentPath(Path))
+        Await context.socketService.NotifyUpdatedAsync(Path)
         Return True
     End Function
 
@@ -227,7 +227,7 @@ Public Class DavFile
             Throw ex
         End Try
 
-        Await context.socketService.NotifyRefreshAsync(targetFolder.Path)
+        Await context.socketService.NotifyCreatedAsync(targetPath)
     End Function
 
     ''' <summary>
@@ -277,8 +277,7 @@ Public Class DavFile
         End Try
 
         ' Refresh client UI.
-        Await context.socketService.NotifyRefreshAsync(GetParentPath(Path))
-        Await context.socketService.NotifyRefreshAsync(targetFolder.Path)
+        Await context.socketService.NotifyMovedAsync(Path, targetPath)
     End Function
 
     ''' <summary>
@@ -292,7 +291,7 @@ Public Class DavFile
         End If
 
         fileSystemInfo.Delete()
-        Await context.socketService.NotifyRefreshAsync(GetParentPath(Path))
+        Await context.socketService.NotifyDeletedAsync(Path)
     End Function
 
     ''' <summary>

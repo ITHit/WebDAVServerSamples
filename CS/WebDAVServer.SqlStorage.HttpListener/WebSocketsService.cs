@@ -53,18 +53,68 @@ namespace WebDAVServer.SqlStorage.HttpListener
         }
 
         /// <summary>
-        /// Notifies client that content in the specified folder has been changed. 
-        /// Called when one of the following events occurs in the specified folder: file or folder created, file or folder updated, file deleted.
+        /// Notifies client that file/folder was created.
         /// </summary>
-        /// <param name="folderPath">Content of this folder was modified.</param>
+        /// <param name="itemPath">file/folder.</param>
         /// <returns></returns>
-        public async Task NotifyRefreshAsync(string folderPath)
+        public async Task NotifyCreatedAsync(string itemPath)
         {
-            folderPath = folderPath.Trim('/');
-            Notification notifyObject = new Notification
+            await SendMessage(itemPath, "created");
+        }
+
+        /// <summary>
+        /// Notifies client that file/folder was updated.
+        /// </summary>
+        /// <param name="itemPath">file/folder path.</param>
+        /// <returns></returns>
+        public async Task NotifyUpdatedAsync(string itemPath)
+        {
+            await SendMessage(itemPath, "updated");
+        }
+
+        /// <summary>
+        /// Notifies client that file/folder was deleted.
+        /// </summary>
+        /// <param name="itemPath">file/folder path.</param>
+        /// <returns></returns>
+        public async Task NotifyDeletedAsync(string itemPath)
+        {
+            await SendMessage(itemPath, "deleted");
+        }
+
+        /// <summary>
+        /// Notifies client that file/folder was locked.
+        /// </summary>
+        /// <param name="itemPath">file/folder path.</param>
+        /// <returns></returns>
+        public async Task NotifyLockedAsync(string itemPath)
+        {
+            await SendMessage(itemPath, "locked");
+        }
+
+        /// <summary>
+        /// Notifies client that file/folder was unlocked.
+        /// </summary>
+        /// <param name="itemPath">file/folder path.</param>
+        /// <returns></returns>
+        public async Task NotifyUnLockedAsync(string itemPath)
+        {
+            await SendMessage(itemPath, "unlocked");
+        }
+
+        /// <summary>
+        /// Notifies client that file/folder was moved.
+        /// </summary>
+        /// <param name="itemPath">file/folder path.</param>
+        /// <returns></returns>
+        public async Task NotifyMovedAsync(string itemPath, string targetPath)
+        {
+            itemPath = itemPath.Trim('/');
+            MovedNotification notifyObject = new MovedNotification
             {
-                FolderPath = folderPath,
-                EventType = "refresh"
+                ItemPath = itemPath,
+                TargetPath = targetPath,
+                EventType = "moved"
             };
             foreach (WebSocket client in clients.Values)
             {
@@ -76,17 +126,18 @@ namespace WebDAVServer.SqlStorage.HttpListener
         }
 
         /// <summary>
-        /// Notifies client that folder was deleted.
+        /// Sends message about file/folder operation.
         /// </summary>
-        /// <param name="folderPath">Folder that was deleted.</param>
+        /// <param name="itemPath">File/Folder path.</param>
+        /// <param name="operation">Operation name: created/updated/deleted/moved</param>
         /// <returns></returns>
-        public async Task NotifyDeleteAsync(string folderPath)
+        public async Task SendMessage(string itemPath, string operation)
         {
-            folderPath = folderPath.Trim('/');
+            itemPath = itemPath.Trim('/');
             Notification notifyObject = new Notification
             {
-                FolderPath = folderPath,
-                EventType = "delete"
+                ItemPath = itemPath,
+                EventType = operation
             };
             foreach (WebSocket client in clients.Values)
             {
@@ -104,13 +155,24 @@ namespace WebDAVServer.SqlStorage.HttpListener
     public class Notification
     {
         /// <summary>
-        /// Represents notification data.
+        /// Represents file/folder path.
         /// </summary>
-        public string FolderPath { get; set; } = string.Empty;
+        public string ItemPath { get; set; } = string.Empty;
 
         /// <summary>
         /// Represents event type.
         /// </summary>
         public string EventType { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// Holds notification moved information.
+    /// </summary>
+    public class MovedNotification : Notification
+    {
+        /// <summary>
+        /// Represents target file/folder path.
+        /// </summary>
+        public string TargetPath { get; set; } = string.Empty;
     }
 }

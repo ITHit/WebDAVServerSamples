@@ -49,7 +49,7 @@
     <PackageReference Include="ITHit.Server.Core" Version="10.1.8941" />
     <PackageReference Include="ITHit.WebDAV.Server" Version="10.1.8941" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.AzureAD.UI" Version="3.1.6" />
-    <PackageReference Include="RestSharp" Version="106.11.7" />
+    <PackageReference Include="RestSharp" Version="106.12.0" />
     <PackageReference Include="System.Data.OleDb" Version="4.7.0" />
   </ItemGroup>
   <ItemGroup>

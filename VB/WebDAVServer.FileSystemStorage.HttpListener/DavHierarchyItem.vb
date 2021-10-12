@@ -210,7 +210,7 @@ Public MustInherit Class DavHierarchyItem
 
         propertyValues.RemoveAll(Function(prop) delProps.Contains(prop.QualifiedName))
         Await fileSystemInfo.SetExtendedAttributeAsync(propertiesAttributeName, propertyValues)
-        Await context.socketService.NotifyRefreshAsync(GetParentPath(Path))
+        Await context.socketService.NotifyUpdatedAsync(Path)
     End Function
 
     ''' <summary>
@@ -283,7 +283,7 @@ Public MustInherit Class DavHierarchyItem
                                                         .TimeOut = timeOut
                                                         }
         Await SaveLockAsync(lockInfo)
-        Await context.socketService.NotifyRefreshAsync(GetParentPath(Path))
+        Await context.socketService.NotifyLockedAsync(Path)
         Return New LockResult(lockInfo.LockToken, lockInfo.TimeOut)
     End Function
 
@@ -315,7 +315,7 @@ Public MustInherit Class DavHierarchyItem
             Await SaveLockAsync(lockInfo)
         End If
 
-        Await context.socketService.NotifyRefreshAsync(GetParentPath(Path))
+        Await context.socketService.NotifyLockedAsync(Path)
         Return New RefreshLockResult(lockInfo.Level, lockInfo.IsDeep, lockInfo.TimeOut, lockInfo.ClientOwner)
     End Function
 
@@ -335,7 +335,7 @@ Public MustInherit Class DavHierarchyItem
             Throw New DavException("The lock could not be found.", DavStatus.CONFLICT)
         End If
 
-        Await context.socketService.NotifyRefreshAsync(GetParentPath(Path))
+        Await context.socketService.NotifyUnLockedAsync(Path)
     End Function
 
     ''' <summary>

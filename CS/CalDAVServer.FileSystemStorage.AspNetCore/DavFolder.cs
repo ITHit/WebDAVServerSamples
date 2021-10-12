@@ -202,6 +202,7 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore
         /// <param name="multistatus">Information about child items that failed to move.</param>
         public override async Task MoveToAsync(IItemCollectionAsync destFolder, string destName, MultistatusException multistatus)
         {
+            // in this function we move item by item, because we want to check if each item is not locked.
             if (!(destFolder is DavFolder))
             {
                 throw new DavException("Target folder doesn't exist", DavStatus.CONFLICT);

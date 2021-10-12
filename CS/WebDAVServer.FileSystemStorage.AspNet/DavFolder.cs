@@ -126,7 +126,7 @@ namespace WebDAVServer.FileSystemStorage.AspNet
             using (FileStream stream = new FileStream(fileName, FileMode.CreateNew))
             {
             }
-            await context.socketService.NotifyRefreshAsync(Path);
+            await context.socketService.NotifyCreatedAsync(System.IO.Path.Combine(Path, name));
 
             return (IFileAsync)await context.GetHierarchyItemAsync(Path + EncodeUtil.EncodeUrlPart(name));
         }
@@ -142,7 +142,7 @@ namespace WebDAVServer.FileSystemStorage.AspNet
             bool isRoot = dirInfo.Parent == null;
             DirectoryInfo di = isRoot ? new DirectoryInfo(@"\\?\" + context.RepositoryPath.TrimEnd(System.IO.Path.DirectorySeparatorChar)) : dirInfo;
             di.CreateSubdirectory(name);
-            await context.socketService.NotifyRefreshAsync(Path);
+            await context.socketService.NotifyCreatedAsync(System.IO.Path.Combine(Path, name));
         }
 
         /// <summary>
@@ -202,7 +202,7 @@ namespace WebDAVServer.FileSystemStorage.AspNet
                     multistatus.AddInnerException(item.Path, ex);
                 }
             }
-            await context.socketService.NotifyRefreshAsync(targetFolder.Path);
+            await context.socketService.NotifyCreatedAsync(targetPath);
         }
 
         /// <summary>
@@ -213,6 +213,7 @@ namespace WebDAVServer.FileSystemStorage.AspNet
         /// <param name="multistatus">Information about child items that failed to move.</param>
         public override async Task MoveToAsync(IItemCollectionAsync destFolder, string destName, MultistatusException multistatus)
         {
+            // in this function we move item by item, because we want to check if each item is not locked.
             await RequireHasTokenAsync();
             if (!(destFolder is DavFolder))
             {
@@ -267,8 +268,7 @@ namespace WebDAVServer.FileSystemStorage.AspNet
                 await DeleteAsync(multistatus);
             }
             // Refresh client UI.
-            await context.socketService.NotifyDeleteAsync(Path);
-            await context.socketService.NotifyRefreshAsync(GetParentPath(targetPath));
+            await context.socketService.NotifyMovedAsync(Path, targetPath);
         }
 
         /// <summary>
@@ -302,7 +302,7 @@ namespace WebDAVServer.FileSystemStorage.AspNet
             if (allChildrenDeleted)
             {
                 dirInfo.Delete();
-                await context.socketService.NotifyDeleteAsync(Path);
+                await context.socketService.NotifyDeletedAsync(Path);
             }
         }
 

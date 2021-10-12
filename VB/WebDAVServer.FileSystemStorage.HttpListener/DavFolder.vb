@@ -109,7 +109,7 @@ Public Class DavFolder
         Using stream As FileStream = New FileStream(fileName, FileMode.CreateNew)
              End Using
 
-        Await context.socketService.NotifyRefreshAsync(Path)
+        Await context.socketService.NotifyCreatedAsync(System.IO.Path.Combine(Path, name))
         Return CType(Await context.GetHierarchyItemAsync(Path & EncodeUtil.EncodeUrlPart(name)), IFileAsync)
     End Function
 
@@ -122,7 +122,7 @@ Public Class DavFolder
         Dim isRoot As Boolean = dirInfo.Parent Is Nothing
         Dim di As DirectoryInfo = If(isRoot, New DirectoryInfo("\\?\" & context.RepositoryPath.TrimEnd(System.IO.Path.DirectorySeparatorChar)), dirInfo)
         di.CreateSubdirectory(name)
-        Await context.socketService.NotifyRefreshAsync(Path)
+        Await context.socketService.NotifyCreatedAsync(System.IO.Path.Combine(Path, name))
     End Function
 
     ''' <summary>
@@ -169,7 +169,7 @@ Public Class DavFolder
             End Try
         Next
 
-        Await context.socketService.NotifyRefreshAsync(targetFolder.Path)
+        Await context.socketService.NotifyCreatedAsync(targetPath)
     End Function
 
     ''' <summary>
@@ -179,6 +179,7 @@ Public Class DavFolder
     ''' <param name="destName">New name of this folder.</param>
     ''' <param name="multistatus">Information about child items that failed to move.</param>
     Public Overrides Async Function MoveToAsync(destFolder As IItemCollectionAsync, destName As String, multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.MoveToAsync
+        ' in this function we move item by item, because we want to check if each item is not locked.
         Await RequireHasTokenAsync()
         If Not(TypeOf destFolder Is DavFolder) Then
             Throw New DavException("Target folder doesn't exist", DavStatus.CONFLICT)
@@ -220,8 +221,7 @@ Public Class DavFolder
         End If
 
         ' Refresh client UI.
-        Await context.socketService.NotifyDeleteAsync(Path)
-        Await context.socketService.NotifyRefreshAsync(GetParentPath(targetPath))
+        Await context.socketService.NotifyMovedAsync(Path, targetPath)
     End Function
 
     ''' <summary>
@@ -243,7 +243,7 @@ Public Class DavFolder
 
         If allChildrenDeleted Then
             dirInfo.Delete()
-            Await context.socketService.NotifyDeleteAsync(Path)
+            Await context.socketService.NotifyDeletedAsync(Path)
         End If
     End Function
 

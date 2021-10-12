@@ -120,7 +120,7 @@ namespace WebDAVServer.SqlStorage.AspNet
                 throw new LockedException();
             }
             var child = await createChildAsync(name, ItemType.File);
-            await Context.socketService.NotifyRefreshAsync(Path);
+            await Context.socketService.NotifyCreatedAsync(System.IO.Path.Combine(Path, name));
 
             return (IFileAsync)child;
         }
@@ -137,7 +137,7 @@ namespace WebDAVServer.SqlStorage.AspNet
             }
 
             await createChildAsync(name, ItemType.Folder);
-            await Context.socketService.NotifyRefreshAsync(Path);
+            await Context.socketService.NotifyCreatedAsync(System.IO.Path.Combine(Path, name));
         }
 
         /// <summary>
@@ -202,7 +202,7 @@ namespace WebDAVServer.SqlStorage.AspNet
                     }
                 }
             }
-            await Context.socketService.NotifyRefreshAsync(newDestFolder.Path);
+            await Context.socketService.NotifyCreatedAsync(newDestFolder.Path);
         }
 
         /// <summary>
@@ -214,6 +214,7 @@ namespace WebDAVServer.SqlStorage.AspNet
         /// individual files/folders.</param>
         public override async Task MoveToAsync(IItemCollectionAsync destFolder, string destName, MultistatusException multistatus)
         {
+            // in this function we move item by item, because we want to check if each item is not locked.
             DavFolder destDavFolder = destFolder as DavFolder;
             if (destFolder == null)
             {
@@ -292,8 +293,7 @@ namespace WebDAVServer.SqlStorage.AspNet
                 await DeleteThisItemAsync(parent);
             }
             // Refresh client UI.
-            await Context.socketService.NotifyDeleteAsync(Path);
-            await Context.socketService.NotifyRefreshAsync(GetParentPath(newDestFolder.Path));
+            await Context.socketService.NotifyMovedAsync(Path, newDestFolder.Path);
         }
 
         /// <summary>
@@ -336,7 +336,7 @@ namespace WebDAVServer.SqlStorage.AspNet
             if (deletedAllChildren)
             {
                 await DeleteThisItemAsync(parent);
-                await Context.socketService.NotifyDeleteAsync(Path);
+                await Context.socketService.NotifyDeletedAsync(Path);
             }
         }
         /// <summary>

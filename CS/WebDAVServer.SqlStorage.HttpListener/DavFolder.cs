@@ -118,7 +118,7 @@ namespace WebDAVServer.SqlStorage.HttpListener
                 throw new LockedException();
             }
             var child = await createChildAsync(name, ItemType.File);
-            await Context.socketService.NotifyRefreshAsync(Path);
+            await Context.socketService.NotifyCreatedAsync(System.IO.Path.Combine(Path, name));
 
             return (IFileAsync)child;
         }
@@ -135,7 +135,7 @@ namespace WebDAVServer.SqlStorage.HttpListener
             }
 
             await createChildAsync(name, ItemType.Folder);
-            await Context.socketService.NotifyRefreshAsync(Path);
+            await Context.socketService.NotifyCreatedAsync(System.IO.Path.Combine(Path, name));
         }
 
         /// <summary>
@@ -200,7 +200,7 @@ namespace WebDAVServer.SqlStorage.HttpListener
                     }
                 }
             }
-            await Context.socketService.NotifyRefreshAsync(newDestFolder.Path);
+            await Context.socketService.NotifyCreatedAsync(newDestFolder.Path);
         }
 
         /// <summary>
@@ -212,6 +212,7 @@ namespace WebDAVServer.SqlStorage.HttpListener
         /// individual files/folders.</param>
         public override async Task MoveToAsync(IItemCollectionAsync destFolder, string destName, MultistatusException multistatus)
         {
+            // in this function we move item by item, because we want to check if each item is not locked.
             DavFolder destDavFolder = destFolder as DavFolder;
             if (destFolder == null)
             {
@@ -290,8 +291,7 @@ namespace WebDAVServer.SqlStorage.HttpListener
                 await DeleteThisItemAsync(parent);
             }
             // Refresh client UI.
-            await Context.socketService.NotifyDeleteAsync(Path);
-            await Context.socketService.NotifyRefreshAsync(GetParentPath(newDestFolder.Path));
+            await Context.socketService.NotifyMovedAsync(Path, newDestFolder.Path);
         }
 
         /// <summary>
@@ -334,7 +334,7 @@ namespace WebDAVServer.SqlStorage.HttpListener
             if (deletedAllChildren)
             {
                 await DeleteThisItemAsync(parent);
-                await Context.socketService.NotifyDeleteAsync(Path);
+                await Context.socketService.NotifyDeletedAsync(Path);
             }
         }
         /// <summary>

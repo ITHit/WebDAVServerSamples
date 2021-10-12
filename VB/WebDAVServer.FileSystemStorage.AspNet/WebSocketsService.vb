@@ -48,15 +48,60 @@ Public Class WebSocketsService
     End Sub
 
     ''' <summary>
-    ''' Notifies client that content in the specified folder has been changed. 
-    ''' Called when one of the following events occurs in the specified folder: file or folder created, file or folder updated, file deleted.
+    ''' Notifies client that file/folder was created.
     ''' </summary>
-    ''' <param name="folderPath">Content of this folder was modified.</param>
+    ''' <param name="itemPath">file/folder.</param>
     ''' <returns></returns>
-    Public Async Function NotifyRefreshAsync(folderPath As String) As Task
-        folderPath = folderPath.Trim("/"c)
-        Dim notifyObject As Notification = New Notification With {.FolderPath = folderPath,
-                                                            .EventType = "refresh"}
+    Public Async Function NotifyCreatedAsync(itemPath As String) As Task
+        Await SendMessage(itemPath, "created")
+    End Function
+
+    ''' <summary>
+    ''' Notifies client that file/folder was updated.
+    ''' </summary>
+    ''' <param name="itemPath">file/folder path.</param>
+    ''' <returns></returns>
+    Public Async Function NotifyUpdatedAsync(itemPath As String) As Task
+        Await SendMessage(itemPath, "updated")
+    End Function
+
+    ''' <summary>
+    ''' Notifies client that file/folder was deleted.
+    ''' </summary>
+    ''' <param name="itemPath">file/folder path.</param>
+    ''' <returns></returns>
+    Public Async Function NotifyDeletedAsync(itemPath As String) As Task
+        Await SendMessage(itemPath, "deleted")
+    End Function
+
+    ''' <summary>
+    ''' Notifies client that file/folder was locked.
+    ''' </summary>
+    ''' <param name="itemPath">file/folder path.</param>
+    ''' <returns></returns>
+    Public Async Function NotifyLockedAsync(itemPath As String) As Task
+        Await SendMessage(itemPath, "locked")
+    End Function
+
+    ''' <summary>
+    ''' Notifies client that file/folder was unlocked.
+    ''' </summary>
+    ''' <param name="itemPath">file/folder path.</param>
+    ''' <returns></returns>
+    Public Async Function NotifyUnLockedAsync(itemPath As String) As Task
+        Await SendMessage(itemPath, "unlocked")
+    End Function
+
+    ''' <summary>
+    ''' Notifies client that file/folder was moved.
+    ''' </summary>
+    ''' <param name="itemPath">file/folder path.</param>
+    ''' <returns></returns>
+    Public Async Function NotifyMovedAsync(itemPath As String, targetPath As String) As Task
+        itemPath = itemPath.Trim("/"c)
+        Dim notifyObject As MovedNotification = New MovedNotification With {.ItemPath = itemPath,
+                                                                      .TargetPath = targetPath,
+                                                                      .EventType = "moved"}
         For Each client As WebSocket In clients.Values
             If client.State = WebSocketState.Open Then
                 Await client.SendAsync(New ArraySegment(Of Byte)(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(notifyObject))), WebSocketMessageType.Text, True, CancellationToken.None)
@@ -65,14 +110,16 @@ Public Class WebSocketsService
     End Function
 
     ''' <summary>
-    ''' Notifies client that folder was deleted.
+    ''' Sends message about file/folder operation.
     ''' </summary>
-    ''' <param name="folderPath">Folder that was deleted.</param>
+    ''' <param name="itemPath">File/Folder path.</param>
+    ''' <param name="operation">Operation name: created/updated/deleted/moved</param>
     ''' <returns></returns>
-    Public Async Function NotifyDeleteAsync(folderPath As String) As Task
-        folderPath = folderPath.Trim("/"c)
-        Dim notifyObject As Notification = New Notification With {.FolderPath = folderPath,
-                                                            .EventType = "delete"}
+    Public Async Function SendMessage(itemPath As String, operation As String) As Task
+        itemPath = itemPath.Trim("/"c)
+        Dim notifyObject As Notification = New Notification With {.ItemPath = itemPath,
+                                                            .EventType = operation
+                                                            }
         For Each client As WebSocket In clients.Values
             If client.State = WebSocketState.Open Then
                 Await client.SendAsync(New ArraySegment(Of Byte)(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(notifyObject))), WebSocketMessageType.Text, True, CancellationToken.None)
@@ -87,12 +134,24 @@ End Class
 Public Class Notification
 
     ''' <summary>
-    ''' Represents notification data.
+    ''' Represents file/folder path.
     ''' </summary>
-    Public Property FolderPath As String = String.Empty
+    Public Property ItemPath As String = String.Empty
 
     ''' <summary>
     ''' Represents event type.
     ''' </summary>
     Public Property EventType As String = String.Empty
+End Class
+
+''' <summary>
+''' Holds notification moved information.
+''' </summary>
+Public Class MovedNotification
+    Inherits Notification
+
+    ''' <summary>
+    ''' Represents target file/folder path.
+    ''' </summary>
+    Public Property TargetPath As String = String.Empty
 End Class

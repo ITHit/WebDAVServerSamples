@@ -100,7 +100,7 @@ Public Class DavFolder
         End If
 
         Dim child = Await createChildAsync(name, ItemType.File)
-        Await Context.socketService.NotifyRefreshAsync(Path)
+        Await Context.socketService.NotifyCreatedAsync(System.IO.Path.Combine(Path, name))
         Return CType(child, IFileAsync)
     End Function
 
@@ -114,7 +114,7 @@ Public Class DavFolder
         End If
 
         Await createChildAsync(name, ItemType.Folder)
-        Await Context.socketService.NotifyRefreshAsync(Path)
+        Await Context.socketService.NotifyCreatedAsync(System.IO.Path.Combine(Path, name))
     End Function
 
     ''' <summary>
@@ -165,7 +165,7 @@ Public Class DavFolder
             Next
         End If
 
-        Await Context.socketService.NotifyRefreshAsync(newDestFolder.Path)
+        Await Context.socketService.NotifyCreatedAsync(newDestFolder.Path)
     End Function
 
     ''' <summary>
@@ -176,6 +176,7 @@ Public Class DavFolder
     ''' <param name="multistatus">Container for errors. We put here errors occurring while moving
     ''' individual files/folders.</param>
     Public Overrides Async Function MoveToAsync(destFolder As IItemCollectionAsync, destName As String, multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.MoveToAsync
+        ' in this function we move item by item, because we want to check if each item is not locked.
         Dim destDavFolder As DavFolder = TryCast(destFolder, DavFolder)
         If destFolder Is Nothing Then
             Throw New DavException("Destination folder doesn't exist", DavStatus.CONFLICT)
@@ -235,8 +236,7 @@ Public Class DavFolder
         End If
 
         ' Refresh client UI.
-        Await Context.socketService.NotifyDeleteAsync(Path)
-        Await Context.socketService.NotifyRefreshAsync(GetParentPath(newDestFolder.Path))
+        Await Context.socketService.NotifyMovedAsync(Path, newDestFolder.Path)
     End Function
 
     ''' <summary>
@@ -271,7 +271,7 @@ Public Class DavFolder
 
         If deletedAllChildren Then
             Await DeleteThisItemAsync(parent)
-            Await Context.socketService.NotifyDeleteAsync(Path)
+            Await Context.socketService.NotifyDeletedAsync(Path)
         End If
     End Function
 

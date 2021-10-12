@@ -217,7 +217,7 @@ namespace WebDAVServer.FileSystemStorage.AspNet
             propertyValues.RemoveAll(prop => delProps.Contains(prop.QualifiedName));
 
             await fileSystemInfo.SetExtendedAttributeAsync(propertiesAttributeName, propertyValues);
-            await context.socketService.NotifyRefreshAsync(GetParentPath(Path));
+            await context.socketService.NotifyUpdatedAsync(Path);
         }
 
         /// <summary>
@@ -306,7 +306,7 @@ namespace WebDAVServer.FileSystemStorage.AspNet
             };
 
             await SaveLockAsync(lockInfo);
-            await context.socketService.NotifyRefreshAsync(GetParentPath(Path));
+            await context.socketService.NotifyLockedAsync(Path);
 
             return new LockResult(lockInfo.LockToken, lockInfo.TimeOut);
         }
@@ -348,7 +348,7 @@ namespace WebDAVServer.FileSystemStorage.AspNet
 
                 await SaveLockAsync(lockInfo);
             }
-            await context.socketService.NotifyRefreshAsync(GetParentPath(Path));
+            await context.socketService.NotifyLockedAsync(Path);
 
             return new RefreshLockResult(lockInfo.Level, lockInfo.IsDeep, lockInfo.TimeOut, lockInfo.ClientOwner);
         }
@@ -373,7 +373,7 @@ namespace WebDAVServer.FileSystemStorage.AspNet
             {
                 throw new DavException("The lock could not be found.", DavStatus.CONFLICT);
             }
-            await context.socketService.NotifyRefreshAsync(GetParentPath(Path));
+            await context.socketService.NotifyUnLockedAsync(Path);
         }
 
         /// <summary>

@@ -218,7 +218,9 @@ p.error-message {
         top: 0;
         z-index: 1;
     }
-
+#leftPanel.extra-large-point .d-xxl-inline {
+    display: none !important;
+}
 #leftPanel.large-point .d-xl-table-cell {
     display: none !important;
 }
@@ -605,6 +607,10 @@ ol.breadcrumb li .icon-home {
 
         .ithit-grid-toolbar button.btn-rename-item:before {
             background-image: url(/wwwroot/images/rename.svg);
+        }
+
+        .ithit-grid-toolbar button.btn-download-items:before {
+            background-image: url(/wwwroot/images/download.svg);
         }
 
         .ithit-grid-toolbar button.btn-print-items:before {

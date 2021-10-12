@@ -244,7 +244,7 @@ namespace WebDAVServer.SqlStorage.AspNet
             {
                 // The remote host closed the connection (for example Cancel or Pause pressed).
             }
-            await Context.socketService.NotifyRefreshAsync(GetParentPath(Path));
+            await Context.socketService.NotifyUpdatedAsync(Path);
             return true;
         }
 
@@ -286,7 +286,7 @@ namespace WebDAVServer.SqlStorage.AspNet
             }
 
             await CopyThisItemAsync(destDavFolder, null, destName);
-            await Context.socketService.NotifyRefreshAsync(destDavFolder.Path);
+            await Context.socketService.NotifyCreatedAsync(destFolder.Path + EncodeUtil.EncodeUrlPart(destName));
         }
 
         /// <summary>
@@ -311,7 +311,7 @@ namespace WebDAVServer.SqlStorage.AspNet
             }
 
             await DeleteThisItemAsync(parent);
-            await Context.socketService.NotifyRefreshAsync(parent.Path);
+            await Context.socketService.NotifyDeletedAsync(Path);
         }
 
         /// <summary>
@@ -354,8 +354,7 @@ namespace WebDAVServer.SqlStorage.AspNet
 
             await MoveThisItemAsync(destDavFolder, destName, parent);
             // Refresh client UI.
-            await Context.socketService.NotifyRefreshAsync(parent.Path);
-            await Context.socketService.NotifyRefreshAsync(destDavFolder.Path);
+            await Context.socketService.NotifyMovedAsync(Path, destDavFolder.Path);
         }
         /// <summary>
         /// Cancels incomplete upload.

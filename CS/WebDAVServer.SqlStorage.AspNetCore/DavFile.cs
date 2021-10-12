@@ -224,7 +224,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
 
                     bytes += lastBytesRead;
                 }
-            await Context.socketService.NotifyRefreshAsync(GetParentPath(Path));
+            await Context.socketService.NotifyUpdatedAsync(Path);
             return true;
         }
 
@@ -266,7 +266,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
             }
 
             await CopyThisItemAsync(destDavFolder, null, destName);
-            await Context.socketService.NotifyRefreshAsync(destDavFolder.Path);
+            await Context.socketService.NotifyCreatedAsync(destFolder.Path + EncodeUtil.EncodeUrlPart(destName));
         }
 
         /// <summary>
@@ -291,7 +291,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
             }
 
             await DeleteThisItemAsync(parent);
-            await Context.socketService.NotifyRefreshAsync(parent.Path);
+            await Context.socketService.NotifyDeletedAsync(Path);
         }
 
         /// <summary>
@@ -334,8 +334,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
 
             await MoveThisItemAsync(destDavFolder, destName, parent);
             // Refresh client UI.
-            await Context.socketService.NotifyRefreshAsync(parent.Path);
-            await Context.socketService.NotifyRefreshAsync(destDavFolder.Path);
+            await Context.socketService.NotifyMovedAsync(Path, destDavFolder.Path);
         }
         /// <summary>
         /// Cancels incomplete upload.

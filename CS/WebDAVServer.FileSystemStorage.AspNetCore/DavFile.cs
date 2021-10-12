@@ -197,7 +197,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
                     // The remote host closed the connection (for example Cancel or Pause pressed).
                 }
             }
-            await context.socketService.NotifyRefreshAsync(GetParentPath(Path));
+            await context.socketService.NotifyUpdatedAsync(Path);
             return true;
         }
 
@@ -259,7 +259,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
                 ex.AddRequiredPrivilege(parentPath, Privilege.Bind);
                 throw ex;
             }
-            await context.socketService.NotifyRefreshAsync(targetFolder.Path);
+            await context.socketService.NotifyCreatedAsync(targetPath);
         }
 
         /// <summary>
@@ -325,8 +325,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
                 throw ex;
             }
             // Refresh client UI.
-            await context.socketService.NotifyRefreshAsync(GetParentPath(Path));
-            await context.socketService.NotifyRefreshAsync(targetFolder.Path);
+            await context.socketService.NotifyMovedAsync(Path, targetPath);
         }
 
         /// <summary>
@@ -342,7 +341,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
             }
 
             fileSystemInfo.Delete();
-            await context.socketService.NotifyRefreshAsync(GetParentPath(Path));
+            await context.socketService.NotifyDeletedAsync(Path);
         }
 
         /// <summary>

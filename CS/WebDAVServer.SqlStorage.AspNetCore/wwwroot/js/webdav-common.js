@@ -263,6 +263,9 @@ window.WebdavCommon = (function () {
                 else if ($pnl.width() <= 692) {
                     classAttr += ' large-point';
                 }
+                else if ($pnl.width() <= 800) {
+                    classAttr += ' extra-large-point';
+                }
                 $pnl.attr('class', classAttr);
             }, 10);
         });

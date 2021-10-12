@@ -201,7 +201,7 @@ Public Class DavFile
             ' The remote host closed the connection (for example Cancel or Pause pressed).
              End Try
 
-        Await Context.socketService.NotifyRefreshAsync(GetParentPath(Path))
+        Await Context.socketService.NotifyUpdatedAsync(Path)
         Return True
     End Function
 
@@ -236,7 +236,7 @@ Public Class DavFile
         End If
 
         Await CopyThisItemAsync(destDavFolder, Nothing, destName)
-        Await Context.socketService.NotifyRefreshAsync(destDavFolder.Path)
+        Await Context.socketService.NotifyCreatedAsync(destFolder.Path & EncodeUtil.EncodeUrlPart(destName))
     End Function
 
     ''' <summary>
@@ -258,7 +258,7 @@ Public Class DavFile
         End If
 
         Await DeleteThisItemAsync(parent)
-        Await Context.socketService.NotifyRefreshAsync(parent.Path)
+        Await Context.socketService.NotifyDeletedAsync(Path)
     End Function
 
     ''' <summary>
@@ -294,8 +294,7 @@ Public Class DavFile
 
         Await MoveThisItemAsync(destDavFolder, destName, parent)
         ' Refresh client UI.
-        Await Context.socketService.NotifyRefreshAsync(parent.Path)
-        Await Context.socketService.NotifyRefreshAsync(destDavFolder.Path)
+        Await Context.socketService.NotifyMovedAsync(Path, destDavFolder.Path)
     End Function
 
     ''' <summary>

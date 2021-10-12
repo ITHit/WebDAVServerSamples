@@ -163,7 +163,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
             }
 
             // You should not update modification date/time here. Mac OS X Finder expects that properties update do not change the file modification date.
-            await Context.socketService.NotifyRefreshAsync(GetParentPath(Path));
+            await Context.socketService.NotifyUpdatedAsync(Path);
         }
 
         public async Task<IEnumerable<PropertyName>> GetPropertyNamesAsync()
@@ -220,7 +220,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
                 "@Deep", isDeep,
                 "@Expires", expires,
                 "@Owner", owner);
-            await Context.socketService.NotifyRefreshAsync(GetParentPath(Path));
+            await Context.socketService.NotifyLockedAsync(Path);
 
             return new LockResult(token, timeout.Value);
         }
@@ -253,7 +253,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
                 "UPDATE Lock SET Expires = @Expires WHERE Token = @Token",
                 "@Expires", expires,
                 "@Token", token);
-            await Context.socketService.NotifyRefreshAsync(GetParentPath(Path));
+            await Context.socketService.NotifyLockedAsync(Path);
 
             return new RefreshLockResult(l.Level, l.IsDeep, (TimeSpan)l.TimeOut, l.Owner);
         }
@@ -270,7 +270,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
             await Context.ExecuteNonQueryAsync(
                 "DELETE FROM Lock WHERE Token = @Token",
                 "@Token", lockToken);
-            await Context.socketService.NotifyRefreshAsync(GetParentPath(Path));
+            await Context.socketService.NotifyUnLockedAsync(Path);
         }
 
         public async Task<IEnumerable<LockInfo>> GetActiveLocksAsync()
