@@ -41,7 +41,7 @@
                 self.$el.find('td input[type="checkbox"]').prop('checked', true).change();
             }
             else {
-                self.ResetToolbar();
+                oToolbar.ResetToolbar();
                 self.$el.find('td input[type="checkbox"]').prop('checked', false);
             }
         });
