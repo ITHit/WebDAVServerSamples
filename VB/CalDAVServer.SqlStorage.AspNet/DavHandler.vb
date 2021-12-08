@@ -41,7 +41,7 @@ Public Class DavHandler
     ''' <summary>
     ''' This license file is used to activate G Suite Documents Editing for IT Hit WebDAV Server
     ''' </summary>
-    Private ReadOnly gSuiteLicense As String = File.ReadAllText(HttpContext.Current.Request.PhysicalApplicationPath & "GSuiteLicense.lic")
+    Private ReadOnly gSuiteLicense As String = If(File.Exists(HttpContext.Current.Request.PhysicalApplicationPath & "GSuiteLicense.lic"), File.ReadAllText(HttpContext.Current.Request.PhysicalApplicationPath & "GSuiteLicense.lic"), String.Empty)
 
     ''' <summary>
     ''' If debug logging is enabled reponses are output as formatted XML,

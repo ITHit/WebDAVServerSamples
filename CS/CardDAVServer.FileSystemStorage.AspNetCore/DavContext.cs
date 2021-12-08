@@ -12,6 +12,7 @@ using ITHit.Server;
 using ITHit.WebDAV.Server;
 using ITHit.WebDAV.Server.Acl;
 using ITHit.WebDAV.Server.Quota;
+using ILogger = ITHit.Server.ILogger;
 using CardDAVServer.FileSystemStorage.AspNetCore.Acl;
 using CardDAVServer.FileSystemStorage.AspNetCore.CardDav;
 using CardDAVServer.FileSystemStorage.AspNetCore.Configuration;

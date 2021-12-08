@@ -132,12 +132,15 @@ namespace WebDAVServer.FileSystemStorage.HttpListener
             webDavEngine.License = license;
 
             /// This license file is used to activate G Suite Documents Editing for IT Hit WebDAV Server
-            string gSuiteLicense = File.ReadAllText(Path.Combine(contentRootPath,"GSuiteLicense.lic"));
-            gSuiteEngine = new GSuiteEngineAsync(googleServiceAccountID, googleServicePrivateKey, googleNotificationsRelativeUrl)
+            string gSuiteLicense = File.Exists(Path.Combine(contentRootPath, "GSuiteLicense.lic")) ? File.ReadAllText(Path.Combine(contentRootPath,"GSuiteLicense.lic")) : string.Empty;
+            if (!string.IsNullOrEmpty(gSuiteLicense))
             {
-                License = gSuiteLicense,
-                Logger = logger
-            };
+                gSuiteEngine = new GSuiteEngineAsync(googleServiceAccountID, googleServicePrivateKey, googleNotificationsRelativeUrl)
+                {
+                    License = gSuiteLicense,
+                    Logger = logger
+                };
+            }
 
             // Set custom handler to process GET and HEAD requests to folders and display 
             // info about how to connect to server. We are using the same custom handler 
@@ -252,7 +255,10 @@ namespace WebDAVServer.FileSystemStorage.HttpListener
                 {
                 }
                 await webDavEngine.RunAsync(ntfsDavContext);
-                await gSuiteEngine.RunAsync(ContextConverter.ConvertToGSuiteContext(ntfsDavContext));
+                if (gSuiteEngine != null)
+                {
+                    await gSuiteEngine.RunAsync(ContextConverter.ConvertToGSuiteContext(ntfsDavContext));
+                }
 
                 if (context.Response.StatusCode == 401)
                 {
@@ -301,18 +307,6 @@ namespace WebDAVServer.FileSystemStorage.HttpListener
             if (string.IsNullOrEmpty(uriPrefix))
             {
                 throw new Exception("ListenerPrefix section is missing or invalid!");
-            }
-
-            string googleServiceAccountID = ConfigurationManager.AppSettings["GoogleServiceAccountID"];
-            if (string.IsNullOrEmpty(googleServiceAccountID))
-            {
-                throw new Exception("GoogleServiceAccountID is not specified.");
-            }
-
-            string googleServicePrivateKey = ConfigurationManager.AppSettings["GoogleServicePrivateKey"];
-            if (string.IsNullOrEmpty(googleServicePrivateKey))
-            {
-                throw new Exception("GoogleServicePrivateKey is not specified.");
             }
         }
     }

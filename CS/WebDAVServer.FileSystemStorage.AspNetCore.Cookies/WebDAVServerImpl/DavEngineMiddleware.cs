@@ -8,6 +8,7 @@ using Microsoft.Extensions.Options;
 using System.Threading.Tasks;
 
 using ITHit.Server;
+using ILogger = ITHit.Server.ILogger;
 using ITHit.WebDAV.Server;
 using Microsoft.AspNetCore.Authentication;
 using WebDAVServer.FileSystemStorage.AspNetCore.Cookies.Configuration;

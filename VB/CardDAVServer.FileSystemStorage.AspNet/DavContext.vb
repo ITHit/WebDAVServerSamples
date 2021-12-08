@@ -12,6 +12,7 @@ Imports ITHit.Server
 Imports ITHit.WebDAV.Server
 Imports ITHit.WebDAV.Server.Acl
 Imports ITHit.WebDAV.Server.Quota
+Imports ILogger = ITHit.Server.ILogger
 Imports CardDAVServer.FileSystemStorage.AspNet.Acl
 Imports CardDAVServer.FileSystemStorage.AspNet.CardDav
 Imports CardDAVServer.FileSystemStorage.AspNet.ExtendedAttributes

@@ -12,6 +12,7 @@ using ITHit.Server;
 using ITHit.WebDAV.Server;
 using ITHit.WebDAV.Server.Acl;
 using ITHit.WebDAV.Server.Quota;
+using ILogger = ITHit.Server.ILogger;
 using CalDAVServer.FileSystemStorage.AspNetCore.Acl;
 using CalDAVServer.FileSystemStorage.AspNetCore.CalDav;
 using CalDAVServer.FileSystemStorage.AspNetCore.Configuration;

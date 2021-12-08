@@ -11,6 +11,7 @@ Imports ITHit.Server
 Imports ITHit.WebDAV.Server
 Imports ITHit.WebDAV.Server.Acl
 Imports ITHit.WebDAV.Server.Quota
+Imports ILogger = ITHit.Server.ILogger
 Imports WebDAVServer.FileSystemStorage.AspNet.ExtendedAttributes
 
 ''' <summary>

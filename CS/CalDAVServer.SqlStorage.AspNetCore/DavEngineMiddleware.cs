@@ -11,6 +11,7 @@ using System.IO;
 using System.Threading.Tasks;
 
 using ITHit.Server;
+using ILogger = ITHit.Server.ILogger;
 using ITHit.WebDAV.Server;
 using CalDAVServer.SqlStorage.AspNetCore.Configuration;
 

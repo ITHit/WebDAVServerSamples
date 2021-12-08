@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 
 using ITHit.Server;
 using ITHit.WebDAV.Server;
+using ILogger = ITHit.Server.ILogger;
 
 using WebDAVServer.FileSystemStorage.AspNetCore.Configuration;
 

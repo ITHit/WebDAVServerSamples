@@ -106,10 +106,13 @@ Friend Class Program
         Dim license As String = File.ReadAllText(Path.Combine(contentRootPath, "License.lic"))
         webDavEngine.License = license
         ''' This license file is used to activate G Suite Documents Editing for IT Hit WebDAV Server
-        Dim gSuiteLicense As String = File.ReadAllText(Path.Combine(contentRootPath, "GSuiteLicense.lic"))
-        gSuiteEngine = New GSuiteEngineAsync(googleServiceAccountID, googleServicePrivateKey, googleNotificationsRelativeUrl) With {.License = gSuiteLicense,
-                                                                                                                              .Logger = logger
-                                                                                                                              }
+        Dim gSuiteLicense As String = If(File.Exists(Path.Combine(contentRootPath, "GSuiteLicense.lic")), File.ReadAllText(Path.Combine(contentRootPath, "GSuiteLicense.lic")), String.Empty)
+        If Not String.IsNullOrEmpty(gSuiteLicense) Then
+            gSuiteEngine = New GSuiteEngineAsync(googleServiceAccountID, googleServicePrivateKey, googleNotificationsRelativeUrl) With {.License = gSuiteLicense,
+                                                                                                                                  .Logger = logger
+                                                                                                                                  }
+        End If
+
         ' Set custom handler to process GET and HEAD requests to folders and display 
         ' info about how to connect to server. We are using the same custom handler 
         ' class (but different instances) here to process both GET and HEAD because 
@@ -181,7 +184,9 @@ Friend Class Program
             context.Response.SendChunked = False
             Using sqlDavContext = New DavContext(context, listener.Prefixes, principal, webDavEngine.Logger)
                 Await webDavEngine.RunAsync(sqlDavContext)
-                Await gSuiteEngine.RunAsync(ContextConverter.ConvertToGSuiteContext(sqlDavContext))
+                If gSuiteEngine IsNot Nothing Then
+                    Await gSuiteEngine.RunAsync(ContextConverter.ConvertToGSuiteContext(sqlDavContext))
+                End If
             End Using
         Finally
             If context IsNot Nothing AndAlso context.Response IsNot Nothing Then
@@ -213,16 +218,6 @@ Friend Class Program
         Dim uriPrefix As String = ConfigurationManager.AppSettings("ListenerPrefix")
         If String.IsNullOrEmpty(uriPrefix) Then
             Throw New Exception("ListenerPrefix section is missing or invalid!")
-        End If
-
-        Dim googleServiceAccountID As String = ConfigurationManager.AppSettings("GoogleServiceAccountID")
-        If String.IsNullOrEmpty(googleServiceAccountID) Then
-            Throw New Exception("GoogleServiceAccountID is not specified.")
-        End If
-
-        Dim googleServicePrivateKey As String = ConfigurationManager.AppSettings("GoogleServicePrivateKey")
-        If String.IsNullOrEmpty(googleServicePrivateKey) Then
-            Throw New Exception("GoogleServicePrivateKey is not specified.")
         End If
     End Sub
 End Class

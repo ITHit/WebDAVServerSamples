@@ -42,7 +42,7 @@ namespace WebDAVServer.SqlStorage.AspNet
         /// <summary>
         /// This license file is used to activate G Suite Documents Editing for IT Hit WebDAV Server
         /// </summary>
-        private readonly string gSuiteLicense = File.ReadAllText(HttpContext.Current.Request.PhysicalApplicationPath + "GSuiteLicense.lic");
+        private readonly string gSuiteLicense = File.Exists(HttpContext.Current.Request.PhysicalApplicationPath + "GSuiteLicense.lic") ? File.ReadAllText(HttpContext.Current.Request.PhysicalApplicationPath + "GSuiteLicense.lic") : string.Empty;
 
         /// <summary>
         /// If debug logging is enabled reponses are output as formatted XML,
