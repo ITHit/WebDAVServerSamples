@@ -1,10 +1,12 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Azure;
 
 using ITHit.Server;
 using ITHit.WebDAV.Server;
 using WebDAVServer.AzureDataLakeStorage.AspNetCore.DataLake;
 using WebDAVServer.AzureDataLakeStorage.AspNetCore.Search;
+using Microsoft.AspNetCore.Authentication;
 
 namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
 {
@@ -15,6 +17,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
     public class DavContext :
         ContextCoreAsync<IHierarchyItemAsync>
     {
+        public HttpContext HttpContext { get; private set; }
 
         /// <summary>
         /// Gets WebDAV Logger instance.
@@ -42,9 +45,9 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
         /// <param name="socketService">Singleton instance of <see cref="WebSocketsService"/>.</param>
         /// <param name="dataCloudStoreService">Singleton instance of <see cref="IDataCloudStoreService"/></param>
         /// <param name="cognitiveSearchService">Singleton instance of <see cref="ICognitiveSearchService"/></param>
-        public DavContext(IHttpContextAccessor httpContextAccessor, ILogger logger, 
-            WebSocketsService socketService, 
-            IDataCloudStoreService dataCloudStoreService, 
+        public DavContext(IHttpContextAccessor httpContextAccessor, ILogger logger,
+            WebSocketsService socketService,
+            IDataCloudStoreService dataCloudStoreService,
             ICognitiveSearchService cognitiveSearchService
             )
             : base(httpContextAccessor.HttpContext)
@@ -53,6 +56,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
             this.socketService = socketService;
             DataLakeStoreService = dataCloudStoreService;
             CognitiveSearchService = cognitiveSearchService;
+            HttpContext = httpContextAccessor.HttpContext;
         }
 
         /// <summary>
@@ -70,10 +74,27 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
             {
                 path = path.Remove(ind);
             }
-            if (!await DataLakeStoreService.ExistsAsync(path))
+
+            try
             {
-                Logger.LogDebug("Could not find item that corresponds to path: " + path);
-                return null; // no hierarchy item that corresponds to path parameter was found in the repository
+                if (!await DataLakeStoreService.ExistsAsync(path))
+                {
+                    Logger.LogDebug("Could not find item that corresponds to path: " + path);
+                    return null; // no hierarchy item that corresponds to path parameter was found in the repository
+                }
+            }
+            catch (RequestFailedException ex)
+            {
+                // token is not valid or access is denied
+                if (ex.Status == 401)
+                {
+                    await HttpContext.SignOutAsync();
+                    return null;
+                }
+                else
+                {
+                    throw ex;
+                }
             }
 
             IHierarchyItemAsync item;

@@ -57,17 +57,10 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore.DataLake
                 return false;
             }
 
-            path = path == "" || path =="/" ? "\\/" : path;
+            path = path == "" || path == "/" ? "\\/" : path;
             var client = GetFileClient(path);
-            try
-            {
-                return await client.ExistsAsync();
-            }
-            catch (Exception)
-            {
-                Trace.TraceWarning("Cannot find path: ");
-                return false;
-            }
+
+            return await client.ExistsAsync();
         }
 
         public async Task<bool> IsDirectoryAsync(string path)
@@ -146,7 +139,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore.DataLake
             memoryStream.Position = 0;
             string targetPath = targetFolder.Path + "/" + EncodeUtil.EncodeUrlPart(destName);
             await WriteItemAsync(targetPath, memoryStream, contentLength, sourceProps);
-            await CopyExtendedAttributes(new DataCloudItem{Properties = sourceProps}, targetPath);
+            await CopyExtendedAttributes(new DataCloudItem { Properties = sourceProps }, targetPath);
             var destItem = new DataCloudItem
             {
                 Name = destName,

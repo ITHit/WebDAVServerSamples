@@ -59,7 +59,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
 
             //Enables documents editing and preview in Google G Suite online editor.
             app.UseGSuite();
-            app.UseWebDav(HostingEnvironment);     
+            app.UseWebDav(HostingEnvironment);
         }
     }
 }

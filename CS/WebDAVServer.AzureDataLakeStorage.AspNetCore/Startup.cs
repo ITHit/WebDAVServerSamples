@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
@@ -56,18 +57,24 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
                             if (context.Principal.Identity is ClaimsIdentity identity)
                             {
                                 identity.AddClaim(new Claim("access_token", accessToken));
+                                identity.AddClaim(new Claim("access_token_expires_in", context.ProtocolMessage.ExpiresIn));
                             }
                         }
                         return Task.CompletedTask;
                     },
                     OnTicketReceived = context =>
                     {
-                        context.Properties.IsPersistent = true;
-                        context.Properties.ExpiresUtc = DateTimeOffset.UtcNow.AddMonths(1);
+                        if (context.Principal.Identity is ClaimsIdentity identity)
+                        {
+                            context.Properties.IsPersistent = true;
+                            // set an expiration date for a cookie
+                            context.Properties.ExpiresUtc = DateTimeOffset.UtcNow.AddSeconds(int.Parse(identity.Claims.Where(p => p.Type == "access_token_expires_in").First().Value));
+                        }
+
                         return Task.FromResult(0);
                     }
                 };
-            });  
+            });
 
             services.AddWebDav(Configuration, HostingEnvironment);
 
@@ -85,7 +92,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
 
             if (env.IsDevelopment())
                 app.UseDeveloperExceptionPage();
-            
+
             app.UseAuthentication();
             app.UseAuthorization();
 
@@ -95,7 +102,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
             //Enables web sockets. Web sockets are used to update the documents list in case of any changes on the server.
             app.UseWebSockets();
             app.UseWebSocketsMiddleware();
-            app.UseWebDav(HostingEnvironment);     
+            app.UseWebDav(HostingEnvironment);
         }
     }
 }
