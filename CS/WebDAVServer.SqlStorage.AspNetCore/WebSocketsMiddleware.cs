@@ -8,7 +8,6 @@ using System.Net.WebSockets;
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Text;
-using Newtonsoft.Json;
 
 namespace WebDAVServer.SqlStorage.AspNetCore
 {

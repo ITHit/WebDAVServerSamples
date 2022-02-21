@@ -4,7 +4,7 @@ Imports System.Net.WebSockets
 Imports System.Text
 Imports System.Threading
 Imports System.Threading.Tasks
-Imports Newtonsoft.Json
+Imports System.Web.Script.Serialization
 
 ''' <summary>
 ''' Notifies client about changes in WebDAV items.
@@ -104,7 +104,7 @@ Public Class WebSocketsService
                                                                       .EventType = "moved"}
         For Each client As WebSocket In clients.Values
             If client.State = WebSocketState.Open Then
-                Await client.SendAsync(New ArraySegment(Of Byte)(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(notifyObject))), WebSocketMessageType.Text, True, CancellationToken.None)
+                Await client.SendAsync(New ArraySegment(Of Byte)(Encoding.UTF8.GetBytes(New JavaScriptSerializer().Serialize(notifyObject))), WebSocketMessageType.Text, True, CancellationToken.None)
             End If
         Next
     End Function
@@ -122,7 +122,7 @@ Public Class WebSocketsService
                                                             }
         For Each client As WebSocket In clients.Values
             If client.State = WebSocketState.Open Then
-                Await client.SendAsync(New ArraySegment(Of Byte)(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(notifyObject))), WebSocketMessageType.Text, True, CancellationToken.None)
+                Await client.SendAsync(New ArraySegment(Of Byte)(Encoding.UTF8.GetBytes(New JavaScriptSerializer().Serialize(notifyObject))), WebSocketMessageType.Text, True, CancellationToken.None)
             End If
         Next
     End Function

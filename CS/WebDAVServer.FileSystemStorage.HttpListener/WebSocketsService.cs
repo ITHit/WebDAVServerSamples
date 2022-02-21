@@ -4,10 +4,7 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-
-using Newtonsoft.Json;
-
-
+using System.Web.Script.Serialization;
 namespace WebDAVServer.FileSystemStorage.HttpListener
 {
     /// <summary>
@@ -120,7 +117,8 @@ namespace WebDAVServer.FileSystemStorage.HttpListener
             {
                 if (client.State == WebSocketState.Open)
                 {
-                    await client.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(notifyObject))), WebSocketMessageType.Text, true, CancellationToken.None);
+                    await client.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(new JavaScriptSerializer().Serialize(notifyObject))), WebSocketMessageType.Text, true, CancellationToken.None);
+
                 }
             }
         }
@@ -143,7 +141,8 @@ namespace WebDAVServer.FileSystemStorage.HttpListener
             {
                 if (client.State == WebSocketState.Open)
                 {
-                    await client.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(notifyObject))), WebSocketMessageType.Text, true, CancellationToken.None);
+                    await client.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(new JavaScriptSerializer().Serialize(notifyObject))), WebSocketMessageType.Text, true, CancellationToken.None);
+                    
                 }
             }
         }
