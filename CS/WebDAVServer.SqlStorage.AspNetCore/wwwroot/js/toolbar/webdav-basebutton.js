@@ -26,10 +26,10 @@ function BaseButton(sName, cssClass) {
     }
 
     this.HideOnMobile = function () {
-        this.$Button.addClass('d-none d-md-inline');
+        this.$Button.addClass('d-none d-md-inline d-hide-medium');
     }
 
     this.ShowOnMobile = function () {
-        this.$Button.removeClass('d-none d-md-inline');
+        this.$Button.removeClass('d-none d-md-inline d-hide-medium');
     }
 }

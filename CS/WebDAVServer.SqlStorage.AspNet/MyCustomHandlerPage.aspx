@@ -88,10 +88,10 @@
                     <input class="form-control" type="text" />
                 </div>
                 <div class="ithit-grid-toolbar row">
-                    <div class="first-section col">
+                    <div class="toolbar-section col px-2" data-index="1">
                         <!-- Toolbar buttons here -->
                     </div>
-                    <div class="col-auto px-2">
+                    <div class="toolbar-section col-auto px-2">
                         <label class="btn-upload-items"
                                title="Upload Items"
                                for="ithit-button-input"><span class="d-none d-xl-inline d-xxl-inline">Upload</span></label>
@@ -101,19 +101,19 @@
                                multiple
                                hidden />
                     </div>
-                    <div class="second-section col-auto px-0 px-lg-2">
+                    <div class="toolbar-section col-auto" data-index="2">
                         <!-- Toolbar buttons here -->
                     </div>
-                    <div class="third-section col-auto px-0 px-lg-2">
+                    <div class="toolbar-section col-auto" data-index="3">
                         <!-- Toolbar buttons here -->
                     </div>
-                    <div class="fourth-section col-auto px-0 px-md-1">
+                    <div class="toolbar-section col-auto" data-index="4">
                         <!-- Toolbar buttons here -->
                     </div>
-                    <div class="fifth-section col-auto px-1 px-lg-3">
+                    <div class="toolbar-section col-auto" data-index="5">
                         <!-- Toolbar buttons here -->
                     </div>
-                    <div class="sixth-section col-auto px-1 pr-lg-3 pl-lg-1">
+                    <div class="toolbar-section col-auto" data-index="6">
                         <!-- Toolbar buttons here -->
                     </div>
                 </div>

@@ -6,55 +6,45 @@
         this.ConfirmModal = confirmModal;
         this.WebDAV = webDAVController;
         this.buttons = [];
-
         var self = this;
-
         if (typeof ToolbarCreateFolderButton === "function") {
             var createFolderButton = new ToolbarCreateFolderButton('Create Folder', 'btn-create-folder', this);
             this.buttons.push(createFolderButton);
-            createFolderButton.Create($(self.$Toolbar).find(".first-section"));
+            createFolderButton.Create($(self.$Toolbar).find(".toolbar-section[data-index='1']"));
         }
-
         if (typeof ToolbarDownloadButton == "function") {
             var downloadButton = new ToolbarDownloadButton('Dwonload', 'btn-download-items', this);
             this.buttons.push(downloadButton);
-            downloadButton.Create($(self.$Toolbar).find(".second-section"));
+            downloadButton.Create($(self.$Toolbar).find(".toolbar-section[data-index='2']"));
         }
-
         if (typeof ToolbarRenameButton == "function") {
             var renameButton = new ToolbarRenameButton('Rename', 'btn-rename-item', this);
             this.buttons.push(renameButton);
-            renameButton.Create($(self.$Toolbar).find(".third-section"));
+            renameButton.Create($(self.$Toolbar).find(".toolbar-section[data-index='3']"));
         }
-
         if (typeof CopyPasteButtonsControl === "function") {
             var copyPasteButtons = new CopyPasteButtonsControl(this)
             this.buttons.push(copyPasteButtons)
-            copyPasteButtons.Create($(self.$Toolbar).find(".fourth-section"));
+            copyPasteButtons.Create($(self.$Toolbar).find(".toolbar-section[data-index='4']"));
         }
-
         if (typeof ToolbarReloadButton == "function") {
             var reloadButton = new ToolbarReloadButton('Reload', 'btn-reload-items', this);
             this.buttons.push(reloadButton);
-            reloadButton.Create($(self.$Toolbar).find(".fifth-section"));
+            reloadButton.Create($(self.$Toolbar).find(".toolbar-section[data-index='5']"));
         }
-
         if (typeof ToolbarPrintButton === "function") {
             var printButton = new ToolbarPrintButton('Print', 'btn-print-items', this)
             this.buttons.push(printButton);
-            printButton.Create($(self.$Toolbar).find(".sixth-section"));
+            printButton.Create($(self.$Toolbar).find(".toolbar-section[data-index='6']"));
         }
-
         if (typeof ToolbarDeleteButton === "function") {
             var deleteButton = new ToolbarDeleteButton('Delete', 'btn-delete-items', this)
             this.buttons.push(deleteButton);
-            deleteButton.Create($(self.$Toolbar).find(".sixth-section"));
+            deleteButton.Create($(self.$Toolbar).find(".toolbar-section[data-index='6']"));
         }
-
         $.each(self.buttons, function (index) {
             this.Render();
         });
-
         this.UpdateToolbarButtons();
     }
 
