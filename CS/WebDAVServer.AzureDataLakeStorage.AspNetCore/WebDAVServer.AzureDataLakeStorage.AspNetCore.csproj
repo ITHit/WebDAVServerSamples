@@ -53,19 +53,19 @@
     <PackageReference Include="System.Data.OleDb" Version="4.7.0" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />    
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />    
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\WebDAV\Logs\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\DocManager\MsOfficeEditExtensions.js" >
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\DocManager\MsOfficeEditExtensions.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\Helper.js" >
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\Helper.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\HierarchyItems\CopyMove.js" >
+    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\HierarchyItems\CopyMove.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="wwwroot\js\node_modules\webdav.client\Tests\HierarchyItems\CreateFile.js">
