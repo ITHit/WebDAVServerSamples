@@ -93,11 +93,13 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore.Cookies
         /// <summary>
         /// Notifies client that file/folder was moved.
         /// </summary>
-        /// <param name="itemPath">file/folder path.</param>
+        /// <param name="itemPath">old file/folder path.</param>
+        /// <param name="targetPath">new file/folder path.</param>
         /// <returns></returns>
         public async Task NotifyMovedAsync(string itemPath, string targetPath)
         {
             itemPath = itemPath.Trim('/');
+            targetPath = targetPath.Trim('/');
             MovedNotification notifyObject = new MovedNotification
             {
                 ItemPath = itemPath,
