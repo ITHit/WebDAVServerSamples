@@ -125,7 +125,7 @@ Public Class DavFile
 
             Try
                 bytesRead = Await fileStream.ReadAsync(buffer, 0, toRead)
-                While bytesRead > 0
+                While bytesRead > 0 AndAlso count > 0
                     Await output.WriteAsync(buffer, 0, bytesRead)
                     count -= bytesRead
                     bytesRead = Await fileStream.ReadAsync(buffer, 0, toRead)

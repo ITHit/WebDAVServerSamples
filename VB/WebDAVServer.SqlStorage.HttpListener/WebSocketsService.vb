@@ -95,10 +95,12 @@ Public Class WebSocketsService
     ''' <summary>
     ''' Notifies client that file/folder was moved.
     ''' </summary>
-    ''' <param name="itemPath">file/folder path.</param>
+    ''' <param name="itemPath">old file/folder path.</param>
+    ''' <param name="targetPath">new file/folder path.</param>
     ''' <returns></returns>
     Public Async Function NotifyMovedAsync(itemPath As String, targetPath As String) As Task
         itemPath = itemPath.Trim("/"c)
+        targetPath = targetPath.Trim("/"c)
         Dim notifyObject As MovedNotification = New MovedNotification With {.ItemPath = itemPath,
                                                                       .TargetPath = targetPath,
                                                                       .EventType = "moved"}

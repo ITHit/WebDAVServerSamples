@@ -1,7 +1,7 @@
 
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
-    <VersionPrefix>12.1.11786</VersionPrefix>
+    <VersionPrefix>12.1.11816</VersionPrefix>
     <AssemblyName>CalDAVServer.FileSystemStorage.AspNetCore</AssemblyName>
     <TargetFramework>net6.0</TargetFramework>
     <LangVersion>8.0</LangVersion>
@@ -20,14 +20,13 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="ITHit.Server" Version="12.1.11786" />
-    <PackageReference Include="ITHit.Server.Core" Version="12.1.11786" />
-    <PackageReference Include="ITHit.WebDAV.Server" Version="12.1.11786" />
-    <PackageReference Include="ITHit.GSuite.Server" Version="12.1.11786" />
-    <PackageReference Include="System.Data.OleDb" Version="5.0.0" />
+    <PackageReference Include="ITHit.Server" Version="12.1.11816" />
+    <PackageReference Include="ITHit.Server.Core" Version="12.1.11816" />
+    <PackageReference Include="ITHit.WebDAV.Server" Version="12.1.11816" />
+    <PackageReference Include="ITHit.GSuite.Server" Version="12.1.11816" />
+    <PackageReference Include="System.Data.OleDb" Version="6.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="System.Data.DataSetExtensions" Version="4.6.0-preview3.19128.7" />
     <PackageReference Include="ITHit.Collab" Version="1.0.0.759" />
   </ItemGroup>
 </Project>

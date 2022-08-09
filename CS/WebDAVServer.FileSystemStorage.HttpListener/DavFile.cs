@@ -132,7 +132,7 @@ namespace WebDAVServer.FileSystemStorage.HttpListener
                 try
                 {
                     bytesRead = await fileStream.ReadAsync(buffer, 0, toRead);
-                    while (bytesRead  > 0)
+                    while (bytesRead  > 0 && count > 0)
                     {
                         await output.WriteAsync(buffer, 0, bytesRead);
                         count -= bytesRead;
