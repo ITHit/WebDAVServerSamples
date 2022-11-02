@@ -9,6 +9,7 @@ Imports System.Security.Principal
 Imports ITHit.WebDAV.Server
 Imports ITHit.WebDAV.Server.CalDav
 Imports ITHit.WebDAV.Server.Acl
+Imports IPrincipal = ITHit.WebDAV.Server.Acl.IPrincipal
 Imports CalDAVServer.FileSystemStorage.AspNet.Acl
 
 Namespace CalDav
@@ -17,7 +18,7 @@ Namespace CalDav
     ''' Represents CalDAV calendar (calendar folder).
     ''' Instances of this class correspond to the following path: [DAVLocation]/calendars/[user_name]/[calendar_name]/
     ''' </summary>
-    ''' <remarks>Mozilla Thunderbird Lightning requires ICurrentUserPrincipalAsync on calendar folder, it does not support discovery.</remarks>
+    ''' <remarks>Mozilla Thunderbird Lightning requires ICurrentUserPrincipal on calendar folder, it does not support discovery.</remarks>
     ''' <example>
     ''' [DAVLocation]
     '''  |-- ...
@@ -29,11 +30,11 @@ Namespace CalDav
     '''           |-- [Calendar X]  -- this class
     ''' </example>
     ''' <remarks>
-    ''' IAclHierarchyItemAsync is required by OS X Calendar.
+    ''' IAclHierarchyItem is required by OS X Calendar.
     ''' </remarks>
     Public Class CalendarFolder
         Inherits DavFolder
-        Implements ICalendarFolderAsync, IAppleCalendarAsync, ICurrentUserPrincipalAsync, IAclHierarchyItemAsync
+        Implements ICalendarFolder, IAppleCalendar, ICurrentUserPrincipal, IAclHierarchyItem
 
         ''' <summary>
         ''' Returns calendar folder that corresponds to path.
@@ -79,12 +80,12 @@ Namespace CalDav
         ''' the Engine for each item that are returned from this method.
         ''' </param>
         ''' <returns>List of calendar files. Returns <b>null</b> for any item that is not found.</returns>
-        Public Async Function MultiGetAsync(pathList As IEnumerable(Of String), propNames As IEnumerable(Of PropertyName)) As Task(Of IEnumerable(Of ICalendarFileAsync)) Implements ICalendarReportAsync.MultiGetAsync
+        Public Async Function MultiGetAsync(pathList As IEnumerable(Of String), propNames As IEnumerable(Of PropertyName)) As Task(Of IEnumerable(Of ICalendarFile)) Implements ICalendarReport.MultiGetAsync
             ' Here you can load all items from pathList in one request to your storage, instead of 
             ' getting items one-by-one using GetHierarchyItem call.
-            Dim calendarFileList As IList(Of ICalendarFileAsync) = New List(Of ICalendarFileAsync)()
+            Dim calendarFileList As IList(Of ICalendarFile) = New List(Of ICalendarFile)()
             For Each path As String In pathList
-                Dim calendarFile As ICalendarFileAsync = TryCast(Await context.GetHierarchyItemAsync(path), ICalendarFileAsync)
+                Dim calendarFile As ICalendarFile = TryCast(Await context.GetHierarchyItemAsync(path), ICalendarFile)
                 calendarFileList.Add(calendarFile)
             Next
 
@@ -107,17 +108,17 @@ Namespace CalDav
         ''' the Engine for each item that are returned from this method.
         ''' </param>
         ''' <returns>List of calendar files. Returns <b>null</b> for any item that is not found.</returns>
-        Public Async Function QueryAsync(rawQuery As String, propNames As IEnumerable(Of PropertyName)) As Task(Of IEnumerable(Of ICalendarFileAsync)) Implements ICalendarReportAsync.QueryAsync
+        Public Async Function QueryAsync(rawQuery As String, propNames As IEnumerable(Of PropertyName)) As Task(Of IEnumerable(Of ICalendarFile)) Implements ICalendarReport.QueryAsync
             ' For the sake of simplicity we just call GetChildren returning all items. 
             ' Typically you will return only items that match the query.
-            Return(Await GetChildrenAsync(propNames.ToList(), Nothing, Nothing, Nothing)).Page.Cast(Of ICalendarFileAsync)()
+            Return(Await GetChildrenAsync(propNames.ToList(), Nothing, Nothing, Nothing)).Page.Cast(Of ICalendarFile)()
         End Function
 
         ''' <summary>
         ''' Specifies the calendar component types (e.g., VEVENT, VTODO, etc.) 
         ''' that calendar object resources can contain in the calendar collection.
         ''' </summary>
-        Public ReadOnly Property SupportedComponentTypes As IEnumerable(Of CalendarComponentType) Implements ICalendarFolderAsync.SupportedComponentTypes
+        Public ReadOnly Property SupportedComponentTypes As IEnumerable(Of CalendarComponentType) Implements ICalendarFolder.SupportedComponentTypes
             Get
                 Return {CalendarComponentType.VEVENT,
                        CalendarComponentType.VTODO}
@@ -127,7 +128,7 @@ Namespace CalDav
         ''' <summary>
         ''' Provides a human-readable description of the calendar collection.
         ''' </summary>
-        Public ReadOnly Property CalendarDescription As String Implements ICalendarFolderAsync.CalendarDescription
+        Public ReadOnly Property CalendarDescription As String Implements ICalendarFolder.CalendarDescription
             Get
                 Return String.Format("Some {0} description.", Name)
             End Get
@@ -139,7 +140,7 @@ Namespace CalDav
         ''' calendar object resource is stored in a calendar collection.
         ''' More details at http://tools.ietf.org/html/rfc4791#section-5.2.5
         ''' </summary>
-        Public ReadOnly Property MaxResourceSize As ULong Implements ICalendarFolderAsync.MaxResourceSize
+        Public ReadOnly Property MaxResourceSize As ULong Implements ICalendarFolder.MaxResourceSize
             Get
                 Return ULong.MaxValue
             End Get
@@ -151,7 +152,7 @@ Namespace CalDav
         ''' calendar collection can generate.
         ''' More details at http://tools.ietf.org/html/rfc4791#section-5.2.8
         ''' </summary>
-        Public ReadOnly Property MaxInstances As ULong Implements ICalendarFolderAsync.MaxInstances
+        Public ReadOnly Property MaxInstances As ULong Implements ICalendarFolder.MaxInstances
             Get
                 Return ULong.MaxValue
             End Get
@@ -163,7 +164,7 @@ Namespace CalDav
         ''' stored in a calendar collection.
         ''' More details at http://tools.ietf.org/html/rfc4791#section-5.2.9
         ''' </summary>
-        Public ReadOnly Property MaxAttendeesPerInstance As ULong Implements ICalendarFolderAsync.MaxAttendeesPerInstance
+        Public ReadOnly Property MaxAttendeesPerInstance As ULong Implements ICalendarFolder.MaxAttendeesPerInstance
             Get
                 Return ULong.MaxValue
             End Get
@@ -176,7 +177,7 @@ Namespace CalDav
         ''' collection.
         ''' More details at http://tools.ietf.org/html/rfc4791#section-5.2.6
         ''' </summary>
-        Public ReadOnly Property UtcMinDateTime As DateTime Implements ICalendarFolderAsync.UtcMinDateTime
+        Public ReadOnly Property UtcMinDateTime As DateTime Implements ICalendarFolder.UtcMinDateTime
             Get
                 Return DateTime.MinValue.ToUniversalTime()
             End Get
@@ -189,7 +190,7 @@ Namespace CalDav
         ''' collection.
         ''' More details at http://tools.ietf.org/html/rfc4791#section-5.2.7
         ''' </summary>
-        Public ReadOnly Property UtcMaxDateTime As DateTime Implements ICalendarFolderAsync.UtcMaxDateTime
+        Public ReadOnly Property UtcMaxDateTime As DateTime Implements ICalendarFolder.UtcMaxDateTime
             Get
                 Return DateTime.MaxValue.ToUniversalTime()
             End Get
@@ -199,7 +200,7 @@ Namespace CalDav
         ''' Indicates which sharing or publishing capabilities are supported 
         ''' by this calendar collection.
         ''' </summary>
-        Public ReadOnly Property AllowedSharingModes As IEnumerable(Of AppleAllowedSharingMode) Implements IAppleCalendarAsync.AllowedSharingModes
+        Public ReadOnly Property AllowedSharingModes As IEnumerable(Of AppleAllowedSharingMode) Implements IAppleCalendar.AllowedSharingModes
             Get
                 Return {AppleAllowedSharingMode.CanBePublished,
                        AppleAllowedSharingMode.CanBeShared}
@@ -216,7 +217,7 @@ Namespace CalDav
         ''' </remarks>
         ''' <param name="sharesToAddAndRemove">Each item in this list describes the share to 
         ''' add or delete.</param>
-        Public Async Function UpdateSharingAsync(sharesToAddAndRemove As IList(Of AppleShare)) As Task Implements IAppleCalendarAsync.UpdateSharingAsync
+        Public Async Function UpdateSharingAsync(sharesToAddAndRemove As IList(Of AppleShare)) As Task Implements IAppleCalendar.UpdateSharingAsync
             ' Drop all shares first regardless of operation order. When resending 
             ' invitations Apple Calendar drops and adds shares for the user in one \
             ' request.
@@ -244,18 +245,18 @@ Namespace CalDav
         ''' <remarks>
         ''' http://svn.calendarserver.org/repository/calendarserver/CalendarServer/trunk/doc/Extensions/caldav-sharing.txt
         ''' (Section 5.2.2)        
-        Public Async Function GetInviteAsync() As Task(Of IEnumerable(Of SharingInvite)) Implements IAppleCalendarAsync.GetInviteAsync
+        Public Async Function GetInviteAsync() As Task(Of IEnumerable(Of SharingInvite)) Implements IAppleCalendar.GetInviteAsync
             Return Nothing
         End Function
 
         ''' <summary>
         ''' Indicates that the calendar is shared and if it is shared by the current user who is the owner of the calendar.
         ''' </summary>
-        Public Async Function GetSharedByAsync() As Task(Of CalendarSharedBy) Implements IAppleCalendarAsync.GetSharedByAsync
+        Public Async Function GetSharedByAsync() As Task(Of CalendarSharedBy) Implements IAppleCalendar.GetSharedByAsync
             Return CalendarSharedBy.NotShared
         End Function
 
-        Public Function SetOwnerAsync(value As IPrincipalAsync) As Task Implements IAclHierarchyItemAsync.SetOwnerAsync
+        Public Function SetOwnerAsync(value As IPrincipal) As Task Implements IAclHierarchyItem.SetOwnerAsync
             Throw New NotImplementedException()
         End Function
 
@@ -264,9 +265,9 @@ Namespace CalDav
         ''' </summary>
         ''' <remarks>Required by OS X.</remarks>
         ''' <returns>
-        ''' Item that represents owner of this item and implements <see cref="IPrincipalAsync"/> .
+        ''' Item that represents owner of this item and implements <see cref="IPrincipal"/> .
         ''' </returns>
-        Public Async Function GetOwnerAsync() As Task(Of IPrincipalAsync) Implements IAclHierarchyItemAsync.GetOwnerAsync
+        Public Async Function GetOwnerAsync() As Task(Of IPrincipal) Implements IAclHierarchyItem.GetOwnerAsync
             Return context.FileOperation(Me,
                                         Function()
                 Dim acl As FileSecurity = File.GetAccessControl(fileSystemInfo.FullName)
@@ -275,15 +276,15 @@ Namespace CalDav
                                         Privilege.Read)
         End Function
 
-        Public Function SetGroupAsync(value As IPrincipalAsync) As Task Implements IAclHierarchyItemAsync.SetGroupAsync
+        Public Function SetGroupAsync(value As IPrincipal) As Task Implements IAclHierarchyItem.SetGroupAsync
             Throw New NotImplementedException()
         End Function
 
-        Public Function GetGroupAsync() As Task(Of IPrincipalAsync) Implements IAclHierarchyItemAsync.GetGroupAsync
+        Public Function GetGroupAsync() As Task(Of IPrincipal) Implements IAclHierarchyItem.GetGroupAsync
             Throw New NotImplementedException()
         End Function
 
-        Public Function GetSupportedPrivilegeSetAsync() As Task(Of IEnumerable(Of SupportedPrivilege)) Implements IAclHierarchyItemAsync.GetSupportedPrivilegeSetAsync
+        Public Function GetSupportedPrivilegeSetAsync() As Task(Of IEnumerable(Of SupportedPrivilege)) Implements IAclHierarchyItem.GetSupportedPrivilegeSetAsync
             Throw New NotImplementedException()
         End Function
 
@@ -295,35 +296,35 @@ Namespace CalDav
         ''' <returns>
         ''' List of current user privileges.
         ''' </returns>        
-        Public Async Function GetCurrentUserPrivilegeSetAsync() As Task(Of IEnumerable(Of Privilege)) Implements IAclHierarchyItemAsync.GetCurrentUserPrivilegeSetAsync
+        Public Async Function GetCurrentUserPrivilegeSetAsync() As Task(Of IEnumerable(Of Privilege)) Implements IAclHierarchyItem.GetCurrentUserPrivilegeSetAsync
             Return {Privilege.Write, Privilege.Read}
         End Function
 
-        Public Function GetAclAsync(propertyNames As IList(Of PropertyName)) As Task(Of IEnumerable(Of ReadAce)) Implements IAclHierarchyItemAsync.GetAclAsync
+        Public Function GetAclAsync(propertyNames As IList(Of PropertyName)) As Task(Of IEnumerable(Of ReadAce)) Implements IAclHierarchyItem.GetAclAsync
             Throw New NotImplementedException()
         End Function
 
-        Public Function SetAclAsync(aces As IList(Of WriteAce)) As Task Implements IAclHierarchyItemAsync.SetAclAsync
+        Public Function SetAclAsync(aces As IList(Of WriteAce)) As Task Implements IAclHierarchyItem.SetAclAsync
             Throw New NotImplementedException()
         End Function
 
-        Public Function GetAclRestrictionsAsync() As Task(Of AclRestriction) Implements IAclHierarchyItemAsync.GetAclRestrictionsAsync
+        Public Function GetAclRestrictionsAsync() As Task(Of AclRestriction) Implements IAclHierarchyItem.GetAclRestrictionsAsync
             Throw New NotImplementedException()
         End Function
 
-        Public Function GetInheritedAclSetAsync() As Task(Of IEnumerable(Of IHierarchyItemAsync)) Implements IAclHierarchyItemAsync.GetInheritedAclSetAsync
+        Public Function GetInheritedAclSetAsync() As Task(Of IEnumerable(Of IHierarchyItem)) Implements IAclHierarchyItem.GetInheritedAclSetAsync
             Throw New NotImplementedException()
         End Function
 
-        Public Function GetPrincipalCollectionSetAsync() As Task(Of IEnumerable(Of IPrincipalFolderAsync)) Implements IAclHierarchyItemAsync.GetPrincipalCollectionSetAsync
+        Public Function GetPrincipalCollectionSetAsync() As Task(Of IEnumerable(Of IPrincipalFolder)) Implements IAclHierarchyItem.GetPrincipalCollectionSetAsync
             Throw New NotImplementedException()
         End Function
 
-        Public Function ResolveWellKnownPrincipalAsync(wellKnownPrincipal As WellKnownPrincipal) As Task(Of IPrincipalAsync) Implements IAclHierarchyItemAsync.ResolveWellKnownPrincipalAsync
+        Public Function ResolveWellKnownPrincipalAsync(wellKnownPrincipal As WellKnownPrincipal) As Task(Of IPrincipal) Implements IAclHierarchyItem.ResolveWellKnownPrincipalAsync
             Throw New NotImplementedException()
         End Function
 
-        Public Function GetItemsByPropertyAsync(matchBy As MatchBy, props As IList(Of PropertyName)) As Task(Of IEnumerable(Of IAclHierarchyItemAsync)) Implements IAclHierarchyItemAsync.GetItemsByPropertyAsync
+        Public Function GetItemsByPropertyAsync(matchBy As MatchBy, props As IList(Of PropertyName)) As Task(Of IEnumerable(Of IAclHierarchyItem)) Implements IAclHierarchyItem.GetItemsByPropertyAsync
             Throw New NotImplementedException()
         End Function
     End Class

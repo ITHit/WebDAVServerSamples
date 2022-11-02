@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using ITHit.WebDAV.Server;
 using ITHit.WebDAV.Server.Acl;
+using IPrincipal = ITHit.WebDAV.Server.Acl.IPrincipal;
 using ITHit.WebDAV.Server.Extensibility;
 using ITHit.WebDAV.Server.Class2;
 using ITHit.WebDAV.Server.MicrosoftExtensions;
@@ -16,7 +17,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore.Cookies
     /// <summary>
     /// Base class for WebDAV items (folders, files, etc).
     /// </summary>
-    public abstract class DavHierarchyItem : IHierarchyItemAsync, ILockAsync, IMsItemAsync
+    public abstract class DavHierarchyItem : IHierarchyItem, ILock, IMsItem
     {
         /// <summary>
         /// Property name to return text anound search phrase.
@@ -91,7 +92,20 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore.Cookies
         /// information about the error into <paramref name="multistatus"/> using 
         /// <see cref="MultistatusException.AddInnerException(string,ITHit.WebDAV.Server.DavException)"/>.
         /// </param>
-        public abstract Task CopyToAsync(IItemCollectionAsync destFolder, string destName, bool deep, MultistatusException multistatus);
+        public abstract Task CopyToAsync(IItemCollection destFolder, string destName, bool deep, MultistatusException multistatus);
+
+        /// <summary>
+        /// Creates a copy of this item with a new name in the destination folder.
+        /// </summary>
+        /// <param name="destFolder">Destination folder.</param>
+        /// <param name="destName">Name of the destination item.</param>
+        /// <param name="deep">Indicates whether to copy entire subtree.</param>
+        /// <param name="multistatus">If some items fail to copy but operation in whole shall be continued, add
+        /// information about the error into <paramref name="multistatus"/> using 
+        /// <see cref="MultistatusException.AddInnerException(string,ITHit.WebDAV.Server.DavException)"/>.
+        /// </param>
+        /// <param name="recursionDepth">Recursion depth.</param>
+        public abstract Task CopyToInternalAsync(IItemCollection destFolder, string destName, bool deep, MultistatusException multistatus, int recursionDepth);
 
         /// <summary>
         /// Moves this item to the destination folder under a new name.
@@ -102,7 +116,19 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore.Cookies
         /// information about the error into <paramref name="multistatus"/> using 
         /// <see cref="MultistatusException.AddInnerException(string,ITHit.WebDAV.Server.DavException)"/>.
         /// </param>
-        public abstract Task MoveToAsync(IItemCollectionAsync destFolder, string destName, MultistatusException multistatus);
+        public abstract Task MoveToAsync(IItemCollection destFolder, string destName, MultistatusException multistatus);
+
+        /// <summary>
+        /// Moves this item to the destination folder under a new name.
+        /// </summary>
+        /// <param name="destFolder">Destination folder.</param>
+        /// <param name="destName">Name of the destination item.</param>
+        /// <param name="multistatus">If some items fail to copy but operation in whole shall be continued, add
+        /// information about the error into <paramref name="multistatus"/> using 
+        /// <see cref="MultistatusException.AddInnerException(string,ITHit.WebDAV.Server.DavException)"/>.
+        /// </param>
+        /// <param name="recursionDepth">Recursion depth.</param>
+        public abstract Task MoveToInternalAsync(IItemCollection destFolder, string destName, MultistatusException multistatus, int recursionDepth);
 
         /// <summary>
         /// Deletes this item.
@@ -112,6 +138,16 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore.Cookies
         /// <see cref="MultistatusException.AddInnerException(string,ITHit.WebDAV.Server.DavException)"/>.
         /// </param>
         public abstract Task DeleteAsync(MultistatusException multistatus);
+
+        /// <summary>
+        /// Deletes this item.
+        /// </summary>
+        /// <param name="multistatus">If some items fail to delete but operation in whole shall be continued, add
+        /// information about the error into <paramref name="multistatus"/> using
+        /// <see cref="MultistatusException.AddInnerException(string,ITHit.WebDAV.Server.DavException)"/>.
+        /// </param>
+        /// <param name="recursionDepth">Recursion depth.</param>
+        public abstract Task DeleteInternalAsync(MultistatusException multistatus, int recursionDepth);
 
         /// <summary>
         /// Retrieves user defined property values.
@@ -217,7 +253,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore.Cookies
             propertyValues.RemoveAll(prop => delProps.Contains(prop.QualifiedName));
 
             await fileSystemInfo.SetExtendedAttributeAsync(propertiesAttributeName, propertyValues);
-            await context.socketService.NotifyUpdatedAsync(Path);
+            await context.socketService.NotifyUpdatedAsync(Path, GetWebSocketID());
         }
 
         /// <summary>
@@ -306,7 +342,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore.Cookies
             };
 
             await SaveLockAsync(lockInfo);
-            await context.socketService.NotifyLockedAsync(Path);
+            await context.socketService.NotifyLockedAsync(Path, GetWebSocketID());
 
             return new LockResult(lockInfo.LockToken, lockInfo.TimeOut);
         }
@@ -348,7 +384,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore.Cookies
 
                 await SaveLockAsync(lockInfo);
             }
-            await context.socketService.NotifyLockedAsync(Path);
+            await context.socketService.NotifyLockedAsync(Path, GetWebSocketID());
 
             return new RefreshLockResult(lockInfo.Level, lockInfo.IsDeep, lockInfo.TimeOut, lockInfo.ClientOwner);
         }
@@ -373,7 +409,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore.Cookies
             {
                 throw new DavException("The lock could not be found.", DavStatus.CONFLICT);
             }
-            await context.socketService.NotifyUnLockedAsync(Path);
+            await context.socketService.NotifyUnLockedAsync(Path, GetWebSocketID());
         }
 
         /// <summary>
@@ -500,6 +536,16 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore.Cookies
             int index = parentPath.LastIndexOf("/");
             parentPath = parentPath.Substring(0, index);
             return parentPath;
+        }
+
+        /// <summary>
+        /// Returns WebSocket client ID.
+        /// </summary>
+        /// <returns>Client ID.</returns>
+        protected string GetWebSocketID()
+        {
+            return context.Request.Headers.ContainsKey("InstanceId") ?
+                context.Request.Headers["InstanceId"] : string.Empty;
         }
     }
 }

@@ -14,7 +14,7 @@ namespace CardDAVServer.SqlStorage.AspNetCore.CardDav
         /// <param name="path">Relative path requested.</param>
         /// <param name="context">Instance of <see cref="DavContext"/> class.</param>
         /// <returns>Object implementing various business card items or null if no object corresponding to path is found.</returns>
-        public static async Task<IHierarchyItemAsync> GetCardDavItemAsync(DavContext context, string path)
+        public static async Task<IHierarchyItem> GetCardDavItemAsync(DavContext context, string path)
         {
             // If this is [DAVLocation]/addressbooks - return folder that contains all addressbooks.
             if (path.Equals(AddressbooksRootFolder.AddressbooksRootFolderPath.Trim('/'), System.StringComparison.InvariantCultureIgnoreCase))

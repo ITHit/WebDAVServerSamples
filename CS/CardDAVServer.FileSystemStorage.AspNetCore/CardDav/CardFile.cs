@@ -29,7 +29,7 @@ namespace CardDAVServer.FileSystemStorage.AspNetCore.CardDav
     ///                |-- ...
     ///                |-- [File X.vcf]  -- this class
     /// </example>
-    public class CardFile : DavFile, ICardFileAsync
+    public class CardFile : DavFile, ICardFile
     {
         /// <summary>
         /// Returns business card file that corresponds to path.

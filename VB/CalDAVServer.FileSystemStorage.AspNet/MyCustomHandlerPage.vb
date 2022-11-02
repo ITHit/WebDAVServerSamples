@@ -25,16 +25,16 @@ Public Class MyCustomHandlerPage
         Dim discovery As Discovery = New Discovery(context)
         ' Get all user calendars Urls.
         ' Get list of folders that contain user calendars and enumerate calendars in each folder.
-        For Each folder As IItemCollectionAsync In Await discovery.GetCalendarHomeSetAsync()
-            Dim children As IEnumerable(Of IHierarchyItemAsync) =(Await folder.GetChildrenAsync(New PropertyName(-1) {}, Nothing, Nothing, Nothing)).Page
-            AllUserCalendars.AddRange(children.Where(Function(x) TypeOf x Is ICalendarFolderAsync))
+        For Each folder As IItemCollection In Await discovery.GetCalendarHomeSetAsync()
+            Dim children As IEnumerable(Of IHierarchyItem) =(Await folder.GetChildrenAsync(New PropertyName(-1) {}, Nothing, Nothing, Nothing)).Page
+            AllUserCalendars.AddRange(children.Where(Function(x) TypeOf x Is ICalendarFolder))
         Next
     End Function
 
     ''' <summary>
     ''' Gets all user calendars.
     ''' </summary>
-    Public AllUserCalendars As List(Of IHierarchyItemAsync) = New List(Of IHierarchyItemAsync)()
+    Public AllUserCalendars As List(Of IHierarchyItem) = New List(Of IHierarchyItem)()
 
     Public Shared ReadOnly Property ApplicationPath As String
         Get

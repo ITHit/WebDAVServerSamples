@@ -27,7 +27,7 @@ namespace CardDAVServer.SqlStorage.AspNetCore
         /// <summary>
         /// Processes Provisioning request.
         /// </summary>
-        public async Task Invoke(HttpContext context, ContextCoreAsync<IHierarchyItemAsync> davContext)
+        public async Task Invoke(HttpContext context, ContextCoreAsync<IHierarchyItem> davContext)
         {
             if (context.User != null && context.User.Identity != null && context.User.Identity.IsAuthenticated)
             {

@@ -18,7 +18,7 @@ namespace CalDAVServer.SqlStorage.AspNetCore.Acl
         /// <param name="path">Relative path requested.</param>
         /// <param name="context">Instance of <see cref="DavContext"/> class.</param>
         /// <returns>Object implemening ACL principal or folder</returns>
-        internal static async Task<IHierarchyItemAsync> GetAclItemAsync(DavContext context, string path)
+        internal static async Task<IHierarchyItem> GetAclItemAsync(DavContext context, string path)
         {
             // If this is [DAVLocation]/acl - return folder which contains users and groups.
             if (path.Equals(AclFolder.AclFolderPath.Trim('/'), System.StringComparison.InvariantCultureIgnoreCase))

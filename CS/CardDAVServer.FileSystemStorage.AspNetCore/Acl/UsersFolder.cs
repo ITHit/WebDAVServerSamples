@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 
 using ITHit.WebDAV.Server;
 using ITHit.WebDAV.Server.Acl;
+using IPrincipal = ITHit.WebDAV.Server.Acl.IPrincipal;
 using ITHit.WebDAV.Server.Paging;
 
 namespace CardDAVServer.FileSystemStorage.AspNetCore.Acl
@@ -12,7 +13,7 @@ namespace CardDAVServer.FileSystemStorage.AspNetCore.Acl
     /// Logical folder which contains users.
     /// Instances of this class correspond to the following path: [DAVLocation]/acl/users/.
     /// </summary>
-    public class UsersFolder : LogicalFolder, IPrincipalFolderAsync
+    public class UsersFolder : LogicalFolder, IPrincipalFolder
     {
         /// <summary>
         /// This folder name.
@@ -45,7 +46,7 @@ namespace CardDAVServer.FileSystemStorage.AspNetCore.Acl
             /// In this implementation we list users from OWIN Identity or from membership provider, 
             /// you can replace it with your own users source.
 
-            IList<IHierarchyItemAsync> children = new List<IHierarchyItemAsync>();
+            IList<IHierarchyItem> children = new List<IHierarchyItem>();
 
             children.Add(new User(Context, Context.Identity.Name, Context.Identity.Name, null, new DateTime(2000, 1, 1), new DateTime(2000, 1, 1)));
 
@@ -55,7 +56,7 @@ namespace CardDAVServer.FileSystemStorage.AspNetCore.Acl
         /// <summary>
         /// We don't support creating folders inside this folder.
         /// </summary>        
-        public async Task<IPrincipalFolderAsync> CreateFolderAsync(string name)
+        public async Task<IPrincipalFolder> CreateFolderAsync(string name)
         {
             throw new DavException("Not implemented.", DavStatus.NOT_IMPLEMENTED);
         }
@@ -65,7 +66,7 @@ namespace CardDAVServer.FileSystemStorage.AspNetCore.Acl
         /// </summary>
         /// <param name="name">User name.</param>
         /// <returns>Newly created user.</returns>
-        public async Task<IPrincipalAsync> CreatePrincipalAsync(string name)
+        public async Task<IPrincipal> CreatePrincipalAsync(string name)
         {
             throw new DavException("Not implemented.", DavStatus.NOT_IMPLEMENTED);
         }
@@ -76,7 +77,7 @@ namespace CardDAVServer.FileSystemStorage.AspNetCore.Acl
         /// <param name="propValues">Properties and values to look for.</param>
         /// <param name="props">Properties that will be requested by the engine from the returned users.</param>
         /// <returns>Enumerable with users whose properties match.</returns>
-        public async Task<IEnumerable<IPrincipalAsync>> FindPrincipalsByPropertyValuesAsync(
+        public async Task<IEnumerable<IPrincipal>> FindPrincipalsByPropertyValuesAsync(
             IList<PropertyValue> propValues,
             IList<PropertyName> props)
         {
@@ -93,11 +94,11 @@ namespace CardDAVServer.FileSystemStorage.AspNetCore.Acl
         }
 
         /// <summary>
-        /// Returns <see cref="IPrincipalAsync"/> for the current user.
+        /// Returns <see cref="IPrincipal"/> for the current user.
         /// </summary>
         /// <param name="props">Properties that will be asked later from the user returned.</param>
         /// <returns>Enumerable with users.</returns>
-        public async Task<IEnumerable<IPrincipalAsync>> GetMatchingPrincipalsAsync(IList<PropertyName> props)
+        public async Task<IEnumerable<IPrincipal>> GetMatchingPrincipalsAsync(IList<PropertyName> props)
         {
             throw new DavException("Not implemented.", DavStatus.NOT_IMPLEMENTED);
         }

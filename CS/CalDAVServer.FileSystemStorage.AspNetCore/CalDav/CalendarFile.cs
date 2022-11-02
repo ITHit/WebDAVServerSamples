@@ -31,7 +31,7 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore.CalDav
     ///                |-- ...
     ///                |-- [File X.ics]  -- this class
     /// </example>
-    public class CalendarFile : DavFile, ICalendarFileAsync
+    public class CalendarFile : DavFile, ICalendarFile
     {
         /// <summary>
         /// Returns calendar file that corresponds to path or null if no calendar file is found.

@@ -6,7 +6,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>FA77D19F-7728-4CB1-A45C-80FA491984CC</ProjectGuid>
+    <ProjectGuid>D9BAC695-3299-4695-BF30-FC004CDE595B</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>WebDAVServer.FileSystemStorage.HttpListener</RootNamespace>
@@ -19,6 +19,8 @@
     <IISExpressUseClassicPipelineMode />
     <UseGlobalApplicationHostFile />
     <TargetFrameworkProfile />
+    <Use64BitIISExpress />
+    <SpaRoot>ClientAppSrc</SpaRoot>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -103,51 +105,8 @@
     <Compile Include="DavFile.vb" />
     <Compile Include="DavFolder.vb" />
     <Compile Include="DavHierarchyItem.vb" />
-    <Content Include="wwwroot\images\logo.svg" />
-    <Content Include="wwwroot\images\check-square.svg" />
-    <Content Include="wwwroot\images\create-folder.svg" />
-    <Content Include="wwwroot\images\delete.svg" />
-    <Content Include="wwwroot\images\edit.svg" />
-    <Content Include="wwwroot\images\edit-associated.svg" />
-    <Content Include="wwwroot\images\folder.svg" />
-    <Content Include="wwwroot\images\home.svg" />
-    <Content Include="wwwroot\images\locked.svg" />
-    <Content Include="wwwroot\images\menu-edit.svg" />
-    <Content Include="wwwroot\images\menu-gsuit-edit.svg" />
-    <Content Include="wwwroot\images\menu-microsoft-edit.svg" />
-    <Content Include="wwwroot\images\microsoft-edit.svg" />
-    <Content Include="wwwroot\images\open-folder.svg" />
-    <Content Include="wwwroot\images\print.svg" />
-    <Content Include="wwwroot\images\search.svg" />
-    <Content Include="wwwroot\images\rename.svg" />
-    <Content Include="wwwroot\images\cancel-button.svg" />
-    <Content Include="wwwroot\images\file-archive-icon.svg" />
-    <Content Include="wwwroot\images\file-default-icon.svg" />
-    <Content Include="wwwroot\images\file-image-icon.svg" />
-    <Content Include="wwwroot\images\file-pdf-icon.svg" />
-    <Content Include="wwwroot\images\pause-button.svg" />
-    <Content Include="wwwroot\images\play-button.svg" />
-    <Content Include="wwwroot\images\up-one-level.svg" />
-    <Content Include="wwwroot\images\upload.svg" />
-    <Content Include="wwwroot\images\download.svg" />
-    <Content Include="wwwroot\css\webdav-layout.css" />
-    <Content Include="wwwroot\js\toolbar\webdav-basebutton.js" />
-    <Content Include="wwwroot\js\toolbar\webdav-downloadbutton.js" />
-    <Content Include="wwwroot\js\toolbar\webdav-deletebutton.js" />
-    <Content Include="wwwroot\js\toolbar\webdav-copypastecutbuttons.js" />
-    <Content Include="wwwroot\js\toolbar\webdav-printbutton.js" />
-    <Content Include="wwwroot\js\toolbar\webdav-reloadbutton.js" />
-    <Content Include="wwwroot\js\toolbar\webdav-renamebutton.js" />
-    <Content Include="wwwroot\js\toolbar\webdav-createfolderbutton.js" />
-    <Content Include="wwwroot\js\toolbar\webdav-toolbar.js" />
-    <Content Include="wwwroot\js\webdav-common.js" />
-    <Content Include="wwwroot\js\webdav-gridview.js" />
-    <Content Include="wwwroot\js\webdav-uploader.js" />
-    <Content Include="wwwroot\js\webdav-websocket.js" />
-    <Content Include="wwwroot\js\node_modules\webdav.client\ITHitWebDAVClient.js" />
-    <Content Include="wwwroot\js\node_modules\webdav.client\Plugins\*.*" />
-    <Content Include="wwwroot\js\node_modules\webdav.client\Tests\**\*.*" />
-    <Content Include="wwwroot\web.config" />
+    <None Include="$(SpaRoot)\**" Exclude="$(SpaRoot)\node_modules\**" />
+    <Content Include="wwwroot\**\*.*" />
     <EmbeddedResource Include="ServiceInstaller.resx">
       <DependentUpon>ServiceInstaller.vb</DependentUpon>
       <SubType>Designer</SubType>
@@ -203,28 +162,28 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="ITHit.WebDAV.Server">
-      <HintPath>..\packages\ITHit.WebDAV.Server.12.1.11824\lib\net451\ITHit.WebDAV.Server.dll</HintPath>
+      <HintPath>..\packages\ITHit.WebDAV.Server.13.0.12190-Beta\lib\net451\ITHit.WebDAV.Server.dll</HintPath>
     </Reference>
     <Reference Include="ITHit.Server">
-      <HintPath>..\packages\ITHit.Server.12.1.11824\lib\net451\ITHit.Server.dll</HintPath>
+      <HintPath>..\packages\ITHit.Server.13.0.12190-Beta\lib\net451\ITHit.Server.dll</HintPath>
     </Reference>
     <Reference Include="ITHit.Server.HttpListener">
-      <HintPath>..\packages\ITHit.Server.HttpListener.12.1.11824\lib\net451\ITHit.Server.HttpListener.dll</HintPath>
+      <HintPath>..\packages\ITHit.Server.HttpListener.13.0.12190-Beta\lib\net451\ITHit.Server.HttpListener.dll</HintPath>
     </Reference>
     <Reference Include="ITHit.GSuite.Server">
-      <HintPath>..\packages\ITHit.GSuite.Server.12.1.11824\lib\net451\ITHit.GSuite.Server.dll</HintPath>
+      <HintPath>..\packages\ITHit.GSuite.Server.13.0.12190-Beta\lib\net451\ITHit.GSuite.Server.dll</HintPath>
     </Reference>
     <Reference Include="ITHit.WebDAV.Server">
-      <HintPath>..\packages\ITHit.WebDAV.Server.12.1.11824\lib\net451\ITHit.WebDAV.Server.dll</HintPath>
+      <HintPath>..\packages\ITHit.WebDAV.Server.13.0.12190-Beta\lib\net451\ITHit.WebDAV.Server.dll</HintPath>
     </Reference>
     <Reference Include="ITHit.Server">
-      <HintPath>..\packages\ITHit.Server.12.1.11824\lib\net451\ITHit.Server.dll</HintPath>
+      <HintPath>..\packages\ITHit.Server.13.0.12190-Beta\lib\net451\ITHit.Server.dll</HintPath>
     </Reference>
     <Reference Include="ITHit.Server.HttpListener">
-      <HintPath>..\packages\ITHit.Server.HttpListener.12.1.11824\lib\net451\ITHit.Server.HttpListener.dll</HintPath>
+      <HintPath>..\packages\ITHit.Server.HttpListener.13.0.12190-Beta\lib\net451\ITHit.Server.HttpListener.dll</HintPath>
     </Reference>
     <Reference Include="ITHit.GSuite.Server">
-      <HintPath>..\packages\ITHit.GSuite.Server.12.1.11824\lib\net451\ITHit.GSuite.Server.dll</HintPath>
+      <HintPath>..\packages\ITHit.GSuite.Server.13.0.12190-Beta\lib\net451\ITHit.GSuite.Server.dll</HintPath>
     </Reference>
   </ItemGroup>
   <PropertyGroup>
@@ -254,13 +213,16 @@
     </VisualStudio>
   </ProjectExtensions>
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <PropertyGroup>
+      <IsNetFramework>true</IsNetFramework>
+      <IsGSuite>true</IsGSuite>
+    </PropertyGroup>
     <!-- Ensure Node.js is installed -->
     <Exec Command="node --version" ContinueOnError="true">
       <Output TaskParameter="ExitCode" PropertyName="ErrorCode" />
     </Exec>
     <Error Condition="'$(ErrorCode)' != '0'" Text="Node.js is required to build and run this project. To continue, please install Node.js from https://nodejs.org/, and then restart your command prompt or IDE." />
-    <Message Importance="high" Text="Restoring dependencies using 'npm'. This may take several minutes..." />
-    <Exec Command="npm install webdav.client --prefix wwwroot/js" StdOutEncoding="utf-8" />
+    <Exec WorkingDirectory="$(SpaRoot)" Command="call run.bat $(IsNetFramework) $(IsGSuite)" StdOutEncoding="utf-8" />
   </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

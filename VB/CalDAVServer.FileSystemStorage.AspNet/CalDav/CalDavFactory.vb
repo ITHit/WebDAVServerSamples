@@ -13,8 +13,8 @@ Namespace CalDav
         ''' <param name="path">Relative path requested.</param>
         ''' <param name="context">Instance of <see cref="DavContext"/>  class.</param>
         ''' <returns>Object implementing various CalDAV items or null if no object corresponding to path is found.</returns>
-        Friend Function GetCalDavItem(context As DavContext, path As String) As IHierarchyItemAsync
-            Dim item As IHierarchyItemAsync = Nothing
+        Friend Function GetCalDavItem(context As DavContext, path As String) As IHierarchyItem
+            Dim item As IHierarchyItem = Nothing
             item = CalendarsRootFolder.GetCalendarsRootFolder(context, path)
             If item IsNot Nothing Then Return item
             item = CalendarFolder.GetCalendarFolder(context, path)

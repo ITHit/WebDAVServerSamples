@@ -48,7 +48,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore.Cookies
                 // If current request is web socket request.
                 WebSocket client = await context.WebSockets.AcceptWebSocketAsync();
                 // Adding client to connected clients dictionary.
-                Guid clientId = socketService.AddClient(client);
+                Guid clientId = socketService.AddClient(client, context.Request.Headers["InstanceId"]);
 
                 byte[] buffer = new byte[1024 * 4];
 

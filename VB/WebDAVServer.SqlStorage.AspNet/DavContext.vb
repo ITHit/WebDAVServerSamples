@@ -17,12 +17,12 @@ Imports ITHit.WebDAV.Server.Paging
 
 ''' <summary>
 ''' WebDAV request context. Is used by WebDAV engine to resolve path into items.
-''' Implements abstract methods from <see cref="ContextAsync{IHierarchyItemAsync}"/> ,
+''' Implements abstract methods from <see cref="ContextAsync{IHierarchyItem}"/> ,
 ''' contains useful methods for working with transactions, connections, reading
 ''' varios items from database.
 ''' </summary>
 Public Class DavContext
-    Inherits ContextWebAsync(Of IHierarchyItemAsync)
+    Inherits ContextWebAsync(Of IHierarchyItem)
     Implements IDisposable
 
     ''' <summary>
@@ -81,13 +81,13 @@ Public Class DavContext
     End Property
 
     ''' <summary>
-    ''' Resolves path to instance of <see cref="IHierarchyItemAsync"/> .
+    ''' Resolves path to instance of <see cref="IHierarchyItem"/> .
     ''' This method is called by WebDAV engine to resolve paths it encounters
     ''' in request.
     ''' </summary>
     ''' <param name="path">Relative path to the item including query string.</param>
-    ''' <returns><see cref="IHierarchyItemAsync"/>  instance if item is found, <c>null</c> otherwise.</returns>
-    Public Overrides Async Function GetHierarchyItemAsync(path As String) As Task(Of IHierarchyItemAsync)
+    ''' <returns><see cref="IHierarchyItem"/>  instance if item is found, <c>null</c> otherwise.</returns>
+    Public Overrides Async Function GetHierarchyItemAsync(path As String) As Task(Of IHierarchyItem)
         path = path.Trim({" "c, "/"c})
         'remove query string.
         Dim ind As Integer = path.IndexOf("?"c)
@@ -165,7 +165,7 @@ Public Class DavContext
     ''' <param name="prms">Sequence: sql parameter1 name, sql parameter1 value, sql parameter2 name,
     ''' sql parameter2 value...</param>
     ''' <returns>List of requested items.</returns>
-    Public Async Function ExecuteItemAsync(Of T As {Class, IHierarchyItemAsync})(parentPath As String, command As String, ParamArray prms As Object()) As Task(Of IList(Of T))
+    Public Async Function ExecuteItemAsync(Of T As {Class, IHierarchyItem})(parentPath As String, command As String, ParamArray prms As Object()) As Task(Of IList(Of T))
         Dim children As IList(Of T) = New List(Of T)()
         Using reader As SqlDataReader = Await prepareCommand(command, prms).ExecuteReaderAsync()
             While Await reader.ReadAsync()
@@ -202,7 +202,7 @@ Public Class DavContext
 
     ''' <summary>
     ''' Reads <see cref="DavFile"/>  or <see cref="DavFolder"/>  depending on type 
-    ''' Fills Reads <see cref="PageResults.TotalItems"/>  from TotalRowsCount and <see cref="IHierarchyItemAsync.Path"/>  from RelativePath fields.
+    ''' Fills Reads <see cref="PageResults.TotalItems"/>  from TotalRowsCount and <see cref="IHierarchyItem.Path"/>  from RelativePath fields.
     ''' </summary>
     ''' <param name="parentPath">Path to parent hierarchy item.</param>
     ''' <param name="command">SQL expression which returns hierachy item records.</param>
@@ -213,7 +213,7 @@ Public Class DavContext
     ''' <returns>List of requested items.</returns>
     Public Async Function ExecuteItemPagedHierarchyAsync(parentPath As String, command As String, offset As Long?, nResults As Long?, ParamArray prms As Object()) As Task(Of PageResults)
         Dim totalRowsCount As Long? = Nothing
-        Dim children As IList(Of IHierarchyItemAsync) = New List(Of IHierarchyItemAsync)()
+        Dim children As IList(Of IHierarchyItem) = New List(Of IHierarchyItem)()
         Using reader As SqlDataReader = Await prepareCommand(command, prms).ExecuteReaderAsync()
             While Await reader.ReadAsync()
                 Dim itemId As Guid = CType(reader("ItemID"), Guid)
@@ -254,7 +254,7 @@ Public Class DavContext
             Return New PageResults(children, totalRowsCount)
         End If
 
-        Dim pagedResult As IEnumerable(Of IHierarchyItemAsync) = children.AsEnumerable()
+        Dim pagedResult As IEnumerable(Of IHierarchyItem) = children.AsEnumerable()
         If offset.HasValue Then
             pagedResult = pagedResult.Skip(CInt(offset.Value))
         End If
@@ -385,8 +385,8 @@ Public Class DavContext
     ''' Reads item from database by path.
     ''' </summary>
     ''' <param name="path">Item path.</param>
-    ''' <returns>Instance of <see cref="IHierarchyItemAsync"/> .</returns>
-    Private Async Function getItemByPathAsync(path As String) As Task(Of IHierarchyItemAsync)
+    ''' <returns>Instance of <see cref="IHierarchyItem"/> .</returns>
+    Private Async Function getItemByPathAsync(path As String) As Task(Of IHierarchyItem)
         Dim id As Guid = rootId
         Dim names As String() = path.Split("/"c)
         Dim last As Integer = names.Length - 1
@@ -432,8 +432,8 @@ Public Class DavContext
     ''' Reads root folder.
     ''' </summary>
     ''' <param name="path">Root folder path.</param>
-    ''' <returns>Instance of <see cref="IHierarchyItemAsync"/> .</returns>
-    Public Async Function getRootFolderAsync() As Task(Of IHierarchyItemAsync)
+    ''' <returns>Instance of <see cref="IHierarchyItem"/> .</returns>
+    Public Async Function getRootFolderAsync() As Task(Of IHierarchyItem)
         Dim command As String = "SELECT 
                       ItemId
                     , ParentItemId
@@ -444,9 +444,9 @@ Public Class DavContext
                     , FileAttributes       
                     FROM Item
                  WHERE ItemId = @ItemId"
-        Dim hierarchyItems As IList(Of IHierarchyItemAsync) = Await ExecuteItemAsync(Of IHierarchyItemAsync)("",
-                                                                                                            command,
-                                                                                                            "@ItemId", rootId)
+        Dim hierarchyItems As IList(Of IHierarchyItem) = Await ExecuteItemAsync(Of IHierarchyItem)("",
+                                                                                                  command,
+                                                                                                  "@ItemId", rootId)
         Return hierarchyItems.FirstOrDefault()
     End Function
 

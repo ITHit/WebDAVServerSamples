@@ -92,7 +92,7 @@ namespace CalDAVServer.SqlStorage.AspNetCore.CalDav
     /// 
     /// Instances of this class correspond to the following path: [DAVLocation]/calendars/[CalendarFolderId]/[UID].ics
     /// </summary>
-    public class CalendarFile : DavHierarchyItem, ICalendarFileAsync
+    public class CalendarFile : DavHierarchyItem, ICalendarFile
     {
         /// <summary>
         /// Calendar file extension.
@@ -105,8 +105,8 @@ namespace CalDAVServer.SqlStorage.AspNetCore.CalDav
         /// <param name="context">Instance of <see cref="DavContext"/> class.</param>
         /// <param name="calendarFolderId">Calendar for which events or to-dos should be loaded.</param>
         /// <param name="propsToLoad">Specifies which properties should be loaded.</param>
-        /// <returns>List of <see cref="ICalendarFileAsync"/> items.</returns>
-        public static async Task<IEnumerable<ICalendarFileAsync>> LoadByCalendarFolderIdAsync(DavContext context, Guid calendarFolderId, PropsToLoad propsToLoad)
+        /// <returns>List of <see cref="ICalendarFile"/> items.</returns>
+        public static async Task<IEnumerable<ICalendarFile>> LoadByCalendarFolderIdAsync(DavContext context, Guid calendarFolderId, PropsToLoad propsToLoad)
         {
             // propsToLoad == PropsToLoad.Minimum -> Typical GetChildren call by iOS, Android, eM Client, etc CalDAV clients
             // [Summary] is typically not required in GetChildren call, 
@@ -138,8 +138,8 @@ namespace CalDAVServer.SqlStorage.AspNetCore.CalDav
         /// <param name="context">Instance of <see cref="DavContext"/> class.</param>
         /// <param name="uids">File UIDs to load.</param>
         /// <param name="propsToLoad">Specifies which properties should be loaded.</param>
-        /// <returns>List of <see cref="ICalendarFileAsync"/> items.</returns>
-        public static async Task<IEnumerable<ICalendarFileAsync>> LoadByUidsAsync(DavContext context, IEnumerable<string> uids, PropsToLoad propsToLoad)
+        /// <returns>List of <see cref="ICalendarFile"/> items.</returns>
+        public static async Task<IEnumerable<ICalendarFile>> LoadByUidsAsync(DavContext context, IEnumerable<string> uids, PropsToLoad propsToLoad)
         {
             // Get IN clause part with list of file UIDs for SELECT.
             string selectIn = string.Join(", ", uids.Select(a => string.Format("'{0}'", a)).ToArray());
@@ -173,10 +173,10 @@ namespace CalDAVServer.SqlStorage.AspNetCore.CalDav
         /// <param name="context">Instance of <see cref="DavContext"/> class.</param>
         /// <param name="sql">SQL that queries [cal_CalendarFile], [cal_EventComponent], etc tables.</param>
         /// <param name="prms">List of SQL parameters.</param>
-        /// <returns>List of <see cref="ICalendarFileAsync"/> items.</returns>
-        private static async Task<IEnumerable<ICalendarFileAsync>> LoadAsync(DavContext context, string sql, params object[] prms)
+        /// <returns>List of <see cref="ICalendarFile"/> items.</returns>
+        private static async Task<IEnumerable<ICalendarFile>> LoadAsync(DavContext context, string sql, params object[] prms)
         {
-            IList<ICalendarFileAsync> items = new List<ICalendarFileAsync>();
+            IList<ICalendarFile> items = new List<ICalendarFile>();
 
             Stopwatch stopWatch = Stopwatch.StartNew();
            

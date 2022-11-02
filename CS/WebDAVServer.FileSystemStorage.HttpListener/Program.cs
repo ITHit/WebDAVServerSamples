@@ -205,7 +205,7 @@ namespace WebDAVServer.FileSystemStorage.HttpListener
             WebSocket client = webSocketContext.WebSocket;
 
             // Adding client to connected clients collection.
-            Guid clientId = socketService.AddClient(client);
+            Guid clientId = socketService.AddClient(client, context.Request.Headers["InstanceId"]);
 
             byte[] buffer = new byte[1024 * 4];
             WebSocketReceiveResult result = null;

@@ -5,6 +5,7 @@ Imports System.DirectoryServices.AccountManagement
 Imports System.Threading.Tasks
 Imports ITHit.WebDAV.Server
 Imports ITHit.WebDAV.Server.Acl
+Imports IPrincipal = ITHit.WebDAV.Server.Acl.IPrincipal
 
 Namespace Acl
 
@@ -65,7 +66,7 @@ Namespace Acl
         ''' between users and groups.
         ''' </summary>
         ''' <param name="members">Members of the group.</param>
-        Public Overrides Async Function SetGroupMembersAsync(members As IList(Of IPrincipalAsync)) As Task
+        Public Overrides Async Function SetGroupMembersAsync(members As IList(Of IPrincipal)) As Task
             Throw New DavException("User objects can not contain other users.", DavStatus.CONFLICT)
         End Function
 
@@ -73,8 +74,8 @@ Namespace Acl
         ''' Retrieves principal members. Users have no members, so return empty list.
         ''' </summary>
         ''' <returns>Principal members.</returns>
-        Public Overrides Async Function GetGroupMembersAsync() As Task(Of IEnumerable(Of IPrincipalAsync))
-            Return New IPrincipalAsync(-1) {}
+        Public Overrides Async Function GetGroupMembersAsync() As Task(Of IEnumerable(Of IPrincipal))
+            Return New IPrincipal(-1) {}
         End Function
 
         ''' <summary>
@@ -93,7 +94,7 @@ Namespace Acl
         ''' <param name="destName">New user name.</param>
         ''' <param name="deep">Whether to copy children - is not user.</param>
         ''' <param name="multistatus">Is not used as there's no children.</param>
-        Public Overrides Async Function CopyToAsync(destFolder As IItemCollectionAsync, destName As String, deep As Boolean, multistatus As MultistatusException) As Task
+        Public Overrides Async Function CopyToAsync(destFolder As IItemCollection, destName As String, deep As Boolean, multistatus As MultistatusException) As Task
             If destFolder.Path <> New UserFolder(Context).Path Then
                 Throw New DavException("Copying users is only allowed into the same folder", DavStatus.CONFLICT)
             End If

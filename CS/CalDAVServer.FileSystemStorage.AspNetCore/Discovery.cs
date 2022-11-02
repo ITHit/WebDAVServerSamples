@@ -12,7 +12,7 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore
     /// <summary>
     /// Assists in finding folders that contain calendars and address books.
     /// </summary>
-    public class Discovery : ICalendarDiscoveryAsync
+    public class Discovery : ICalendarDiscovery
     {
         /// <summary>
         /// Instance of <see cref="DavContext"/>.
@@ -28,7 +28,7 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore
         /// Returns list of folders that contain calendars owned by this principal.
         /// </summary>
         /// <remarks>This enables calendars discovery owned by current loged-in principal.</remarks>
-        public async Task<IEnumerable<IItemCollectionAsync>> GetCalendarHomeSetAsync()
+        public async Task<IEnumerable<IItemCollection>> GetCalendarHomeSetAsync()
         {
             string calendarsUserFolder = string.Format("{0}{1}/", CalendarsRootFolder.CalendarsRootFolderPath, context.UserName);
             return new[] { await DavFolder.GetFolderAsync(context, calendarsUserFolder) };

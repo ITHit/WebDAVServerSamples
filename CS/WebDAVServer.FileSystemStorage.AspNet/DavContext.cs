@@ -20,11 +20,11 @@ using WebDAVServer.FileSystemStorage.AspNet.ExtendedAttributes;
 namespace WebDAVServer.FileSystemStorage.AspNet
 {
     /// <summary>
-    /// Implementation of <see cref="ContextAsync{IHierarchyItemAsync}"/>.
+    /// Implementation of <see cref="ContextAsync{IHierarchyItem}"/>.
     /// Resolves hierarchy items by paths.
     /// </summary>
     public class DavContext :
-        ContextWebAsync<IHierarchyItemAsync>
+        ContextWebAsync<IHierarchyItem>
     {
 
         /// <summary>
@@ -80,11 +80,11 @@ namespace WebDAVServer.FileSystemStorage.AspNet
         }
 
         /// <summary>
-        /// Creates <see cref="IHierarchyItemAsync"/> instance by path.
+        /// Creates <see cref="IHierarchyItem"/> instance by path.
         /// </summary>
         /// <param name="path">Item relative path including query string.</param>
-        /// <returns>Instance of corresponding <see cref="IHierarchyItemAsync"/> or null if item is not found.</returns>
-        public override async Task<IHierarchyItemAsync> GetHierarchyItemAsync(string path)
+        /// <returns>Instance of corresponding <see cref="IHierarchyItem"/> or null if item is not found.</returns>
+        public override async Task<IHierarchyItem> GetHierarchyItemAsync(string path)
         {
             path = path.Trim(new[] { ' ', '/' });
 
@@ -95,7 +95,7 @@ namespace WebDAVServer.FileSystemStorage.AspNet
                 path = path.Remove(ind);
             }
 
-            IHierarchyItemAsync item = null;
+            IHierarchyItem item = null;
 
             item = await DavFolder.GetFolderAsync(this, path);
             if (item != null)

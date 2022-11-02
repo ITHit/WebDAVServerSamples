@@ -13,7 +13,7 @@ Imports ITHit.Server
 ''' Base class for items like files, folders, versions etc.
 ''' </summary>
 Public MustInherit Class DavHierarchyItem
-    Implements IHierarchyItemAsync, ILockAsync
+    Implements IHierarchyItem, ILock
 
     ''' <summary>
     ''' Property name to return text anound search phrase.
@@ -24,13 +24,13 @@ Public MustInherit Class DavHierarchyItem
 
     Public Property ItemId As Guid
 
-    Public Property Name As String Implements IHierarchyItemBaseAsync.Name
+    Public Property Name As String Implements IHierarchyItemBase.Name
 
-    Public Property Path As String Implements IHierarchyItemBaseAsync.Path
+    Public Property Path As String Implements IHierarchyItemBase.Path
 
-    Public Property Created As DateTime Implements IHierarchyItemBaseAsync.Created
+    Public Property Created As DateTime Implements IHierarchyItemBase.Created
 
-    Public Property Modified As DateTime Implements IHierarchyItemBaseAsync.Modified
+    Public Property Modified As DateTime Implements IHierarchyItemBase.Modified
 
     Protected Property ParentId As Guid
 
@@ -73,16 +73,26 @@ Public MustInherit Class DavHierarchyItem
         End If
     End Function
 
-    Public MustOverride Function CopyToAsync(destFolder As IItemCollectionAsync,
+    Public MustOverride Function CopyToAsync(destFolder As IItemCollection,
                                             destName As String,
                                             deep As Boolean,
-                                            multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.CopyToAsync
+                                            multistatus As MultistatusException) As Task Implements IHierarchyItem.CopyToAsync
 
-    Public MustOverride Function MoveToAsync(destFolder As IItemCollectionAsync, destName As String, multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.MoveToAsync
+    Public MustOverride Function CopyToInternalAsync(destFolder As IItemCollection, 
+                                                    destName As String, 
+                                                    deep As Boolean, 
+                                                    multistatus As MultistatusException, 
+                                                    recursionDepth As Integer) As Task
 
-    Public MustOverride Function DeleteAsync(multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.DeleteAsync
+    Public MustOverride Function MoveToAsync(destFolder As IItemCollection, destName As String, multistatus As MultistatusException) As Task Implements IHierarchyItem.MoveToAsync
 
-    Public Async Function GetPropertiesAsync(names As IList(Of PropertyName), allprop As Boolean) As Task(Of IEnumerable(Of PropertyValue)) Implements IHierarchyItemAsync.GetPropertiesAsync
+    Public MustOverride Function MoveToInternalAsync(destFolder As IItemCollection, destName As String, multistatus As MultistatusException, recursionDepth As Integer) As Task
+
+    Public MustOverride Function DeleteAsync(multistatus As MultistatusException) As Task Implements IHierarchyItem.DeleteAsync
+
+    Public MustOverride Function DeleteInternalAsync(multistatus As MultistatusException, recursionDepth As Integer) As Task
+
+    Public Async Function GetPropertiesAsync(names As IList(Of PropertyName), allprop As Boolean) As Task(Of IEnumerable(Of PropertyValue)) Implements IHierarchyItem.GetPropertiesAsync
         Dim requestedPropVals As IList(Of PropertyValue) = New List(Of PropertyValue)()
         Dim propVals As IList(Of PropertyValue) = Await Context.ExecutePropertyValueAsync("SELECT Name, Namespace, PropVal FROM Property WHERE ItemID = @ItemID",
                                                                                          "@ItemID", ItemId)
@@ -103,7 +113,7 @@ Public MustInherit Class DavHierarchyItem
 
     Public Overridable Async Function UpdatePropertiesAsync(setProps As IList(Of PropertyValue),
                                                            delProps As IList(Of PropertyName),
-                                                           multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.UpdatePropertiesAsync
+                                                           multistatus As MultistatusException) As Task Implements IHierarchyItem.UpdatePropertiesAsync
         Await RequireHasTokenAsync()
         For Each p As PropertyValue In setProps
             ' Microsoft Mini-redirector may update file creation date, modification date and access time passing properties:
@@ -129,10 +139,10 @@ Public MustInherit Class DavHierarchyItem
         Next
 
         ' You should not update modification date/time here. Mac OS X Finder expects that properties update do not change the file modification date.
-        Await Context.socketService.NotifyUpdatedAsync(Path)
+        Await Context.socketService.NotifyUpdatedAsync(Path, GetWebSocketID())
     End Function
 
-    Public Async Function GetPropertyNamesAsync() As Task(Of IEnumerable(Of PropertyName)) Implements IHierarchyItemAsync.GetPropertyNamesAsync
+    Public Async Function GetPropertyNamesAsync() As Task(Of IEnumerable(Of PropertyName)) Implements IHierarchyItem.GetPropertyNamesAsync
         Dim propNames As IList(Of PropertyName) = New List(Of PropertyName)()
         For Each propName As PropertyValue In Await GetPropertiesAsync(New PropertyName(-1) {}, True)
             propNames.Add(propName.QualifiedName)
@@ -147,7 +157,7 @@ Public MustInherit Class DavHierarchyItem
         End If
     End Function
 
-    Public Async Function LockAsync(level As LockLevel, isDeep As Boolean, timeout As TimeSpan?, owner As String) As Task(Of LockResult) Implements ILockAsync.LockAsync
+    Public Async Function LockAsync(level As LockLevel, isDeep As Boolean, timeout As TimeSpan?, owner As String) As Task(Of LockResult) Implements ILock.LockAsync
         If Await ItemHasLockAsync(level = LockLevel.Shared) Then
             Throw New LockedException()
         End If
@@ -176,11 +186,11 @@ Public MustInherit Class DavHierarchyItem
                                           "@Deep", isDeep,
                                           "@Expires", expires,
                                           "@Owner", owner)
-        Await Context.socketService.NotifyLockedAsync(Path)
+        Await Context.socketService.NotifyLockedAsync(Path, GetWebSocketID())
         Return New LockResult(token, timeout.Value)
     End Function
 
-    Public Async Function RefreshLockAsync(token As String, timeout As TimeSpan?) As Task(Of RefreshLockResult) Implements ILockAsync.RefreshLockAsync
+    Public Async Function RefreshLockAsync(token As String, timeout As TimeSpan?) As Task(Of RefreshLockResult) Implements ILock.RefreshLockAsync
         Dim activeLocks As IEnumerable(Of LockInfo) = Await GetActiveLocksAsync()
         Dim l As LockInfo = activeLocks.FirstOrDefault(Function(al) al.Token = token)
         If l Is Nothing Then
@@ -200,11 +210,11 @@ Public MustInherit Class DavHierarchyItem
         Await Context.ExecuteNonQueryAsync("UPDATE Lock SET Expires = @Expires WHERE Token = @Token",
                                           "@Expires", expires,
                                           "@Token", token)
-        Await Context.socketService.NotifyLockedAsync(Path)
+        Await Context.socketService.NotifyLockedAsync(Path, GetWebSocketID())
         Return New RefreshLockResult(l.Level, l.IsDeep, CType(l.TimeOut, TimeSpan), l.Owner)
     End Function
 
-    Public Async Function UnlockAsync(lockToken As String) As Task Implements ILockAsync.UnlockAsync
+    Public Async Function UnlockAsync(lockToken As String) As Task Implements ILock.UnlockAsync
         Dim activeLocks As IEnumerable(Of LockInfo) = Await GetActiveLocksAsync()
         If activeLocks.All(Function(al) al.Token <> lockToken) Then
             Throw New DavException("This lock token doesn't correspond to any lock", DavStatus.PRECONDITION_FAILED)
@@ -213,10 +223,10 @@ Public MustInherit Class DavHierarchyItem
         ' remove lock from existing item
         Await Context.ExecuteNonQueryAsync("DELETE FROM Lock WHERE Token = @Token",
                                           "@Token", lockToken)
-        Await Context.socketService.NotifyUnLockedAsync(Path)
+        Await Context.socketService.NotifyUnLockedAsync(Path, GetWebSocketID())
     End Function
 
-    Public Async Function GetActiveLocksAsync() As Task(Of IEnumerable(Of LockInfo)) Implements ILockAsync.GetActiveLocksAsync
+    Public Async Function GetActiveLocksAsync() As Task(Of IEnumerable(Of LockInfo)) Implements ILock.GetActiveLocksAsync
         Dim entryId As Guid = ItemId
         Dim l As List(Of LockInfo) = New List(Of LockInfo)()
         l.AddRange(Await GetLocksAsync(entryId, False))
@@ -313,7 +323,7 @@ Public MustInherit Class DavHierarchyItem
                                               "@ItemId", ItemId,
                                               "@Identity", destID)
             Await destFolder.UpdateModifiedAsync()
-            If TypeOf Me Is IFolderAsync Then
+            If TypeOf Me Is IFolder Then
                 createdFolder = New DavFolder(Context,
                                              destID,
                                              destFolder.ItemId,
@@ -416,10 +426,10 @@ Public MustInherit Class DavHierarchyItem
         Return Not skipShared OrElse locks.Any(Function(l) l.Level <> LockLevel.Shared)
     End Function
 
-    Protected Shared Async Function FindLocksDownAsync(root As IHierarchyItemAsync, skipShared As Boolean) As Task
-        Dim folder As IFolderAsync = TryCast(root, IFolderAsync)
+    Protected Shared Async Function FindLocksDownAsync(root As IHierarchyItem, skipShared As Boolean) As Task
+        Dim folder As IFolder = TryCast(root, IFolder)
         If folder IsNot Nothing Then
-            For Each child As IHierarchyItemAsync In(Await folder.GetChildrenAsync(New PropertyName(-1) {}, Nothing, Nothing, Nothing)).Page
+            For Each child As IHierarchyItem In(Await folder.GetChildrenAsync(New PropertyName(-1) {}, Nothing, Nothing, Nothing)).Page
                 Dim dbchild As DavHierarchyItem = TryCast(child, DavHierarchyItem)
                 If Await dbchild.ItemHasLockAsync(skipShared) Then
                     Dim mex As MultistatusException = New MultistatusException()
@@ -467,5 +477,13 @@ Public MustInherit Class DavHierarchyItem
         Dim index As Integer = parentPath.LastIndexOf("/")
         parentPath = parentPath.Substring(0, index)
         Return parentPath
+    End Function
+
+    ''' <summary>
+    ''' Returns WebSocket client ID.
+    ''' </summary>
+    ''' <returns>Client ID.</returns>
+    Protected Function GetWebSocketID() As String
+        Return If(Context.Request.Headers.ContainsKey("InstanceId"), Context.Request.Headers("InstanceId"), String.Empty)
     End Function
 End Class

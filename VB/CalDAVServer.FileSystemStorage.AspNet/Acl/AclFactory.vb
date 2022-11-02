@@ -3,6 +3,7 @@ Imports System.DirectoryServices.AccountManagement
 Imports System.Threading.Tasks
 Imports ITHit.WebDAV.Server
 Imports ITHit.WebDAV.Server.Acl
+Imports IPrincipal = ITHit.WebDAV.Server.Acl.IPrincipal
 
 Namespace Acl
 
@@ -14,7 +15,7 @@ Namespace Acl
         ''' <param name="path">Relative path requested.</param>
         ''' <param name="context">Instance of <see cref="DavContext"/>  class.</param>
         ''' <returns>Object implemening LogicalFolder/IPrincipalFolder</returns>
-        Friend Async Function GetAclItemAsync(context As DavContext, path As String) As Task(Of IHierarchyItemAsync)
+        Friend Async Function GetAclItemAsync(context As DavContext, path As String) As Task(Of IHierarchyItem)
             'If this is /acl - return fake folder which contains users and groups.
             If path = AclFolder.PREFIX Then
                 Return New AclFolder(context)
@@ -57,12 +58,12 @@ Namespace Acl
         ''' <param name="context">Instance of <see cref="DavContext"/> .</param>
         ''' <returns>Corresponding <see cref="User"/>  or <see cref="Group"/>  or <c>null</c> if there's no user
         ''' or group which correspond to specified sid.</returns>
-        Function GetPrincipalFromSid(sid As String, context As DavContext) As IPrincipalAsync
+        Function GetPrincipalFromSid(sid As String, context As DavContext) As IPrincipal
             Using HostingEnvironment.Impersonate()
                 ' This code runs as the application pool user
                 Dim pr As Principal = Principal.FindByIdentity(context.GetPrincipalContext(), IdentityType.Sid, sid)
                 If pr Is Nothing Then Return Nothing
-                Return If(TypeOf pr Is GroupPrincipal, CType(New Group(CType(pr, GroupPrincipal), context), IPrincipalAsync), New User(CType(pr, UserPrincipal), context))
+                Return If(TypeOf pr Is GroupPrincipal, CType(New Group(CType(pr, GroupPrincipal), context), IPrincipal), New User(CType(pr, UserPrincipal), context))
             End Using
         End Function
     End Module

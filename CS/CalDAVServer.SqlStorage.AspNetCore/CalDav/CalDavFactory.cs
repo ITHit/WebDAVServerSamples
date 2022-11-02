@@ -15,7 +15,7 @@ namespace CalDAVServer.SqlStorage.AspNetCore.CalDav
         /// <param name="itemPath">Relative path requested.</param>
         /// <param name="context">Instance of <see cref="DavContext"/> class.</param>
         /// <returns>Object implementing various calendar items or null if no object corresponding to path is found.</returns>
-        public static async Task<IHierarchyItemAsync> GetCalDavItemAsync(DavContext context, string itemPath)
+        public static async Task<IHierarchyItem> GetCalDavItemAsync(DavContext context, string itemPath)
         {
             // If this is [DAVLocation]/calendars - return folder that contains all calendars.
             if (itemPath.Equals(CalendarsRootFolder.CalendarsRootFolderPath.Trim('/'), System.StringComparison.InvariantCultureIgnoreCase))

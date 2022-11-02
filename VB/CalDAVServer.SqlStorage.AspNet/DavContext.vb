@@ -13,12 +13,12 @@ Imports CalDAVServer.SqlStorage.AspNet.CalDav
 
 ''' <summary>
 ''' WebDAV request context. Is used by WebDAV engine to resolve path into items.
-''' Implements abstract methods from <see cref="ContextAsync{IHierarchyItemAsync}"/> ,
+''' Implements abstract methods from <see cref="ContextAsync{IHierarchyItem}"/> ,
 ''' contains useful methods for working with transactions, connections, reading
 ''' varios items from database.
 ''' </summary>
 Public Class DavContext
-    Inherits ContextWebAsync(Of IHierarchyItemAsync)
+    Inherits ContextWebAsync(Of IHierarchyItem)
     Implements IDisposable
 
     ''' <summary>
@@ -72,7 +72,7 @@ Public Class DavContext
     ''' </summary>
     ''' <param name="path">Relative path to the item including query string.</param>
     ''' <returns><see cref="IHierarchyItem"/>  instance if item is found, <c>null</c> otherwise.</returns>
-    Public Overrides Async Function GetHierarchyItemAsync(path As String) As Task(Of IHierarchyItemAsync)
+    Public Overrides Async Function GetHierarchyItemAsync(path As String) As Task(Of IHierarchyItem)
         path = path.Trim({" "c, "/"c})
         'remove query string.
         Dim ind As Integer = path.IndexOf("?"c)
@@ -80,7 +80,7 @@ Public Class DavContext
             path = path.Remove(ind)
         End If
 
-        Dim item As IHierarchyItemAsync = Nothing
+        Dim item As IHierarchyItem = Nothing
         ' Return items from [DAVLocation]/acl/ folder and subfolders.
         item = Await AclFactory.GetAclItemAsync(Me, path)
         If item IsNot Nothing Then Return item

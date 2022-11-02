@@ -31,7 +31,7 @@ Namespace CalDav
     ''' </example>
     Public Class CalendarFile
         Inherits DavFile
-        Implements ICalendarFileAsync
+        Implements ICalendarFile
 
         ''' <summary>
         ''' Returns calendar file that corresponds to path or null if no calendar file is found.
@@ -62,7 +62,7 @@ Namespace CalDav
         ''' Called when client application deletes this file.
         ''' </summary>
         ''' <param name="multistatus">Error description if case delate failed. Ignored by most clients.</param>
-        Public Overrides Async Function DeleteAsync(multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.DeleteAsync
+        Public Overrides Async Function DeleteAsync(multistatus As MultistatusException) As Task Implements IHierarchyItem.DeleteAsync
             ' Notify attendees that event is canceled if deletion is successful.
             Dim calendarObjectContent As String = File.ReadAllText(fileSystemInfo.FullName)
             Await MyBase.DeleteAsync(multistatus)
@@ -81,7 +81,7 @@ Namespace CalDav
         ''' for which data comes in <paramref name="content"/>  stream.</param>
         ''' <param name="totalFileSize">Size of file as it will be after all parts are uploaded. -1 if unknown (in case of chunked upload).</param>
         ''' <returns>Whether the whole stream has been written.</returns>
-        Public Overrides Async Function WriteAsync(content As Stream, contentType As String, startIndex As Long, totalFileSize As Long) As Task(Of Boolean) Implements IContentAsync.WriteAsync
+        Public Overrides Async Function WriteAsync(content As Stream, contentType As String, startIndex As Long, totalFileSize As Long) As Task(Of Boolean) Implements IContent.WriteAsync
             Dim result As Boolean = Await MyBase.WriteAsync(content, contentType, startIndex, totalFileSize)
             ' Notify attendees that event is created or modified.
             Dim calendarObjectContent As String = File.ReadAllText(fileSystemInfo.FullName)

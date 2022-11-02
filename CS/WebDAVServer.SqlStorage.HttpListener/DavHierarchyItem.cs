@@ -15,7 +15,7 @@ namespace WebDAVServer.SqlStorage.HttpListener
     /// <summary>
     /// Base class for items like files, folders, versions etc.
     /// </summary>
-    public abstract class DavHierarchyItem : IHierarchyItemAsync, ILockAsync
+    public abstract class DavHierarchyItem : IHierarchyItem, ILock
     {
         /// <summary>
         /// Property name to return text anound search phrase.
@@ -85,14 +85,26 @@ namespace WebDAVServer.SqlStorage.HttpListener
         }
 
         public abstract Task CopyToAsync(
-            IItemCollectionAsync destFolder,
+            IItemCollection destFolder,
             string destName,
             bool deep,
             MultistatusException multistatus);
 
-        public abstract Task MoveToAsync(IItemCollectionAsync destFolder, string destName, MultistatusException multistatus);
+
+        public abstract Task CopyToInternalAsync(
+            IItemCollection destFolder, 
+            string destName, 
+            bool deep, 
+            MultistatusException multistatus, 
+            int recursionDepth);
+
+        public abstract Task MoveToAsync(IItemCollection destFolder, string destName, MultistatusException multistatus);
+
+        public abstract Task MoveToInternalAsync(IItemCollection destFolder, string destName, MultistatusException multistatus, int recursionDepth);
 
         public abstract Task DeleteAsync(MultistatusException multistatus);
+
+        public abstract Task DeleteInternalAsync(MultistatusException multistatus, int recursionDepth);
 
         public async Task<IEnumerable<PropertyValue>> GetPropertiesAsync(IList<PropertyName> names, bool allprop)
         {
@@ -159,7 +171,7 @@ namespace WebDAVServer.SqlStorage.HttpListener
             }
 
             // You should not update modification date/time here. Mac OS X Finder expects that properties update do not change the file modification date.
-            await Context.socketService.NotifyUpdatedAsync(Path);
+            await Context.socketService.NotifyUpdatedAsync(Path, GetWebSocketID());
         }
 
         public async Task<IEnumerable<PropertyName>> GetPropertyNamesAsync()
@@ -216,7 +228,7 @@ namespace WebDAVServer.SqlStorage.HttpListener
                 "@Deep", isDeep,
                 "@Expires", expires,
                 "@Owner", owner);
-            await Context.socketService.NotifyLockedAsync(Path);
+            await Context.socketService.NotifyLockedAsync(Path, GetWebSocketID());
 
             return new LockResult(token, timeout.Value);
         }
@@ -249,7 +261,7 @@ namespace WebDAVServer.SqlStorage.HttpListener
                 "UPDATE Lock SET Expires = @Expires WHERE Token = @Token",
                 "@Expires", expires,
                 "@Token", token);
-            await Context.socketService.NotifyLockedAsync(Path);
+            await Context.socketService.NotifyLockedAsync(Path, GetWebSocketID());
 
             return new RefreshLockResult(l.Level, l.IsDeep, (TimeSpan)l.TimeOut, l.Owner);
         }
@@ -266,7 +278,7 @@ namespace WebDAVServer.SqlStorage.HttpListener
             await Context.ExecuteNonQueryAsync(
                 "DELETE FROM Lock WHERE Token = @Token",
                 "@Token", lockToken);
-            await Context.socketService.NotifyUnLockedAsync(Path);
+            await Context.socketService.NotifyUnLockedAsync(Path, GetWebSocketID());
         }
 
         public async Task<IEnumerable<LockInfo>> GetActiveLocksAsync()
@@ -395,7 +407,7 @@ namespace WebDAVServer.SqlStorage.HttpListener
 
                 await destFolder.UpdateModifiedAsync();
 
-                if (this is IFolderAsync)
+                if (this is IFolder)
                 {
                     createdFolder = new DavFolder(
                         Context,
@@ -535,12 +547,12 @@ namespace WebDAVServer.SqlStorage.HttpListener
             return !skipShared || locks.Any(l => l.Level != LockLevel.Shared);
         }
 
-        protected static async Task FindLocksDownAsync(IHierarchyItemAsync root, bool skipShared)
+        protected static async Task FindLocksDownAsync(IHierarchyItem root, bool skipShared)
         {
-            IFolderAsync folder = root as IFolderAsync;
+            IFolder folder = root as IFolder;
             if (folder != null)
             {
-                foreach (IHierarchyItemAsync child in (await folder.GetChildrenAsync(new PropertyName[0], null, null, null)).Page)
+                foreach (IHierarchyItem child in (await folder.GetChildrenAsync(new PropertyName[0], null, null, null)).Page)
                 {
                     DavHierarchyItem dbchild = child as DavHierarchyItem;
                     if (await dbchild.ItemHasLockAsync(skipShared))
@@ -595,6 +607,16 @@ namespace WebDAVServer.SqlStorage.HttpListener
             int index = parentPath.LastIndexOf("/");
             parentPath = parentPath.Substring(0, index);
             return parentPath;
+        }
+
+        /// <summary>
+        /// Returns WebSocket client ID.
+        /// </summary>
+        /// <returns>Client ID.</returns>
+        protected string GetWebSocketID()
+        {
+            return Context.Request.Headers.ContainsKey("InstanceId") ?
+                Context.Request.Headers["InstanceId"] : string.Empty;
         }
     }
 }

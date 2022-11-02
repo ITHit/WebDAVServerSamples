@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Linq;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
@@ -16,18 +17,19 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
         /// <summary>
         /// Dictionary which contains connected clients.
         /// </summary>
-        private readonly ConcurrentDictionary<Guid, WebSocket> clients = new ConcurrentDictionary<Guid, WebSocket>();
+        private readonly ConcurrentDictionary<Guid, WebSocketClient> clients = new ConcurrentDictionary<Guid, WebSocketClient>();
 
         /// <summary>
         /// Adds client to connected clients dictionary.
         /// </summary>
         /// <param name="client">Current client.</param>
+        /// <param name="clientId">Current client Id.</param>
         /// <returns>Client guid in the dictionary.</returns>
-        public Guid AddClient(WebSocket client)
+        public Guid AddClient(WebSocket client, string clientId)
         {
-            Guid clientId = Guid.NewGuid();
-            clients.TryAdd(clientId, client);
-            return clientId;
+            Guid InternalClientId = Guid.NewGuid();
+            clients.TryAdd(InternalClientId, new WebSocketClient { ClientID = clientId, Socket = client });
+            return InternalClientId;
         }
 
         /// <summary>
@@ -36,7 +38,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
         /// <param name="clientId">Client guid in the dictionary.</param>
         public void RemoveClient(Guid clientId)
         {
-            WebSocket client;
+            WebSocketClient client;
             clients.TryRemove(clientId, out client);
         }
 
@@ -44,50 +46,55 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
         /// Notifies client that file/folder was created.
         /// </summary>
         /// <param name="itemPath">file/folder.</param>
+        /// <param name="clientId">Current client Id.</param>
         /// <returns></returns>
-        public async Task NotifyCreatedAsync(string itemPath)
+        public async Task NotifyCreatedAsync(string itemPath, string clientId)
         {
-            await SendMessage(itemPath, "created");
+            await SendMessage(itemPath, "created", clientId);
         }
 
         /// <summary>
         /// Notifies client that file/folder was updated.
         /// </summary>
         /// <param name="itemPath">file/folder path.</param>
+        /// <param name="clientId">Current client Id.</param>
         /// <returns></returns>
-        public async Task NotifyUpdatedAsync(string itemPath)
+        public async Task NotifyUpdatedAsync(string itemPath, string clientId)
         {
-            await SendMessage(itemPath, "updated");
+            await SendMessage(itemPath, "updated", clientId);
         }
 
         /// <summary>
         /// Notifies client that file/folder was deleted.
         /// </summary>
         /// <param name="itemPath">file/folder path.</param>
+        /// <param name="clientId">Current client Id.</param>
         /// <returns></returns>
-        public async Task NotifyDeletedAsync(string itemPath)
+        public async Task NotifyDeletedAsync(string itemPath, string clientId)
         {
-            await SendMessage(itemPath, "deleted");
+            await SendMessage(itemPath, "deleted", clientId);
         }
 
         /// <summary>
         /// Notifies client that file/folder was locked.
         /// </summary>
         /// <param name="itemPath">file/folder path.</param>
+        /// <param name="clientId">Current client Id.</param>
         /// <returns></returns>
-        public async Task NotifyLockedAsync(string itemPath)
+        public async Task NotifyLockedAsync(string itemPath, string clientId)
         {
-            await SendMessage(itemPath, "locked");
+            await SendMessage(itemPath, "locked", clientId);
         }
 
         /// <summary>
         /// Notifies client that file/folder was unlocked.
         /// </summary>
         /// <param name="itemPath">file/folder path.</param>
+        /// <param name="clientId">Current client Id.</param>
         /// <returns></returns>
-        public async Task NotifyUnLockedAsync(string itemPath)
+        public async Task NotifyUnLockedAsync(string itemPath, string clientId)
         {
-            await SendMessage(itemPath, "unlocked");
+            await SendMessage(itemPath, "unlocked", clientId);
         }
 
         /// <summary>
@@ -95,24 +102,23 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
         /// </summary>
         /// <param name="itemPath">old file/folder path.</param>
         /// <param name="targetPath">new file/folder path.</param>
+        /// <param name="clientId">Current client Id.</param>
         /// <returns></returns>
-        public async Task NotifyMovedAsync(string itemPath, string targetPath)
+        public async Task NotifyMovedAsync(string itemPath, string targetPath, string clientId)
         {
             itemPath = itemPath.Trim('/');
-            targetPath = targetPath.Trim('/');
             MovedNotification notifyObject = new MovedNotification
             {
                 ItemPath = itemPath,
                 TargetPath = targetPath,
                 EventType = "moved"
             };
-            foreach (WebSocket client in clients.Values)
+            foreach (WebSocketClient client in !string.IsNullOrEmpty(clientId) ? clients.Values.Where(p => p.ClientID != clientId) : clients.Values)
             {
-                if (client.State == WebSocketState.Open)
+                if (client.Socket.State == WebSocketState.Open)
                 {
                     
-                    await client.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(notifyObject))), WebSocketMessageType.Text, true, CancellationToken.None);
-
+                    await client.Socket.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(notifyObject))), WebSocketMessageType.Text, true, CancellationToken.None);
                 }
             }
         }
@@ -122,8 +128,9 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
         /// </summary>
         /// <param name="itemPath">File/Folder path.</param>
         /// <param name="operation">Operation name: created/updated/deleted/moved</param>
+        /// <param name="clientId">Current client Id.</param>
         /// <returns></returns>
-        public async Task SendMessage(string itemPath, string operation)
+        public async Task SendMessage(string itemPath, string operation, string clientId)
         {
             itemPath = itemPath.Trim('/');
             Notification notifyObject = new Notification
@@ -131,11 +138,11 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
                 ItemPath = itemPath,
                 EventType = operation
             };
-            foreach (WebSocket client in clients.Values)
+            foreach (WebSocketClient client in !string.IsNullOrEmpty(clientId) ? clients.Values.Where(p => p.ClientID != clientId) : clients.Values)
             {
-                if (client.State == WebSocketState.Open)
+                if (client.Socket.State == WebSocketState.Open)
                 {
-                    await client.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(notifyObject))), WebSocketMessageType.Text, true, CancellationToken.None);
+                    await client.Socket.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(notifyObject))), WebSocketMessageType.Text, true, CancellationToken.None);
                     
                 }
             }
@@ -167,5 +174,21 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
         /// Represents target file/folder path.
         /// </summary>
         public string TargetPath { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// Holds web socket data.
+    /// </summary>
+    public class WebSocketClient
+    {
+        /// <summary>
+        /// Client ID.
+        /// </summary>
+        public string ClientID { get; set; }
+
+        /// <summary>
+        /// Web Socket connector.
+        /// </summary>
+        public WebSocket Socket { get; set; }
     }
 }

@@ -1,0 +1,101 @@
+.uploading {
+  margin-top: 20px;
+  .progress-wrapper {
+    padding: 3px 0;
+  }
+
+  .progress-wrapper:hover ~ .uploading-block {
+    visibility: visible;
+    opacity: 1;
+  }
+}
+.uploading-block,
+.uploading-details {
+  display: inline-block;
+  position: absolute;
+  z-index: 100;
+  background-color: $whiteColor;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+}
+
+.uploading-block {
+  min-width: 208px;
+  visibility: hidden;
+  opacity: 0;
+  transition: visibility 0.5s, opacity 0.5s linear;
+  &:hover,
+  &.show {
+    visibility: visible;
+    opacity: 1;
+  }
+
+  &.hide {
+    visibility: hidden !important;
+    opacity: 0;
+    transition: visibility 0.5s, opacity 0.5s linear;
+  }
+
+  .uploading-controls {
+    padding: 12px 14px;
+    line-height: 28px;
+    .persent {
+      color: $mainColor;
+    }
+  }
+  .btn.btn-primary {
+    border-radius: 0 0 4px 4px;
+    width: 100%;
+  }
+}
+
+.uploading-details {
+  @include media-breakpoint-up(sm) {
+    min-width: 479px;
+  }
+
+  &:hover {
+    cursor: move;
+  }
+
+  .details-header {
+    padding: 13px 7px;
+    button {
+      margin-top: -0.5rem;
+    }
+    .details-title {
+      font-size: 16px;
+      line-height: 21px;
+    }
+  }
+}
+
+.uploading-items {
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 0 30px 15px 10px;
+}
+
+.uploading-item {
+  align-items: center;
+  margin: 0;
+  padding: 9px 0;
+
+  .item-size,
+  .item-progress,
+  .item-speed {
+    font-size: 12px;
+    line-height: 16px;
+    color: $textColor;
+  }
+}
+
+.uploading-footer {
+  margin: 0 -0.5rem 0;
+  padding: 10px 30px 5px 10px;
+  text-align: right;
+
+  & > * {
+    margin: 0.5rem;
+  }
+}

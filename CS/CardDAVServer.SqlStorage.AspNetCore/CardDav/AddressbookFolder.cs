@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using System.Data.SqlClient;
 using System.Linq;
@@ -10,6 +11,7 @@ using ITHit.WebDAV.Server.CardDav;
 using ITHit.WebDAV.Server.Acl;
 using ITHit.WebDAV.Server.Class1;
 using ITHit.WebDAV.Server.Paging;
+using IPrincipal = ITHit.WebDAV.Server.Acl.IPrincipal;
 
 namespace CardDAVServer.SqlStorage.AspNetCore.CardDav
 {
@@ -17,15 +19,15 @@ namespace CardDAVServer.SqlStorage.AspNetCore.CardDav
     /// Represents a CardDAV address book (address book folder).
     /// Instances of this class correspond to the following path: [DAVLocation]/addressbooks/[AddressbookFolderId]
     /// </summary>
-    public class AddressbookFolder : DavHierarchyItem, IAddressbookFolderAsync, ICurrentUserPrincipalAsync, IAclHierarchyItemAsync
+    public class AddressbookFolder : DavHierarchyItem, IAddressbookFolder, ICurrentUserPrincipal, IAclHierarchyItem
     {
         /// <summary>
         /// Loads address book folder by ID. Returns null if addressbook folder was not found.
         /// </summary>
         /// <param name="context">Instance of <see cref="DavContext"/> class.</param>
         /// <param name="addressbookFolderId">ID of the address book folder to load.</param>
-        /// <returns><see cref="IAddressbookFolderAsync"/> instance.</returns>
-        public static async Task<IAddressbookFolderAsync> LoadByIdAsync(DavContext context, Guid addressbookFolderId)
+        /// <returns><see cref="IAddressbookFolder"/> instance.</returns>
+        public static async Task<IAddressbookFolder> LoadByIdAsync(DavContext context, Guid addressbookFolderId)
         {
             // Load only address book that the use has access to. 
             // Also load complete ACL for this address book.
@@ -48,8 +50,8 @@ namespace CardDAVServer.SqlStorage.AspNetCore.CardDav
         /// Loads all address books.
         /// </summary>
         /// <param name="context">Instance of <see cref="DavContext"/> class.</param>
-        /// <returns>List of <see cref="IAddressbookFolderAsync"/> items.</returns>
-        public static async Task<IEnumerable<IAddressbookFolderAsync>> LoadAllAsync(DavContext context)
+        /// <returns>List of <see cref="IAddressbookFolder"/> items.</returns>
+        public static async Task<IEnumerable<IAddressbookFolder>> LoadAllAsync(DavContext context)
         {
             // Load only address books that the use has access to. 
             // Also load complete ACL for each address book, but only if user has access to that address book.
@@ -69,10 +71,10 @@ namespace CardDAVServer.SqlStorage.AspNetCore.CardDav
         /// <param name="context">Instance of <see cref="DavContext"/> class.</param>
         /// <param name="sql">SQL that queries [card_AddressbookFolder] table.</param>
         /// <param name="prms">List of SQL parameters.</param>
-        /// <returns>List of <see cref="IAddressbookFolderAsync"/> items.</returns>
-        private static async Task<IEnumerable<IAddressbookFolderAsync>> LoadAsync(DavContext context, string sql, params object[] prms)
+        /// <returns>List of <see cref="IAddressbookFolder"/> items.</returns>
+        private static async Task<IEnumerable<IAddressbookFolder>> LoadAsync(DavContext context, string sql, params object[] prms)
         {
-            IList<IAddressbookFolderAsync> addressbookFolders = new List<IAddressbookFolderAsync>();
+            IList<IAddressbookFolder> addressbookFolders = new List<IAddressbookFolder>();
 
             await using (SqlDataReader reader = await context.ExecuteReaderAsync(sql, prms))            
             {
@@ -209,7 +211,7 @@ namespace CardDAVServer.SqlStorage.AspNetCore.CardDav
         /// the Engine for each item that are returned from this method.
         /// </param>
         /// <returns>List of address book files. Returns <b>null</b> for any item that is not found.</returns>
-        public async Task<IEnumerable<ICardFileAsync>> MultiGetAsync(IEnumerable<string> pathList, IEnumerable<PropertyName> propNames)
+        public async Task<IEnumerable<ICardFile>> MultiGetAsync(IEnumerable<string> pathList, IEnumerable<PropertyName> propNames)
         {
             // Get list of file names from path list.
             IEnumerable<string> fileNames = pathList.Select(a => System.IO.Path.GetFileNameWithoutExtension(a));
@@ -233,11 +235,11 @@ namespace CardDAVServer.SqlStorage.AspNetCore.CardDav
         /// the Engine for each item that are returned from this method.
         /// </param>
         /// <returns>List of address book files. Returns <b>null</b> for any item that is not found.</returns>
-        public async Task<IEnumerable<ICardFileAsync>> QueryAsync(string rawQuery, IEnumerable<PropertyName> propNames)
+        public async Task<IEnumerable<ICardFile>> QueryAsync(string rawQuery, IEnumerable<PropertyName> propNames)
         {
             // For the sake of simplicity we just call GetChildren returning all items. 
             // Typically you will return only items that match the query.
-            return (await GetChildrenAsync(propNames.ToList(), null, null, null)).Page.Cast<ICardFileAsync>();
+            return (await GetChildrenAsync(propNames.ToList(), null, null, null)).Page.Cast<ICardFile>();
         }
 
         /// <summary>
@@ -269,7 +271,7 @@ namespace CardDAVServer.SqlStorage.AspNetCore.CardDav
 
             // Bynari submits PROPFIND without props - Engine will request getcontentlength
 
-            IList<IHierarchyItemAsync> children = new List<IHierarchyItemAsync>();
+            IList<IHierarchyItem> children = new List<IHierarchyItem>();
             return new PageResults((await CardFile.LoadByAddressbookFolderIdAsync(Context, addressbookFolderId, PropsToLoad.Minimum)), null);
         }
 
@@ -277,9 +279,12 @@ namespace CardDAVServer.SqlStorage.AspNetCore.CardDav
         /// Creates a file that contains business card item in this address book.
         /// </summary>
         /// <param name="name">Name of the new file. Unlike with CalDAV it is NOT equel to vCard UID.</param>
+        /// <param name="content">Stream to read the content of the file from.</param>
+        /// <param name="contentType">Indicates the media type of the file.</param>
+        /// <param name="totalFileSize">Size of file as it will be after all parts are uploaded. -1 if unknown (in case of chunked upload).</param>
         /// <returns>The newly created file.</returns>
         /// <remarks></remarks>
-        public async Task<IFileAsync> CreateFileAsync(string name)
+        public async Task<IFile> CreateFileAsync(string name, Stream content, string contentType, long totalFileSize)
         {
             // The actual business card file is created in datatbase in CardFile.Write call.
             string fileName = System.IO.Path.GetFileNameWithoutExtension(name);
@@ -303,7 +308,7 @@ namespace CardDAVServer.SqlStorage.AspNetCore.CardDav
         /// <param name="multistatus">Instance of <see cref="MultistatusException"/>
         /// to fill with errors ocurred while moving child items.</param>
         /// <returns></returns>
-        public override async Task MoveToAsync(IItemCollectionAsync destFolder, string destName, MultistatusException multistatus)
+        public override async Task MoveToAsync(IItemCollection destFolder, string destName, MultistatusException multistatus)
         {
             // Here we support only addressbooks renaming. Check that user has permissions to write.
             string sql = @"UPDATE [card_AddressbookFolder] SET Name=@Name 
@@ -474,7 +479,7 @@ namespace CardDAVServer.SqlStorage.AspNetCore.CardDav
                 "@Namespace"            , ns);
         }
 
-        public Task SetOwnerAsync(IPrincipalAsync value)
+        public Task SetOwnerAsync(IPrincipal value)
         {
             throw new DavException("Not implemented.", DavStatus.NOT_IMPLEMENTED);
         }
@@ -484,9 +489,9 @@ namespace CardDAVServer.SqlStorage.AspNetCore.CardDav
         /// </summary>
         /// <remarks>Required by OS X.</remarks>
         /// <returns>
-        /// Item that represents owner of this item and implements <see cref="IPrincipalAsync"/>.
+        /// Item that represents owner of this item and implements <see cref="IPrincipal"/>.
         /// </returns>
-        public async Task<IPrincipalAsync> GetOwnerAsync()
+        public async Task<IPrincipal> GetOwnerAsync()
         {
             DataRow rowOwner = rowsAccess.FirstOrDefault(x => x.Field<bool>("Owner") == true);
             if (rowOwner == null)
@@ -500,7 +505,7 @@ namespace CardDAVServer.SqlStorage.AspNetCore.CardDav
         /// found on repositories that implement the Unix privileges model.
         /// </summary>
         /// <param name="value">Identifies whether to search by owner or group.</param>
-        public Task SetGroupAsync(IPrincipalAsync value)
+        public Task SetGroupAsync(IPrincipal value)
         {
             throw new DavException("Group cannot be set", DavStatus.FORBIDDEN);
         }
@@ -510,12 +515,12 @@ namespace CardDAVServer.SqlStorage.AspNetCore.CardDav
         /// found on repositories that implement the Unix privileges model.
         /// </summary>
         /// <returns>
-        /// Group principal that implements <see cref="IPrincipalAsync"/>.
+        /// Group principal that implements <see cref="IPrincipal"/>.
         /// </returns>
         /// <remarks>
         /// Can return null if group is not assigned.
         /// </remarks>
-        public async Task<IPrincipalAsync> GetGroupAsync()
+        public async Task<IPrincipal> GetGroupAsync()
         {
             return null; // Groups are not supported.
         }
@@ -608,18 +613,18 @@ namespace CardDAVServer.SqlStorage.AspNetCore.CardDav
         /// </summary>
         /// <returns>Enumerable with files/folders from which this file/folder has inherited
         /// access control entries.</returns>
-        public async Task<IEnumerable<IHierarchyItemAsync>> GetInheritedAclSetAsync()
+        public async Task<IEnumerable<IHierarchyItem>> GetInheritedAclSetAsync()
         {
-            return new IHierarchyItemAsync[] { };
+            return new IHierarchyItem[] { };
         }
 
         /// <summary>
         /// Gets collections which contain principals.
         /// </summary>
         /// <returns>Folders which contain users/groups.</returns>
-        public async Task<IEnumerable<IPrincipalFolderAsync>> GetPrincipalCollectionSetAsync()
+        public async Task<IEnumerable<IPrincipalFolder>> GetPrincipalCollectionSetAsync()
         {
-            return new IPrincipalFolderAsync[] { new Acl.UsersFolder(Context) };
+            return new IPrincipalFolder[] { new Acl.UsersFolder(Context) };
         }
 
         /// <summary>
@@ -629,12 +634,12 @@ namespace CardDAVServer.SqlStorage.AspNetCore.CardDav
         /// <param name="wellKnownPrincipal">Well known principal type.</param>
         /// <returns>Instance of corresponding user/group or <c>null</c> if corresponding user/group
         /// is not supported.</returns>
-        public async Task<IPrincipalAsync> ResolveWellKnownPrincipalAsync(WellKnownPrincipal wellKnownPrincipal)
+        public async Task<IPrincipal> ResolveWellKnownPrincipalAsync(WellKnownPrincipal wellKnownPrincipal)
         {
             return null;
         }
 
-        public Task<IEnumerable<IAclHierarchyItemAsync>> GetItemsByPropertyAsync(MatchBy matchBy, IList<PropertyName> props)
+        public Task<IEnumerable<IAclHierarchyItem>> GetItemsByPropertyAsync(MatchBy matchBy, IList<PropertyName> props)
         {
             throw new DavException("Not implemented.", DavStatus.NOT_IMPLEMENTED);
         }

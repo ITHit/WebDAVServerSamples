@@ -5,6 +5,7 @@ Imports System.Threading.Tasks
 Imports ITHit.WebDAV.Server
 Imports ITHit.WebDAV.Server.Acl
 Imports ITHit.WebDAV.Server.Paging
+Imports IPrincipal = ITHit.WebDAV.Server.Acl.IPrincipal
 
 Namespace Acl
 
@@ -14,7 +15,7 @@ Namespace Acl
     ''' </summary>
     Public Class UserFolder
         Inherits LogicalFolder
-        Implements IPrincipalFolderAsync
+        Implements IPrincipalFolder
 
         ''' <summary>
         ''' Path to folder which contains users.
@@ -46,25 +47,25 @@ Namespace Acl
         ''' <param name="nResults">The number of items to return.</param>
         ''' <param name="orderProps">List of order properties requested by the client.</param>
         ''' <returns>Enumerable with users and a total number of users.</returns>
-        Public Overrides Async Function GetChildrenAsync(propNames As IList(Of PropertyName), offset As Long?, nResults As Long?, orderProps As IList(Of OrderProperty)) As Task(Of PageResults) Implements IItemCollectionAsync.GetChildrenAsync
-            Return New PageResults(Context.PrincipalOperation(Of IEnumerable(Of IHierarchyItemAsync))(AddressOf getUsers), Nothing)
+        Public Overrides Async Function GetChildrenAsync(propNames As IList(Of PropertyName), offset As Long?, nResults As Long?, orderProps As IList(Of OrderProperty)) As Task(Of PageResults) Implements IItemCollection.GetChildrenAsync
+            Return New PageResults(Context.PrincipalOperation(Of IEnumerable(Of IHierarchyItem))(AddressOf getUsers), Nothing)
         End Function
 
         ''' <summary>
         ''' Retrieves all users in computer/domain.
         ''' </summary>
         ''' <returns>Enumerable with users.</returns>
-        Private Function getUsers() As IEnumerable(Of IHierarchyItemAsync)
+        Private Function getUsers() As IEnumerable(Of IHierarchyItem)
             Dim insUserPrincipal As UserPrincipal = New UserPrincipal(Context.GetPrincipalContext())
             insUserPrincipal.Name = "*"
             Dim insPrincipalSearcher As PrincipalSearcher = New PrincipalSearcher(insUserPrincipal)
-            Return insPrincipalSearcher.FindAll().Select(Function(u) New User(CType(u, UserPrincipal), Context)).Cast(Of IHierarchyItemAsync)().ToList()
+            Return insPrincipalSearcher.FindAll().Select(Function(u) New User(CType(u, UserPrincipal), Context)).Cast(Of IHierarchyItem)().ToList()
         End Function
 
         ''' <summary>
         ''' We don't support creating folders inside this folder.
         ''' </summary>        
-        Public Async Function CreateFolderAsync(name As String) As Task(Of IPrincipalFolderAsync) Implements IPrincipalFolderAsync.CreateFolderAsync
+        Public Async Function CreateFolderAsync(name As String) As Task(Of IPrincipalFolder) Implements IPrincipalFolder.CreateFolderAsync
             Throw New DavException("Creating folders is not implemented", DavStatus.NOT_IMPLEMENTED)
         End Function
 
@@ -73,7 +74,7 @@ Namespace Acl
         ''' </summary>
         ''' <param name="name">User name.</param>
         ''' <returns>Newly created user.</returns>
-        Public Async Function CreatePrincipalAsync(name As String) As Task(Of IPrincipalAsync) Implements IPrincipalFolderAsync.CreatePrincipalAsync
+        Public Async Function CreatePrincipalAsync(name As String) As Task(Of IPrincipal) Implements IPrincipalFolder.CreatePrincipalAsync
             If Not PrincipalBase.IsValidUserName(name) Then
                 Throw New DavException("User name contains invalid characters", DavStatus.FORBIDDEN)
             End If
@@ -94,7 +95,7 @@ Namespace Acl
         ''' <param name="props">Properties that will be requested by the engine from the returned users.</param>
         ''' <returns>Enumerable with users whose properties match.</returns>
         Public Async Function FindPrincipalsByPropertyValuesAsync(propValues As IList(Of PropertyValue),
-                                                                 props As IList(Of PropertyName)) As Task(Of IEnumerable(Of IPrincipalAsync)) Implements IPrincipalFolderAsync.FindPrincipalsByPropertyValuesAsync
+                                                                 props As IList(Of PropertyName)) As Task(Of IEnumerable(Of IPrincipal)) Implements IPrincipalFolder.FindPrincipalsByPropertyValuesAsync
             Dim user As UserPrincipal = New UserPrincipal(Context.GetPrincipalContext())
             user.Name = "*"
             For Each v As PropertyValue In propValues
@@ -104,25 +105,25 @@ Namespace Acl
             Next
 
             Dim searcher As PrincipalSearcher = New PrincipalSearcher(user)
-            Return searcher.FindAll().Select(Function(u) New User(CType(u, UserPrincipal), Context)).Cast(Of IPrincipalAsync)()
+            Return searcher.FindAll().Select(Function(u) New User(CType(u, UserPrincipal), Context)).Cast(Of IPrincipal)()
         End Function
 
         ''' <summary>
         ''' Returns list of properties which can be used in <see cref="FindPrincipalsByPropertyValuesAsync"/> .
         ''' </summary>
         ''' <returns></returns>
-        Public Async Function GetPrincipalSearcheablePropertiesAsync() As Task(Of IEnumerable(Of PropertyDescription)) Implements IPrincipalFolderAsync.GetPrincipalSearcheablePropertiesAsync
+        Public Async Function GetPrincipalSearcheablePropertiesAsync() As Task(Of IEnumerable(Of PropertyDescription)) Implements IPrincipalFolder.GetPrincipalSearcheablePropertiesAsync
             Return {New PropertyDescription With {.Name = PropertyName.DISPLAYNAME,                                 
                                             .Description = "Principal name",
                                             .Lang = "en"}}
         End Function
 
         ''' <summary>
-        ''' Returns <see cref="IPrincipalAsync"/>  for the current user.
+        ''' Returns <see cref="IPrincipal"/>  for the current user.
         ''' </summary>
         ''' <param name="props">Properties that will be asked later from the user returned.</param>
         ''' <returns>Enumerable with users.</returns>
-        Public Async Function GetMatchingPrincipalsAsync(props As IList(Of PropertyName)) As Task(Of IEnumerable(Of IPrincipalAsync)) Implements IPrincipalFolderAsync.GetMatchingPrincipalsAsync
+        Public Async Function GetMatchingPrincipalsAsync(props As IList(Of PropertyName)) As Task(Of IEnumerable(Of IPrincipal)) Implements IPrincipalFolder.GetMatchingPrincipalsAsync
             Return {User.FromName(Context.WindowsIdentity.Name, Context)}
         End Function
     End Class

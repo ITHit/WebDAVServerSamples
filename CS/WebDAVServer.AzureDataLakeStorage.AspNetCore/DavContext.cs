@@ -11,11 +11,11 @@ using Microsoft.AspNetCore.Authentication;
 namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
 {
     /// <summary>
-    /// Implementation of <see cref="ContextAsync{IHierarchyItemAsync}"/>.
+    /// Implementation of <see cref="ContextAsync{IHierarchyItem"/>.
     /// Resolves hierarchy items by paths.
     /// </summary>
     public class DavContext :
-        ContextCoreAsync<IHierarchyItemAsync>
+        ContextCoreAsync<IHierarchyItem>
     {
         public HttpContext HttpContext { get; private set; }
 
@@ -60,11 +60,11 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
         }
 
         /// <summary>
-        /// Creates <see cref="IHierarchyItemAsync"/> instance by path.
+        /// Creates <see cref="IHierarchyItem"/> instance by path.
         /// </summary>
         /// <param name="path">Item relative path including query string.</param>
-        /// <returns>Instance of corresponding <see cref="IHierarchyItemAsync"/> or null if item is not found.</returns>
-        public override async Task<IHierarchyItemAsync> GetHierarchyItemAsync(string path)
+        /// <returns>Instance of corresponding <see cref="IHierarchyItem"/> or null if item is not found.</returns>
+        public override async Task<IHierarchyItem> GetHierarchyItemAsync(string path)
         {
             path = path.Trim(new[] { ' ', '/' });
 
@@ -97,7 +97,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
                 }
             }
 
-            IHierarchyItemAsync item;
+            IHierarchyItem item;
             if (await DataLakeStoreService.IsDirectoryAsync(path))
             {
                 item = await DavFolder.GetFolderAsync(this, path);

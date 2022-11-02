@@ -1,0 +1,34 @@
+.dropzone {
+  .ithit-grid-wrapper {
+    border: 2px solid $mainColor;
+
+    .drop-files-header {
+      display: block;
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      height: 2.625rem;
+      width: 100%;
+      z-index: 2;
+      background-color: $whiteColor;
+      border-bottom: 1px solid $mainColor;
+      color: $mainColor;
+      text-align: center;
+
+      .drop-files-title {
+        margin-top: 0.438rem;
+        font-size: 1.25rem;
+        line-height: 1.688rem;
+      }
+    }
+
+    // .table-row-drag {
+    //   background: rgba($mainColor, 0.2);
+    // }
+
+    .table-row-file {
+      opacity: 0.4;
+    }
+  }
+}

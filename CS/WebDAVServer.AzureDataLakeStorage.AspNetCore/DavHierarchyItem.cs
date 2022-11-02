@@ -11,7 +11,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
     /// <summary>
     /// Base class for WebDAV items (folders, files, etc).
     /// </summary>
-    public abstract class DavHierarchyItem : IHierarchyItemAsync, ILockAsync
+    public abstract class DavHierarchyItem : IHierarchyItem, ILock
     {
 
         /// <summary>
@@ -96,7 +96,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
         /// information about the error into <paramref name="multistatus"/> using 
         /// <see cref="MultistatusException.AddInnerException(string,ITHit.WebDAV.Server.DavException)"/>.
         /// </param>
-        public abstract Task CopyToAsync(IItemCollectionAsync destFolder, string destName, bool deep, MultistatusException multistatus);
+        public abstract Task CopyToAsync(IItemCollection destFolder, string destName, bool deep, MultistatusException multistatus);
 
         /// <summary>
         /// Moves this item to the destination folder under a new name.
@@ -107,7 +107,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
         /// information about the error into <paramref name="multistatus"/> using 
         /// <see cref="MultistatusException.AddInnerException(string,ITHit.WebDAV.Server.DavException)"/>.
         /// </param>
-        public abstract Task MoveToAsync(IItemCollectionAsync destFolder, string destName, MultistatusException multistatus);
+        public abstract Task MoveToAsync(IItemCollection destFolder, string destName, MultistatusException multistatus);
 
         /// <summary>
         /// Deletes this item.

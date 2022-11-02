@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 
 using ITHit.WebDAV.Server;
 using ITHit.WebDAV.Server.Acl;
+using IPrincipal = ITHit.WebDAV.Server.Acl.IPrincipal;
 
 using CardDAVServer.SqlStorage.AspNetCore.Acl;
 
@@ -13,7 +14,7 @@ namespace CardDAVServer.SqlStorage.AspNetCore
     /// <summary>
     /// Base class for calendars (calendar folders), and calendar files (events and to-dos).
     /// </summary>
-    public abstract class DavHierarchyItem : Discovery, IHierarchyItemAsync, ICurrentUserPrincipalAsync
+    public abstract class DavHierarchyItem : Discovery, IHierarchyItem, ICurrentUserPrincipal
     {
         protected string itemPath;
         protected string displayName;
@@ -56,19 +57,19 @@ namespace CardDAVServer.SqlStorage.AspNetCore
         /// This method is usually called by the Engine when CalDAV/CardDAV client 
         /// is trying to discover current user URL.
         /// </remarks>
-        public async Task<IPrincipalAsync> GetCurrentUserPrincipalAsync()
+        public async Task<IPrincipal> GetCurrentUserPrincipalAsync()
         {
             // Typically there is no need to load all user properties here, only current 
             // user ID (or name) is required to form the user URL: [DAVLocation]/acl/users/[UserID]
             return new User(Context, Context.UserId);
         }
 
-        public virtual async Task CopyToAsync(IItemCollectionAsync destFolder, string destName, bool deep, MultistatusException multistatus)
+        public virtual async Task CopyToAsync(IItemCollection destFolder, string destName, bool deep, MultistatusException multistatus)
         {
             throw new DavException("Not implemented.", DavStatus.NOT_IMPLEMENTED);
         }
 
-        public virtual async Task MoveToAsync(IItemCollectionAsync destFolder, string destName, MultistatusException multistatus)
+        public virtual async Task MoveToAsync(IItemCollection destFolder, string destName, MultistatusException multistatus)
         {
             throw new DavException("Not implemented.", DavStatus.NOT_IMPLEMENTED);
         }

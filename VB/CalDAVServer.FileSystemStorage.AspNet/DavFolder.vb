@@ -18,7 +18,7 @@ Imports ITHit.WebDAV.Server.Paging
 ''' </summary>
 Public Class DavFolder
     Inherits DavHierarchyItem
-    Implements IFolderAsync
+    Implements IFolder
 
     ' Control characters and permanently undefined Unicode characters to be removed from search snippet.
     Private Shared ReadOnly invalidXmlCharsPattern As Regex = New Regex("[^\x09\x0A\x0D\x20-\xD7FF\xE000-\xFFFD\x10000-x10FFFF]", RegexOptions.IgnoreCase)
@@ -64,12 +64,12 @@ Public Class DavFolder
     ''' <param name="nResults">The number of items to return.</param>
     ''' <param name="orderProps">List of order properties requested by the client.</param>
     ''' <returns>Items requested by the client and a total number of items in this folder.</returns>
-    Public Overridable Async Function GetChildrenAsync(propNames As IList(Of PropertyName), offset As Long?, nResults As Long?, orderProps As IList(Of OrderProperty)) As Task(Of PageResults) Implements IItemCollectionAsync.GetChildrenAsync
+    Public Overridable Async Function GetChildrenAsync(propNames As IList(Of PropertyName), offset As Long?, nResults As Long?, orderProps As IList(Of OrderProperty)) As Task(Of PageResults) Implements IItemCollection.GetChildrenAsync
         ' Enumerates all child files and folders.
         ' You can filter children items in this implementation and 
         ' return only items that you want to be visible for this 
         ' particular user.
-        Dim children As IList(Of IHierarchyItemAsync) = New List(Of IHierarchyItemAsync)()
+        Dim children As IList(Of IHierarchyItem) = New List(Of IHierarchyItem)()
         Dim totalItems As Long = 0
         Dim fileInfos As FileSystemInfo() = dirInfo.GetFileSystemInfos()
         totalItems = fileInfos.Length
@@ -82,7 +82,7 @@ Public Class DavFolder
 
         For Each fileInfo As FileSystemInfo In fileInfos
             Dim childPath As String = Path & EncodeUtil.EncodeUrlPart(fileInfo.Name)
-            Dim child As IHierarchyItemAsync = Await context.GetHierarchyItemAsync(childPath)
+            Dim child As IHierarchyItem = Await context.GetHierarchyItemAsync(childPath)
             If child IsNot Nothing Then
                 children.Add(child)
             End If
@@ -95,20 +95,34 @@ Public Class DavFolder
     ''' Called when a new file is being created in this folder.
     ''' </summary>
     ''' <param name="name">Name of the new file.</param>
+    ''' <param name="content">Stream to read the content of the file from.</param>
+    ''' <param name="contentType">Indicates the media type of the file.</param>
+    ''' <param name="totalFileSize">Size of file as it will be after all parts are uploaded. -1 if unknown (in case of chunked upload).</param>
     ''' <returns>The new file.</returns>
-    Public Overridable Async Function CreateFileAsync(name As String) As Task(Of IFileAsync) Implements IFolderAsync.CreateFileAsync
+    Public Overridable Async Function CreateFileAsync(name As String, content As Stream, contentType As String, totalFileSize As Long) As Task(Of IFile) Implements IFolder.CreateFileAsync
         Dim fileName As String = System.IO.Path.Combine(fileSystemInfo.FullName, name)
         Using stream As FileStream = New FileStream(fileName, FileMode.CreateNew)
              End Using
 
-        Return CType(Await context.GetHierarchyItemAsync(Path & EncodeUtil.EncodeUrlPart(name)), IFileAsync)
+        Dim file As DavFile = CType(Await context.GetHierarchyItemAsync(Path & EncodeUtil.EncodeUrlPart(name)), DavFile)
+        ' write file content
+        Await file.WriteInternalAsync(content, contentType, 0, totalFileSize)
+        Return file
     End Function
 
     ''' <summary>
     ''' Called when a new folder is being created in this folder.
     ''' </summary>
     ''' <param name="name">Name of the new folder.</param>
-    Overridable Public Async Function CreateFolderAsync(name As String) As Task Implements IFolderAsync.CreateFolderAsync
+    Overridable Public Async Function CreateFolderAsync(name As String) As Task Implements IFolder.CreateFolderAsync
+        Await CreateFolderInternalAsync(name)
+    End Function
+
+    ''' <summary>
+    ''' Called when a new folder is being created in this folder.
+    ''' </summary>
+    ''' <param name="name">Name of the new folder.</param>
+    Private Async Function CreateFolderInternalAsync(name As String) As Task
         Dim isRoot As Boolean = dirInfo.Parent Is Nothing
         Dim di As DirectoryInfo = If(isRoot, New DirectoryInfo("\\?\" & context.RepositoryPath.TrimEnd(System.IO.Path.DirectorySeparatorChar)), dirInfo)
         di.CreateSubdirectory(name)
@@ -121,7 +135,19 @@ Public Class DavFolder
     ''' <param name="destName">New folder name.</param>
     ''' <param name="deep">Whether children items shall be copied.</param>
     ''' <param name="multistatus">Information about child items that failed to copy.</param>
-    Public Overrides Async Function CopyToAsync(destFolder As IItemCollectionAsync, destName As String, deep As Boolean, multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.CopyToAsync
+    Public Overrides Async Function CopyToAsync(destFolder As IItemCollection, destName As String, deep As Boolean, multistatus As MultistatusException) As Task Implements IHierarchyItem.CopyToAsync
+        Await CopyToInternalAsync(destFolder, destName, deep, multistatus, 0)
+    End Function
+
+    ''' <summary>
+    ''' Called when this folder is being copied.
+    ''' </summary>
+    ''' <param name="destFolder">Destination parent folder.</param>
+    ''' <param name="destName">New folder name.</param>
+    ''' <param name="deep">Whether children items shall be copied.</param>
+    ''' <param name="multistatus">Information about child items that failed to copy.</param>
+    ''' <param name="recursionDepth">Recursion depth.</param>
+    Public Overrides Async Function CopyToInternalAsync(destFolder As IItemCollection, destName As String, deep As Boolean, multistatus As MultistatusException, recursionDepth As Integer) As Task
         If Not(TypeOf destFolder Is DavFolder) Then
             Throw New DavException("Target folder doesn't exist", DavStatus.CONFLICT)
         End If
@@ -136,7 +162,7 @@ Public Class DavFolder
         ' Create folder at the destination.
         Try
             If Not Directory.Exists(newDirLocalPath) Then
-                Await targetFolder.CreateFolderAsync(destName)
+                Await targetFolder.CreateFolderInternalAsync(destName)
             End If
         Catch ex As DavException
             ' Continue, but report error to client for the target item.
@@ -144,14 +170,14 @@ Public Class DavFolder
         End Try
 
         ' Copy children.
-        Dim createdFolder As IFolderAsync = CType(Await context.GetHierarchyItemAsync(targetPath), IFolderAsync)
+        Dim createdFolder As IFolder = CType(Await context.GetHierarchyItemAsync(targetPath), IFolder)
         For Each item As DavHierarchyItem In(Await GetChildrenAsync(New PropertyName(-1) {}, Nothing, Nothing, New List(Of OrderProperty)())).Page
             If Not deep AndAlso TypeOf item Is DavFolder Then
                 Continue For
             End If
 
             Try
-                Await item.CopyToAsync(createdFolder, item.Name, deep, multistatus)
+                Await item.CopyToInternalAsync(createdFolder, item.Name, deep, multistatus, recursionDepth + 1)
             Catch ex As DavException
                 ' If a child item failed to copy we continue but report error to client.
                 multistatus.AddInnerException(item.Path, ex)
@@ -165,7 +191,17 @@ Public Class DavFolder
     ''' <param name="destFolder">Destination folder.</param>
     ''' <param name="destName">New name of this folder.</param>
     ''' <param name="multistatus">Information about child items that failed to move.</param>
-    Public Overrides Async Function MoveToAsync(destFolder As IItemCollectionAsync, destName As String, multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.MoveToAsync
+    Public Overrides Async Function MoveToAsync(destFolder As IItemCollection, destName As String, multistatus As MultistatusException) As Task Implements IHierarchyItem.MoveToAsync
+        Await MoveToInternalAsync(destFolder, destName, multistatus, 0)
+    End Function
+
+    ''' <summary>
+    ''' Called when this folder is being moved or renamed.
+    ''' </summary>
+    ''' <param name="destFolder">Destination folder.</param>
+    ''' <param name="destName">New name of this folder.</param>
+    ''' <param name="multistatus">Information about child items that failed to move.</param>
+    Public Overrides Async Function MoveToInternalAsync(destFolder As IItemCollection, destName As String, multistatus As MultistatusException, recursionDepth As Integer) As Task
         ' in this function we move item by item, because we want to check if each item is not locked.
         If Not(TypeOf destFolder Is DavFolder) Then
             Throw New DavException("Target folder doesn't exist", DavStatus.CONFLICT)
@@ -180,9 +216,9 @@ Public Class DavFolder
         Dim targetPath As String = targetFolder.Path & EncodeUtil.EncodeUrlPart(destName)
         Try
             ' Remove item with the same name at destination if it exists.
-            Dim item As IHierarchyItemAsync = Await context.GetHierarchyItemAsync(targetPath)
-            If item IsNot Nothing Then Await item.DeleteAsync(multistatus)
-            Await targetFolder.CreateFolderAsync(destName)
+            Dim item As DavHierarchyItem = TryCast(Await context.GetHierarchyItemAsync(targetPath), DavHierarchyItem)
+            If item IsNot Nothing Then Await item.DeleteInternalAsync(multistatus, recursionDepth + 1)
+            Await targetFolder.CreateFolderInternalAsync(destName)
         Catch ex As DavException
             ' Continue the operation but report error with destination path to client.
             multistatus.AddInnerException(targetPath, ex)
@@ -191,10 +227,10 @@ Public Class DavFolder
 
         ' Move child items.
         Dim movedSuccessfully As Boolean = True
-        Dim createdFolder As IFolderAsync = CType(Await context.GetHierarchyItemAsync(targetPath), IFolderAsync)
+        Dim createdFolder As IFolder = CType(Await context.GetHierarchyItemAsync(targetPath), IFolder)
         For Each item As DavHierarchyItem In(Await GetChildrenAsync(New PropertyName(-1) {}, Nothing, Nothing, New List(Of OrderProperty)())).Page
             Try
-                Await item.MoveToAsync(createdFolder, item.Name, multistatus)
+                Await item.MoveToInternalAsync(createdFolder, item.Name, multistatus, recursionDepth + 1)
             Catch ex As DavException
                 ' Continue the operation but report error with child item to client.
                 multistatus.AddInnerException(item.Path, ex)
@@ -203,7 +239,7 @@ Public Class DavFolder
         Next
 
         If movedSuccessfully Then
-            Await DeleteAsync(multistatus)
+            Await DeleteInternalAsync(multistatus, recursionDepth + 1)
         End If
     End Function
 
@@ -211,11 +247,20 @@ Public Class DavFolder
     ''' Called whan this folder is being deleted.
     ''' </summary>
     ''' <param name="multistatus">Information about items that failed to delete.</param>
-    Public Overrides Async Function DeleteAsync(multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.DeleteAsync
+    Public Overrides Async Function DeleteAsync(multistatus As MultistatusException) As Task Implements IHierarchyItem.DeleteAsync
+        Await DeleteInternalAsync(multistatus, 0)
+    End Function
+
+    ''' <summary>
+    ''' Called whan this folder is being deleted.
+    ''' </summary>
+    ''' <param name="multistatus">Information about items that failed to delete.</param>
+    ''' <param name="recursionDepth">Recursion depth.</param>
+    Public Overrides Async Function DeleteInternalAsync(multistatus As MultistatusException, recursionDepth As Integer) As Task
         Dim allChildrenDeleted As Boolean = True
-        For Each child As IHierarchyItemAsync In(Await GetChildrenAsync(New PropertyName(-1) {}, Nothing, Nothing, New List(Of OrderProperty)())).Page
+        For Each child As DavHierarchyItem In(Await GetChildrenAsync(New PropertyName(-1) {}, Nothing, Nothing, New List(Of OrderProperty)())).Page
             Try
-                Await child.DeleteAsync(multistatus)
+                Await child.DeleteInternalAsync(multistatus, recursionDepth + 1)
             Catch ex As DavException
                 'continue the operation if a child failed to delete. Tell client about it by adding to multistatus.
                 multistatus.AddInnerException(child.Path, ex)
@@ -232,7 +277,7 @@ Public Class DavFolder
     ''' Determines whether <paramref name="destFolder"/>  is inside this folder.
     ''' </summary>
     ''' <param name="destFolder">Folder to check.</param>
-    ''' <returns>Returns <c>true</c> if <paramref name="destFolder"/>  is inside thid folder.</returns>
+    ''' <returns>Returns <c>true</c> if <paramref name="destFolder"/>  is inside this folder.</returns>
     Private Function IsRecursive(destFolder As DavFolder) As Boolean
         Return destFolder.Path.StartsWith(Path)
     End Function

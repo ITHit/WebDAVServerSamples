@@ -14,9 +14,9 @@ namespace CardDAVServer.FileSystemStorage.AspNetCore.CardDav
         /// <param name="path">Relative path requested.</param>
         /// <param name="context">Instance of <see cref="DavContext"/> class.</param>
         /// <returns>Object implementing various CardDAV items or null if no object corresponding to path is found.</returns>
-        internal static IHierarchyItemAsync GetCardDavItem(DavContext context, string path)
+        internal static IHierarchyItem GetCardDavItem(DavContext context, string path)
         {
-            IHierarchyItemAsync item = null;
+            IHierarchyItem item = null;
 
             item = AddressbooksRootFolder.GetAddressbooksRootFolder(context, path);
             if (item != null)

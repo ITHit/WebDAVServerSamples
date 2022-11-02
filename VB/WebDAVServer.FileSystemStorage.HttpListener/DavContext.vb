@@ -14,11 +14,11 @@ Imports ILogger = ITHit.Server.ILogger
 Imports WebDAVServer.FileSystemStorage.HttpListener.ExtendedAttributes
 
 ''' <summary>
-''' Implementation of <see cref="ContextAsync{IHierarchyItemAsync}"/> .
+''' Implementation of <see cref="ContextAsync{IHierarchyItem}"/> .
 ''' Resolves hierarchy items by paths.
 ''' </summary>
 Public Class DavContext
-    Inherits ContextHttpListenerAsync(Of IHierarchyItemAsync)
+    Inherits ContextHttpListenerAsync(Of IHierarchyItem)
 
     ''' <summary>
     ''' Path to the folder which become available via WebDAV.
@@ -85,11 +85,11 @@ Public Class DavContext
     End Sub
 
     ''' <summary>
-    ''' Creates <see cref="IHierarchyItemAsync"/>  instance by path.
+    ''' Creates <see cref="IHierarchyItem"/>  instance by path.
     ''' </summary>
     ''' <param name="path">Item relative path including query string.</param>
-    ''' <returns>Instance of corresponding <see cref="IHierarchyItemAsync"/>  or null if item is not found.</returns>
-    Public Overrides Async Function GetHierarchyItemAsync(path As String) As Task(Of IHierarchyItemAsync)
+    ''' <returns>Instance of corresponding <see cref="IHierarchyItem"/>  or null if item is not found.</returns>
+    Public Overrides Async Function GetHierarchyItemAsync(path As String) As Task(Of IHierarchyItem)
         path = path.Trim({" "c, "/"c})
         'remove query string.
         Dim ind As Integer = path.IndexOf("?"c)
@@ -97,7 +97,7 @@ Public Class DavContext
             path = path.Remove(ind)
         End If
 
-        Dim item As IHierarchyItemAsync = Nothing
+        Dim item As IHierarchyItem = Nothing
         item = Await DavFolder.GetFolderAsync(Me, path)
         If item IsNot Nothing Then Return item
         item = Await DavFile.GetFileAsync(Me, path)

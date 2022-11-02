@@ -11,10 +11,10 @@ namespace CardDAVServer.SqlStorage.AspNetCore
     /// Base class for logical folders which are not present in your 
     /// back-end storage (datatbase, file system, etc), like [DavLocation], '[DavLocation]/acl/, '[DavLocation]/acl/users/'
     /// </summary>
-    public class LogicalFolder : DavHierarchyItem, IItemCollectionAsync
+    public class LogicalFolder : DavHierarchyItem, IItemCollection
     {
 
-        private IEnumerable<IHierarchyItemAsync> children;
+        private IEnumerable<IHierarchyItem> children;
 
         /// <summary>
         /// Creates instance of <see cref="LogicalFolder"/> class.
@@ -22,12 +22,12 @@ namespace CardDAVServer.SqlStorage.AspNetCore
         /// <param name="context">Instance of <see cref="DavContext"/></param>
         /// <param name="path">Encoded path relative to WebDAV root.</param>
         /// <param name="children">List of child items that will be returned when enumerating this folder children.</param>
-        public LogicalFolder(DavContext context, string path, IEnumerable<IHierarchyItemAsync> children = null)
+        public LogicalFolder(DavContext context, string path, IEnumerable<IHierarchyItem> children = null)
             : base(context)
         {
             this.Context = context;
             this.itemPath = path;
-            this.children = children ?? new IHierarchyItemAsync[0];
+            this.children = children ?? new IHierarchyItem[0];
             
             path = path.TrimEnd('/');
             string encodedName = path.Substring(path.LastIndexOf('/') + 1);

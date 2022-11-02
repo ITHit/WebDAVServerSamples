@@ -61,7 +61,7 @@ namespace WebDAVServer.FileSystemStorage.AspNet
             WebSocket client = webSocketContext.WebSocket;
 
             // Adding client to connected clients dictionary.
-            Guid clientId = socketService.AddClient(client);
+            Guid clientId = socketService.AddClient(client, webSocketContext.Headers["InstanceId"]);
 
             byte[] buffer = new byte[1024 * 4];
             WebSocketReceiveResult result = null;

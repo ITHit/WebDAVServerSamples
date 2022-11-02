@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 using ITHit.WebDAV.Server;
 using ITHit.WebDAV.Server.Acl;
+using IPrincipal = ITHit.WebDAV.Server.Acl.IPrincipal;
 using ITHit.WebDAV.Server.Extensibility;
 
 using CardDAVServer.FileSystemStorage.AspNetCore.Acl;
@@ -18,7 +19,7 @@ namespace CardDAVServer.FileSystemStorage.AspNetCore
     /// <summary>
     /// Base class for WebDAV items (folders, files, etc).
     /// </summary>
-    public abstract class DavHierarchyItem : Discovery , IHierarchyItemAsync, ICurrentUserPrincipalAsync
+    public abstract class DavHierarchyItem : Discovery , IHierarchyItem, ICurrentUserPrincipal
     {
 
         /// <summary>
@@ -89,7 +90,20 @@ namespace CardDAVServer.FileSystemStorage.AspNetCore
         /// information about the error into <paramref name="multistatus"/> using 
         /// <see cref="MultistatusException.AddInnerException(string,ITHit.WebDAV.Server.DavException)"/>.
         /// </param>
-        public abstract Task CopyToAsync(IItemCollectionAsync destFolder, string destName, bool deep, MultistatusException multistatus);
+        public abstract Task CopyToAsync(IItemCollection destFolder, string destName, bool deep, MultistatusException multistatus);
+
+        /// <summary>
+        /// Creates a copy of this item with a new name in the destination folder.
+        /// </summary>
+        /// <param name="destFolder">Destination folder.</param>
+        /// <param name="destName">Name of the destination item.</param>
+        /// <param name="deep">Indicates whether to copy entire subtree.</param>
+        /// <param name="multistatus">If some items fail to copy but operation in whole shall be continued, add
+        /// information about the error into <paramref name="multistatus"/> using 
+        /// <see cref="MultistatusException.AddInnerException(string,ITHit.WebDAV.Server.DavException)"/>.
+        /// </param>
+        /// <param name="recursionDepth">Recursion depth.</param>
+        public abstract Task CopyToInternalAsync(IItemCollection destFolder, string destName, bool deep, MultistatusException multistatus, int recursionDepth);
 
         /// <summary>
         /// Moves this item to the destination folder under a new name.
@@ -100,7 +114,19 @@ namespace CardDAVServer.FileSystemStorage.AspNetCore
         /// information about the error into <paramref name="multistatus"/> using 
         /// <see cref="MultistatusException.AddInnerException(string,ITHit.WebDAV.Server.DavException)"/>.
         /// </param>
-        public abstract Task MoveToAsync(IItemCollectionAsync destFolder, string destName, MultistatusException multistatus);
+        public abstract Task MoveToAsync(IItemCollection destFolder, string destName, MultistatusException multistatus);
+
+        /// <summary>
+        /// Moves this item to the destination folder under a new name.
+        /// </summary>
+        /// <param name="destFolder">Destination folder.</param>
+        /// <param name="destName">Name of the destination item.</param>
+        /// <param name="multistatus">If some items fail to copy but operation in whole shall be continued, add
+        /// information about the error into <paramref name="multistatus"/> using 
+        /// <see cref="MultistatusException.AddInnerException(string,ITHit.WebDAV.Server.DavException)"/>.
+        /// </param>
+        /// <param name="recursionDepth">Recursion depth.</param>
+        public abstract Task MoveToInternalAsync(IItemCollection destFolder, string destName, MultistatusException multistatus, int recursionDepth);
 
         /// <summary>
         /// Deletes this item.
@@ -110,6 +136,16 @@ namespace CardDAVServer.FileSystemStorage.AspNetCore
         /// <see cref="MultistatusException.AddInnerException(string,ITHit.WebDAV.Server.DavException)"/>.
         /// </param>
         public abstract Task DeleteAsync(MultistatusException multistatus);
+
+        /// <summary>
+        /// Deletes this item.
+        /// </summary>
+        /// <param name="multistatus">If some items fail to delete but operation in whole shall be continued, add
+        /// information about the error into <paramref name="multistatus"/> using
+        /// <see cref="MultistatusException.AddInnerException(string,ITHit.WebDAV.Server.DavException)"/>.
+        /// </param>
+        /// <param name="recursionDepth">Recursion depth.</param>
+        public abstract Task DeleteInternalAsync(MultistatusException multistatus, int recursionDepth);
 
         /// <summary>
         /// Retrieves user defined property values.
@@ -211,14 +247,14 @@ namespace CardDAVServer.FileSystemStorage.AspNetCore
         }
 
         /// <summary>
-        /// Returns instance of <see cref="IPrincipalAsync"/> which represents current user.
+        /// Returns instance of <see cref="IPrincipal"/> which represents current user.
         /// </summary>
         /// <returns>Current user.</returns>
         /// <remarks>
         /// This method is usually called by the Engine when CalDAV/CardDAV client 
         /// is trying to discover current user URL.
         /// </remarks>
-        public async Task<IPrincipalAsync> GetCurrentUserPrincipalAsync()
+        public async Task<IPrincipal> GetCurrentUserPrincipalAsync()
         {
             // Typically there is no need to load all user properties here, only current 
             // user ID (or name) is required to form the user URL: [DAVLocation]/acl/users/[UserID]
@@ -236,6 +272,16 @@ namespace CardDAVServer.FileSystemStorage.AspNetCore
             int index = parentPath.LastIndexOf("/");
             parentPath = parentPath.Substring(0, index);
             return parentPath;
+        }
+
+        /// <summary>
+        /// Returns WebSocket client ID.
+        /// </summary>
+        /// <returns>Client ID.</returns>
+        protected string GetWebSocketID()
+        {
+            return context.Request.Headers.ContainsKey("InstanceId") ?
+                context.Request.Headers["InstanceId"] : string.Empty;
         }
     }
 }

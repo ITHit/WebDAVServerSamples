@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using ITHit.WebDAV.Server;
 using ITHit.WebDAV.Server.CalDav;
 using ITHit.WebDAV.Server.Acl;
+using IPrincipal = ITHit.WebDAV.Server.Acl.IPrincipal;
 
 using CalDAVServer.FileSystemStorage.AspNetCore.Acl;
 
@@ -17,7 +18,7 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore.CalDav
     /// Represents CalDAV calendar (calendar folder).
     /// Instances of this class correspond to the following path: [DAVLocation]/calendars/[user_name]/[calendar_name]/
     /// </summary>
-    /// <remarks>Mozilla Thunderbird Lightning requires ICurrentUserPrincipalAsync on calendar folder, it does not support discovery.</remarks>
+    /// <remarks>Mozilla Thunderbird Lightning requires ICurrentUserPrincipal on calendar folder, it does not support discovery.</remarks>
     /// <example>
     /// [DAVLocation]
     ///  |-- ...
@@ -29,9 +30,9 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore.CalDav
     ///           |-- [Calendar X]  -- this class
     /// </example>
     /// <remarks>
-    /// IAclHierarchyItemAsync is required by OS X Calendar.
+    /// IAclHierarchyItem is required by OS X Calendar.
     /// </remarks>
-    public class CalendarFolder : DavFolder, ICalendarFolderAsync, IAppleCalendarAsync, ICurrentUserPrincipalAsync, IAclHierarchyItemAsync
+    public class CalendarFolder : DavFolder, ICalendarFolder, IAppleCalendar, ICurrentUserPrincipal, IAclHierarchyItem
     {
         /// <summary>
         /// Returns calendar folder that corresponds to path.
@@ -83,15 +84,15 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore.CalDav
         /// the Engine for each item that are returned from this method.
         /// </param>
         /// <returns>List of calendar files. Returns <b>null</b> for any item that is not found.</returns>
-        public async Task<IEnumerable<ICalendarFileAsync>> MultiGetAsync(IEnumerable<string> pathList, IEnumerable<PropertyName> propNames)
+        public async Task<IEnumerable<ICalendarFile>> MultiGetAsync(IEnumerable<string> pathList, IEnumerable<PropertyName> propNames)
         {
             // Here you can load all items from pathList in one request to your storage, instead of 
             // getting items one-by-one using GetHierarchyItem call.
 
-            IList<ICalendarFileAsync> calendarFileList = new List<ICalendarFileAsync>();
+            IList<ICalendarFile> calendarFileList = new List<ICalendarFile>();
             foreach (string path in pathList)
             {
-                ICalendarFileAsync calendarFile = await context.GetHierarchyItemAsync(path) as ICalendarFileAsync;
+                ICalendarFile calendarFile = await context.GetHierarchyItemAsync(path) as ICalendarFile;
                 calendarFileList.Add(calendarFile);
             }
             return calendarFileList;
@@ -113,11 +114,11 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore.CalDav
         /// the Engine for each item that are returned from this method.
         /// </param>
         /// <returns>List of calendar files. Returns <b>null</b> for any item that is not found.</returns>
-        public async Task<IEnumerable<ICalendarFileAsync>> QueryAsync(string rawQuery, IEnumerable<PropertyName> propNames)
+        public async Task<IEnumerable<ICalendarFile>> QueryAsync(string rawQuery, IEnumerable<PropertyName> propNames)
         {
             // For the sake of simplicity we just call GetChildren returning all items. 
             // Typically you will return only items that match the query.
-            return (await GetChildrenAsync(propNames.ToList(), null, null, null)).Page.Cast<ICalendarFileAsync>();
+            return (await GetChildrenAsync(propNames.ToList(), null, null, null)).Page.Cast<ICalendarFile>();
         }
 
         /// <summary>
@@ -301,8 +302,8 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore.CalDav
                 return CalendarSharedBy.NotShared;
             }
                 
-            IPrincipalAsync principal = await this.GetCurrentUserPrincipalAsync();
-            IPrincipalAsync owner = await this.GetOwnerAsync();
+            IPrincipal principal = await this.GetCurrentUserPrincipalAsync();
+            IPrincipal owner = await this.GetOwnerAsync();
             if(owner.Name.Equals(principal.Name))
             {
                 return CalendarSharedBy.SharedByOwner;                
@@ -314,7 +315,7 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore.CalDav
             */
         }
 
-        public Task SetOwnerAsync(IPrincipalAsync value)
+        public Task SetOwnerAsync(IPrincipal value)
         {
             throw new NotImplementedException();
         }
@@ -324,9 +325,9 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore.CalDav
         /// </summary>
         /// <remarks>Required by OS X.</remarks>
         /// <returns>
-        /// Item that represents owner of this item and implements <see cref="IPrincipalAsync"/>.
+        /// Item that represents owner of this item and implements <see cref="IPrincipal"/>.
         /// </returns>
-        public async Task<IPrincipalAsync> GetOwnerAsync()
+        public async Task<IPrincipal> GetOwnerAsync()
         {
             // In this sample the address book is owned by the user that owns the folder in which address book is 
             // located. Extract user name from parent folder name: [DAVLocation]/addressbooks/[user_name]/[addressbook_name]/
@@ -336,12 +337,12 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore.CalDav
             return await User.GetUserAsync(context, userId);
         }
 
-        public Task SetGroupAsync(IPrincipalAsync value)
+        public Task SetGroupAsync(IPrincipal value)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IPrincipalAsync> GetGroupAsync()
+        public Task<IPrincipal> GetGroupAsync()
         {
             throw new NotImplementedException();
         }
@@ -379,22 +380,22 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore.CalDav
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<IHierarchyItemAsync>> GetInheritedAclSetAsync()
+        public Task<IEnumerable<IHierarchyItem>> GetInheritedAclSetAsync()
         {
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<IPrincipalFolderAsync>> GetPrincipalCollectionSetAsync()
+        public Task<IEnumerable<IPrincipalFolder>> GetPrincipalCollectionSetAsync()
         {
             throw new NotImplementedException();
         }
 
-        public Task<IPrincipalAsync> ResolveWellKnownPrincipalAsync(WellKnownPrincipal wellKnownPrincipal)
+        public Task<IPrincipal> ResolveWellKnownPrincipalAsync(WellKnownPrincipal wellKnownPrincipal)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<IAclHierarchyItemAsync>> GetItemsByPropertyAsync(MatchBy matchBy, IList<PropertyName> props)
+        public Task<IEnumerable<IAclHierarchyItem>> GetItemsByPropertyAsync(MatchBy matchBy, IList<PropertyName> props)
         {
             throw new NotImplementedException();
         }

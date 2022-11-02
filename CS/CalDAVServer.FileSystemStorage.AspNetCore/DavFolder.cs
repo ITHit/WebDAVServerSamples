@@ -21,7 +21,7 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore
     /// <summary>
     /// Folder in WebDAV repository.
     /// </summary>
-    public class DavFolder : DavHierarchyItem, IFolderAsync
+    public class DavFolder : DavHierarchyItem, IFolder
     {
 
         // Control characters and permanently undefined Unicode characters to be removed from search snippet.
@@ -79,7 +79,7 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore
             // return only items that you want to be visible for this 
             // particular user.
 
-            IList<IHierarchyItemAsync> children = new List<IHierarchyItemAsync>();
+            IList<IHierarchyItem> children = new List<IHierarchyItem>();
 
             long totalItems = 0;
             FileSystemInfo[] fileInfos = dirInfo.GetFileSystemInfos();
@@ -97,7 +97,7 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore
             foreach (FileSystemInfo fileInfo in fileInfos)
             {
                 string childPath = Path + EncodeUtil.EncodeUrlPart(fileInfo.Name);
-                IHierarchyItemAsync child = await context.GetHierarchyItemAsync(childPath);
+                IHierarchyItem child = await context.GetHierarchyItemAsync(childPath);
                 if (child != null)
                 {
                     children.Add(child);
@@ -111,8 +111,11 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore
         /// Called when a new file is being created in this folder.
         /// </summary>
         /// <param name="name">Name of the new file.</param>
+        /// <param name="content">Stream to read the content of the file from.</param>
+        /// <param name="contentType">Indicates the media type of the file.</param>
+        /// <param name="totalFileSize">Size of file as it will be after all parts are uploaded. -1 if unknown (in case of chunked upload).</param>
         /// <returns>The new file.</returns>
-        public virtual async Task<IFileAsync> CreateFileAsync(string name)
+        public virtual async Task<IFile> CreateFileAsync(string name, Stream content, string contentType, long totalFileSize)
         {
             string fileName = System.IO.Path.Combine(fileSystemInfo.FullName, name);
 
@@ -120,7 +123,11 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore
             {
             }
 
-            return (IFileAsync)await context.GetHierarchyItemAsync(Path + EncodeUtil.EncodeUrlPart(name));
+            DavFile file = (DavFile)await context.GetHierarchyItemAsync(Path + EncodeUtil.EncodeUrlPart(name));
+            // write file content
+            await file.WriteInternalAsync(content, contentType, 0, totalFileSize);
+
+            return file;
         }
 
         /// <summary>
@@ -128,6 +135,15 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore
         /// </summary>
         /// <param name="name">Name of the new folder.</param>
         virtual public async Task CreateFolderAsync(string name)
+        {
+            await CreateFolderInternalAsync(name);
+        }
+
+        /// <summary>
+        /// Called when a new folder is being created in this folder.
+        /// </summary>
+        /// <param name="name">Name of the new folder.</param>
+        private async Task CreateFolderInternalAsync(string name)
         {
 
             bool isRoot = dirInfo.Parent == null;
@@ -142,7 +158,20 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore
         /// <param name="destName">New folder name.</param>
         /// <param name="deep">Whether children items shall be copied.</param>
         /// <param name="multistatus">Information about child items that failed to copy.</param>
-        public override async Task CopyToAsync(IItemCollectionAsync destFolder, string destName, bool deep, MultistatusException multistatus)
+        public override async Task CopyToAsync(IItemCollection destFolder, string destName, bool deep, MultistatusException multistatus)
+        {
+            await CopyToInternalAsync(destFolder, destName, deep, multistatus, 0);
+        }
+
+        /// <summary>
+        /// Called when this folder is being copied.
+        /// </summary>
+        /// <param name="destFolder">Destination parent folder.</param>
+        /// <param name="destName">New folder name.</param>
+        /// <param name="deep">Whether children items shall be copied.</param>
+        /// <param name="multistatus">Information about child items that failed to copy.</param>
+        /// <param name="recursionDepth">Recursion depth.</param>
+        public override async Task CopyToInternalAsync(IItemCollection destFolder, string destName, bool deep, MultistatusException multistatus, int recursionDepth)
         {
             if (!(destFolder is DavFolder))
             {
@@ -164,7 +193,7 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore
             {
                 if (!Directory.Exists(newDirLocalPath))
                 {
-                    await targetFolder.CreateFolderAsync(destName);
+                    await targetFolder.CreateFolderInternalAsync(destName);
                 }
             }
             catch (DavException ex)
@@ -174,7 +203,7 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore
             }
 
             // Copy children.
-            IFolderAsync createdFolder = (IFolderAsync)await context.GetHierarchyItemAsync(targetPath);
+            IFolder createdFolder = (IFolder)await context.GetHierarchyItemAsync(targetPath);
             foreach (DavHierarchyItem item in (await GetChildrenAsync(new PropertyName[0], null, null, new List<OrderProperty>())).Page)
             {
                 if (!deep && item is DavFolder)
@@ -184,7 +213,7 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore
 
                 try
                 {
-                    await item.CopyToAsync(createdFolder, item.Name, deep, multistatus);
+                    await item.CopyToInternalAsync(createdFolder, item.Name, deep, multistatus, recursionDepth + 1);
                 }
                 catch (DavException ex)
                 {
@@ -200,7 +229,19 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore
         /// <param name="destFolder">Destination folder.</param>
         /// <param name="destName">New name of this folder.</param>
         /// <param name="multistatus">Information about child items that failed to move.</param>
-        public override async Task MoveToAsync(IItemCollectionAsync destFolder, string destName, MultistatusException multistatus)
+        public override async Task MoveToAsync(IItemCollection destFolder, string destName, MultistatusException multistatus)
+        {
+            await MoveToInternalAsync(destFolder, destName, multistatus, 0);
+        }
+
+
+        /// <summary>
+        /// Called when this folder is being moved or renamed.
+        /// </summary>
+        /// <param name="destFolder">Destination folder.</param>
+        /// <param name="destName">New name of this folder.</param>
+        /// <param name="multistatus">Information about child items that failed to move.</param>
+        public override async Task MoveToInternalAsync(IItemCollection destFolder, string destName, MultistatusException multistatus, int recursionDepth)
         {
             // in this function we move item by item, because we want to check if each item is not locked.
             if (!(destFolder is DavFolder))
@@ -221,11 +262,11 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore
             try
             {
                 // Remove item with the same name at destination if it exists.
-                IHierarchyItemAsync item = await context.GetHierarchyItemAsync(targetPath);
+                DavHierarchyItem item = (await context.GetHierarchyItemAsync(targetPath) as DavHierarchyItem);
                 if (item != null)
-                    await item.DeleteAsync(multistatus);
+                    await item.DeleteInternalAsync(multistatus, recursionDepth + 1);
 
-                await targetFolder.CreateFolderAsync(destName);
+                await targetFolder.CreateFolderInternalAsync(destName);
             }
             catch (DavException ex)
             {
@@ -236,12 +277,12 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore
 
             // Move child items.
             bool movedSuccessfully = true;
-            IFolderAsync createdFolder = (IFolderAsync)await context.GetHierarchyItemAsync(targetPath);
+            IFolder createdFolder = (IFolder)await context.GetHierarchyItemAsync(targetPath);
             foreach (DavHierarchyItem item in (await GetChildrenAsync(new PropertyName[0], null, null, new List<OrderProperty>())).Page)
             {
                 try
                 {
-                    await item.MoveToAsync(createdFolder, item.Name, multistatus);
+                    await item.MoveToInternalAsync(createdFolder, item.Name, multistatus, recursionDepth + 1);
                 }
                 catch (DavException ex)
                 {
@@ -253,7 +294,7 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore
 
             if (movedSuccessfully)
             {
-                await DeleteAsync(multistatus);
+                await DeleteInternalAsync(multistatus, recursionDepth + 1);
             }
         }
 
@@ -263,6 +304,16 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore
         /// <param name="multistatus">Information about items that failed to delete.</param>
         public override async Task DeleteAsync(MultistatusException multistatus)
         {
+            await DeleteInternalAsync(multistatus, 0);
+        }
+
+        /// <summary>
+        /// Called whan this folder is being deleted.
+        /// </summary>
+        /// <param name="multistatus">Information about items that failed to delete.</param>
+        /// <param name="recursionDepth">Recursion depth.</param>
+        public override async Task DeleteInternalAsync(MultistatusException multistatus, int recursionDepth)
+        {
             /*
             if (await GetParentAsync() == null)
             {
@@ -270,11 +321,11 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore
             }
             */
             bool allChildrenDeleted = true;
-            foreach (IHierarchyItemAsync child in (await GetChildrenAsync(new PropertyName[0], null, null, new List<OrderProperty>())).Page)
+            foreach (DavHierarchyItem child in (await GetChildrenAsync(new PropertyName[0], null, null, new List<OrderProperty>())).Page)
             {
                 try
                 {
-                    await child.DeleteAsync(multistatus);
+                    await child.DeleteInternalAsync(multistatus, recursionDepth + 1);
                 }
                 catch (DavException ex)
                 {
@@ -294,7 +345,7 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore
         /// Determines whether <paramref name="destFolder"/> is inside this folder.
         /// </summary>
         /// <param name="destFolder">Folder to check.</param>
-        /// <returns>Returns <c>true</c> if <paramref name="destFolder"/> is inside thid folder.</returns>
+        /// <returns>Returns <c>true</c> if <paramref name="destFolder"/> is inside this folder.</returns>
         private bool IsRecursive(DavFolder destFolder)
         {
             return destFolder.Path.StartsWith(Path);

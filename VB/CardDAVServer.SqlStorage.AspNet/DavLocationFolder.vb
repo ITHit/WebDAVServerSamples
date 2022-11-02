@@ -59,6 +59,6 @@ Public Class DavLocationFolder
     ''' <returns>Children of this folder.</returns>
     Public Overrides Async Function GetChildrenAsync(propNames As IList(Of PropertyName), offset As Long?, nResults As Long?, orderProps As IList(Of OrderProperty)) As Task(Of PageResults)
         ' In this samle we list users folder only. Groups and groups folder is not implemented.
-        Return New PageResults(New IHierarchyItemAsync() {New AclFolder(Context), New AddressbooksRootFolder(Context)}, Nothing)
+        Return New PageResults(New IHierarchyItem() {New AclFolder(Context), New AddressbooksRootFolder(Context)}, Nothing)
     End Function
 End Class

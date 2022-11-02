@@ -17,12 +17,12 @@ namespace CalDAVServer.SqlStorage.AspNetCore
 {
     /// <summary>
     /// WebDAV request context. Is used by WebDAV engine to resolve path into items.
-    /// Implements abstract methods from <see cref="ContextAsync{IHierarchyItemAsync}"/>,
+    /// Implements abstract methods from <see cref="ContextAsync{IHierarchyItem}"/>,
     /// contains useful methods for working with transactions, connections, reading
     /// varios items from database.
     /// </summary>
     public class DavContext :
-        ContextCoreAsync<IHierarchyItemAsync>
+        ContextCoreAsync<IHierarchyItem>
          , IDisposable, IAsyncDisposable
     {
         /// <summary>
@@ -82,7 +82,7 @@ namespace CalDAVServer.SqlStorage.AspNetCore
         /// </summary>
         /// <param name="path">Relative path to the item including query string.</param>
         /// <returns><see cref="IHierarchyItem"/> instance if item is found, <c>null</c> otherwise.</returns>
-        public override async Task<IHierarchyItemAsync> GetHierarchyItemAsync(string path)
+        public override async Task<IHierarchyItem> GetHierarchyItemAsync(string path)
         {
             path = path.Trim(new[] { ' ', '/' });
 
@@ -93,7 +93,7 @@ namespace CalDAVServer.SqlStorage.AspNetCore
                 path = path.Remove(ind);
             }
 
-            IHierarchyItemAsync item = null;
+            IHierarchyItem item = null;
 
             // Return items from [DAVLocation]/acl/ folder and subfolders.
             item = await AclFactory.GetAclItemAsync(this, path);

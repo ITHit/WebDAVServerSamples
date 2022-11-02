@@ -8,7 +8,7 @@ Imports CardDAVServer.SqlStorage.AspNet.CardDav
 ''' Assists in finding folders that contain calendars and address books.
 ''' </summary>
 Public Class Discovery
-    Implements IAddressbookDiscoveryAsync
+    Implements IAddressbookDiscovery
 
     ''' <summary>
     ''' Instance of <see cref="DavContext"/> .
@@ -23,7 +23,7 @@ Public Class Discovery
     ''' Returns list of folders that contain address books owned by this principal.
     ''' </summary>
     ''' <remarks>This enables address books discovery owned by current loged-in principal.</remarks>
-    Public Async Function GetAddressbookHomeSetAsync() As Task(Of IEnumerable(Of IItemCollectionAsync)) Implements IAddressbookDiscoveryAsync.GetAddressbookHomeSetAsync
+    Public Async Function GetAddressbookHomeSetAsync() As Task(Of IEnumerable(Of IItemCollection)) Implements IAddressbookDiscovery.GetAddressbookHomeSetAsync
         Return {New AddressbooksRootFolder(Context)}
     End Function
 
@@ -40,7 +40,7 @@ Public Class Discovery
     ''' via home-set request. Typically you will always enable heome-set for iOS and OS X CardDAV clients, but may disable it for other clients.
     ''' </para>
     ''' </remarks>
-    Public ReadOnly Property AddressbookHomeSetEnabled As Boolean Implements IAddressbookDiscoveryAsync.AddressbookHomeSetEnabled
+    Public ReadOnly Property AddressbookHomeSetEnabled As Boolean Implements IAddressbookDiscovery.AddressbookHomeSetEnabled
         Get
             Return True
         End Get

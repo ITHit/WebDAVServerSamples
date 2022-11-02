@@ -14,7 +14,7 @@ namespace CardDAVServer.FileSystemStorage.AspNetCore
     /// <summary>
     /// Represents file in WebDAV repository.
     /// </summary>
-    public class DavFile : DavHierarchyItem, IFileAsync
+    public class DavFile : DavHierarchyItem, IFile
     {
         /// <summary>
         /// Corresponding <see cref="FileInfo"/>.
@@ -149,6 +149,22 @@ namespace CardDAVServer.FileSystemStorage.AspNetCore
         /// if auto checkin shall be performed (if auto versioning is used).</returns>
         public virtual async Task<bool> WriteAsync(Stream content, string contentType, long startIndex, long totalFileSize)
         {
+            await WriteInternalAsync(content, contentType, startIndex, totalFileSize);
+            return true;
+        }
+
+        /// <summary>
+        /// Called when a file or its part is being uploaded.
+        /// </summary>
+        /// <param name="content">Stream to read the content of the file from.</param>
+        /// <param name="contentType">Indicates the media type of the file.</param>
+        /// <param name="startIndex">Starting byte in target file
+        /// for which data comes in <paramref name="content"/> stream.</param>
+        /// <param name="totalFileSize">Size of file as it will be after all parts are uploaded. -1 if unknown (in case of chunked upload).</param>
+        /// <returns>Whether the whole stream has been written. This result is used by the engine to determine
+        /// if auto checkin shall be performed (if auto versioning is used).</returns>
+        public async Task<bool> WriteInternalAsync(Stream content, string contentType, long startIndex, long totalFileSize)
+        {
             if (startIndex == 0 && fileInfo.Length > 0)
             {
                 await using (FileStream filestream = fileInfo.Open(FileMode.Truncate)) { }
@@ -176,7 +192,7 @@ namespace CardDAVServer.FileSystemStorage.AspNetCore
                     lastBytesRead = await content.ReadAsync(buffer, 0, bufSize);
                     while (lastBytesRead > 0)
                     {
-                        await fileStream.WriteAsync(buffer, 0, lastBytesRead);                        
+                        await fileStream.WriteAsync(buffer, 0, lastBytesRead);
                         lastBytesRead = await content.ReadAsync(buffer, 0, bufSize);
                     }
                 }
@@ -196,7 +212,20 @@ namespace CardDAVServer.FileSystemStorage.AspNetCore
         /// <param name="destName">New file name.</param>
         /// <param name="deep">Whether children items shall be copied. Ignored for files.</param>
         /// <param name="multistatus">Information about items that failed to copy.</param>
-        public override async Task CopyToAsync(IItemCollectionAsync destFolder, string destName, bool deep, MultistatusException multistatus)
+        public override async Task CopyToAsync(IItemCollection destFolder, string destName, bool deep, MultistatusException multistatus)
+        {
+            await CopyToInternalAsync(destFolder, destName, deep, multistatus, 0);
+        }
+
+        /// <summary>
+        /// Called when this file is being copied.
+        /// </summary>
+        /// <param name="destFolder">Destination folder.</param>
+        /// <param name="destName">New file name.</param>
+        /// <param name="deep">Whether children items shall be copied. Ignored for files.</param>
+        /// <param name="multistatus">Information about items that failed to copy.</param>
+        /// <param name="recursionDepth">Recursion depth.</param>
+        public override async Task CopyToInternalAsync(IItemCollection destFolder, string destName, bool deep, MultistatusException multistatus, int recursionDepth)
         {
             DavFolder targetFolder = (DavFolder)destFolder;
 
@@ -211,7 +240,7 @@ namespace CardDAVServer.FileSystemStorage.AspNetCore
             // If an item with the same name exists - remove it.
             try
             {
-                IHierarchyItemAsync item = await context.GetHierarchyItemAsync(targetPath);
+                IHierarchyItem item = await context.GetHierarchyItemAsync(targetPath);
                 if (item != null)
                     await item.DeleteAsync(multistatus);
             }
@@ -255,7 +284,19 @@ namespace CardDAVServer.FileSystemStorage.AspNetCore
         /// <param name="destFolder">Destination folder.</param>
         /// <param name="destName">New name of this file.</param>
         /// <param name="multistatus">Information about items that failed to move.</param>
-        public override async Task MoveToAsync(IItemCollectionAsync destFolder, string destName, MultistatusException multistatus)
+        public override async Task MoveToAsync(IItemCollection destFolder, string destName, MultistatusException multistatus)
+        {
+            await MoveToInternalAsync(destFolder, destName, multistatus, 0);
+        }
+
+        /// <summary>
+        /// Called when this file is being moved or renamed.
+        /// </summary>
+        /// <param name="destFolder">Destination folder.</param>
+        /// <param name="destName">New name of this file.</param>
+        /// <param name="multistatus">Information about items that failed to move.</param>
+        /// <param name="recursionDepth">Recursion depth.</param>
+        public override async Task MoveToInternalAsync(IItemCollection destFolder, string destName, MultistatusException multistatus, int recursionDepth)
         {
 
             DavFolder targetFolder = (DavFolder)destFolder;
@@ -271,7 +312,7 @@ namespace CardDAVServer.FileSystemStorage.AspNetCore
             // If an item with the same name exists in target directory - remove it.
             try
             {
-                IHierarchyItemAsync item = await context.GetHierarchyItemAsync(targetPath) as IHierarchyItemAsync;
+                IHierarchyItem item = await context.GetHierarchyItemAsync(targetPath) as IHierarchyItem;
 
                 if (item != null)
                 {
@@ -317,6 +358,16 @@ namespace CardDAVServer.FileSystemStorage.AspNetCore
         /// </summary>
         /// <param name="multistatus">Information about items that failed to delete.</param>
         public override async Task DeleteAsync(MultistatusException multistatus)
+        {
+            await DeleteInternalAsync(multistatus, 0);
+        }
+
+        /// <summary>
+        /// Called whan this file is being deleted.
+        /// </summary>
+        /// <param name="multistatus">Information about items that failed to delete.</param>
+        /// <param name="recursionDepth">Recursion depth.</param>
+        public override async Task DeleteInternalAsync(MultistatusException multistatus, int recursionDepth)
         {
             if (FileSystemInfoExtension.IsUsingFileSystemAttribute)
             {

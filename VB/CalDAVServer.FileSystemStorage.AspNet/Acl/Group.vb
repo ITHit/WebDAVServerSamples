@@ -6,7 +6,7 @@ Imports System.Security.Principal
 Imports System.Threading.Tasks
 Imports ITHit.WebDAV.Server
 Imports ITHit.WebDAV.Server.Acl
-Imports IPrincipal = ITHit.WebDAV.Server.Acl.IPrincipalAsync
+Imports IPrincipal = ITHit.WebDAV.Server.Acl.IPrincipal
 
 Namespace Acl
 
@@ -125,7 +125,7 @@ Namespace Acl
         ''' <param name="destName">New name of the item.</param>
         ''' <param name="deep">Whether child objects shall be copied.</param>
         ''' <param name="multistatus">Multistatus to populate with errors.</param>
-        Public Overrides Async Function CopyToAsync(destFolder As IItemCollectionAsync, destName As String, deep As Boolean, multistatus As MultistatusException) As Task
+        Public Overrides Async Function CopyToAsync(destFolder As IItemCollection, destName As String, deep As Boolean, multistatus As MultistatusException) As Task
             If destFolder.Path <> New GroupFolder(Context).Path Then
                 Throw New DavException("Copying groups is only allowed into the same folder", DavStatus.CONFLICT)
             End If

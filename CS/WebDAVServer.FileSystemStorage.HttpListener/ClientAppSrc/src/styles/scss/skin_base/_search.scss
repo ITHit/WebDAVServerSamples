@@ -1,0 +1,67 @@
+﻿.ithit-search-container {
+  position: relative;
+  height: 3.125rem;
+
+  input.tt-input[disabled] {
+    cursor: default;
+  }
+
+  input.tt-input[readonly] {
+    cursor: default;
+  }
+
+  .twitter-typeahead {
+    position: relative;
+    width: 100%;
+    margin-bottom: 1rem;
+
+    &:before {
+      content: "";
+      position: absolute;
+      top: 10px;
+      left: 7px;
+      background-color: $mainColor;
+      @include icon-mask(url(#{$image-base-path+"search.svg"}));
+      display: block;
+      width: 20px;
+      height: 20px;
+      z-index: 1;
+    }
+
+    input {
+      padding: 0.4rem 0.75rem 0.4rem 2.5rem;
+    }
+  }
+
+  .tt-menu {
+    width: 100%;
+    margin: 1px 0;
+    padding: 6px 0;
+    background-color: $whiteColor;
+    border: 1px solid #ccc;
+    -webkit-border-radius: 4px;
+    border-radius: 4px;
+    -webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+  }
+
+  .tt-suggestion {
+    padding: 3px 20px;
+    line-height: 1.7;
+
+    &:hover {
+      cursor: pointer;
+      background-color: $tableHoverColor;
+    }
+
+    &.tt-cursor {
+      background-color: $tableHoverColor;
+    }
+  }
+
+  .btn-clear-search {
+    position: absolute;
+    top: 4px;
+    right: 5px;
+  }
+}

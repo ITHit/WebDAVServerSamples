@@ -3,6 +3,7 @@ Imports System.Collections.Generic
 Imports System.Threading.Tasks
 Imports ITHit.WebDAV.Server
 Imports ITHit.WebDAV.Server.Acl
+Imports IPrincipal = ITHit.WebDAV.Server.Acl.IPrincipal
 Imports CalDAVServer.SqlStorage.AspNet.Acl
 Imports ITHit.Server
 
@@ -11,7 +12,7 @@ Imports ITHit.Server
 ''' </summary>
 Public MustInherit Class DavHierarchyItem
     Inherits Discovery
-    Implements IHierarchyItemAsync, ICurrentUserPrincipalAsync
+    Implements IHierarchyItem, ICurrentUserPrincipal
 
     Protected itemPath As String
 
@@ -20,7 +21,7 @@ Public MustInherit Class DavHierarchyItem
     ''' <summary>
     ''' Gets item display name.
     ''' </summary>
-    Public Overridable ReadOnly Property Name As String Implements IHierarchyItemBaseAsync.Name
+    Public Overridable ReadOnly Property Name As String Implements IHierarchyItemBase.Name
         Get
             Return displayName
         End Get
@@ -29,7 +30,7 @@ Public MustInherit Class DavHierarchyItem
     ''' <summary>
     ''' Gets item path.
     ''' </summary>
-    Public Overridable ReadOnly Property Path As String Implements IHierarchyItemBaseAsync.Path
+    Public Overridable ReadOnly Property Path As String Implements IHierarchyItemBase.Path
         Get
             Return itemPath
         End Get
@@ -38,7 +39,7 @@ Public MustInherit Class DavHierarchyItem
     ''' <summary>
     ''' Gets item creation date. Must be in UTC.
     ''' </summary>
-    Public Overridable ReadOnly Property Created As DateTime Implements IHierarchyItemBaseAsync.Created
+    Public Overridable ReadOnly Property Created As DateTime Implements IHierarchyItemBase.Created
         Get
             Return New DateTime(2000, 1, 1)
         End Get
@@ -47,7 +48,7 @@ Public MustInherit Class DavHierarchyItem
     ''' <summary>
     ''' Gets item modification date. Must be in UTC.
     ''' </summary>
-    Public Overridable ReadOnly Property Modified As DateTime Implements IHierarchyItemBaseAsync.Modified
+    Public Overridable ReadOnly Property Modified As DateTime Implements IHierarchyItemBase.Modified
         Get
             Return New DateTime(2000, 1, 1)
         End Get
@@ -65,33 +66,33 @@ Public MustInherit Class DavHierarchyItem
     ''' This method is usually called by the Engine when CalDAV/CardDAV client 
     ''' is trying to discover current user URL.
     ''' </remarks>
-    Public Async Function GetCurrentUserPrincipalAsync() As Task(Of IPrincipalAsync) Implements ICurrentUserPrincipalAsync.GetCurrentUserPrincipalAsync
+    Public Async Function GetCurrentUserPrincipalAsync() As Task(Of IPrincipal) Implements ICurrentUserPrincipal.GetCurrentUserPrincipalAsync
         ' Typically there is no need to load all user properties here, only current 
         ' user ID (or name) is required to form the user URL: [DAVLocation]/acl/users/[UserID]
         Return New User(Context, Context.UserId)
     End Function
 
-    Public Overridable Async Function CopyToAsync(destFolder As IItemCollectionAsync, destName As String, deep As Boolean, multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.CopyToAsync
+    Public Overridable Async Function CopyToAsync(destFolder As IItemCollection, destName As String, deep As Boolean, multistatus As MultistatusException) As Task Implements IHierarchyItem.CopyToAsync
         Throw New DavException("Not implemented.", DavStatus.NOT_IMPLEMENTED)
     End Function
 
-    Public Overridable Async Function MoveToAsync(destFolder As IItemCollectionAsync, destName As String, multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.MoveToAsync
+    Public Overridable Async Function MoveToAsync(destFolder As IItemCollection, destName As String, multistatus As MultistatusException) As Task Implements IHierarchyItem.MoveToAsync
         Throw New DavException("Not implemented.", DavStatus.NOT_IMPLEMENTED)
     End Function
 
-    Public MustOverride Function DeleteAsync(multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.DeleteAsync
+    Public MustOverride Function DeleteAsync(multistatus As MultistatusException) As Task Implements IHierarchyItem.DeleteAsync
 
-    Public Overridable Async Function GetPropertiesAsync(names As IList(Of PropertyName), allprop As Boolean) As Task(Of IEnumerable(Of PropertyValue)) Implements IHierarchyItemAsync.GetPropertiesAsync
+    Public Overridable Async Function GetPropertiesAsync(names As IList(Of PropertyName), allprop As Boolean) As Task(Of IEnumerable(Of PropertyValue)) Implements IHierarchyItem.GetPropertiesAsync
         Return New PropertyValue() {}
     End Function
 
     Public Overridable Async Function UpdatePropertiesAsync(setProps As IList(Of PropertyValue),
                                                            delProps As IList(Of PropertyName),
-                                                           multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.UpdatePropertiesAsync
+                                                           multistatus As MultistatusException) As Task Implements IHierarchyItem.UpdatePropertiesAsync
         Throw New NotImplementedException()
     End Function
 
-    Public Async Function GetPropertyNamesAsync() As Task(Of IEnumerable(Of PropertyName)) Implements IHierarchyItemAsync.GetPropertyNamesAsync
+    Public Async Function GetPropertyNamesAsync() As Task(Of IEnumerable(Of PropertyName)) Implements IHierarchyItem.GetPropertyNamesAsync
         Return New PropertyName() {}
     End Function
 End Class

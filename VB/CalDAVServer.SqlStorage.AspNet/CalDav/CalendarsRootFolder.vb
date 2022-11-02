@@ -19,7 +19,7 @@ Namespace CalDav
     ''' </summary>
     Public Class CalendarsRootFolder
         Inherits LogicalFolder
-        Implements IFolderAsync
+        Implements IFolder
 
         ''' <summary>
         ''' This folder name.
@@ -43,13 +43,13 @@ Namespace CalDav
         ''' <param name="nResults">The number of items to return.</param>
         ''' <param name="orderProps">List of order properties requested by the client.</param>
         ''' <returns>Children of this folder.</returns>
-        Public Overrides Async Function GetChildrenAsync(propNames As IList(Of PropertyName), offset As Long?, nResults As Long?, orderProps As IList(Of OrderProperty)) As Task(Of PageResults) Implements IItemCollectionAsync.GetChildrenAsync
+        Public Overrides Async Function GetChildrenAsync(propNames As IList(Of PropertyName), offset As Long?, nResults As Long?, orderProps As IList(Of OrderProperty)) As Task(Of PageResults) Implements IItemCollection.GetChildrenAsync
             ' Here we list calendars from back-end storage. 
             ' You can filter calendars if requied and return only calendars that user has access to.
             Return New PageResults((Await CalendarFolder.LoadAllAsync(Context)).OrderBy(Function(x) x.Name), Nothing)
         End Function
 
-        Public Function CreateFileAsync(name As String) As Task(Of IFileAsync) Implements IFolderAsync.CreateFileAsync
+        Public Function CreateFileAsync(name As String, content As Stream, contentType As String, totalFileSize As Long) As Task(Of IFile) Implements IFolder.CreateFileAsync
             Throw New DavException("Not implemented.", DavStatus.NOT_IMPLEMENTED)
         End Function
 
@@ -57,7 +57,7 @@ Namespace CalDav
         ''' Creates a new calendar.
         ''' </summary>
         ''' <param name="name">Name of the new calendar.</param>
-        Public Async Function CreateFolderAsync(name As String) As Task Implements IFolderAsync.CreateFolderAsync
+        Public Async Function CreateFolderAsync(name As String) As Task Implements IFolder.CreateFolderAsync
             Await CalendarFolder.CreateCalendarFolderAsync(Context, name, "")
         End Function
     End Class

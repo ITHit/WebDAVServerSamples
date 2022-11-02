@@ -60,7 +60,7 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore.CalDav
         /// <summary>
         /// Prohibit creating files in this folder.
         /// </summary>
-        override public async Task<IFileAsync> CreateFileAsync(string name)
+        override public async Task<IFile> CreateFileAsync(string name, Stream content, string contentType, long totalFileSize)
         {
             throw new DavException("Creating files in this folder is not implemented.", DavStatus.NOT_IMPLEMENTED);
         }
@@ -88,7 +88,7 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore.CalDav
         /// <summary>
         /// Prohibit moving or renaming this folder
         /// </summary>        
-        override public async Task MoveToAsync(IItemCollectionAsync destFolder, string destName, MultistatusException multistatus)
+        override public async Task MoveToAsync(IItemCollection destFolder, string destName, MultistatusException multistatus)
         {
             throw new DavException("Moving or renaming this folder is not allowed.", DavStatus.NOT_ALLOWED);
         }

@@ -1,0 +1,56 @@
+<div id="rightPanel" class="col">
+    <div class="gsuite-container">
+      <span id="fileName" class="file-name d-none d-lg-inline"></span>
+      <ul class="nav nav-tabs" id="gSuiteTabs" role="tablist">
+        <li class="nav-item">
+          <a
+            class="nav-link active"
+            id="preview-tab"
+            data-toggle="tab"
+            href="#preview"
+            role="tab"
+            aria-controls="preview"
+            aria-selected="true"
+            >Preview</a
+          >
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            id="edit-tab"
+            data-toggle="tab"
+            href="#edit"
+            role="tab"
+            aria-controls="edit"
+            aria-selected="false"
+            >Edit</a
+          >
+        </li>
+      </ul>
+      <div class="tab-content" id="gSuiteContainer">
+        <div
+          class="tab-pane fade show active"
+          id="preview"
+          role="tabpanel"
+          aria-labelledby="preview-tab"
+        >
+          <div id="gSuitePreview"></div>
+          <div id="gSuitePreviewBackground" class="background">
+            Select a document to preview.
+          </div>
+        </div>
+        <div
+          class="tab-pane fade"
+          id="edit"
+          role="tabpanel"
+          aria-labelledby="edit-tab"
+        >
+          <div id="gSuiteEdit"></div>
+          <div id="gSuiteEditBackground" class="background">
+            Select a document to edit.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

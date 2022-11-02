@@ -68,7 +68,7 @@
                             </tr>
                         </thead>
                        <tbody>
-                            <% foreach (ITHit.WebDAV.Server.IItemCollectionAsync item in AllUserAddressbooks) { %><tr><td><span class="glyphicon glyphicon-book"></span></td><td><%=item.Name %></td><td><%=ApplicationPath.TrimEnd(new char[]{'/'})+"/"+item.Path.TrimStart(new char[]{'/'}) %></td><td><a href="<%=ApplicationPath.TrimEnd(new char[]{'/'})+"/"+item.Path.TrimStart(new char[]{'/'}) %>?connect" class="btn btn-default">Connect</a></td></tr><% } %>
+                            <% foreach (ITHit.WebDAV.Server.IItemCollection item in AllUserAddressbooks) { %><tr><td><span class="glyphicon glyphicon-book"></span></td><td><%=item.Name %></td><td><%=ApplicationPath.TrimEnd(new char[]{'/'})+"/"+item.Path.TrimStart(new char[]{'/'}) %></td><td><a href="<%=ApplicationPath.TrimEnd(new char[]{'/'})+"/"+item.Path.TrimStart(new char[]{'/'}) %>?connect" class="btn btn-default">Connect</a></td></tr><% } %>
                        </tbody>
                     </table>
                 </div>

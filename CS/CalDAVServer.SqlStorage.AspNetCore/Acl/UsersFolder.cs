@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using ITHit.WebDAV.Server;
 using ITHit.WebDAV.Server.Acl;
 using ITHit.WebDAV.Server.Paging;
+using IPrincipal = ITHit.WebDAV.Server.Acl.IPrincipal;
 
 namespace CalDAVServer.SqlStorage.AspNetCore.Acl
 {
@@ -12,7 +13,7 @@ namespace CalDAVServer.SqlStorage.AspNetCore.Acl
     /// Logical folder which contains users.
     /// Instances of this class correspond to the following path: [DAVLocation]/acl/users/.
     /// </summary>
-    public class UsersFolder : LogicalFolder, IPrincipalFolderAsync
+    public class UsersFolder : LogicalFolder, IPrincipalFolder
     {
         /// <summary>
         /// This folder name.
@@ -48,7 +49,7 @@ namespace CalDAVServer.SqlStorage.AspNetCore.Acl
             // In this implementation we return only one user - current user, for demo purposes.
             // We also do not populate user e-mail to avoid any queries to back-end storage.
 
-            IList<IHierarchyItemAsync> children = new List<IHierarchyItemAsync>();
+            IList<IHierarchyItem> children = new List<IHierarchyItem>();
             children.Add(new User(Context, Context.UserId, Context.Identity.Name, null, new DateTime(2000, 1, 1), new DateTime(2000, 1, 1)));
 
             return new PageResults(children, null);
@@ -57,7 +58,7 @@ namespace CalDAVServer.SqlStorage.AspNetCore.Acl
         /// <summary>
         /// We don't support creating folders inside this folder.
         /// </summary>        
-        public async Task<IPrincipalFolderAsync> CreateFolderAsync(string name)
+        public async Task<IPrincipalFolder> CreateFolderAsync(string name)
         {
             throw new DavException("Not implemented.", DavStatus.NOT_IMPLEMENTED);
         }
@@ -67,7 +68,7 @@ namespace CalDAVServer.SqlStorage.AspNetCore.Acl
         /// </summary>
         /// <param name="name">User name.</param>
         /// <returns>Newly created user.</returns>
-        public async Task<IPrincipalAsync> CreatePrincipalAsync(string name)
+        public async Task<IPrincipal> CreatePrincipalAsync(string name)
         {
             throw new DavException("Not implemented.", DavStatus.NOT_IMPLEMENTED);
         }
@@ -78,7 +79,7 @@ namespace CalDAVServer.SqlStorage.AspNetCore.Acl
         /// <param name="propValues">Properties and values to look for.</param>
         /// <param name="props">Properties that will be requested by the engine from the returned users.</param>
         /// <returns>Enumerable with users whose properties match.</returns>
-        public async Task<IEnumerable<IPrincipalAsync>> FindPrincipalsByPropertyValuesAsync(
+        public async Task<IEnumerable<IPrincipal>> FindPrincipalsByPropertyValuesAsync(
             IList<PropertyValue> propValues,
             IList<PropertyName> props)
         {
@@ -99,7 +100,7 @@ namespace CalDAVServer.SqlStorage.AspNetCore.Acl
         /// </summary>
         /// <param name="props">Properties that will be asked later from the user returned.</param>
         /// <returns>Enumerable with users.</returns>
-        public async Task<IEnumerable<IPrincipalAsync>> GetMatchingPrincipalsAsync(IList<PropertyName> props)
+        public async Task<IEnumerable<IPrincipal>> GetMatchingPrincipalsAsync(IList<PropertyName> props)
         {
             throw new DavException("Not implemented.", DavStatus.NOT_IMPLEMENTED);
         }

@@ -1,0 +1,529 @@
+<div id="leftPanel" class="col">
+  <div class="fixed-controls">
+    <nav aria-label="breadcrumb">
+      <div class="ithit-breadcrumb-container">
+        <a
+          href="javascript.void(0);"
+          class="btn-tool btn-up-one-level disabled"
+          title="Up one level"
+          ><i class="icon icon-up-one-level"></i
+        ></a>
+        <ol class="breadcrumb"></ol>
+      </div>
+    </nav>
+    <div class="ithit-search-container">
+      <input class="form-control" type="text" />
+    </div>
+    <div class="ithit-grid-toolbar row">
+      <div class="toolbar-section col px-2" data-index="1">
+        <!-- Toolbar buttons here -->
+      </div>
+      <div class="toolbar-section col-auto px-2">
+        <label class="btn-tool" title="Upload Items" for="ithit-button-input"
+          ><i class="icon icon-upload-items"></i
+          ><span class="d-none d-xl-inline d-xxl-inline">Upload</span></label
+        >
+        <input
+          id="ithit-button-input"
+          class="d-none"
+          type="file"
+          multiple
+          hidden
+        />
+      </div>
+      <div class="toolbar-section col-auto" data-index="2">
+        <!-- Toolbar buttons here -->
+      </div>
+      <div class="toolbar-section col-auto" data-index="3">
+        <!-- Toolbar buttons here -->
+      </div>
+      <div class="toolbar-section col-auto" data-index="4">
+        <!-- Toolbar buttons here -->
+      </div>
+      <div class="toolbar-section col-auto" data-index="5">
+        <!-- Toolbar buttons here -->
+      </div>
+      <div class="toolbar-section col-auto" data-index="6">
+        <!-- Toolbar buttons here -->
+      </div>
+    </div>
+  </div>
+  <div class="ithit-grid-uploads uploading d-none">
+    <div class="progress-wrapper">
+      <div class="progress">
+        <div
+          class="progress-bar"
+          role="progressbar"
+          aria-valuenow="0"
+          aria-valuemin="0"
+          aria-valuemax="100"
+        ></div>
+      </div>
+    </div>
+    <div class="uploading-block">
+      <div class="uploading-controls">
+        Uploaded <span class="persent">0 %</span>
+        <button
+          class="btn-transparent pause-all-button float-right"
+          title="Pause  upload"
+        >
+          <i class="icon icon-pause"></i>
+        </button>
+        <button
+          class="btn-transparent play-all-button float-right"
+          title="Resume  upload"
+        >
+          <i class="icon icon-play"></i>
+        </button>
+      </div>
+      <div>
+        <button class="btn btn-primary details-button">Details</button>
+      </div>
+    </div>
+    <div class="uploading-details d-none">
+      <div class="details-header text-center">
+        <span class="details-title">Files upload</span>
+        <button
+          class="btn-transparent close-button float-right"
+          title="Close window"
+        >
+          <i class="icon icon-close"></i>
+        </button>
+      </div>
+      <div class="uploading-items"></div>
+      <div class="uploading-footer">
+        <button
+          class="pause-all-button btn btn-outline-primary"
+          title="Pause all upload"
+        >
+          Pause upload
+        </button>
+        <button
+          class="play-all-button btn btn-outline-primary"
+          title="Resume all upload"
+        >
+          Resume upload
+        </button>
+        <button
+          class="btn btn-outline-primary cancel-all-button"
+          title="Cancel all"
+        >
+          Cancel all uploads
+        </button>
+      </div>
+    </div>
+  </div>
+  <div>
+    <div class="ithit-grid-wrapper">
+      <div class="drop-files-header">
+        <div class="drop-files-title">Drag files here</div>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover ithit-grid-container">
+          <thead>
+            <tr>
+              <th scope="col">
+                <label class="custom-checkbox"
+                  ><input type="checkbox" /><span class="checkmark"></span
+                ></label>
+              </th>
+              <th scope="col"></th>
+              <th
+                class="ellipsis sort"
+                scope="col"
+                data-sort-column="displayname"
+              >
+                <span>Display Name</span>
+              </th>
+              <th
+                class="d-none d-xl-table-cell sort"
+                scope="col"
+                data-sort-column="getcontenttype"
+              >
+                Type
+              </th>
+              <th class="sort" scope="col" data-sort-column="quota-used-bytes">
+                Size
+              </th>
+              <th
+                class="d-none d-lg-table-cell sort"
+                scope="col"
+                data-sort-column="getlastmodified"
+              >
+                Modified
+              </th>
+              <th class="column-action" scope="col"></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-12 align-items-end">
+      <nav aria-label="Page navigation">
+        <ul
+          class="pagination flex-wrap justify-content-end ithit-pagination-container"
+        ></ul>
+      </nav>
+    </div>
+  </div>
+  <div
+    id="ConfirmModal"
+    class="modal"
+    tabindex="-1"
+    role="dialog"
+    aria-labelledby="ConfirmModalLabel"
+  >
+    <div class="modal-dialog modal-sm" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Confirm</h5>
+          <button
+            type="button"
+            class="close"
+            data-dismiss="modal"
+            aria-label="Close"
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p class="message"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary btn-ok">OK</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    id="CreateFolderModal"
+    class="modal"
+    tabindex="-1"
+    role="dialog"
+    aria-labelledby="CreateFolderModalLabel"
+  >
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <form action="/" method="post">
+          <div class="modal-header">
+            <h5 class="modal-title">Create Folder</h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <input
+                type="text"
+                class="form-control"
+                id="NameFolder"
+                placeholder="Folder Name"
+              />
+              <div class="alert alert-danger d-none"></div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary btn-submit">OK</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div
+    id="RenameItemModal"
+    class="modal"
+    tabindex="-1"
+    role="dialog"
+    aria-labelledby="RenameItemModalLabel"
+  >
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <form action="/" method="post">
+          <div class="modal-header">
+            <h5 class="modal-title">Rename Item</h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <input
+                type="text"
+                class="form-control"
+                id="NameItem"
+                placeholder="Item Name"
+              />
+              <div class="alert alert-danger d-none"></div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary btn-submit">OK</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div
+    id="ConfirmRewriteModal"
+    class="modal"
+    tabindex="-1"
+    role="dialog"
+    aria-labelledby="ConfirmRewriteModalLabel"
+  >
+    <div class="modal-dialog modal-sm" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Confirm</h5>
+          <button
+            type="button"
+            class="close"
+            data-dismiss="modal"
+            aria-label="Close"
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p class="message"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary btn-ok">
+            Yes to All
+          </button>
+          <button type="button" class="btn btn-no">No to All</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    id="ErrorModal"
+    class="modal"
+    tabindex="-1"
+    role="dialog"
+    aria-labelledby="ConfirmModalLabel"
+  >
+    <div class="modal-dialog modal-md" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Error</h5>
+          <button
+            type="button"
+            class="close"
+            data-dismiss="modal"
+            aria-label="Close"
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="container-fluid">
+            <div class="row">
+              <div class="col-md-4">
+                <p>Error message:</p>
+              </div>
+              <div class="col-md-8">
+                <p class="error-message"></p>
+              </div>
+            </div>
+            <div class="row error-details-row">
+              <div class="col-md-12">
+                <p>
+                  <button
+                    class="btn btn-default"
+                    type="button"
+                    data-toggle="collapse"
+                    data-target="#error-details-collapse"
+                    aria-expanded="false"
+                    aria-controls="error-details-collapse"
+                  >
+                    Error Details
+                  </button>
+                </p>
+                <div class="collapse" id="error-details-collapse">
+                  <div class="card card-body">
+                    <div class="row">
+                      <div class="col-md-2">
+                        <p>Url:</p>
+                      </div>
+                      <div class="col-md-10">
+                        <p class="error-details-url"></p>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col-md-4">
+                        <p>Error message:</p>
+                      </div>
+                      <div class="col-md-8">
+                        <p class="error-details-message"></p>
+                      </div>
+                    </div>
+                    <div class="row error-details-row">
+                      <div class="col-md-12">
+                        <iframe style="width: 100%; border: none"></iframe>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    id="DownloadProtocolModal"
+    class="modal"
+    tabindex="-1"
+    role="dialog"
+    aria-labelledby="DownloadProtocolModalLabel"
+  >
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Install a Custom Protocol</h5>
+          <button
+            type="button"
+            class="close"
+            data-dismiss="modal"
+            aria-label="Close"
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="container-fluid">
+            <div class="row">
+              <div class="col-md-12">
+                <p>
+                  To open this document, you must install a custom protocol on a
+                  client machine and enable a web browser extension.
+                </p>
+                <ol>
+                  <li>
+                    Download and install the file below:<br />
+                    <span class="current-os"></span>
+                    <a href="javascript:void(0)" class="more-lnk"
+                      ><span>+</span>Other OS:</a
+                    >
+                    <p class="more-pnl">
+                      <span class="window">
+                        Windows:&nbsp;&nbsp;<a
+                          target="_blank"
+                          class="js-protocol-link"
+                          data-filename="ITHitEditDocumentOpener.msi"
+                          >ITHitEditDocumentOpener.msi</a
+                        ><br />
+                      </span>
+                      <span class="linux">
+                        Linux:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a
+                          target="_blank"
+                          class="js-protocol-link"
+                          data-filename="ITHitEditDocumentOpener.deb"
+                          >ITHitEditDocumentOpener.deb</a
+                        ><br />
+                      </span>
+                      <span class="mac-os">
+                        Mac OS:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a
+                          target="_blank"
+                          class="js-protocol-link"
+                          data-filename="ITHitEditDocumentOpener.pkg"
+                          >ITHitEditDocumentOpener.pkg</a
+                        ><br />
+                      </span>
+                    </p>
+                  </li>
+                  <li>
+                    Enable the IT Hit Edit Document Opener web browser
+                    extension:<br />
+                    <span
+                      class="not-required-internet-explorer"
+                      style="display: none"
+                    >
+                      The extension is not required for Internet Explorer.<br />
+                    </span>
+                    <span class="current-browser"></span>
+                    <a href="javascript:void(0)" class="more-lnk"
+                      ><span>+</span> Other web browsers:</a
+                    >
+                    <p class="more-pnl">
+                      <span class="goole-chrome">
+                        <a
+                          href="https://chrome.google.com/webstore/detail/it-hit-edit-doc-opener-5/nakgflbblpkdafokdokmjdfglijajhlp"
+                          target="_blank"
+                          >Extension for Google Chrome.</a
+                        ><br />
+                      </span>
+                      <span class="mozilla-firefox">
+                        <a
+                          href="https://addons.mozilla.org/en-CA/firefox/addon/it-hit-edit-doc-opener-5/"
+                          target="_blank"
+                          >Extension for Mozilla Firefox.</a
+                        ><br />
+                      </span>
+                      <span class="edge-chromium">
+                        <a
+                          href="https://microsoftedge.microsoft.com/addons/detail/mdfaonmaoigngflemfmkboffllkopopm"
+                          target="_blank"
+                          >Extension for Microsoft Edge Chromium.</a
+                        ><br />
+                      </span>
+                    </p>
+                  </li>
+                </ol>
+                <br />
+                See
+                <a
+                  href="https://www.webdavsystem.com/ajax/programming/open-doc-webpage/install/windows/"
+                  target="_blank"
+                  >how to install the protocol app</a
+                >
+                and&nbsp;
+                <a
+                  href="https://www.webdavsystem.com/ajax/programming/open-doc-webpage/install/web_browser_extensions/"
+                  target="_blank"
+                  >install and verify web browser extensions.</a
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

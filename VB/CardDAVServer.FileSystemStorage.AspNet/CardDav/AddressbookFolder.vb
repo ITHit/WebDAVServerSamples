@@ -9,6 +9,7 @@ Imports System.Security.Principal
 Imports ITHit.WebDAV.Server
 Imports ITHit.WebDAV.Server.CardDav
 Imports ITHit.WebDAV.Server.Acl
+Imports IPrincipal = ITHit.WebDAV.Server.Acl.IPrincipal
 Imports CardDAVServer.FileSystemStorage.AspNet.Acl
 
 Namespace CardDav
@@ -28,11 +29,11 @@ Namespace CardDav
     '''           |-- [Address Book X]  -- this class
     ''' </example>
     ''' <remarks>
-    ''' IAclHierarchyItemAsync is required by OS X Contacts.
+    ''' IAclHierarchyItem is required by OS X Contacts.
     ''' </remarks>
     Public Class AddressbookFolder
         Inherits DavFolder
-        Implements IAddressbookFolderAsync, IAclHierarchyItemAsync
+        Implements IAddressbookFolder, IAclHierarchyItem
 
         ''' <summary>
         ''' Returns address book folder that corresponds to path.
@@ -61,7 +62,7 @@ Namespace CardDav
             MyBase.New(directoryInfo, context, path)
         End Sub
 
-        Public ReadOnly Property AddressbookDescription As String Implements IAddressbookFolderAsync.AddressbookDescription
+        Public ReadOnly Property AddressbookDescription As String Implements IAddressbookFolder.AddressbookDescription
             Get
                 Return String.Format("Some {0} description.", Name)
             End Get
@@ -84,12 +85,12 @@ Namespace CardDav
         ''' the Engine for each item that are returned from this method.
         ''' </param>
         ''' <returns>List of business card files. Returns <b>null</b> for any item that is not found.</returns>
-        Public Async Function MultiGetAsync(pathList As IEnumerable(Of String), propNames As IEnumerable(Of PropertyName)) As Task(Of IEnumerable(Of ICardFileAsync)) Implements IAddressbookReportAsync.MultiGetAsync
+        Public Async Function MultiGetAsync(pathList As IEnumerable(Of String), propNames As IEnumerable(Of PropertyName)) As Task(Of IEnumerable(Of ICardFile)) Implements IAddressbookReport.MultiGetAsync
             ' Here you can load all items from pathList in one request to your storage, instead of 
             ' getting items one-by-one using GetHierarchyItem call.
-            Dim cardFileList As IList(Of ICardFileAsync) = New List(Of ICardFileAsync)()
+            Dim cardFileList As IList(Of ICardFile) = New List(Of ICardFile)()
             For Each path As String In pathList
-                Dim cardFile As ICardFileAsync = TryCast(Await context.GetHierarchyItemAsync(path), ICardFileAsync)
+                Dim cardFile As ICardFile = TryCast(Await context.GetHierarchyItemAsync(path), ICardFile)
                 cardFileList.Add(cardFile)
             Next
 
@@ -108,13 +109,13 @@ Namespace CardDav
         ''' the Engine for each item that are returned from this method.
         ''' </param>
         ''' <returns>List of  business card files. Returns <b>null</b> for any item that is not found.</returns>
-        Public Async Function QueryAsync(rawQuery As String, propNames As IEnumerable(Of PropertyName)) As Task(Of IEnumerable(Of ICardFileAsync)) Implements IAddressbookReportAsync.QueryAsync
+        Public Async Function QueryAsync(rawQuery As String, propNames As IEnumerable(Of PropertyName)) As Task(Of IEnumerable(Of ICardFile)) Implements IAddressbookReport.QueryAsync
             ' For the sake of simplicity we just call GetChildren returning all items. 
             ' Typically you will return only items that match the query.
-            Return(Await GetChildrenAsync(propNames.ToList(), Nothing, Nothing, Nothing)).Page.Cast(Of ICardFileAsync)()
+            Return(Await GetChildrenAsync(propNames.ToList(), Nothing, Nothing, Nothing)).Page.Cast(Of ICardFile)()
         End Function
 
-        Public Function SetOwnerAsync(value As IPrincipalAsync) As Task Implements IAclHierarchyItemAsync.SetOwnerAsync
+        Public Function SetOwnerAsync(value As IPrincipal) As Task Implements IAclHierarchyItem.SetOwnerAsync
             Throw New NotImplementedException()
         End Function
 
@@ -123,9 +124,9 @@ Namespace CardDav
         ''' </summary>
         ''' <remarks>Required by OS X.</remarks>
         ''' <returns>
-        ''' Item that represents owner of this item and implements <see cref="IPrincipalAsync"/> .
+        ''' Item that represents owner of this item and implements <see cref="IPrincipal"/> .
         ''' </returns>
-        Public Async Function GetOwnerAsync() As Task(Of IPrincipalAsync) Implements IAclHierarchyItemAsync.GetOwnerAsync
+        Public Async Function GetOwnerAsync() As Task(Of IPrincipal) Implements IAclHierarchyItem.GetOwnerAsync
             Return context.FileOperation(Me,
                                         Function()
                 Dim acl As FileSecurity = File.GetAccessControl(fileSystemInfo.FullName)
@@ -134,15 +135,15 @@ Namespace CardDav
                                         Privilege.Read)
         End Function
 
-        Public Function SetGroupAsync(value As IPrincipalAsync) As Task Implements IAclHierarchyItemAsync.SetGroupAsync
+        Public Function SetGroupAsync(value As IPrincipal) As Task Implements IAclHierarchyItem.SetGroupAsync
             Throw New NotImplementedException()
         End Function
 
-        Public Function GetGroupAsync() As Task(Of IPrincipalAsync) Implements IAclHierarchyItemAsync.GetGroupAsync
+        Public Function GetGroupAsync() As Task(Of IPrincipal) Implements IAclHierarchyItem.GetGroupAsync
             Throw New NotImplementedException()
         End Function
 
-        Public Function GetSupportedPrivilegeSetAsync() As Task(Of IEnumerable(Of SupportedPrivilege)) Implements IAclHierarchyItemAsync.GetSupportedPrivilegeSetAsync
+        Public Function GetSupportedPrivilegeSetAsync() As Task(Of IEnumerable(Of SupportedPrivilege)) Implements IAclHierarchyItem.GetSupportedPrivilegeSetAsync
             Throw New NotImplementedException()
         End Function
 
@@ -154,35 +155,35 @@ Namespace CardDav
         ''' <returns>
         ''' List of current user privileges.
         ''' </returns>        
-        Public Async Function GetCurrentUserPrivilegeSetAsync() As Task(Of IEnumerable(Of Privilege)) Implements IAclHierarchyItemAsync.GetCurrentUserPrivilegeSetAsync
+        Public Async Function GetCurrentUserPrivilegeSetAsync() As Task(Of IEnumerable(Of Privilege)) Implements IAclHierarchyItem.GetCurrentUserPrivilegeSetAsync
             Return {Privilege.Write, Privilege.Read}
         End Function
 
-        Public Function GetAclAsync(propertyNames As IList(Of PropertyName)) As Task(Of IEnumerable(Of ReadAce)) Implements IAclHierarchyItemAsync.GetAclAsync
+        Public Function GetAclAsync(propertyNames As IList(Of PropertyName)) As Task(Of IEnumerable(Of ReadAce)) Implements IAclHierarchyItem.GetAclAsync
             Throw New NotImplementedException()
         End Function
 
-        Public Function SetAclAsync(aces As IList(Of WriteAce)) As Task Implements IAclHierarchyItemAsync.SetAclAsync
+        Public Function SetAclAsync(aces As IList(Of WriteAce)) As Task Implements IAclHierarchyItem.SetAclAsync
             Throw New NotImplementedException()
         End Function
 
-        Public Function GetAclRestrictionsAsync() As Task(Of AclRestriction) Implements IAclHierarchyItemAsync.GetAclRestrictionsAsync
+        Public Function GetAclRestrictionsAsync() As Task(Of AclRestriction) Implements IAclHierarchyItem.GetAclRestrictionsAsync
             Throw New NotImplementedException()
         End Function
 
-        Public Function GetInheritedAclSetAsync() As Task(Of IEnumerable(Of IHierarchyItemAsync)) Implements IAclHierarchyItemAsync.GetInheritedAclSetAsync
+        Public Function GetInheritedAclSetAsync() As Task(Of IEnumerable(Of IHierarchyItem)) Implements IAclHierarchyItem.GetInheritedAclSetAsync
             Throw New NotImplementedException()
         End Function
 
-        Public Function GetPrincipalCollectionSetAsync() As Task(Of IEnumerable(Of IPrincipalFolderAsync)) Implements IAclHierarchyItemAsync.GetPrincipalCollectionSetAsync
+        Public Function GetPrincipalCollectionSetAsync() As Task(Of IEnumerable(Of IPrincipalFolder)) Implements IAclHierarchyItem.GetPrincipalCollectionSetAsync
             Throw New NotImplementedException()
         End Function
 
-        Public Function ResolveWellKnownPrincipalAsync(wellKnownPrincipal As WellKnownPrincipal) As Task(Of IPrincipalAsync) Implements IAclHierarchyItemAsync.ResolveWellKnownPrincipalAsync
+        Public Function ResolveWellKnownPrincipalAsync(wellKnownPrincipal As WellKnownPrincipal) As Task(Of IPrincipal) Implements IAclHierarchyItem.ResolveWellKnownPrincipalAsync
             Throw New NotImplementedException()
         End Function
 
-        Public Function GetItemsByPropertyAsync(matchBy As MatchBy, props As IList(Of PropertyName)) As Task(Of IEnumerable(Of IAclHierarchyItemAsync)) Implements IAclHierarchyItemAsync.GetItemsByPropertyAsync
+        Public Function GetItemsByPropertyAsync(matchBy As MatchBy, props As IList(Of PropertyName)) As Task(Of IEnumerable(Of IAclHierarchyItem)) Implements IAclHierarchyItem.GetItemsByPropertyAsync
             Throw New NotImplementedException()
         End Function
     End Class

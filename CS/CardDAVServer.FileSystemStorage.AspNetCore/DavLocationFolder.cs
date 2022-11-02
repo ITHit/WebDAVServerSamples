@@ -77,7 +77,7 @@ namespace CardDAVServer.FileSystemStorage.AspNetCore
         /// <returns>Children of this folder.</returns>
         public override async Task<PageResults> GetChildrenAsync(IList<PropertyName> propNames, long? offset, long? nResults, IList<OrderProperty> orderProps)
         {
-            List<IHierarchyItemAsync> children = new List<IHierarchyItemAsync>();
+            List<IHierarchyItem> children = new List<IHierarchyItem>();
 
             // At the upper level we have folder named [DavLocation]/acl/ which stores users and groups.
             // This is a 'virtual' folder, it does not exist in file system.

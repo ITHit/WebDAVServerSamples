@@ -21,7 +21,7 @@ namespace CardDAVServer.SqlStorage.AspNetCore.CardDav
     /// Represents a vCard file.
     /// Instances of this class correspond to the following path: [DAVLocation]/addressbooks/[AddressbookFolderId]/[FileName].vcf
     /// </summary>
-    public class CardFile : DavHierarchyItem, ICardFileAsync
+    public class CardFile : DavHierarchyItem, ICardFile
     {
         /// <summary>
         /// Card file extension.
@@ -34,8 +34,8 @@ namespace CardDAVServer.SqlStorage.AspNetCore.CardDav
         /// <param name="context">Instance of <see cref="DavContext"/> class.</param>
         /// <param name="addressbookFolderId">Address book for which cards should be loaded.</param>
         /// <param name="propsToLoad">Specifies which properties should be loaded.</param>
-        /// <returns>List of <see cref="ICardFileAsync"/> items.</returns>
-        public static async Task<IEnumerable<ICardFileAsync>> LoadByAddressbookFolderIdAsync(DavContext context, Guid addressbookFolderId, PropsToLoad propsToLoad)
+        /// <returns>List of <see cref="ICardFile"/> items.</returns>
+        public static async Task<IEnumerable<ICardFile>> LoadByAddressbookFolderIdAsync(DavContext context, Guid addressbookFolderId, PropsToLoad propsToLoad)
         {
             // propsToLoad == PropsToLoad.Minimum -> Typical GetChildren call by iOS, Android, eM Client, etc CardDAV clients
             // [Summary] is typically not required in GetChildren call, 
@@ -63,8 +63,8 @@ namespace CardDAVServer.SqlStorage.AspNetCore.CardDav
         /// <param name="context">Instance of <see cref="DavContext"/> class.</param>
         /// <param name="fileNames">File names to load.</param>
         /// <param name="propsToLoad">Specifies which properties should be loaded.</param>
-        /// <returns>List of <see cref="ICardFileAsync"/> items.</returns>
-        public static async Task<IEnumerable<ICardFileAsync>> LoadByFileNamesAsync(DavContext context, IEnumerable<string> fileNames, PropsToLoad propsToLoad)
+        /// <returns>List of <see cref="ICardFile"/> items.</returns>
+        public static async Task<IEnumerable<ICardFile>> LoadByFileNamesAsync(DavContext context, IEnumerable<string> fileNames, PropsToLoad propsToLoad)
         {
             // Get IN clause part with list of file UIDs for SELECT.
             string selectIn = string.Join(", ", fileNames.Select(a => string.Format("'{0}'", a)).ToArray());
@@ -96,10 +96,10 @@ namespace CardDAVServer.SqlStorage.AspNetCore.CardDav
         /// <param name="context">Instance of <see cref="DavContext"/> class.</param>
         /// <param name="sql">SQL that queries [card_CardFile], [card_Email], etc tables.</param>
         /// <param name="prms">List of SQL parameters.</param>
-        /// <returns>List of <see cref="ICardFileAsync"/> items.</returns>
-        private static async Task<IEnumerable<ICardFileAsync>> LoadAsync(DavContext context, string sql, params object[] prms)
+        /// <returns>List of <see cref="ICardFile"/> items.</returns>
+        private static async Task<IEnumerable<ICardFile>> LoadAsync(DavContext context, string sql, params object[] prms)
         {
-            IList<ICardFileAsync> items = new List<ICardFileAsync>();
+            IList<ICardFile> items = new List<ICardFile>();
 
             Stopwatch stopWatch = Stopwatch.StartNew();
 

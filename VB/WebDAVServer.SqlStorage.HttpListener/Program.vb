@@ -151,7 +151,7 @@ Friend Class Program
         Dim webSocketContext As WebSocketContext = Await context.AcceptWebSocketAsync(Nothing)
         Dim client As WebSocket = webSocketContext.WebSocket
         ' Adding client to connected clients collection.
-        Dim clientId As Guid = socketService.AddClient(client)
+        Dim clientId As Guid = socketService.AddClient(client, context.Request.Headers("InstanceId"))
         Dim buffer As Byte() = New Byte(4095) {}
         Dim result As WebSocketReceiveResult = Nothing
         While client.State = WebSocketState.Open

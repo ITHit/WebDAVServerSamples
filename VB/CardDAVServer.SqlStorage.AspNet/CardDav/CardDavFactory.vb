@@ -13,7 +13,7 @@ Namespace CardDav
         ''' <param name="path">Relative path requested.</param>
         ''' <param name="context">Instance of <see cref="DavContext"/>  class.</param>
         ''' <returns>Object implementing various business card items or null if no object corresponding to path is found.</returns>
-        Async Function GetCardDavItemAsync(context As DavContext, path As String) As Task(Of IHierarchyItemAsync)
+        Async Function GetCardDavItemAsync(context As DavContext, path As String) As Task(Of IHierarchyItem)
             ' If this is [DAVLocation]/addressbooks - return folder that contains all addressbooks.
             If path.Equals(AddressbooksRootFolder.AddressbooksRootFolderPath.Trim("/"c), System.StringComparison.InvariantCultureIgnoreCase) Then
                 Return New AddressbooksRootFolder(context)

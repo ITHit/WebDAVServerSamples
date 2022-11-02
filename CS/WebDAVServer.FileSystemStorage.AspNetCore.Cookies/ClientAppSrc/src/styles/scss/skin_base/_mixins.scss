@@ -1,0 +1,32 @@
+﻿@mixin transform($transforms) {
+  -moz-transform: $transforms;
+  -o-transform: $transforms;
+  -ms-transform: $transforms;
+  -webkit-transform: $transforms;
+  transform: $transforms;
+}
+
+@mixin user-select($value) {
+  -webkit-user-select: $value;
+  -moz-user-select: $value;
+  -ms-user-select: $value;
+  user-select: $value;
+}
+
+@mixin mask-image($value) {
+  -webkit-mask-image: $value;
+  mask-image: $value;
+}
+
+@mixin icon-mask($value) {
+  @include mask-image($value);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center center;
+  mask-position: center center;
+}
+
+@mixin mask-size($value) {
+  -webkit-mask-size: $value;
+  mask-size: $value;
+}

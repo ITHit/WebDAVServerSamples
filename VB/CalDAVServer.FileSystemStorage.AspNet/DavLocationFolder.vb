@@ -74,7 +74,7 @@ Public Class DavLocationFolder
     ''' <param name="orderProps">List of order properties requested by the client.</param>
     ''' <returns>Children of this folder.</returns>
     Public Overrides Async Function GetChildrenAsync(propNames As IList(Of PropertyName), offset As Long?, nResults As Long?, orderProps As IList(Of OrderProperty)) As Task(Of PageResults)
-        Dim children As List(Of IHierarchyItemAsync) = New List(Of IHierarchyItemAsync)()
+        Dim children As List(Of IHierarchyItem) = New List(Of IHierarchyItem)()
         ' At the upper level we have folder named [DavLocation]/acl/ which stores users and groups.
         ' This is a 'virtual' folder, it does not exist in file system.
         children.Add(New Acl.AclFolder(context))

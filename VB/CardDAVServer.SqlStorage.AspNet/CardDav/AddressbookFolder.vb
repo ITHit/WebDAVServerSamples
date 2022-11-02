@@ -1,5 +1,6 @@
 Imports System
 Imports System.Collections.Generic
+Imports System.IO
 Imports System.Threading.Tasks
 Imports System.Data.SqlClient
 Imports System.Linq
@@ -9,6 +10,7 @@ Imports ITHit.WebDAV.Server.CardDav
 Imports ITHit.WebDAV.Server.Acl
 Imports ITHit.WebDAV.Server.Class1
 Imports ITHit.WebDAV.Server.Paging
+Imports IPrincipal = ITHit.WebDAV.Server.Acl.IPrincipal
 Imports ITHit.Server
 
 Namespace CardDav
@@ -19,15 +21,15 @@ Namespace CardDav
     ''' </summary>
     Public Class AddressbookFolder
         Inherits DavHierarchyItem
-        Implements IAddressbookFolderAsync, ICurrentUserPrincipalAsync, IAclHierarchyItemAsync
+        Implements IAddressbookFolder, ICurrentUserPrincipal, IAclHierarchyItem
 
         ''' <summary>
         ''' Loads address book folder by ID. Returns null if addressbook folder was not found.
         ''' </summary>
         ''' <param name="context">Instance of <see cref="DavContext"/>  class.</param>
         ''' <param name="addressbookFolderId">ID of the address book folder to load.</param>
-        ''' <returns><see cref="IAddressbookFolderAsync"/>  instance.</returns>
-        Public Shared Async Function LoadByIdAsync(context As DavContext, addressbookFolderId As Guid) As Task(Of IAddressbookFolderAsync)
+        ''' <returns><see cref="IAddressbookFolder"/>  instance.</returns>
+        Public Shared Async Function LoadByIdAsync(context As DavContext, addressbookFolderId As Guid) As Task(Of IAddressbookFolder)
             ' Load only address book that the use has access to. 
             ' Also load complete ACL for this address book.
             Dim sql As String = "SELECT * FROM [card_AddressbookFolder] 
@@ -47,8 +49,8 @@ Namespace CardDav
         ''' Loads all address books.
         ''' </summary>
         ''' <param name="context">Instance of <see cref="DavContext"/>  class.</param>
-        ''' <returns>List of <see cref="IAddressbookFolderAsync"/>  items.</returns>
-        Public Shared Async Function LoadAllAsync(context As DavContext) As Task(Of IEnumerable(Of IAddressbookFolderAsync))
+        ''' <returns>List of <see cref="IAddressbookFolder"/>  items.</returns>
+        Public Shared Async Function LoadAllAsync(context As DavContext) As Task(Of IEnumerable(Of IAddressbookFolder))
             ' Load only address books that the use has access to. 
             ' Also load complete ACL for each address book, but only if user has access to that address book.
             Dim sql As String = "SELECT * FROM [card_AddressbookFolder] 
@@ -65,9 +67,9 @@ Namespace CardDav
         ''' <param name="context">Instance of <see cref="DavContext"/>  class.</param>
         ''' <param name="sql">SQL that queries [card_AddressbookFolder] table.</param>
         ''' <param name="prms">List of SQL parameters.</param>
-        ''' <returns>List of <see cref="IAddressbookFolderAsync"/>  items.</returns>
-        Private Shared Async Function LoadAsync(context As DavContext, sql As String, ParamArray prms As Object()) As Task(Of IEnumerable(Of IAddressbookFolderAsync))
-            Dim addressbookFolders As IList(Of IAddressbookFolderAsync) = New List(Of IAddressbookFolderAsync)()
+        ''' <returns>List of <see cref="IAddressbookFolder"/>  items.</returns>
+        Private Shared Async Function LoadAsync(context As DavContext, sql As String, ParamArray prms As Object()) As Task(Of IEnumerable(Of IAddressbookFolder))
+            Dim addressbookFolders As IList(Of IAddressbookFolder) = New List(Of IAddressbookFolder)()
             Using reader As SqlDataReader = Await context.ExecuteReaderAsync(sql, prms)
                 Dim addressbooks As DataTable = New DataTable()
                 addressbooks.Load(reader)
@@ -143,7 +145,7 @@ Namespace CardDav
         ''' Gets display name of the address book.
         ''' </summary>
         ''' <remarks>CalDAV clients typically never request this property.</remarks>
-        Public Overrides ReadOnly Property Name As String Implements IHierarchyItemBaseAsync.Name
+        Public Overrides ReadOnly Property Name As String Implements IHierarchyItemBase.Name
             Get
                 Return If(rowAddressbookFolder IsNot Nothing, rowAddressbookFolder.Field(Of String)("Name"), Nothing)
             End Get
@@ -152,7 +154,7 @@ Namespace CardDav
         ''' <summary>
         ''' Gets item path.
         ''' </summary>
-        Public Overrides ReadOnly Property Path As String Implements IHierarchyItemBaseAsync.Path
+        Public Overrides ReadOnly Property Path As String Implements IHierarchyItemBase.Path
             Get
                 Return String.Format("{0}{1}/", AddressbooksRootFolder.AddressbooksRootFolderPath, addressbookFolderId)
             End Get
@@ -189,7 +191,7 @@ Namespace CardDav
         ''' the Engine for each item that are returned from this method.
         ''' </param>
         ''' <returns>List of address book files. Returns <b>null</b> for any item that is not found.</returns>
-        Public Async Function MultiGetAsync(pathList As IEnumerable(Of String), propNames As IEnumerable(Of PropertyName)) As Task(Of IEnumerable(Of ICardFileAsync)) Implements IAddressbookReportAsync.MultiGetAsync
+        Public Async Function MultiGetAsync(pathList As IEnumerable(Of String), propNames As IEnumerable(Of PropertyName)) As Task(Of IEnumerable(Of ICardFile)) Implements IAddressbookReport.MultiGetAsync
             ' Get list of file names from path list.
             Dim fileNames As IEnumerable(Of String) = pathList.Select(Function(a) System.IO.Path.GetFileNameWithoutExtension(a))
             Return Await CardFile.LoadByFileNamesAsync(Context, fileNames, PropsToLoad.All)
@@ -211,16 +213,16 @@ Namespace CardDav
         ''' the Engine for each item that are returned from this method.
         ''' </param>
         ''' <returns>List of address book files. Returns <b>null</b> for any item that is not found.</returns>
-        Public Async Function QueryAsync(rawQuery As String, propNames As IEnumerable(Of PropertyName)) As Task(Of IEnumerable(Of ICardFileAsync)) Implements IAddressbookReportAsync.QueryAsync
+        Public Async Function QueryAsync(rawQuery As String, propNames As IEnumerable(Of PropertyName)) As Task(Of IEnumerable(Of ICardFile)) Implements IAddressbookReport.QueryAsync
             ' For the sake of simplicity we just call GetChildren returning all items. 
             ' Typically you will return only items that match the query.
-            Return(Await GetChildrenAsync(propNames.ToList(), Nothing, Nothing, Nothing)).Page.Cast(Of ICardFileAsync)()
+            Return(Await GetChildrenAsync(propNames.ToList(), Nothing, Nothing, Nothing)).Page.Cast(Of ICardFile)()
         End Function
 
         ''' <summary>
         ''' Provides a human-readable description of the address book collection.
         ''' </summary>
-        Public ReadOnly Property AddressbookDescription As String Implements IAddressbookFolderAsync.AddressbookDescription
+        Public ReadOnly Property AddressbookDescription As String Implements IAddressbookFolder.AddressbookDescription
             Get
                 Return rowAddressbookFolder.Field(Of String)("Description")
             End Get
@@ -234,7 +236,7 @@ Namespace CardDav
         ''' <param name="nResults">The number of items to return.</param>
         ''' <param name="orderProps">List of order properties requested by the client.</param>
         ''' <returns>Children of the folder.</returns>
-        Public Async Function GetChildrenAsync(propNames As IList(Of PropertyName), offset As Long?, nResults As Long?, orderProps As IList(Of OrderProperty)) As Task(Of PageResults) Implements IItemCollectionAsync.GetChildrenAsync
+        Public Async Function GetChildrenAsync(propNames As IList(Of PropertyName), offset As Long?, nResults As Long?, orderProps As IList(Of OrderProperty)) As Task(Of PageResults) Implements IItemCollection.GetChildrenAsync
             ' Here we enumerate all business cards contained in this address book.
             ' You can filter children items in this implementation and 
             ' return only items that you want to be available for this 
@@ -243,7 +245,7 @@ Namespace CardDav
             ' The iCalendar/vCard (calendar-data/address-data) is typically requested not in GetChildren, but in a separate multiget 
             ' report, in MultiGetAsync() method call, that follows this request.
             ' Bynari submits PROPFIND without props - Engine will request getcontentlength
-            Dim children As IList(Of IHierarchyItemAsync) = New List(Of IHierarchyItemAsync)()
+            Dim children As IList(Of IHierarchyItem) = New List(Of IHierarchyItem)()
             Return New PageResults((Await CardFile.LoadByAddressbookFolderIdAsync(Context, addressbookFolderId, PropsToLoad.Minimum)), Nothing)
         End Function
 
@@ -251,9 +253,12 @@ Namespace CardDav
         ''' Creates a file that contains business card item in this address book.
         ''' </summary>
         ''' <param name="name">Name of the new file. Unlike with CalDAV it is NOT equel to vCard UID.</param>
+        ''' <param name="content">Stream to read the content of the file from.</param>
+        ''' <param name="contentType">Indicates the media type of the file.</param>
+        ''' <param name="totalFileSize">Size of file as it will be after all parts are uploaded. -1 if unknown (in case of chunked upload).</param>
         ''' <returns>The newly created file.</returns>
         ''' <remarks></remarks>
-        Public Async Function CreateFileAsync(name As String) As Task(Of IFileAsync) Implements IFolderAsync.CreateFileAsync
+        Public Async Function CreateFileAsync(name As String, content As Stream, contentType As String, totalFileSize As Long) As Task(Of IFile) Implements IFolder.CreateFileAsync
             ' The actual business card file is created in datatbase in CardFile.Write call.
             Dim fileName As String = System.IO.Path.GetFileNameWithoutExtension(name)
             Return CardFile.CreateCardFile(Context, addressbookFolderId, fileName)
@@ -263,7 +268,7 @@ Namespace CardDav
         ''' Creating new folders is not allowed in address book folders.
         ''' </summary>
         ''' <param name="name">Name of the folder.</param>
-        Public Async Function CreateFolderAsync(name As String) As Task Implements IFolderAsync.CreateFolderAsync
+        Public Async Function CreateFolderAsync(name As String) As Task Implements IFolder.CreateFolderAsync
             Throw New DavException("Not allowed.", DavStatus.NOT_ALLOWED)
         End Function
 
@@ -275,7 +280,7 @@ Namespace CardDav
         ''' <param name="multistatus">Instance of <see cref="MultistatusException"/> 
         ''' to fill with errors ocurred while moving child items.</param>
         ''' <returns></returns>
-        Public Overrides Async Function MoveToAsync(destFolder As IItemCollectionAsync, destName As String, multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.MoveToAsync
+        Public Overrides Async Function MoveToAsync(destFolder As IItemCollection, destName As String, multistatus As MultistatusException) As Task Implements IHierarchyItem.MoveToAsync
             ' Here we support only addressbooks renaming. Check that user has permissions to write.
             Dim sql As String = "UPDATE [card_AddressbookFolder] SET Name=@Name 
                 WHERE [AddressbookFolderId]=@AddressbookFolderId
@@ -292,7 +297,7 @@ Namespace CardDav
         ''' Deletes this address book.
         ''' </summary>
         ''' <param name="multistatus"><see cref="MultistatusException"/>  to populate with child files and folders failed to delete.</param>
-        Public Overrides Async Function DeleteAsync(multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.DeleteAsync
+        Public Overrides Async Function DeleteAsync(multistatus As MultistatusException) As Task Implements IHierarchyItem.DeleteAsync
             ' Delete address book and all vCards associated with it. Check that user has permissions to delete.
             Dim sql As String = "DELETE FROM [card_AddressbookFolder] 
                 WHERE [AddressbookFolderId]=@AddressbookFolderId
@@ -315,7 +320,7 @@ Namespace CardDav
         ''' all properties you think may be useful to client.
         ''' </param>
         ''' <returns></returns>
-        Public Overrides Async Function GetPropertiesAsync(names As IList(Of PropertyName), allprop As Boolean) As Task(Of IEnumerable(Of PropertyValue)) Implements IHierarchyItemAsync.GetPropertiesAsync
+        Public Overrides Async Function GetPropertiesAsync(names As IList(Of PropertyName), allprop As Boolean) As Task(Of IEnumerable(Of PropertyValue)) Implements IHierarchyItem.GetPropertiesAsync
             Dim propVals As IList(Of PropertyValue) = Await GetPropertyValuesAsync("SELECT [Name], [Namespace], [PropVal] FROM [card_AddressbookFolderProperty] WHERE [AddressbookFolderId] = @AddressbookFolderId",
                                                                                   "@AddressbookFolderId", addressbookFolderId)
             If allprop Then
@@ -340,7 +345,7 @@ Namespace CardDav
         ''' <param name="multistatus">Information about errors.</param>
         Public Overrides Async Function UpdatePropertiesAsync(setProps As IList(Of PropertyValue),
                                                              delProps As IList(Of PropertyName),
-                                                             multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.UpdatePropertiesAsync
+                                                             multistatus As MultistatusException) As Task Implements IHierarchyItem.UpdatePropertiesAsync
             For Each p As PropertyValue In setProps
                 Await SetPropertyAsync(p)
             Next
@@ -410,7 +415,7 @@ Namespace CardDav
                                               "@Namespace", ns)
         End Function
 
-        Public Function SetOwnerAsync(value As IPrincipalAsync) As Task Implements IAclHierarchyItemAsync.SetOwnerAsync
+        Public Function SetOwnerAsync(value As IPrincipal) As Task Implements IAclHierarchyItem.SetOwnerAsync
             Throw New DavException("Not implemented.", DavStatus.NOT_IMPLEMENTED)
         End Function
 
@@ -419,9 +424,9 @@ Namespace CardDav
         ''' </summary>
         ''' <remarks>Required by OS X.</remarks>
         ''' <returns>
-        ''' Item that represents owner of this item and implements <see cref="IPrincipalAsync"/> .
+        ''' Item that represents owner of this item and implements <see cref="IPrincipal"/> .
         ''' </returns>
-        Public Async Function GetOwnerAsync() As Task(Of IPrincipalAsync) Implements IAclHierarchyItemAsync.GetOwnerAsync
+        Public Async Function GetOwnerAsync() As Task(Of IPrincipal) Implements IAclHierarchyItem.GetOwnerAsync
             Dim rowOwner As DataRow = rowsAccess.FirstOrDefault(Function(x) x.Field(Of Boolean)("Owner") = True)
             If rowOwner Is Nothing Then Return Nothing
             Return Await Acl.User.GetUserAsync(Context, rowOwner.Field(Of String)("UserId"))
@@ -432,7 +437,7 @@ Namespace CardDav
         ''' found on repositories that implement the Unix privileges model.
         ''' </summary>
         ''' <param name="value">Identifies whether to search by owner or group.</param>
-        Public Function SetGroupAsync(value As IPrincipalAsync) As Task Implements IAclHierarchyItemAsync.SetGroupAsync
+        Public Function SetGroupAsync(value As IPrincipal) As Task Implements IAclHierarchyItem.SetGroupAsync
             Throw New DavException("Group cannot be set", DavStatus.FORBIDDEN)
         End Function
 
@@ -441,12 +446,12 @@ Namespace CardDav
         ''' found on repositories that implement the Unix privileges model.
         ''' </summary>
         ''' <returns>
-        ''' Group principal that implements <see cref="IPrincipalAsync"/> .
+        ''' Group principal that implements <see cref="IPrincipal"/> .
         ''' </returns>
         ''' <remarks>
         ''' Can return null if group is not assigned.
         ''' </remarks>
-        Public Async Function GetGroupAsync() As Task(Of IPrincipalAsync) Implements IAclHierarchyItemAsync.GetGroupAsync
+        Public Async Function GetGroupAsync() As Task(Of IPrincipal) Implements IAclHierarchyItem.GetGroupAsync
             Return Nothing
         End Function
 
@@ -454,7 +459,7 @@ Namespace CardDav
         ''' Retrieves list of all privileges (permissions) which can be set for the item.
         ''' </summary>
         ''' <returns>Enumerable with supported permissions.</returns>
-        Public Async Function GetSupportedPrivilegeSetAsync() As Task(Of IEnumerable(Of SupportedPrivilege)) Implements IAclHierarchyItemAsync.GetSupportedPrivilegeSetAsync
+        Public Async Function GetSupportedPrivilegeSetAsync() As Task(Of IEnumerable(Of SupportedPrivilege)) Implements IAclHierarchyItem.GetSupportedPrivilegeSetAsync
             Return {New SupportedPrivilege With {.Privilege = Privilege.Read, .IsAbstract = False, .DescriptionLanguage = "en",
                                            .Description = "Allows or denies the user the ability to read content and properties of files/folders."},
                    New SupportedPrivilege With {.Privilege = Privilege.Write, .IsAbstract = False, .DescriptionLanguage = "en",
@@ -469,7 +474,7 @@ Namespace CardDav
         ''' <returns>
         ''' List of current user privileges.
         ''' </returns>
-        Public Async Function GetCurrentUserPrivilegeSetAsync() As Task(Of IEnumerable(Of Privilege)) Implements IAclHierarchyItemAsync.GetCurrentUserPrivilegeSetAsync
+        Public Async Function GetCurrentUserPrivilegeSetAsync() As Task(Of IEnumerable(Of Privilege)) Implements IAclHierarchyItem.GetCurrentUserPrivilegeSetAsync
             Dim rowAccess As DataRow = rowsAccess.FirstOrDefault(Function(x) x.Field(Of String)("UserId") = Context.UserId)
             If rowAccess Is Nothing Then Return Nothing
             Dim privileges As List(Of Privilege) = New List(Of Privilege)()
@@ -484,7 +489,7 @@ Namespace CardDav
         ''' <param name="propertyNames">Properties which will be retrieved from users/groups specified in
         ''' access control list returned.</param>
         ''' <returns>Enumerable with access control entries.</returns>
-        Public Async Function GetAclAsync(propertyNames As IList(Of PropertyName)) As Task(Of IEnumerable(Of ReadAce)) Implements IAclHierarchyItemAsync.GetAclAsync
+        Public Async Function GetAclAsync(propertyNames As IList(Of PropertyName)) As Task(Of IEnumerable(Of ReadAce)) Implements IAclHierarchyItem.GetAclAsync
             Dim aceList As IList(Of ReadAce) = New List(Of ReadAce)()
             For Each rowAccess As DataRow In rowsAccess
                 Dim ace As ReadAce = New ReadAce()
@@ -498,7 +503,7 @@ Namespace CardDav
             Return aceList
         End Function
 
-        Public Function SetAclAsync(aces As IList(Of WriteAce)) As Task Implements IAclHierarchyItemAsync.SetAclAsync
+        Public Function SetAclAsync(aces As IList(Of WriteAce)) As Task Implements IAclHierarchyItem.SetAclAsync
             Throw New DavException("Not implemented.", DavStatus.NOT_IMPLEMENTED)
         End Function
 
@@ -507,7 +512,7 @@ Namespace CardDav
         ''' We don't support WebDAV inverted permissions.
         ''' </summary>
         ''' <returns>ACL restrictions.</returns>
-        Public Async Function GetAclRestrictionsAsync() As Task(Of AclRestriction) Implements IAclHierarchyItemAsync.GetAclRestrictionsAsync
+        Public Async Function GetAclRestrictionsAsync() As Task(Of AclRestriction) Implements IAclHierarchyItem.GetAclRestrictionsAsync
             Return New AclRestriction With {.NoInvert = True, .GrantOnly = True}
         End Function
 
@@ -516,16 +521,16 @@ Namespace CardDav
         ''' </summary>
         ''' <returns>Enumerable with files/folders from which this file/folder has inherited
         ''' access control entries.</returns>
-        Public Async Function GetInheritedAclSetAsync() As Task(Of IEnumerable(Of IHierarchyItemAsync)) Implements IAclHierarchyItemAsync.GetInheritedAclSetAsync
-            Return New IHierarchyItemAsync() {}
+        Public Async Function GetInheritedAclSetAsync() As Task(Of IEnumerable(Of IHierarchyItem)) Implements IAclHierarchyItem.GetInheritedAclSetAsync
+            Return New IHierarchyItem() {}
         End Function
 
         ''' <summary>
         ''' Gets collections which contain principals.
         ''' </summary>
         ''' <returns>Folders which contain users/groups.</returns>
-        Public Async Function GetPrincipalCollectionSetAsync() As Task(Of IEnumerable(Of IPrincipalFolderAsync)) Implements IAclHierarchyItemAsync.GetPrincipalCollectionSetAsync
-            Return New IPrincipalFolderAsync() {New Acl.UsersFolder(Context)}
+        Public Async Function GetPrincipalCollectionSetAsync() As Task(Of IEnumerable(Of IPrincipalFolder)) Implements IAclHierarchyItem.GetPrincipalCollectionSetAsync
+            Return New IPrincipalFolder() {New Acl.UsersFolder(Context)}
         End Function
 
         ''' <summary>
@@ -535,11 +540,11 @@ Namespace CardDav
         ''' <param name="wellKnownPrincipal">Well known principal type.</param>
         ''' <returns>Instance of corresponding user/group or <c>null</c> if corresponding user/group
         ''' is not supported.</returns>
-        Public Async Function ResolveWellKnownPrincipalAsync(wellKnownPrincipal As WellKnownPrincipal) As Task(Of IPrincipalAsync) Implements IAclHierarchyItemAsync.ResolveWellKnownPrincipalAsync
+        Public Async Function ResolveWellKnownPrincipalAsync(wellKnownPrincipal As WellKnownPrincipal) As Task(Of IPrincipal) Implements IAclHierarchyItem.ResolveWellKnownPrincipalAsync
             Return Nothing
         End Function
 
-        Public Function GetItemsByPropertyAsync(matchBy As MatchBy, props As IList(Of PropertyName)) As Task(Of IEnumerable(Of IAclHierarchyItemAsync)) Implements IAclHierarchyItemAsync.GetItemsByPropertyAsync
+        Public Function GetItemsByPropertyAsync(matchBy As MatchBy, props As IList(Of PropertyName)) As Task(Of IEnumerable(Of IAclHierarchyItem)) Implements IAclHierarchyItem.GetItemsByPropertyAsync
             Throw New DavException("Not implemented.", DavStatus.NOT_IMPLEMENTED)
         End Function
     End Class

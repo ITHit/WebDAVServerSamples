@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 using ITHit.WebDAV.Server;
 using ITHit.WebDAV.Server.Acl;
+using IPrincipal = ITHit.WebDAV.Server.Acl.IPrincipal;
 using ITHit.WebDAV.Server.CalDav;
 using CalDAVServer.FileSystemStorage.AspNetCore.CalDav;
 
@@ -16,7 +17,7 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore.Acl
     /// This class represents user principal in WebDAV hierarchy. 
     /// Instances of this class correspond to the following path: [DAVLocation]/acl/users/[UserID].
     /// </summary>
-    public class User : Discovery, ICalendarPrincipalAsync
+    public class User : Discovery, ICalendarPrincipal
     {
         private readonly string email;
 
@@ -88,7 +89,7 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore.Acl
         /// <param name="destName">New user name.</param>
         /// <param name="deep">Whether to copy children - is not user.</param>
         /// <param name="multistatus">Is not used as there's no children.</param>
-        public async Task CopyToAsync(IItemCollectionAsync destFolder, string destName, bool deep, MultistatusException multistatus)
+        public async Task CopyToAsync(IItemCollection destFolder, string destName, bool deep, MultistatusException multistatus)
         {
             throw new DavException("Not implemented.", DavStatus.NOT_IMPLEMENTED);
         }
@@ -99,7 +100,7 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore.Acl
         /// <param name="destFolder">We don't use it as moving groups to different folder is not supported.</param>
         /// <param name="destName">New name.</param>
         /// <param name="multistatus">We don't use it as there're no child objects.</param>
-        public async Task MoveToAsync(IItemCollectionAsync destFolder, string destName, MultistatusException multistatus)
+        public async Task MoveToAsync(IItemCollection destFolder, string destName, MultistatusException multistatus)
         {
             throw new DavException("Not implemented.", DavStatus.NOT_IMPLEMENTED);
         }
@@ -150,7 +151,7 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore.Acl
         /// between users and groups.
         /// </summary>
         /// <param name="members">Members of the group.</param>
-        public async Task SetGroupMembersAsync(IList<IPrincipalAsync> members)
+        public async Task SetGroupMembersAsync(IList<IPrincipal> members)
         {
             throw new DavException("User objects can not contain other users.", DavStatus.CONFLICT);
         }
@@ -159,18 +160,18 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore.Acl
         /// Retrieves principal members. Users have no members, so return empty list.
         /// </summary>
         /// <returns>Principal members.</returns>
-        public async Task<IEnumerable<IPrincipalAsync>> GetGroupMembersAsync()
+        public async Task<IEnumerable<IPrincipal>> GetGroupMembersAsync()
         {
-            return new IPrincipalAsync[0];
+            return new IPrincipal[0];
         }
 
         /// <summary>
         /// Gets groups to which this principal belongs.
         /// </summary>
         /// <returns>Enumerable with groups.</returns>
-        public async Task<IEnumerable<IPrincipalAsync>> GetGroupMembershipAsync()
+        public async Task<IEnumerable<IPrincipal>> GetGroupMembershipAsync()
         {
-            return new IPrincipalAsync[0];
+            return new IPrincipal[0];
         }
 
         /// <summary>

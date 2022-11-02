@@ -10,7 +10,7 @@ namespace CardDAVServer.SqlStorage.AspNetCore
     /// <summary>
     /// Assists in finding folders that contain calendars and address books.
     /// </summary>
-    public class Discovery : IAddressbookDiscoveryAsync
+    public class Discovery : IAddressbookDiscovery
     {
         /// <summary>
         /// Instance of <see cref="DavContext"/>.
@@ -26,7 +26,7 @@ namespace CardDAVServer.SqlStorage.AspNetCore
         /// Returns list of folders that contain address books owned by this principal.
         /// </summary>
         /// <remarks>This enables address books discovery owned by current loged-in principal.</remarks>
-        public async Task<IEnumerable<IItemCollectionAsync>> GetAddressbookHomeSetAsync()
+        public async Task<IEnumerable<IItemCollection>> GetAddressbookHomeSetAsync()
         {
             return new[] { new AddressbooksRootFolder(Context) };
         }

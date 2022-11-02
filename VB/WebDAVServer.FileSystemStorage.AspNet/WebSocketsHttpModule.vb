@@ -54,7 +54,7 @@ Public Class WebSocketsHttpModule
     Private Async Function HandleWebSocketRequest(webSocketContext As WebSocketContext) As Task
         Dim client As WebSocket = webSocketContext.WebSocket
         ' Adding client to connected clients dictionary.
-        Dim clientId As Guid = socketService.AddClient(client)
+        Dim clientId As Guid = socketService.AddClient(client, webSocketContext.Headers("InstanceId"))
         Dim buffer As Byte() = New Byte(4095) {}
         Dim result As WebSocketReceiveResult = Nothing
         While client.State = WebSocketState.Open

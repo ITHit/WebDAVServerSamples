@@ -19,14 +19,14 @@ namespace WebDAVServer.FileSystemStorage.AspNet
     /// <summary>
     /// This handler processes GET and HEAD requests to folders returning custom HTML page.
     /// </summary>
-    internal class MyCustomGetHandler : IMethodHandlerAsync<IHierarchyItemAsync>
+    internal class MyCustomGetHandler : IMethodHandler<IHierarchyItem>
     {
         /// <summary>
         /// Handler for GET and HEAD request registered with the engine before registering this one.
         /// We call this default handler to handle GET and HEAD for files, because this handler
         /// only handles GET and HEAD for folders.
         /// </summary>
-        public IMethodHandlerAsync<IHierarchyItemAsync> OriginalHandler { get; set; }
+        public IMethodHandler<IHierarchyItem> OriginalHandler { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether output shall be buffered to calculate content length.
@@ -70,14 +70,14 @@ namespace WebDAVServer.FileSystemStorage.AspNet
         /// <summary>
         /// Handles GET and HEAD request.
         /// </summary>
-        /// <param name="context">Instace of <see cref="ContextAsync{IHierarchyItemAsync}"/>.</param>
-        /// <param name="item">Instance of <see cref="IHierarchyItemAsync"/> which was returned by
-        /// <see cref="ContextAsync{IHierarchyItemAsync}.GetHierarchyItemAsync"/> for this request.</param>
-        public async Task ProcessRequestAsync(ContextAsync<IHierarchyItemAsync> context, IHierarchyItemAsync item)
+        /// <param name="context">Instace of <see cref="ContextAsync{IHierarchyItem}"/>.</param>
+        /// <param name="item">Instance of <see cref="IHierarchyItem"/> which was returned by
+        /// <see cref="ContextAsync{IHierarchyItem}.GetHierarchyItemAsync"/> for this request.</param>
+        public async Task ProcessRequestAsync(ContextAsync<IHierarchyItem> context, IHierarchyItem item)
         {
             string urlPath = context.Request.RawUrl.Substring(context.Request.ApplicationPath.TrimEnd('/').Length);
 
-            if (item is IItemCollectionAsync)
+            if (item is IItemCollection)
             {
                 // In case of GET requests to WebDAV folders we serve a web page to display 
                 // any information about this server and how to use it.
@@ -106,15 +106,15 @@ namespace WebDAVServer.FileSystemStorage.AspNet
         }
 
         /// <summary>
-        /// This handler shall only be invoked for <see cref="IFolderAsync"/> items or if original handler (which
+        /// This handler shall only be invoked for <see cref="IFolder"/> items or if original handler (which
         /// this handler substitutes) shall be called for the item.
         /// </summary>
-        /// <param name="item">Instance of <see cref="IHierarchyItemAsync"/> which was returned by
-        /// <see cref="ContextAsync{IHierarchyItemAsync}.GetHierarchyItemAsync"/> for this request.</param>
+        /// <param name="item">Instance of <see cref="IHierarchyItem"/> which was returned by
+        /// <see cref="ContextAsync{IHierarchyItem}.GetHierarchyItemAsync"/> for this request.</param>
         /// <returns>Returns <c>true</c> if this handler can handler this item.</returns>
-        public bool AppliesTo(IHierarchyItemAsync item)
+        public bool AppliesTo(IHierarchyItem item)
         {
-            return item is IFolderAsync || OriginalHandler.AppliesTo(item);
+            return item is IFolder || OriginalHandler.AppliesTo(item);
         }
     }
 }

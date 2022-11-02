@@ -18,11 +18,11 @@ Imports CalDAVServer.FileSystemStorage.AspNet.CalDav
 Imports CalDAVServer.FileSystemStorage.AspNet.ExtendedAttributes
 
 ''' <summary>
-''' Implementation of <see cref="ContextAsync{IHierarchyItemAsync}"/> .
+''' Implementation of <see cref="ContextAsync{IHierarchyItem}"/> .
 ''' Resolves hierarchy items by paths.
 ''' </summary>
 Public Class DavContext
-    Inherits ContextWebAsync(Of IHierarchyItemAsync)
+    Inherits ContextWebAsync(Of IHierarchyItem)
     Implements IDisposable
 
     ''' <summary>
@@ -174,11 +174,11 @@ Public Class DavContext
     End Sub
 
     ''' <summary>
-    ''' Creates <see cref="IHierarchyItemAsync"/>  instance by path.
+    ''' Creates <see cref="IHierarchyItem"/>  instance by path.
     ''' </summary>
     ''' <param name="path">Item relative path including query string.</param>
-    ''' <returns>Instance of corresponding <see cref="IHierarchyItemAsync"/>  or null if item is not found.</returns>
-    Public Overrides Async Function GetHierarchyItemAsync(path As String) As Task(Of IHierarchyItemAsync)
+    ''' <returns>Instance of corresponding <see cref="IHierarchyItem"/>  or null if item is not found.</returns>
+    Public Overrides Async Function GetHierarchyItemAsync(path As String) As Task(Of IHierarchyItem)
         path = path.Trim({" "c, "/"c})
         'remove query string.
         Dim ind As Integer = path.IndexOf("?"c)
@@ -186,7 +186,7 @@ Public Class DavContext
             path = path.Remove(ind)
         End If
 
-        Dim item As IHierarchyItemAsync = Nothing
+        Dim item As IHierarchyItem = Nothing
         ' Return items from [DAVLocation]/acl/ folder and subfolders.
         item = Await AclFactory.GetAclItemAsync(Me, path)
         If item IsNot Nothing Then Return item
@@ -224,7 +224,7 @@ Public Class DavContext
     ''' <param name="action">The action to be performed.</param>
     ''' <param name="privilege">Privilege which is needed to perform the operation. If <see cref="UnauthorizedAccessException"/>  is thrown
     ''' this method will convert it to <see cref="NeedPrivilegesException"/>  exception and specify this privilege in it.</param>
-    Public Sub FileOperation(item As IHierarchyItemAsync, action As Action, privilege As Privilege)
+    Public Sub FileOperation(item As IHierarchyItem, action As Action, privilege As Privilege)
         Try
             Using impersonate()
                 action()
@@ -250,7 +250,7 @@ Public Class DavContext
     ''' <param name="action">The action to be performed.</param>
     ''' <param name="privilege">Privilege which is needed to perform the operation. If <see cref="UnauthorizedAccessException"/>  is thrown
     ''' this method will convert it to <see cref="NeedPrivilegesException"/>  exception and specify this privilege in it.</param>
-    Public Async Function FileOperationAsync(item As IHierarchyItemAsync, actionAsync As Func(Of Task), privilege As Privilege) As Task
+    Public Async Function FileOperationAsync(item As IHierarchyItem, actionAsync As Func(Of Task), privilege As Privilege) As Task
         Try
             Using impersonate()
                 Await actionAsync()
@@ -279,7 +279,7 @@ Public Class DavContext
     ''' <see cref="NeedPrivilegesException"/>  exception and specify this privilege in it.</param>
     ''' <typeparam name="T">Type of operation's result.</typeparam>
     ''' <returns>Result returned by <paramref name="func"/> .</returns>
-    Public Async Function FileOperationAsync(Of T)(item As IHierarchyItemAsync, actionAsync As Func(Of Task(Of T)), privilege As Privilege) As Task(Of T)
+    Public Async Function FileOperationAsync(Of T)(item As IHierarchyItem, actionAsync As Func(Of Task(Of T)), privilege As Privilege) As Task(Of T)
         Try
             Using impersonate()
                 Return Await actionAsync()
@@ -348,7 +348,7 @@ Public Class DavContext
     ''' <see cref="NeedPrivilegesException"/>  exception and specify this privilege in it.</param>
     ''' <typeparam name="T">Type of operation's result.</typeparam>
     ''' <returns>Result returned by <paramref name="func"/> .</returns>
-    Public Function FileOperation(Of T)(item As IHierarchyItemAsync, func As Func(Of T), privilege As Privilege) As T
+    Public Function FileOperation(Of T)(item As IHierarchyItem, func As Func(Of T), privilege As Privilege) As T
         Try
             Using impersonate()
                 Return func()

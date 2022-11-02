@@ -8,7 +8,7 @@ Imports CalDAVServer.SqlStorage.AspNet.CalDav
 ''' Assists in finding folders that contain calendars and address books.
 ''' </summary>
 Public Class Discovery
-    Implements ICalendarDiscoveryAsync
+    Implements ICalendarDiscovery
 
     ''' <summary>
     ''' Instance of <see cref="DavContext"/> .
@@ -23,7 +23,7 @@ Public Class Discovery
     ''' Returns list of folders that contain calendars owned by this principal.
     ''' </summary>
     ''' <remarks>This enables calendars discovery owned by current loged-in principal.</remarks>
-    Public Async Function GetCalendarHomeSetAsync() As Task(Of IEnumerable(Of IItemCollectionAsync)) Implements ICalendarDiscoveryAsync.GetCalendarHomeSetAsync
+    Public Async Function GetCalendarHomeSetAsync() As Task(Of IEnumerable(Of IItemCollection)) Implements ICalendarDiscovery.GetCalendarHomeSetAsync
         Return {New CalendarsRootFolder(Context)}
     End Function
 
@@ -41,7 +41,7 @@ Public Class Discovery
     ''' via home-set request. Typically you will always enable home-set for iOS and OS X CalDAV clients, but may disable it for other clients.
     ''' </para>
     ''' </remarks>
-    Public ReadOnly Property CalendarHomeSetEnabled As Boolean Implements ICalendarDiscoveryAsync.CalendarHomeSetEnabled
+    Public ReadOnly Property CalendarHomeSetEnabled As Boolean Implements ICalendarDiscovery.CalendarHomeSetEnabled
         Get
             Return True
         End Get

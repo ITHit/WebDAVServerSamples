@@ -10,7 +10,7 @@ Imports ITHit.WebDAV.Server.Acl
 Imports ITHit.WebDAV.Server.CalDav
 Imports CalDAVServer.FileSystemStorage.AspNet.CalDav
 Imports CalDAVServer.FileSystemStorage.AspNet
-Imports IPrincipal = ITHit.WebDAV.Server.Acl.IPrincipalAsync
+Imports IPrincipal = ITHit.WebDAV.Server.Acl.IPrincipal
 Imports ITHit.Server
 
 Namespace Acl
@@ -20,7 +20,7 @@ Namespace Acl
     ''' </summary>
     Public MustInherit Class PrincipalBase
         Inherits Discovery
-        Implements IPrincipal, ICalendarPrincipalAsync
+        Implements IPrincipal, ICalendarFolder
 
         ''' <summary>
         ''' Encoded path to the parent folder.
@@ -48,7 +48,7 @@ Namespace Acl
         ''' <summary>
         ''' Gets principal name.
         ''' </summary>
-        Public ReadOnly Property Name As String Implements IHierarchyItemBaseAsync.Name
+        Public ReadOnly Property Name As String Implements IHierarchyItemBase.Name
             Get
                 Return Principal.SamAccountName
             End Get
@@ -57,7 +57,7 @@ Namespace Acl
         ''' <summary>
         ''' Gets date when principal was created.
         ''' </summary>
-        Public ReadOnly Property Created As DateTime Implements IHierarchyItemBaseAsync.Created
+        Public ReadOnly Property Created As DateTime Implements IHierarchyItemBase.Created
             Get
                 Dim o As Object = CType(Principal.GetUnderlyingObject(), DirectoryEntry).Properties("whenCreated").Value
                 Return If(o IsNot Nothing, CDate(o), New DateTime(2000, 1, 1).ToUniversalTime())
@@ -67,7 +67,7 @@ Namespace Acl
         ''' <summary>
         ''' Gets date when principal was modified.
         ''' </summary>
-        Public ReadOnly Property Modified As DateTime Implements IHierarchyItemBaseAsync.Modified
+        Public ReadOnly Property Modified As DateTime Implements IHierarchyItemBase.Modified
             Get
                 Dim o As Object = CType(Principal.GetUnderlyingObject(), DirectoryEntry).Properties("whenChanged").Value
                 Return If(o IsNot Nothing, CDate(o), New DateTime(2000, 1, 1).ToUniversalTime())
@@ -86,7 +86,7 @@ Namespace Acl
         ''' <summary>
         ''' Gets encoded path to this principal.
         ''' </summary>
-        Public MustOverride ReadOnly Property Path As String Implements IHierarchyItemBaseAsync.Path
+        Public MustOverride ReadOnly Property Path As String Implements IHierarchyItemBase.Path
 
         ''' <summary>
         ''' Gets instance of <see cref="DavContext"/> .
@@ -107,7 +107,7 @@ Namespace Acl
         ''' Gets groups to which this principal belongs.
         ''' </summary>
         ''' <returns>Enumerable with groups.</returns>
-        Public Async Function GetGroupMembershipAsync() As Task(Of IEnumerable(Of IPrincipal)) Implements IPrincipalAsync.GetGroupMembershipAsync
+        Public Async Function GetGroupMembershipAsync() As Task(Of IEnumerable(Of IPrincipal)) Implements IPrincipal.GetGroupMembershipAsync
             Return Principal.GetGroups().Select(Function(group) CType(New Group(CType(group, GroupPrincipal), Context), IPrincipal))
         End Function
 
@@ -115,7 +115,7 @@ Namespace Acl
         ''' Deletes the principal.
         ''' </summary>
         ''' <param name="multistatus">We don't use it currently as there are no child objects.</param>
-        Public Async Function DeleteAsync(multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.DeleteAsync
+        Public Async Function DeleteAsync(multistatus As MultistatusException) As Task Implements IHierarchyItem.DeleteAsync
             Context.PrincipalOperation(AddressOf Principal.Delete)
         End Function
 
@@ -125,7 +125,7 @@ Namespace Acl
         ''' <param name="destFolder">We don't use it as moving groups to different folder is not supported.</param>
         ''' <param name="destName">New name.</param>
         ''' <param name="multistatus">We don't use it as there're no child objects.</param>
-        Public Async Function MoveToAsync(destFolder As IItemCollectionAsync, destName As String, multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.MoveToAsync
+        Public Async Function MoveToAsync(destFolder As IItemCollection, destName As String, multistatus As MultistatusException) As Task Implements IHierarchyItem.MoveToAsync
             If destFolder.Path <> parentPath Then
                 Throw New DavException("Moving principals is only allowed into the same folder", DavStatus.CONFLICT)
             End If
@@ -137,23 +137,23 @@ Namespace Acl
             Context.PrincipalOperation(Sub() CType(Principal.GetUnderlyingObject(), DirectoryEntry).Rename(destName))
         End Function
 
-        Public MustOverride Function SetGroupMembersAsync(members As IList(Of IPrincipal)) As Task Implements IPrincipalAsync.SetGroupMembersAsync
+        Public MustOverride Function SetGroupMembersAsync(members As IList(Of IPrincipal)) As Task Implements IPrincipal.SetGroupMembersAsync
 
-        Public MustOverride Function GetGroupMembersAsync() As Task(Of IEnumerable(Of IPrincipal)) Implements IPrincipalAsync.GetGroupMembersAsync
+        Public MustOverride Function GetGroupMembersAsync() As Task(Of IEnumerable(Of IPrincipal)) Implements IPrincipal.GetGroupMembersAsync
 
-        Public MustOverride Function IsWellKnownPrincipal(wellknownPrincipal As WellKnownPrincipal) As Boolean Implements IPrincipalAsync.IsWellKnownPrincipal
+        Public MustOverride Function IsWellKnownPrincipal(wellknownPrincipal As WellKnownPrincipal) As Boolean Implements IPrincipal.IsWellKnownPrincipal
 
-        Public MustOverride Function GetPropertiesAsync(props As IList(Of PropertyName), allprop As Boolean) As Task(Of IEnumerable(Of PropertyValue)) Implements IHierarchyItemAsync.GetPropertiesAsync
+        Public MustOverride Function GetPropertiesAsync(props As IList(Of PropertyName), allprop As Boolean) As Task(Of IEnumerable(Of PropertyValue)) Implements IHierarchyItem.GetPropertiesAsync
 
-        Public MustOverride Function GetPropertyNamesAsync() As Task(Of IEnumerable(Of PropertyName)) Implements IHierarchyItemAsync.GetPropertyNamesAsync
+        Public MustOverride Function GetPropertyNamesAsync() As Task(Of IEnumerable(Of PropertyName)) Implements IHierarchyItem.GetPropertyNamesAsync
 
         Public MustOverride Function UpdatePropertiesAsync(setProps As IList(Of PropertyValue),
                                                           delProps As IList(Of PropertyName),
-                                                          multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.UpdatePropertiesAsync
+                                                          multistatus As MultistatusException) As Task Implements IHierarchyItem.UpdatePropertiesAsync
 
-        Public MustOverride Function CopyToAsync(destFolder As IItemCollectionAsync,
+        Public MustOverride Function CopyToAsync(destFolder As IItemCollection,
                                                 destName As String,
                                                 deep As Boolean,
-                                                multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.CopyToAsync
+                                                multistatus As MultistatusException) As Task Implements IHierarchyItem.CopyToAsync
     End Class
 End Namespace

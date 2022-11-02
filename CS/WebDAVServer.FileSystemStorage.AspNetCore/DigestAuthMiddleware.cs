@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -71,6 +73,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
                 }
                 else
                 {
+                    await checkPUTRequestAsync(context);
                     Unauthorized(context);
                     return;
                 }
@@ -163,6 +166,36 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
             stringBuilder.Append(", algorithm=MD5, qop=\"auth\"");
             httpContext.Response.Headers.Append(HeaderNames.WWWAuthenticate, stringBuilder.ToString());
             return Task.FromResult(0);
+        }
+
+        /// <summary>
+        /// Checks PUT request, is important for Kestral server (must read request body if WWWAuthenticate header is empty.).
+        /// </summary>
+        /// <param name="context">Current Http context.</param>
+        /// <returns></returns>
+        private async Task checkPUTRequestAsync(HttpContext context)
+        {
+            if (context.Request.Method == "PUT" && context.Request.ContentLength > 0)
+            {
+                context.Features.Get<IHttpMaxRequestBodySizeFeature>().MaxRequestBodySize = null;
+
+                const int bufSize = 1048576;
+                byte[] buffer = new byte[bufSize];
+                int lastBytesRead;
+                try
+                {
+                    lastBytesRead = await context.Request.Body.ReadAsync(buffer, 0, bufSize);
+                    while (lastBytesRead > 0)
+                    {
+                        lastBytesRead = await context.Request.Body.ReadAsync(buffer, 0, bufSize);
+                    }
+                }
+                catch (IOException)
+                {
+                    // Message = "Error -4077 ECONNRESET connection reset by peer"
+                    // The remote host closed the connection (for example Cancel or Pause pressed).
+                }
+            }
         }
 
         /// <summary>

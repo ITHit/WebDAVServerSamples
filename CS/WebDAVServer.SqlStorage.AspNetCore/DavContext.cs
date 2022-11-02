@@ -19,12 +19,12 @@ namespace WebDAVServer.SqlStorage.AspNetCore
 {
     /// <summary>
     /// WebDAV request context. Is used by WebDAV engine to resolve path into items.
-    /// Implements abstract methods from <see cref="ContextAsync{IHierarchyItemAsync}"/>,
+    /// Implements abstract methods from <see cref="ContextAsync{IHierarchyItem}"/>,
     /// contains useful methods for working with transactions, connections, reading
     /// varios items from database.
     /// </summary>
     public class DavContext :
-        ContextCoreAsync<IHierarchyItemAsync>
+        ContextCoreAsync<IHierarchyItem>
         , IDisposable, IAsyncDisposable
     {
         /// <summary>
@@ -81,13 +81,13 @@ namespace WebDAVServer.SqlStorage.AspNetCore
         }
 
         /// <summary>
-        /// Resolves path to instance of <see cref="IHierarchyItemAsync"/>.
+        /// Resolves path to instance of <see cref="IHierarchyItem"/>.
         /// This method is called by WebDAV engine to resolve paths it encounters
         /// in request.
         /// </summary>
         /// <param name="path">Relative path to the item including query string.</param>
-        /// <returns><see cref="IHierarchyItemAsync"/> instance if item is found, <c>null</c> otherwise.</returns>
-        public override async Task<IHierarchyItemAsync> GetHierarchyItemAsync(string path)
+        /// <returns><see cref="IHierarchyItem"/> instance if item is found, <c>null</c> otherwise.</returns>
+        public override async Task<IHierarchyItem> GetHierarchyItemAsync(string path)
         {
             path = path.Trim(new[] { ' ', '/' });
 
@@ -193,7 +193,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
         /// sql parameter2 value...</param>
         /// <returns>List of requested items.</returns>
         public async Task<IList<T>> ExecuteItemAsync<T>(string parentPath, string command, params object[] prms)
-            where T : class, IHierarchyItemAsync
+            where T : class, IHierarchyItem
         {
             IList<T> children = new List<T>();
 
@@ -240,7 +240,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
 
         /// <summary>
         /// Reads <see cref="DavFile"/> or <see cref="DavFolder"/> depending on type 
-        /// Fills Reads <see cref="PageResults.TotalItems"/> from TotalRowsCount and <see cref="IHierarchyItemAsync.Path"/> from RelativePath fields.
+        /// Fills Reads <see cref="PageResults.TotalItems"/> from TotalRowsCount and <see cref="IHierarchyItem.Path"/> from RelativePath fields.
         /// </summary>
         /// <param name="parentPath">Path to parent hierarchy item.</param>
         /// <param name="command">SQL expression which returns hierachy item records.</param>
@@ -252,7 +252,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
         public async Task<PageResults> ExecuteItemPagedHierarchyAsync(string parentPath, string command, long? offset, long? nResults, params object[] prms)
         {
             long? totalRowsCount = null;
-            IList<IHierarchyItemAsync> children = new List<IHierarchyItemAsync>();
+            IList<IHierarchyItem> children = new List<IHierarchyItem>();
 
             await using (SqlDataReader reader = await prepareCommand(command, prms).ExecuteReaderAsync())
             {
@@ -304,7 +304,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
                 return new PageResults(children, totalRowsCount);
             }
 
-            IEnumerable<IHierarchyItemAsync> pagedResult = children.AsEnumerable();
+            IEnumerable<IHierarchyItem> pagedResult = children.AsEnumerable();
             if (offset.HasValue)
             {
                 pagedResult = pagedResult.Skip((int)offset.Value);
@@ -454,8 +454,8 @@ namespace WebDAVServer.SqlStorage.AspNetCore
         /// Reads item from database by path.
         /// </summary>
         /// <param name="path">Item path.</param>
-        /// <returns>Instance of <see cref="IHierarchyItemAsync"/>.</returns>
-        private async Task<IHierarchyItemAsync> getItemByPathAsync(string path)
+        /// <returns>Instance of <see cref="IHierarchyItem"/>.</returns>
+        private async Task<IHierarchyItem> getItemByPathAsync(string path)
         {
             Guid id = rootId;
 
@@ -513,8 +513,8 @@ namespace WebDAVServer.SqlStorage.AspNetCore
         /// Reads root folder.
         /// </summary>
         /// <param name="path">Root folder path.</param>
-        /// <returns>Instance of <see cref="IHierarchyItemAsync"/>.</returns>
-        public async Task<IHierarchyItemAsync> getRootFolderAsync()
+        /// <returns>Instance of <see cref="IHierarchyItem"/>.</returns>
+        public async Task<IHierarchyItem> getRootFolderAsync()
         {
             string command =
                @"SELECT 
@@ -527,7 +527,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
                     , FileAttributes       
                     FROM Item
                  WHERE ItemId = @ItemId";
-            IList<IHierarchyItemAsync> hierarchyItems = await ExecuteItemAsync<IHierarchyItemAsync>(
+            IList<IHierarchyItem> hierarchyItems = await ExecuteItemAsync<IHierarchyItem>(
                 "",
                 command,
                 "@ItemId", rootId);

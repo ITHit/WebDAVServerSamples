@@ -16,7 +16,7 @@ Namespace Acl
         ''' <param name="path">Relative path requested.</param>
         ''' <param name="context">Instance of <see cref="DavContext"/>  class.</param>
         ''' <returns>Object implemening ACL principal or folder</returns>
-        Friend Async Function GetAclItemAsync(context As DavContext, path As String) As Task(Of IHierarchyItemAsync)
+        Friend Async Function GetAclItemAsync(context As DavContext, path As String) As Task(Of IHierarchyItem)
             ' If this is [DAVLocation]/acl - return folder which contains users and groups.
             If path.Equals(AclFolder.AclFolderPath.Trim("/"c), System.StringComparison.InvariantCultureIgnoreCase) Then
                 Return New AclFolder(context)

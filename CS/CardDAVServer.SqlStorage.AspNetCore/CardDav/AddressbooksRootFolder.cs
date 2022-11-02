@@ -18,7 +18,7 @@ namespace CardDAVServer.SqlStorage.AspNetCore.CardDav
     /// Folder that contains address books.
     /// Instances of this class correspond to the following path: [DAVLocation]/addressbooks/
     /// </summary>
-    public class AddressbooksRootFolder : LogicalFolder, IFolderAsync
+    public class AddressbooksRootFolder : LogicalFolder, IFolder
     {
         /// <summary>
         /// This folder name.
@@ -50,7 +50,7 @@ namespace CardDAVServer.SqlStorage.AspNetCore.CardDav
             return new PageResults((await AddressbookFolder.LoadAllAsync(Context)).OrderBy(x => x.Name), null);
         }
 
-        public Task<IFileAsync> CreateFileAsync(string name)
+        public Task<IFile> CreateFileAsync(string name, Stream content, string contentType, long totalFileSize)
         {
             throw new DavException("Not implemented.", DavStatus.NOT_IMPLEMENTED);
         }

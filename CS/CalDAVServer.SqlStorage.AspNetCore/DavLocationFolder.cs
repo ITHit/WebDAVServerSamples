@@ -57,7 +57,7 @@ namespace CalDAVServer.SqlStorage.AspNetCore
         public override async Task<PageResults> GetChildrenAsync(IList<PropertyName> propNames, long? offset, long? nResults, IList<OrderProperty> orderProps)
         {
             // In this samle we list users folder only. Groups and groups folder is not implemented.
-            return new PageResults(new IHierarchyItemAsync[] 
+            return new PageResults(new IHierarchyItem[] 
             { 
                   new AclFolder(Context)
                 , new CalendarsRootFolder(Context)

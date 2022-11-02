@@ -23,11 +23,11 @@ using CalDAVServer.FileSystemStorage.AspNetCore.ExtendedAttributes;
 namespace CalDAVServer.FileSystemStorage.AspNetCore
 {
     /// <summary>
-    /// Implementation of <see cref="ContextAsync{IHierarchyItemAsync}"/>.
+    /// Implementation of <see cref="ContextAsync{IHierarchyItem}"/>.
     /// Resolves hierarchy items by paths.
     /// </summary>
     public class DavContext :
-        ContextCoreAsync<IHierarchyItemAsync>
+        ContextCoreAsync<IHierarchyItem>
     {
 
         /// <summary>
@@ -96,11 +96,11 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore
         }
 
         /// <summary>
-        /// Creates <see cref="IHierarchyItemAsync"/> instance by path.
+        /// Creates <see cref="IHierarchyItem"/> instance by path.
         /// </summary>
         /// <param name="path">Item relative path including query string.</param>
-        /// <returns>Instance of corresponding <see cref="IHierarchyItemAsync"/> or null if item is not found.</returns>
-        public override async Task<IHierarchyItemAsync> GetHierarchyItemAsync(string path)
+        /// <returns>Instance of corresponding <see cref="IHierarchyItem"/> or null if item is not found.</returns>
+        public override async Task<IHierarchyItem> GetHierarchyItemAsync(string path)
         {
             path = path.Trim(new[] { ' ', '/' });
 
@@ -111,7 +111,7 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore
                 path = path.Remove(ind);
             }
 
-            IHierarchyItemAsync item = null;
+            IHierarchyItem item = null;
 
             // Return items from [DAVLocation]/acl/ folder and subfolders.
             item = await AclFactory.GetAclItemAsync(this, path);
@@ -162,7 +162,7 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore
         /// <param name="action">The action to be performed.</param>
         /// <param name="privilege">Privilege which is needed to perform the operation. If <see cref="UnauthorizedAccessException"/> is thrown
         /// this method will convert it to <see cref="NeedPrivilegesException"/> exception and specify this privilege in it.</param>
-        public void FileOperation(IHierarchyItemAsync item, Action action, Privilege privilege)
+        public void FileOperation(IHierarchyItem item, Action action, Privilege privilege)
         {
             try
             {
@@ -193,7 +193,7 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore
         /// <param name="action">The action to be performed.</param>
         /// <param name="privilege">Privilege which is needed to perform the operation. If <see cref="UnauthorizedAccessException"/> is thrown
         /// this method will convert it to <see cref="NeedPrivilegesException"/> exception and specify this privilege in it.</param>
-        public async Task FileOperationAsync(IHierarchyItemAsync item, Func<Task> actionAsync, Privilege privilege)
+        public async Task FileOperationAsync(IHierarchyItem item, Func<Task> actionAsync, Privilege privilege)
         {
             try
             {
@@ -227,7 +227,7 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore
         /// <see cref="NeedPrivilegesException"/> exception and specify this privilege in it.</param>
         /// <typeparam name="T">Type of operation's result.</typeparam>
         /// <returns>Result returned by <paramref name="func"/>.</returns>
-        public async Task<T> FileOperationAsync<T>(IHierarchyItemAsync item, Func<Task<T>> actionAsync, Privilege privilege)
+        public async Task<T> FileOperationAsync<T>(IHierarchyItem item, Func<Task<T>> actionAsync, Privilege privilege)
         {
             try
             {
@@ -307,7 +307,7 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore
         /// <see cref="NeedPrivilegesException"/> exception and specify this privilege in it.</param>
         /// <typeparam name="T">Type of operation's result.</typeparam>
         /// <returns>Result returned by <paramref name="func"/>.</returns>
-        public T FileOperation<T>(IHierarchyItemAsync item, Func<T> func, Privilege privilege)
+        public T FileOperation<T>(IHierarchyItem item, Func<T> func, Privilege privilege)
         {
             try
             {

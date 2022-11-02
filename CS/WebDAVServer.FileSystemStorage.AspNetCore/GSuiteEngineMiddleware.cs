@@ -43,7 +43,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
         /// <summary>
         /// Processes GSuite request.
         /// </summary>
-        public async Task Invoke(HttpContext context, ContextCoreAsync<IHierarchyItemAsync> davContext)
+        public async Task Invoke(HttpContext context, ContextCoreAsync<IHierarchyItem> davContext)
         {
             await engine.RunAsync(ContextConverter.ConvertToGSuiteContext(davContext));
             await next(context);

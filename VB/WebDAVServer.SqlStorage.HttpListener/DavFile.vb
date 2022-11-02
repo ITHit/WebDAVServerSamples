@@ -19,7 +19,7 @@ Imports ITHit.Server
 ''' </summary>
 Public Class DavFile
     Inherits DavHierarchyItem
-    Implements IFileAsync, IResumableUploadAsync, IUploadProgressAsync
+    Implements IFile, IResumableUpload, IUploadProgress
 
     ''' <summary>
     ''' Initializes a new instance of the DavFile class.
@@ -45,7 +45,7 @@ Public Class DavFile
     ''' <summary>
     ''' Gets item's content type.
     ''' </summary>
-    Public ReadOnly Property ContentType As String Implements IContentAsync.ContentType
+    Public ReadOnly Property ContentType As String Implements IContent.ContentType
         Get
             Dim itemContentType As String = Nothing
             Dim extIndex As Integer = Name.LastIndexOf("."c)
@@ -68,7 +68,7 @@ Public Class DavFile
     ''' <summary>
     ''' Gets file length.
     ''' </summary>
-    Public ReadOnly Property ContentLength As Long Implements IContentAsync.ContentLength
+    Public ReadOnly Property ContentLength As Long Implements IContent.ContentLength
         Get
             Dim result As Object = Context.ExecuteScalar(Of Object)("SELECT DATALENGTH(Content) FROM Item WHERE ItemId = @ItemId",
                                                                    "@ItemId", ItemId)
@@ -79,7 +79,7 @@ Public Class DavFile
     ''' <summary>
     ''' Gets Etag.
     ''' </summary>
-    Public ReadOnly Property Etag As String Implements IContentAsync.Etag
+    Public ReadOnly Property Etag As String Implements IContent.Etag
         Get
             Dim serialNumber As Integer = getDbField("SerialNumber", 0)
             Return String.Format("{0}-{1}", Modified.ToBinary(), serialNumber)
@@ -97,7 +97,7 @@ Public Class DavFile
     ''' <param name="output">Stream to read body to.</param>
     ''' <param name="byteStart">Number of first byte to write.</param>
     ''' <param name="count">Number of bytes to be written.</param>
-    Public Async Function ReadAsync(output As Stream, byteStart As Long, count As Long) As Task Implements IContentAsync.ReadAsync
+    Public Async Function ReadAsync(output As Stream, byteStart As Long, count As Long) As Task Implements IContent.ReadAsync
         If ContainsDownloadParam(Context.Request.RawUrl) Then
             AddContentDisposition(Context, Name)
         End If
@@ -153,8 +153,22 @@ Public Class DavFile
     ''' <param name="startIndex">Index of first byte in the file where update shall be applied.</param>
     ''' <param name="totalContentLength">Length of the file after it will be updated with the new content.</param>
     ''' <returns>Boolean value indicating if entire stream was written.</returns>
-    Public Async Function WriteAsync(segment As Stream, contentType As String, startIndex As Long, totalContentLength As Long) As Task(Of Boolean) Implements IContentAsync.WriteAsync
+    Public Async Function WriteAsync(segment As Stream, contentType As String, startIndex As Long, totalContentLength As Long) As Task(Of Boolean) Implements IContent.WriteAsync
         Await RequireHasTokenAsync()
+        Await WriteInternalAsync(segment, contentType, startIndex, totalContentLength)
+        Await Context.socketService.NotifyUpdatedAsync(Path, GetWebSocketID())
+        Return True
+    End Function
+
+    ''' <summary>
+    ''' Stores file contents to storage (when client updates it).
+    ''' </summary>
+    ''' <param name="segment">Stream with new file content.</param>
+    ''' <param name="contentType">New content type.</param>
+    ''' <param name="startIndex">Index of first byte in the file where update shall be applied.</param>
+    ''' <param name="totalContentLength">Length of the file after it will be updated with the new content.</param>
+    ''' <returns>Boolean value indicating if entire stream was written.</returns>
+    Public Async Function WriteInternalAsync(segment As Stream, contentType As String, startIndex As Long, totalContentLength As Long) As Task(Of Boolean)
         Dim commandText As String = "UPDATE Item
                   SET
                       Modified = GETUTCDATE(),
@@ -197,7 +211,6 @@ Public Class DavFile
             ' The remote host closed the connection (for example Cancel or Pause pressed).
              End Try
 
-        Await Context.socketService.NotifyUpdatedAsync(Path)
         Return True
     End Function
 
@@ -208,10 +221,26 @@ Public Class DavFile
     ''' <param name="destName">New file name in destination folder.</param>
     ''' <param name="deep">Is not used.</param>
     ''' <param name="multistatus">Container for errors with items other than this file.</param>
-    Public Overrides Async Function CopyToAsync(destFolder As IItemCollectionAsync,
+    Public Overrides Async Function CopyToAsync(destFolder As IItemCollection,
                                                destName As String,
                                                deep As Boolean,
-                                               multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.CopyToAsync
+                                               multistatus As MultistatusException) As Task Implements IHierarchyItem.CopyToAsync
+        Await CopyToInternalAsync(destFolder, destName, deep, multistatus, 0)
+    End Function
+
+    ''' <summary>
+    ''' Called when this file is being copied.
+    ''' </summary>
+    ''' <param name="destFolder">Destination folder.</param>
+    ''' <param name="destName">New file name.</param>
+    ''' <param name="deep">Whether children items shall be copied. Ignored for files.</param>
+    ''' <param name="multistatus">Information about items that failed to copy.</param>
+    ''' <param name="recursionDepth">Recursion depth.</param>
+    Public Overrides Async Function CopyToInternalAsync(destFolder As IItemCollection, 
+                                                       destName As String, 
+                                                       deep As Boolean, 
+                                                       multistatus As MultistatusException, 
+                                                       recursionDepth As Integer) As Task
         Dim destDavFolder As DavFolder = TryCast(destFolder, DavFolder)
         If destFolder Is Nothing Then
             Throw New DavException("Destination folder doesn't exist.", DavStatus.CONFLICT)
@@ -232,14 +261,25 @@ Public Class DavFile
         End If
 
         Await CopyThisItemAsync(destDavFolder, Nothing, destName)
-        Await Context.socketService.NotifyCreatedAsync(destFolder.Path & EncodeUtil.EncodeUrlPart(destName))
+        If recursionDepth = 0 Then
+            Await Context.socketService.NotifyCreatedAsync(destFolder.Path & EncodeUtil.EncodeUrlPart(destName), GetWebSocketID())
+        End If
     End Function
 
     ''' <summary>
     ''' Deletes this file.
     ''' </summary>
     ''' <param name="multistatus">Is not used.</param>
-    Public Overrides Async Function DeleteAsync(multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.DeleteAsync
+    Public Overrides Async Function DeleteAsync(multistatus As MultistatusException) As Task Implements IHierarchyItem.DeleteAsync
+        Await DeleteInternalAsync(multistatus, 0)
+    End Function
+
+    ''' <summary>
+    ''' Called whan this file is being deleted.
+    ''' </summary>
+    ''' <param name="multistatus">Information about items that failed to delete.</param>
+    ''' <param name="recursionDepth">Recursion depth.</param>
+    Public Overrides Async Function DeleteInternalAsync(multistatus As MultistatusException, recursionDepth As Integer) As Task
         Dim parent As DavFolder = Await GetParentAsync()
         If parent Is Nothing Then
             Throw New DavException("Parent is null.", DavStatus.CONFLICT)
@@ -254,7 +294,9 @@ Public Class DavFile
         End If
 
         Await DeleteThisItemAsync(parent)
-        Await Context.socketService.NotifyDeletedAsync(Path)
+        If recursionDepth = 0 Then
+            Await Context.socketService.NotifyDeletedAsync(Path, GetWebSocketID())
+        End If
     End Function
 
     ''' <summary>
@@ -263,7 +305,18 @@ Public Class DavFile
     ''' <param name="destFolder">Destination folder.</param>
     ''' <param name="destName">New file name.</param>
     ''' <param name="multistatus">Container for errors with items other than this file.</param>
-    Public Overrides Async Function MoveToAsync(destFolder As IItemCollectionAsync, destName As String, multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.MoveToAsync
+    Public Overrides Async Function MoveToAsync(destFolder As IItemCollection, destName As String, multistatus As MultistatusException) As Task Implements IHierarchyItem.MoveToAsync
+        Await MoveToInternalAsync(destFolder, destName, multistatus, 0)
+    End Function
+
+    ''' <summary>
+    ''' Called when this file is being moved or renamed.
+    ''' </summary>
+    ''' <param name="destFolder">Destination folder.</param>
+    ''' <param name="destName">New name of this file.</param>
+    ''' <param name="multistatus">Information about items that failed to move.</param>
+    ''' <param name="recursionDepth">Recursion depth.</param>
+    Public Overrides Async Function MoveToInternalAsync(destFolder As IItemCollection, destName As String, multistatus As MultistatusException, recursionDepth As Integer) As Task
         Dim destDavFolder As DavFolder = TryCast(destFolder, DavFolder)
         If destFolder Is Nothing Then
             Throw New DavException("Destination folder doesn't exist.", DavStatus.CONFLICT)
@@ -290,20 +343,22 @@ Public Class DavFile
 
         Await MoveThisItemAsync(destDavFolder, destName, parent)
         ' Refresh client UI.
-        Await Context.socketService.NotifyMovedAsync(Path, destDavFolder.Path)
+        If recursionDepth = 0 Then
+            Await Context.socketService.NotifyMovedAsync(Path, destDavFolder.Path, GetWebSocketID())
+        End If
     End Function
 
     ''' <summary>
     ''' Cancels incomplete upload.
     ''' </summary>
-    Public Async Function CancelUploadAsync() As Task Implements IResumableUploadAsync.CancelUploadAsync
+    Public Async Function CancelUploadAsync() As Task Implements IResumableUpload.CancelUploadAsync
         Await DeleteAsync(Nothing)
     End Function
 
     ''' <summary>
     ''' Gets time when last upload piece was saved to disk.
     ''' </summary>
-    Public ReadOnly Property LastChunkSaved As DateTime Implements IResumableUploadAsync.LastChunkSaved
+    Public ReadOnly Property LastChunkSaved As DateTime Implements IResumableUpload.LastChunkSaved
         Get
             Return getDbField("LastChunkSaved", DateTime.MinValue)
         End Get
@@ -312,7 +367,7 @@ Public Class DavFile
     ''' <summary>
     ''' Gets bytes uploaded sofar.
     ''' </summary>
-    Public ReadOnly Property BytesUploaded As Long Implements IResumableUploadAsync.BytesUploaded
+    Public ReadOnly Property BytesUploaded As Long Implements IResumableUpload.BytesUploaded
         Get
             Return ContentLength
         End Get
@@ -321,17 +376,17 @@ Public Class DavFile
     ''' <summary>
     ''' Gets length of the file which it will have after upload finishes.
     ''' </summary>
-    Public ReadOnly Property TotalContentLength As Long Implements IResumableUploadAsync.TotalContentLength
+    Public ReadOnly Property TotalContentLength As Long Implements IResumableUpload.TotalContentLength
         Get
             Return getDbField(Of Long)("TotalContentLength", -1)
         End Get
     End Property
 
     ''' <summary>
-    ''' Returns instance of <see cref="IResumableUploadAsync"/>  interface for this item.
+    ''' Returns instance of <see cref="IResumableUpload"/>  interface for this item.
     ''' </summary>
-    ''' <returns>Instance of <see cref="IResumableUploadAsync"/>  interface.</returns>
-    Public Async Function GetUploadProgressAsync() As Task(Of IEnumerable(Of IResumableUploadAsync)) Implements IUploadProgressAsync.GetUploadProgressAsync
+    ''' <returns>Instance of <see cref="IResumableUpload"/>  interface.</returns>
+    Public Async Function GetUploadProgressAsync() As Task(Of IEnumerable(Of IResumableUpload)) Implements IUploadProgress.GetUploadProgressAsync
         Return {Me}
     End Function
 

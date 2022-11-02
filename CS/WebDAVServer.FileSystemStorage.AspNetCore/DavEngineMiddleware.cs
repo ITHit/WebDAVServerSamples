@@ -37,7 +37,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
         /// <summary>
         /// Processes WebDAV request.
         /// </summary>
-        public async Task Invoke(HttpContext context, ContextCoreAsync<IHierarchyItemAsync> davContext, IOptions<DavContextConfig> config, ILogger logger)
+        public async Task Invoke(HttpContext context, ContextCoreAsync<IHierarchyItem> davContext, IOptions<DavContextConfig> config, ILogger logger)
         {
             if (context.Request.Method == "PUT")
             {
@@ -72,7 +72,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
-            services.AddScoped<ContextCoreAsync<IHierarchyItemAsync>, DavContext>();
+            services.AddScoped<ContextCoreAsync<IHierarchyItem>, DavContext>();
             services.Configure<DavEngineConfig>(async config => await Configuration.GetSection("WebDAVEngine").ReadConfigurationAsync(config));
             services.Configure<DavContextConfig>(async config => await Configuration.GetSection("Context").ReadConfigurationAsync(config, env));
             services.Configure<DavLoggerConfig>(async config => await Configuration.GetSection("Logger").ReadConfigurationAsync(config, env));

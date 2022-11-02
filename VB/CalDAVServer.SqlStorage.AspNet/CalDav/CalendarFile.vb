@@ -88,7 +88,7 @@ Namespace CalDav
     ''' </summary>
     Public Class CalendarFile
         Inherits DavHierarchyItem
-        Implements ICalendarFileAsync
+        Implements ICalendarFile
 
         ''' <summary>
         ''' Calendar file extension.
@@ -101,8 +101,8 @@ Namespace CalDav
         ''' <param name="context">Instance of <see cref="DavContext"/>  class.</param>
         ''' <param name="calendarFolderId">Calendar for which events or to-dos should be loaded.</param>
         ''' <param name="propsToLoad">Specifies which properties should be loaded.</param>
-        ''' <returns>List of <see cref="ICalendarFileAsync"/>  items.</returns>
-        Public Shared Async Function LoadByCalendarFolderIdAsync(context As DavContext, calendarFolderId As Guid, propsToLoad As PropsToLoad) As Task(Of IEnumerable(Of ICalendarFileAsync))
+        ''' <returns>List of <see cref="ICalendarFile"/>  items.</returns>
+        Public Shared Async Function LoadByCalendarFolderIdAsync(context As DavContext, calendarFolderId As Guid, propsToLoad As PropsToLoad) As Task(Of IEnumerable(Of ICalendarFile))
             ' propsToLoad == PropsToLoad.Minimum -> Typical GetChildren call by iOS, Android, eM Client, etc CalDAV clients
             ' [Summary] is typically not required in GetChildren call, 
             ' they are extracted for demo purposes only, to be displayed in Ajax File Browser.
@@ -127,8 +127,8 @@ Namespace CalDav
         ''' <param name="context">Instance of <see cref="DavContext"/>  class.</param>
         ''' <param name="uids">File UIDs to load.</param>
         ''' <param name="propsToLoad">Specifies which properties should be loaded.</param>
-        ''' <returns>List of <see cref="ICalendarFileAsync"/>  items.</returns>
-        Public Shared Async Function LoadByUidsAsync(context As DavContext, uids As IEnumerable(Of String), propsToLoad As PropsToLoad) As Task(Of IEnumerable(Of ICalendarFileAsync))
+        ''' <returns>List of <see cref="ICalendarFile"/>  items.</returns>
+        Public Shared Async Function LoadByUidsAsync(context As DavContext, uids As IEnumerable(Of String), propsToLoad As PropsToLoad) As Task(Of IEnumerable(Of ICalendarFile))
             ' Get IN clause part with list of file UIDs for SELECT.
             Dim selectIn As String = String.Join(", ", uids.Select(Function(a) String.Format("'{0}'", a)).ToArray())
             Dim sql As String = "SELECT * FROM [cal_CalendarFile] 
@@ -157,9 +157,9 @@ Namespace CalDav
         ''' <param name="context">Instance of <see cref="DavContext"/>  class.</param>
         ''' <param name="sql">SQL that queries [cal_CalendarFile], [cal_EventComponent], etc tables.</param>
         ''' <param name="prms">List of SQL parameters.</param>
-        ''' <returns>List of <see cref="ICalendarFileAsync"/>  items.</returns>
-        Private Shared Async Function LoadAsync(context As DavContext, sql As String, ParamArray prms As Object()) As Task(Of IEnumerable(Of ICalendarFileAsync))
-            Dim items As IList(Of ICalendarFileAsync) = New List(Of ICalendarFileAsync)()
+        ''' <returns>List of <see cref="ICalendarFile"/>  items.</returns>
+        Private Shared Async Function LoadAsync(context As DavContext, sql As String, ParamArray prms As Object()) As Task(Of IEnumerable(Of ICalendarFile))
+            Dim items As IList(Of ICalendarFile) = New List(Of ICalendarFile)()
             Dim stopWatch As Stopwatch = Stopwatch.StartNew()
             Using reader As SqlDataReader = Await context.ExecuteReaderAsync(sql, prms)
                 Dim calendarFiles As DataTable = New DataTable()
@@ -293,7 +293,7 @@ Namespace CalDav
         ''' Gets display name of the event or to-do. Used for demo purposes only, to be displayed in Ajax File Browser.
         ''' </summary>
         ''' <remarks>CalDAV clients typically never request this property.</remarks>
-        Public Overrides ReadOnly Property Name As String Implements IHierarchyItemBaseAsync.Name
+        Public Overrides ReadOnly Property Name As String Implements IHierarchyItemBase.Name
             Get
                 ' Show all components summaries contained in this file.
                 Return String.Join(", ", rowsEventComponents.Select(Function(x) String.Format("[{0}]", x.Field(Of String)("Summary"))).ToArray())
@@ -304,7 +304,7 @@ Namespace CalDav
         ''' Gets item path.
         ''' </summary>
         ''' <remarks>[DAVLocation]/calendars/[CalendarFolderId]/[UID].ics</remarks>
-        Public Overrides ReadOnly Property Path As String Implements IHierarchyItemBaseAsync.Path
+        Public Overrides ReadOnly Property Path As String Implements IHierarchyItemBase.Path
             Get
                 Dim calendarFolderId As Guid = rowCalendarFile.Field(Of Guid)("CalendarFolderId")
                 Dim uid As String = rowCalendarFile.Field(Of String)("UID")
@@ -315,7 +315,7 @@ Namespace CalDav
         ''' <summary>
         ''' Gets eTag. Used for synchronization with client application. ETag must change every time the event/to-do is updated.
         ''' </summary>
-        Public ReadOnly Property Etag As String Implements IContentAsync.Etag
+        Public ReadOnly Property Etag As String Implements IContent.Etag
             Get
                 Dim bETag As Byte() = rowCalendarFile.Field(Of Byte())("ETag")
                 Return BitConverter.ToUInt64(bETag.Reverse().ToArray(), 0).ToString()
@@ -325,7 +325,7 @@ Namespace CalDav
         ''' <summary>
         ''' Gets item creation date. Must be in UTC.
         ''' </summary>
-        Public Overrides ReadOnly Property Created As DateTime Implements IHierarchyItemBaseAsync.Created
+        Public Overrides ReadOnly Property Created As DateTime Implements IHierarchyItemBase.Created
             Get
                 Return rowCalendarFile.Field(Of DateTime)("CreatedUtc")
             End Get
@@ -334,7 +334,7 @@ Namespace CalDav
         ''' <summary>
         ''' Gets item modification date. Must be in UTC.
         ''' </summary>
-        Public Overrides ReadOnly Property Modified As DateTime Implements IHierarchyItemBaseAsync.Modified
+        Public Overrides ReadOnly Property Modified As DateTime Implements IHierarchyItemBase.Modified
             Get
                 Return rowCalendarFile.Field(Of DateTime)("ModifiedUtc")
             End Get
@@ -346,7 +346,7 @@ Namespace CalDav
         ''' <remarks>
         ''' If -1 is returned the chunked response will be generated if possible. The getcontentlength property will not be generated.
         ''' </remarks>
-        Public ReadOnly Property ContentLength As Long Implements IContentAsync.ContentLength
+        Public ReadOnly Property ContentLength As Long Implements IContent.ContentLength
             Get
                 Return -1
             End Get
@@ -355,7 +355,7 @@ Namespace CalDav
         ''' <summary>
         ''' File Mime-type/Content-Type.
         ''' </summary>
-        Public ReadOnly Property ContentType As String Implements IContentAsync.ContentType
+        Public ReadOnly Property ContentType As String Implements IContent.ContentType
             Get
                 Return "text/calendar"
             End Get
@@ -401,7 +401,7 @@ Namespace CalDav
         ''' for which data comes in <paramref name="content"/>  stream.</param>
         ''' <param name="totalFileSize">Size of file as it will be after all parts are uploaded. -1 if unknown (in case of chunked upload).</param>
         ''' <returns>Whether the whole stream has been written.</returns>
-        Public Async Function WriteAsync(stream As Stream, contentType As String, startIndex As Long, totalFileSize As Long) As Task(Of Boolean) Implements IContentAsync.WriteAsync
+        Public Async Function WriteAsync(stream As Stream, contentType As String, startIndex As Long, totalFileSize As Long) As Task(Of Boolean) Implements IContent.WriteAsync
             'Set timeout to maximum value to be able to upload iCalendar files with large file attachments.
             System.Web.HttpContext.Current.Server.ScriptTimeout = Integer.MaxValue
             Dim iCalendar As String
@@ -996,7 +996,7 @@ Namespace CalDav
         ''' Called when client application deletes this file.
         ''' </summary>
         ''' <param name="multistatus">Error description if case delate failed. Ignored by most clients.</param>
-        Public Overrides Async Function DeleteAsync(multistatus As MultistatusException) As Task Implements IHierarchyItemAsync.DeleteAsync
+        Public Overrides Async Function DeleteAsync(multistatus As MultistatusException) As Task Implements IHierarchyItem.DeleteAsync
             Dim cal As ICalendar2 = Await GetCalendarAsync()
             Dim sql As String = "DELETE FROM [cal_CalendarFile] 
                            WHERE UID=@UID
@@ -1019,7 +1019,7 @@ Namespace CalDav
         ''' <param name="startIndex">Index to start reading data from back-end storage. Used for segmented reads, not used by CalDAV clients.</param>
         ''' <param name="count">Number of bytes to read. Used for segmented reads, not used by CalDAV clients.</param>
         ''' <returns></returns>
-        Public Async Function ReadAsync(output As Stream, startIndex As Long, count As Long) As Task Implements IContentAsync.ReadAsync
+        Public Async Function ReadAsync(output As Stream, startIndex As Long, count As Long) As Task Implements IContent.ReadAsync
             Dim cal As ICalendar2 = Await GetCalendarAsync()
             Call New vFormatter().Serialize(output, cal)
         End Function

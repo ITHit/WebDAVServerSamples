@@ -1,0 +1,79 @@
+﻿button {
+  &:focus {
+    outline: 0;
+  }
+}
+
+.btn-link {
+  padding: 0;
+  font-size: 1rem;
+  text-align: left;
+}
+
+.btn-transparent {
+  padding: 0;
+  border: none;
+  background-color: transparent;
+  text-align: center;
+}
+
+.btn-tool {
+  color: $mainColor;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 6px;
+  margin-bottom: 0;
+  opacity: 0.9;
+  white-space: nowrap;
+
+  &:disabled,
+  &[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+
+    &:hover,
+    &:focus {
+      opacity: 0.5;
+    }
+  }
+
+  &:hover,
+  &:focus {
+    opacity: 1;
+
+    &:before {
+      opacity: 1;
+    }
+  }
+}
+
+.btn-label {
+  display: inline-block;
+  padding: 4px 9px;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 6px 0 0 6px;
+}
+
+.btn-labeled {
+  padding: 0;
+  text-align: left;
+  @include media-breakpoint-up(lg) {
+    width: 100%;
+  }
+}
+
+.btn-labeled span:last-child {
+  padding: 0 10px 0 5px;
+  vertical-align: text-bottom;
+  min-width: 42px;
+
+  &.btn-edit-label {
+    padding-right: 15px;
+  }
+}
+
+.btn-default {
+  @include button-variant($light, $light);
+}

@@ -17,20 +17,20 @@ Imports ITHit.Server
 ''' This handler processes GET and HEAD requests to folders returning custom HTML page.
 ''' </summary>
 Friend Class MyCustomGetHandler
-    Implements IMethodHandlerAsync(Of IHierarchyItemAsync)
+    Implements IMethodHandler(Of IHierarchyItem)
 
     ''' <summary>
     ''' Handler for GET and HEAD request registered with the engine before registering this one.
     ''' We call this default handler to handle GET and HEAD for files, because this handler
     ''' only handles GET and HEAD for folders.
     ''' </summary>
-    Public Property OriginalHandler As IMethodHandlerAsync(Of IHierarchyItemAsync)
+    Public Property OriginalHandler As IMethodHandler(Of IHierarchyItem)
 
     ''' <summary>
     ''' Gets a value indicating whether output shall be buffered to calculate content length.
     ''' Don't buffer output to calculate content length.
     ''' </summary>
-    Public ReadOnly Property EnableOutputBuffering As Boolean Implements IMethodHandlerAsync(Of IHierarchyItemAsync).EnableOutputBuffering
+    Public ReadOnly Property EnableOutputBuffering As Boolean Implements IMethodHandler(Of IHierarchyItem).EnableOutputBuffering
         Get
             Return False
         End Get
@@ -39,7 +39,7 @@ Friend Class MyCustomGetHandler
     ''' <summary>
     ''' Gets a value indicating whether engine shall log response data (even if debug logging is on).
     ''' </summary>
-    Public ReadOnly Property EnableOutputDebugLogging As Boolean Implements IMethodHandlerAsync(Of IHierarchyItemAsync).EnableOutputDebugLogging
+    Public ReadOnly Property EnableOutputDebugLogging As Boolean Implements IMethodHandler(Of IHierarchyItem).EnableOutputDebugLogging
         Get
             Return False
         End Get
@@ -48,7 +48,7 @@ Friend Class MyCustomGetHandler
     ''' <summary>
     ''' Gets a value indicating whether the engine shall log request data.
     ''' </summary>
-    Public ReadOnly Property EnableInputDebugLogging As Boolean Implements IMethodHandlerAsync(Of IHierarchyItemAsync).EnableInputDebugLogging
+    Public ReadOnly Property EnableInputDebugLogging As Boolean Implements IMethodHandler(Of IHierarchyItem).EnableInputDebugLogging
         Get
             Return False
         End Get
@@ -70,12 +70,12 @@ Friend Class MyCustomGetHandler
     ''' <summary>
     ''' Handles GET and HEAD request.
     ''' </summary>
-    ''' <param name="context">Instace of <see cref="ContextAsync{IHierarchyItemAsync}"/> .</param>
-    ''' <param name="item">Instance of <see cref="IHierarchyItemAsync"/>  which was returned by
-    ''' <see cref="ContextAsync{IHierarchyItemAsync}.GetHierarchyItemAsync"/>  for this request.</param>
-    Public Async Function ProcessRequestAsync(context As ContextAsync(Of IHierarchyItemAsync), item As IHierarchyItemAsync) As Task Implements IMethodHandlerAsync(Of IHierarchyItemAsync).ProcessRequestAsync
+    ''' <param name="context">Instace of <see cref="ContextAsync{IHierarchyItem}"/> .</param>
+    ''' <param name="item">Instance of <see cref="IHierarchyItem"/>  which was returned by
+    ''' <see cref="ContextAsync{IHierarchyItem}.GetHierarchyItemAsync"/>  for this request.</param>
+    Public Async Function ProcessRequestAsync(context As ContextAsync(Of IHierarchyItem), item As IHierarchyItem) As Task Implements IMethodHandler(Of IHierarchyItem).ProcessRequestAsync
         Dim urlPath As String = context.Request.RawUrl.Substring(context.Request.ApplicationPath.TrimEnd("/"c).Length)
-        If TypeOf item Is IItemCollectionAsync Then
+        If TypeOf item Is IItemCollection Then
             ' In case of GET requests to WebDAV folders we serve a web page to display 
             ' any information about this server and how to use it.
             ' Remember to call EnsureBeforeResponseWasCalledAsync here if your context implementation
@@ -95,13 +95,13 @@ Friend Class MyCustomGetHandler
     End Function
 
     ''' <summary>
-    ''' This handler shall only be invoked for <see cref="IFolderAsync"/>  items or if original handler (which
+    ''' This handler shall only be invoked for <see cref="IFolder"/>  items or if original handler (which
     ''' this handler substitutes) shall be called for the item.
     ''' </summary>
-    ''' <param name="item">Instance of <see cref="IHierarchyItemAsync"/>  which was returned by
-    ''' <see cref="ContextAsync{IHierarchyItemAsync}.GetHierarchyItemAsync"/>  for this request.</param>
+    ''' <param name="item">Instance of <see cref="IHierarchyItem"/>  which was returned by
+    ''' <see cref="ContextAsync{IHierarchyItem}.GetHierarchyItemAsync"/>  for this request.</param>
     ''' <returns>Returns <c>true</c> if this handler can handler this item.</returns>
-    Public Function AppliesTo(item As IHierarchyItemAsync) As Boolean Implements IMethodHandlerAsync(Of IHierarchyItemAsync).AppliesTo
-        Return TypeOf item Is IFolderAsync OrElse OriginalHandler.AppliesTo(item)
+    Public Function AppliesTo(item As IHierarchyItem) As Boolean Implements IMethodHandler(Of IHierarchyItem).AppliesTo
+        Return TypeOf item Is IFolder OrElse OriginalHandler.AppliesTo(item)
     End Function
 End Class

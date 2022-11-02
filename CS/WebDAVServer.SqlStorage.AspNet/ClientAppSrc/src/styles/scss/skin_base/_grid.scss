@@ -1,0 +1,257 @@
+﻿.ithit-grid-wrapper {
+  margin: 1.25rem 0px;
+  border: 2px solid transparent;
+  position: relative;
+
+  .drop-files-header {
+    display: none;
+  }
+  
+  .table-responsive {
+    overflow-x: inherit;
+  }
+}
+
+.ithit-grid-container {
+  width: 100%;
+  margin-bottom: 0;
+
+  .icon {
+    display: inline-block;
+  }
+
+  .icon-open-folder {
+    position: relative;
+    top: 3px;
+  }
+
+  .icon-edit {
+    position: relative;
+    top: 2px;
+  }
+
+  .column-action {
+    text-align: right;
+    padding-left: 0;
+    padding-right: 0;
+
+    a {
+      display: inline-block;
+      padding: 2px 8px;
+
+      &:last-child {
+        margin-right: 0;
+      }
+    }
+
+    button.browse-lnk {
+      span {
+        &:last-child {
+          margin-right: 10px;
+        }
+      }
+    }
+
+    button {
+      span {
+        vertical-align: middle;
+      }
+    }
+  }
+
+  .badge {
+    left: 22px;
+    font-size: 55%;
+    position: absolute;
+    top: 27px;
+    background: #ffffff;
+    border: 1px solid $mainColor;
+    box-sizing: border-box;
+    border-radius: 6px;
+    padding: 1px 5px;
+    color: $textColor;
+  }
+
+  button.btn-labeled {
+    border-radius: 5px;
+  }
+}
+
+table.ithit-grid-container {
+  > tbody {
+    > tr {
+      > td {
+        vertical-align: middle;
+        white-space: nowrap;
+        cursor: default;
+
+        &:nth-child(1) {
+          text-align: right;
+        }
+
+        &:nth-child(2) {
+          min-width: 46px;
+          text-align: center;
+          position: relative;
+        }
+
+        &:nth-child(3) {
+          width: 100%;
+        }
+
+        &:nth-child(4) {
+          min-width: 120px;
+          max-width: 120px;
+        }
+
+        &:nth-child(5) {
+          min-width: 100px;
+          max-width: 100px;
+        }
+
+        button.btn-delete {
+          .btn-label {
+            padding-left: 5px;
+          }
+        }
+      }
+    }
+
+    > tr.active,
+    > tr:active,
+    > tr.active + tr.tr-snippet-url,
+    > tr:active + tr.tr-snippet-url,
+    > tr.hover,
+    > tr:hover,
+    > tr.hover + tr.tr-snippet-url,
+    > tr:hover + tr.tr-snippet-url {
+      background-color: $tableHoverColor;
+    }
+  }
+
+  > thead {
+    > tr {
+      > th {
+        &.sort {
+          position: relative;
+          cursor: pointer;
+        }
+
+        &.sort.ascending,
+        &.sort.descending {
+          &:after {
+            content: "";
+            display: inline-block;
+            position: absolute;
+            left: -5px;
+            width: 0px;
+            height: 0px;
+          }
+        }
+
+        &.sort.ascending {
+          padding-right: 15px;
+
+          &:after {
+            margin-top: 6px;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-bottom: 5px solid $textColor;
+          }
+        }
+
+        &.sort.descending {
+          &:after {
+            margin-top: 13px;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 5px solid $textColor;
+          }
+        }
+
+        &.sort.disabled {
+          pointer-events: none;
+
+          &:after {
+            display: none;
+          }
+        }
+
+        &:nth-child(1) {
+          text-align: right;
+        }
+
+        &:nth-child(2) {
+          min-width: 46px;
+          text-align: center;
+          position: relative;
+        }
+
+        &:nth-child(4) {
+          min-width: 120px;
+          max-width: 120px;
+        }
+
+        &:nth-child(5) {
+          min-width: 100px;
+          max-width: 100px;
+        }
+      }
+    }
+  }
+
+  td {
+    padding: 0.5rem;
+  }
+
+  th {
+    padding: 0.5rem;
+  }
+
+  tr {
+    &.tr-snippet-url td {
+      padding: 0px;
+      border-top: none;
+    }
+  }
+
+  @media (max-width: 320px) {
+    > thead {
+      > tr {
+        > th {
+          &:nth-child(5) {
+            display: none;
+          }
+        }
+      }
+    }
+
+    > tbody {
+      > tr {
+        > td {
+          &:nth-child(5) {
+            display: none;
+          }
+        }
+      }
+    }
+  }
+}
+
+.table-responsive {
+  border: none;
+}
+
+.more-lnk {
+  margin: 1rem 0;
+  display: inline-block;
+  
+  &:focus {
+    box-shadow: none;
+  }
+}
+
+.more-pnl {
+  padding-left: 1rem;
+  display: none;
+}

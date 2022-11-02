@@ -5,6 +5,7 @@ Imports System.Threading.Tasks
 Imports ITHit.WebDAV.Server
 Imports ITHit.WebDAV.Server.Acl
 Imports ITHit.WebDAV.Server.Paging
+Imports IPrincipal = ITHit.WebDAV.Server.Acl.IPrincipal
 
 Namespace Acl
 
@@ -14,7 +15,7 @@ Namespace Acl
     ''' </summary>
     Public Class GroupFolder
         Inherits LogicalFolder
-        Implements IPrincipalFolderAsync
+        Implements IPrincipalFolder
 
         ''' <summary>
         ''' Path to folder which contains groups.
@@ -46,8 +47,8 @@ Namespace Acl
         ''' <param name="nResults">The number of items to return.</param>
         ''' <param name="orderProps">List of order properties requested by the client.</param>
         ''' <returns>Enumerable with groups and a total number of users.</returns>
-        Public Overrides Async Function GetChildrenAsync(propNames As IList(Of PropertyName), offset As Long?, nResults As Long?, orderProps As IList(Of OrderProperty)) As Task(Of PageResults) Implements IItemCollectionAsync.GetChildrenAsync
-            Return New PageResults(Context.PrincipalOperation(Of IEnumerable(Of IHierarchyItemAsync))(AddressOf getGroups), Nothing)
+        Public Overrides Async Function GetChildrenAsync(propNames As IList(Of PropertyName), offset As Long?, nResults As Long?, orderProps As IList(Of OrderProperty)) As Task(Of PageResults) Implements IItemCollection.GetChildrenAsync
+            Return New PageResults(Context.PrincipalOperation(Of IEnumerable(Of IHierarchyItem))(AddressOf getGroups), Nothing)
         End Function
 
         ''' <summary>
@@ -55,7 +56,7 @@ Namespace Acl
         ''' </summary>
         ''' <param name="name">New folder name.</param>
         ''' <returns>New folder.</returns>
-        Public Async Function CreateFolderAsync(name As String) As Task(Of IPrincipalFolderAsync) Implements IPrincipalFolderAsync.CreateFolderAsync
+        Public Async Function CreateFolderAsync(name As String) As Task(Of IPrincipalFolder) Implements IPrincipalFolder.CreateFolderAsync
             'Creating folders inside this folder is not supported.
             Throw New DavException("Creating folders is not implemented", DavStatus.NOT_IMPLEMENTED)
         End Function
@@ -65,7 +66,7 @@ Namespace Acl
         ''' </summary>
         ''' <param name="name">Group name.</param>
         ''' <returns>Newly created group.</returns>
-        Public Async Function CreatePrincipalAsync(name As String) As Task(Of IPrincipalAsync) Implements IPrincipalFolderAsync.CreatePrincipalAsync
+        Public Async Function CreatePrincipalAsync(name As String) As Task(Of IPrincipal) Implements IPrincipalFolder.CreatePrincipalAsync
             If Not PrincipalBase.IsValidUserName(name) Then
                 Throw New DavException("Group name contains invalid characters", DavStatus.FORBIDDEN)
             End If
@@ -83,7 +84,7 @@ Namespace Acl
         ''' <param name="props">Properties that will be retrieved later for the group found.</param>
         ''' <returns>Groups which have matching property.</returns>
         Public Async Function FindPrincipalsByPropertyValuesAsync(propValues As IList(Of PropertyValue),
-                                                                 props As IList(Of PropertyName)) As Task(Of IEnumerable(Of IPrincipalAsync)) Implements IPrincipalFolderAsync.FindPrincipalsByPropertyValuesAsync
+                                                                 props As IList(Of PropertyName)) As Task(Of IEnumerable(Of IPrincipal)) Implements IPrincipalFolder.FindPrincipalsByPropertyValuesAsync
             Dim group As GroupPrincipal = New GroupPrincipal(Context.GetPrincipalContext())
             group.Name = "*"
             For Each v As PropertyValue In propValues
@@ -93,14 +94,14 @@ Namespace Acl
             Next
 
             Dim searcher As PrincipalSearcher = New PrincipalSearcher(group)
-            Return searcher.FindAll().Select(Function(u) New Group(CType(u, GroupPrincipal), Context)).Cast(Of IPrincipalAsync)()
+            Return searcher.FindAll().Select(Function(u) New Group(CType(u, GroupPrincipal), Context)).Cast(Of IPrincipal)()
         End Function
 
         ''' <summary>
         ''' Returns properties which can be used in <see cref="FindPrincipalsByPropertyValuesAsync"/>  method.
         ''' </summary>
         ''' <returns>List of property description.</returns>
-        Public Async Function GetPrincipalSearcheablePropertiesAsync() As Task(Of IEnumerable(Of PropertyDescription)) Implements IPrincipalFolderAsync.GetPrincipalSearcheablePropertiesAsync
+        Public Async Function GetPrincipalSearcheablePropertiesAsync() As Task(Of IEnumerable(Of PropertyDescription)) Implements IPrincipalFolder.GetPrincipalSearcheablePropertiesAsync
             Return {New PropertyDescription With {.Name = PropertyName.DISPLAYNAME,
                                             .Description = "Principal name",
                                             .Lang = "en"}}
@@ -111,7 +112,7 @@ Namespace Acl
         ''' </summary>
         ''' <param name="props">Properties that will be asked later from the groups returned.</param>
         ''' <returns>Enumerable with groups.</returns>
-        Public Async Function GetMatchingPrincipalsAsync(props As IList(Of PropertyName)) As Task(Of IEnumerable(Of IPrincipalAsync)) Implements IPrincipalFolderAsync.GetMatchingPrincipalsAsync
+        Public Async Function GetMatchingPrincipalsAsync(props As IList(Of PropertyName)) As Task(Of IEnumerable(Of IPrincipal)) Implements IPrincipalFolder.GetMatchingPrincipalsAsync
             Dim user As User = User.FromName(Context.WindowsIdentity.Name, Context)
             Return Await user.GetGroupMembershipAsync()
         End Function
@@ -120,12 +121,12 @@ Namespace Acl
         ''' Retrieves all groups in computer/domain.
         ''' </summary>
         ''' <returns>Enumerable with groups.</returns>
-        Private Function getGroups() As IEnumerable(Of IHierarchyItemAsync)
+        Private Function getGroups() As IEnumerable(Of IHierarchyItem)
             Dim insGroupPrincipal As GroupPrincipal = New GroupPrincipal(Context.GetPrincipalContext())
             insGroupPrincipal.Name = "*"
             Dim insPrincipalSearcher As PrincipalSearcher = New PrincipalSearcher(insGroupPrincipal)
             Dim r As PrincipalSearchResult(Of Principal) = insPrincipalSearcher.FindAll()
-            Return r.Select(Function(g) New Group(CType(g, GroupPrincipal), Context)).Cast(Of IHierarchyItemAsync)().ToList()
+            Return r.Select(Function(g) New Group(CType(g, GroupPrincipal), Context)).Cast(Of IHierarchyItem)().ToList()
         End Function
     End Class
 End Namespace

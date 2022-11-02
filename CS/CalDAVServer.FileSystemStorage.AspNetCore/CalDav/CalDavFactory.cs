@@ -14,9 +14,9 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore.CalDav
         /// <param name="path">Relative path requested.</param>
         /// <param name="context">Instance of <see cref="DavContext"/> class.</param>
         /// <returns>Object implementing various CalDAV items or null if no object corresponding to path is found.</returns>
-        internal static IHierarchyItemAsync GetCalDavItem(DavContext context, string path)
+        internal static IHierarchyItem GetCalDavItem(DavContext context, string path)
         {
-            IHierarchyItemAsync item = null;
+            IHierarchyItem item = null;
 
             item = CalendarsRootFolder.GetCalendarsRootFolder(context, path);
             if (item != null)

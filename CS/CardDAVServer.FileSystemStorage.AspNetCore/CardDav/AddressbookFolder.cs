@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using ITHit.WebDAV.Server;
 using ITHit.WebDAV.Server.CardDav;
 using ITHit.WebDAV.Server.Acl;
+using IPrincipal = ITHit.WebDAV.Server.Acl.IPrincipal;
 
 using CardDAVServer.FileSystemStorage.AspNetCore.Acl;
 
@@ -28,9 +29,9 @@ namespace CardDAVServer.FileSystemStorage.AspNetCore.CardDav
     ///           |-- [Address Book X]  -- this class
     /// </example>
     /// <remarks>
-    /// IAclHierarchyItemAsync is required by OS X Contacts.
+    /// IAclHierarchyItem is required by OS X Contacts.
     /// </remarks>
-    public class AddressbookFolder : DavFolder, IAddressbookFolderAsync, IAclHierarchyItemAsync
+    public class AddressbookFolder : DavFolder, IAddressbookFolder, IAclHierarchyItem
     {
         /// <summary>
         /// Returns address book folder that corresponds to path.
@@ -90,15 +91,15 @@ namespace CardDAVServer.FileSystemStorage.AspNetCore.CardDav
         /// the Engine for each item that are returned from this method.
         /// </param>
         /// <returns>List of business card files. Returns <b>null</b> for any item that is not found.</returns>
-        public async Task<IEnumerable<ICardFileAsync>> MultiGetAsync(IEnumerable<string> pathList, IEnumerable<PropertyName> propNames)
+        public async Task<IEnumerable<ICardFile>> MultiGetAsync(IEnumerable<string> pathList, IEnumerable<PropertyName> propNames)
         {
             // Here you can load all items from pathList in one request to your storage, instead of 
             // getting items one-by-one using GetHierarchyItem call.
 
-            IList<ICardFileAsync> cardFileList = new List<ICardFileAsync>();
+            IList<ICardFile> cardFileList = new List<ICardFile>();
             foreach(string path in pathList)
             {
-                ICardFileAsync cardFile = await context.GetHierarchyItemAsync(path) as ICardFileAsync;
+                ICardFile cardFile = await context.GetHierarchyItemAsync(path) as ICardFile;
                 cardFileList.Add(cardFile);
             }
             return cardFileList;
@@ -116,15 +117,15 @@ namespace CardDAVServer.FileSystemStorage.AspNetCore.CardDav
         /// the Engine for each item that are returned from this method.
         /// </param>
         /// <returns>List of  business card files. Returns <b>null</b> for any item that is not found.</returns>
-        public async Task<IEnumerable<ICardFileAsync>> QueryAsync(string rawQuery, IEnumerable<PropertyName> propNames)
+        public async Task<IEnumerable<ICardFile>> QueryAsync(string rawQuery, IEnumerable<PropertyName> propNames)
         {
             // For the sake of simplicity we just call GetChildren returning all items. 
             // Typically you will return only items that match the query.
-            return (await GetChildrenAsync(propNames.ToList(), null, null, null)).Page.Cast<ICardFileAsync>();
+            return (await GetChildrenAsync(propNames.ToList(), null, null, null)).Page.Cast<ICardFile>();
         }
 
 
-        public Task SetOwnerAsync(IPrincipalAsync value)
+        public Task SetOwnerAsync(IPrincipal value)
         {
             throw new NotImplementedException();
         }
@@ -134,9 +135,9 @@ namespace CardDAVServer.FileSystemStorage.AspNetCore.CardDav
         /// </summary>
         /// <remarks>Required by OS X.</remarks>
         /// <returns>
-        /// Item that represents owner of this item and implements <see cref="IPrincipalAsync"/>.
+        /// Item that represents owner of this item and implements <see cref="IPrincipal"/>.
         /// </returns>
-        public async Task<IPrincipalAsync> GetOwnerAsync()
+        public async Task<IPrincipal> GetOwnerAsync()
         {
             // In this sample the address book is owned by the user that owns the folder in which address book is 
             // located. Extract user name from parent folder name: [DAVLocation]/addressbooks/[user_name]/[addressbook_name]/
@@ -146,12 +147,12 @@ namespace CardDAVServer.FileSystemStorage.AspNetCore.CardDav
             return await User.GetUserAsync(context, userId);
         }
 
-        public Task SetGroupAsync(IPrincipalAsync value)
+        public Task SetGroupAsync(IPrincipal value)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IPrincipalAsync> GetGroupAsync()
+        public Task<IPrincipal> GetGroupAsync()
         {
             throw new NotImplementedException();
         }
@@ -189,22 +190,22 @@ namespace CardDAVServer.FileSystemStorage.AspNetCore.CardDav
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<IHierarchyItemAsync>> GetInheritedAclSetAsync()
+        public Task<IEnumerable<IHierarchyItem>> GetInheritedAclSetAsync()
         {
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<IPrincipalFolderAsync>> GetPrincipalCollectionSetAsync()
+        public Task<IEnumerable<IPrincipalFolder>> GetPrincipalCollectionSetAsync()
         {
             throw new NotImplementedException();
         }
 
-        public Task<IPrincipalAsync> ResolveWellKnownPrincipalAsync(WellKnownPrincipal wellKnownPrincipal)
+        public Task<IPrincipal> ResolveWellKnownPrincipalAsync(WellKnownPrincipal wellKnownPrincipal)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<IAclHierarchyItemAsync>> GetItemsByPropertyAsync(MatchBy matchBy, IList<PropertyName> props)
+        public Task<IEnumerable<IAclHierarchyItem>> GetItemsByPropertyAsync(MatchBy matchBy, IList<PropertyName> props)
         {
             throw new NotImplementedException();
         }

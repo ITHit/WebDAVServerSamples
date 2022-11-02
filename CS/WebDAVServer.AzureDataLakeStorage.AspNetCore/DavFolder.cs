@@ -10,13 +10,14 @@ using ITHit.WebDAV.Server.Paging;
 using ITHit.WebDAV.Server.Search;
 using WebDAVServer.AzureDataLakeStorage.AspNetCore.DataLake;
 using WebDAVServer.AzureDataLakeStorage.AspNetCore.Search;
+using System.IO;
 
 namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
 {
     /// <summary>
     /// Folder in WebDAV repository.
     /// </summary>
-    public class DavFolder : DavHierarchyItem, IFolderAsync, IResumableUploadBase, ISearchAsync
+    public class DavFolder : DavHierarchyItem, IFolder, IResumableUploadBase, ISearch
     {
 
         /// <summary>
@@ -56,7 +57,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
             // You can filter children items in this implementation and 
             // return only items that you want to be visible for this 
             // particular user.
-            IList<IHierarchyItemAsync> children = new List<IHierarchyItemAsync>();
+            IList<IHierarchyItem> children = new List<IHierarchyItem>();
             IList<DataCloudItem> childData = await context.DataLakeStoreService.GetChildrenAsync(Path);
             long totalItems = childData.Count;
             // Apply sorting.
@@ -68,7 +69,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
             }
             foreach (DataCloudItem dataLakeItem in childData)
             {
-                IHierarchyItemAsync child;
+                IHierarchyItem child;
                 if (dataLakeItem.IsDirectory)
                 {
                     child = new DavFolder(dataLakeItem, context, dataLakeItem.Path);
@@ -90,7 +91,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
         /// </summary>
         /// <param name="name">Name of the new file.</param>
         /// <returns>The new file.</returns>
-        public async Task<IFileAsync> CreateFileAsync(string name)
+        public async Task<IFile> CreateFileAsync(string name, Stream content, string contentType, long totalFileSize)
         {
             await RequireHasTokenAsync();
             try
@@ -101,8 +102,12 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
             {
                 throw new DavException($"Cannot create file {name}", e);
             }
+            DavFile file = (DavFile)await context.GetHierarchyItemAsync(Path + EncodeUtil.EncodeUrlPart(name));
+            // write file content
+            await file.WriteInternalAsync(content, contentType, 0, totalFileSize);
+
             await context.socketService.NotifyRefreshAsync(Path);
-            return (IFileAsync)await context.GetHierarchyItemAsync(Path + EncodeUtil.EncodeUrlPart(name));
+            return (IFile)file;
         }
 
         /// <summary>
@@ -123,7 +128,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
         /// <param name="destName">New folder name.</param>
         /// <param name="deep">Whether children items shall be copied.</param>
         /// <param name="multistatus">Information about child items that failed to copy.</param>
-        public override async Task CopyToAsync(IItemCollectionAsync destFolder, string destName, bool deep, MultistatusException multistatus)
+        public override async Task CopyToAsync(IItemCollection destFolder, string destName, bool deep, MultistatusException multistatus)
         {
             if (!(destFolder is DavFolder))
             {
@@ -153,7 +158,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
             }
             
             // Copy children.
-            IFolderAsync createdFolder = (IFolderAsync)await context.GetHierarchyItemAsync(targetPath);
+            IFolder createdFolder = (IFolder)await context.GetHierarchyItemAsync(targetPath);
             foreach (DavHierarchyItem item in (await GetChildrenAsync(new PropertyName[0], null, null, new List<OrderProperty>())).Page)
             {
                 if (!deep && item is DavFolder)
@@ -179,7 +184,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
         /// <param name="destFolder">Destination folder.</param>
         /// <param name="destName">New name of this folder.</param>
         /// <param name="multistatus">Information about child items that failed to move.</param>
-        public override async Task MoveToAsync(IItemCollectionAsync destFolder, string destName, MultistatusException multistatus)
+        public override async Task MoveToAsync(IItemCollection destFolder, string destName, MultistatusException multistatus)
         {
             await RequireHasTokenAsync();
             if (!(destFolder is DavFolder))
@@ -198,7 +203,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
             try
             {
                 // Remove item with the same name at destination if it exists.
-                IHierarchyItemAsync item = await context.GetHierarchyItemAsync(targetPath);
+                IHierarchyItem item = await context.GetHierarchyItemAsync(targetPath);
                 if (item != null)
                     await item.DeleteAsync(multistatus);
             
@@ -213,7 +218,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
             
             // Move child items.
             bool movedSuccessfully = true;
-            IFolderAsync createdFolder = (IFolderAsync)await context.GetHierarchyItemAsync(targetPath);
+            IFolder createdFolder = (IFolder)await context.GetHierarchyItemAsync(targetPath);
             foreach (DavHierarchyItem item in (await GetChildrenAsync(new PropertyName[0], null, null, new List<OrderProperty>())).Page)
             {
                 try
@@ -260,7 +265,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
         public async Task<PageResults> SearchAsync(string searchString, SearchOptions options, List<PropertyName> propNames, long? offset, long? nResults)
         {
             bool includeSnippet = propNames.Any(s => s.Name == snippetProperty);
-            List<IHierarchyItemAsync> searchResponse = new List<IHierarchyItemAsync>();
+            List<IHierarchyItem> searchResponse = new List<IHierarchyItem>();
             IList<SearchResult> searchResults = await context.CognitiveSearchService.SearchAsync(searchString, options, includeSnippet);
             long totalItems = searchResults.Count;
             if (offset.HasValue && nResults.HasValue)
@@ -271,7 +276,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
             {
                 DataCloudItem dataLakeItem = await context.DataLakeStoreService.GetItemAsync(searchResult.Path);
                 dataLakeItem.Snippet = searchResult.Snippet;
-                IHierarchyItemAsync child;
+                IHierarchyItem child;
                 if (dataLakeItem.IsDirectory)
                 {
                     child = new DavFolder(dataLakeItem, context, dataLakeItem.Path);

@@ -14,7 +14,7 @@ Namespace CalDav
         ''' <param name="itemPath">Relative path requested.</param>
         ''' <param name="context">Instance of <see cref="DavContext"/>  class.</param>
         ''' <returns>Object implementing various calendar items or null if no object corresponding to path is found.</returns>
-        Async Function GetCalDavItemAsync(context As DavContext, itemPath As String) As Task(Of IHierarchyItemAsync)
+        Async Function GetCalDavItemAsync(context As DavContext, itemPath As String) As Task(Of IHierarchyItem)
             ' If this is [DAVLocation]/calendars - return folder that contains all calendars.
             If itemPath.Equals(CalendarsRootFolder.CalendarsRootFolderPath.Trim("/"c), System.StringComparison.InvariantCultureIgnoreCase) Then
                 Return New CalendarsRootFolder(context)

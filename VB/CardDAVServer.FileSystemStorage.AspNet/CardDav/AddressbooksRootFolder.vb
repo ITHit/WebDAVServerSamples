@@ -52,7 +52,7 @@ Namespace CardDav
         '/// <summary>
         '/// Prohibit creating files in this folder.
         '/// </summary>
-        'override public async Task<IFileAsync> CreateFileAsync(string name)
+        'override public async Task<IFile> CreateFileAsync(string name, Stream content, string contentType, long totalFileSize)
         '{
         'throw new DavException("Creating files in this folder is not implemented.", DavStatus.NOT_IMPLEMENTED);
         '}
@@ -78,7 +78,7 @@ Namespace CardDav
         ''' <summary>
         ''' Prohibit moving or renaming this folder
         ''' </summary>        
-        Overrides Public Async Function MoveToAsync(destFolder As IItemCollectionAsync, destName As String, multistatus As MultistatusException) As Task
+        Overrides Public Async Function MoveToAsync(destFolder As IItemCollection, destName As String, multistatus As MultistatusException) As Task
             Throw New DavException("Moving or renaming this folder is not allowed.", DavStatus.NOT_ALLOWED)
         End Function
 

@@ -19,20 +19,20 @@ Imports ITHit.Server
 ''' This handler processes GET and HEAD requests to folders returning custom HTML page.
 ''' </summary>
 Friend Class MyCustomGetHandler
-    Implements IMethodHandlerAsync(Of IHierarchyItemAsync)
+    Implements IMethodHandler(Of IHierarchyItem)
 
     ''' <summary>
     ''' Handler for GET and HEAD request registered with the engine before registering this one.
     ''' We call this default handler to handle GET and HEAD for files, because this handler
     ''' only handles GET and HEAD for folders.
     ''' </summary>
-    Public Property OriginalHandler As IMethodHandlerAsync(Of IHierarchyItemAsync)
+    Public Property OriginalHandler As IMethodHandler(Of IHierarchyItem)
 
     ''' <summary>
     ''' Gets a value indicating whether output shall be buffered to calculate content length.
     ''' Don't buffer output to calculate content length.
     ''' </summary>
-    Public ReadOnly Property EnableOutputBuffering As Boolean Implements IMethodHandlerAsync(Of IHierarchyItemAsync).EnableOutputBuffering
+    Public ReadOnly Property EnableOutputBuffering As Boolean Implements IMethodHandler(Of IHierarchyItem).EnableOutputBuffering
         Get
             Return False
         End Get
@@ -41,7 +41,7 @@ Friend Class MyCustomGetHandler
     ''' <summary>
     ''' Gets a value indicating whether engine shall log response data (even if debug logging is on).
     ''' </summary>
-    Public ReadOnly Property EnableOutputDebugLogging As Boolean Implements IMethodHandlerAsync(Of IHierarchyItemAsync).EnableOutputDebugLogging
+    Public ReadOnly Property EnableOutputDebugLogging As Boolean Implements IMethodHandler(Of IHierarchyItem).EnableOutputDebugLogging
         Get
             Return False
         End Get
@@ -50,7 +50,7 @@ Friend Class MyCustomGetHandler
     ''' <summary>
     ''' Gets a value indicating whether the engine shall log request data.
     ''' </summary>
-    Public ReadOnly Property EnableInputDebugLogging As Boolean Implements IMethodHandlerAsync(Of IHierarchyItemAsync).EnableInputDebugLogging
+    Public ReadOnly Property EnableInputDebugLogging As Boolean Implements IMethodHandler(Of IHierarchyItem).EnableInputDebugLogging
         Get
             Return False
         End Get
@@ -72,12 +72,12 @@ Friend Class MyCustomGetHandler
     ''' <summary>
     ''' Handles GET and HEAD request.
     ''' </summary>
-    ''' <param name="context">Instace of <see cref="ContextAsync{IHierarchyItemAsync}"/> .</param>
-    ''' <param name="item">Instance of <see cref="IHierarchyItemAsync"/>  which was returned by
-    ''' <see cref="ContextAsync{IHierarchyItemAsync}.GetHierarchyItemAsync"/>  for this request.</param>
-    Public Async Function ProcessRequestAsync(context As ContextAsync(Of IHierarchyItemAsync), item As IHierarchyItemAsync) As Task Implements IMethodHandlerAsync(Of IHierarchyItemAsync).ProcessRequestAsync
+    ''' <param name="context">Instace of <see cref="ContextAsync{IHierarchyItem}"/> .</param>
+    ''' <param name="item">Instance of <see cref="IHierarchyItem"/>  which was returned by
+    ''' <see cref="ContextAsync{IHierarchyItem}.GetHierarchyItemAsync"/>  for this request.</param>
+    Public Async Function ProcessRequestAsync(context As ContextAsync(Of IHierarchyItem), item As IHierarchyItem) As Task Implements IMethodHandler(Of IHierarchyItem).ProcessRequestAsync
         Dim urlPath As String = context.Request.RawUrl.Substring(context.Request.ApplicationPath.TrimEnd("/"c).Length)
-        If TypeOf item Is IItemCollectionAsync Then
+        If TypeOf item Is IItemCollection Then
             ' In case of GET requests to WebDAV folders we serve a web page to display 
             ' any information about this server and how to use it.
             ' Remember to call EnsureBeforeResponseWasCalledAsync here if your context implementation
@@ -103,28 +103,28 @@ Friend Class MyCustomGetHandler
     End Function
 
     ''' <summary>
-    ''' This handler shall only be invoked for <see cref="IFolderAsync"/>  items or if original handler (which
+    ''' This handler shall only be invoked for <see cref="IFolder"/>  items or if original handler (which
     ''' this handler substitutes) shall be called for the item.
     ''' </summary>
-    ''' <param name="item">Instance of <see cref="IHierarchyItemAsync"/>  which was returned by
-    ''' <see cref="ContextAsync{IHierarchyItemAsync}.GetHierarchyItemAsync"/>  for this request.</param>
+    ''' <param name="item">Instance of <see cref="IHierarchyItem"/>  which was returned by
+    ''' <see cref="ContextAsync{IHierarchyItem}.GetHierarchyItemAsync"/>  for this request.</param>
     ''' <returns>Returns <c>true</c> if this handler can handler this item.</returns>
-    Public Function AppliesTo(item As IHierarchyItemAsync) As Boolean Implements IMethodHandlerAsync(Of IHierarchyItemAsync).AppliesTo
-        Return TypeOf item Is IFolderAsync OrElse OriginalHandler.AppliesTo(item)
+    Public Function AppliesTo(item As IHierarchyItem) As Boolean Implements IMethodHandler(Of IHierarchyItem).AppliesTo
+        Return TypeOf item Is IFolder OrElse OriginalHandler.AppliesTo(item)
     End Function
 
     ''' <summary>
     ''' Writes iOS / OS X CalDAV/CardDAV profile.
     ''' </summary>
-    ''' <param name="context">Instace of <see cref="ContextAsync{IHierarchyItemAsync}"/> .</param>
-    ''' <param name="item">ICalendarFolderAsync or IAddressbookFolderAsync item.</param>
+    ''' <param name="context">Instace of <see cref="ContextAsync{IHierarchyItem}"/> .</param>
+    ''' <param name="item">ICalendarFolder or IAddressbookFolder item.</param>
     ''' <returns></returns>
-    Private Async Function WriteProfileAsync(context As ContextAsync(Of IHierarchyItemAsync), item As IHierarchyItemBaseAsync, htmlPath As String) As Task
+    Private Async Function WriteProfileAsync(context As ContextAsync(Of IHierarchyItem), item As IHierarchyItemBase, htmlPath As String) As Task
         Dim mobileconfigFileName As String = Nothing
         Dim decription As String = Nothing
-        If TypeOf item Is IAddressbookFolderAsync Then
+        If TypeOf item Is IAddressbookFolder Then
             mobileconfigFileName = "CardDAV.AppleProfileTemplete.mobileconfig"
-            decription = TryCast(item, IAddressbookFolderAsync).AddressbookDescription
+            decription = TryCast(item, IAddressbookFolder).AddressbookDescription
         End If
 
         decription = If(Not String.IsNullOrEmpty(decription), decription, item.Name)
@@ -137,7 +137,7 @@ Friend Class MyCustomGetHandler
         Dim payloadUUID As String = item.Path.Split({"/"c}, StringSplitOptions.RemoveEmptyEntries).Last()
         Dim profile As String = String.Format(templateContent,
                                              url.Host, ' host name
-                                             item.Path, ' CalDAV / CardDAV Principal URL. Here we can return (await (item as ICurrentUserPrincipalAsync).GetCurrentUserPrincipalAsync()).Path if needed.
+                                             item.Path, ' CalDAV / CardDAV Principal URL. Here we can return (await (item as ICurrentUserPrincipal).GetCurrentUserPrincipalAsync()).Path if needed.
                                              TryCast(context, DavContext).Identity.Name, ' user name
                                              url.Port, ' port                
                                              (url.Scheme = "https").ToString().ToLower(), ' SSL
@@ -156,10 +156,10 @@ Friend Class MyCustomGetHandler
     ''' <summary>
     ''' Signs iOS / OS X payload profile with SSL certificate.
     ''' </summary>
-    ''' <param name="context">Instace of <see cref="ContextAsync{IHierarchyItemAsync}"/> .</param>
+    ''' <param name="context">Instace of <see cref="ContextAsync{IHierarchyItem}"/> .</param>
     ''' <param name="profile">Profile to sign.</param>
     ''' <returns>Signed profile.</returns>
-    Private Function SignProfile(context As ContextAsync(Of IHierarchyItemAsync), profile As String) As Byte()
+    Private Function SignProfile(context As ContextAsync(Of IHierarchyItem), profile As String) As Byte()
         ' Here you will sign your profile with SSL certificate to avoid "Unsigned" warning on iOS and OS X.
         ' For demo purposes we just return the profile content unmodified.
         Return context.Engine.ContentEncoding.GetBytes(profile)

@@ -17,7 +17,7 @@ namespace WebDAVServer.SqlStorage.AspNet
     /// <summary>
     /// Represents folder in webdav repository.
     /// </summary>
-    public class DavFolder : DavHierarchyItem, IFolderAsync, IQuotaAsync, ISearchAsync, IResumableUploadBase
+    public class DavFolder : DavHierarchyItem, IFolder, IQuota, ISearch, IResumableUploadBase
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="DavFolder"/> class.
@@ -52,7 +52,7 @@ namespace WebDAVServer.SqlStorage.AspNet
         /// <returns>Items requested by the client and a total number of items in this folder.</returns>
         public virtual async Task<PageResults> GetChildrenAsync(IList<PropertyName> propNames, long? offset, long? nResults, IList<OrderProperty> orderProps)
         {
-            IList<IHierarchyItemAsync> children = null;
+            IList<IHierarchyItem> children = null;
 
             if (orderProps != null && orderProps.Count() != 0 && nResults.HasValue && offset.HasValue)
             {
@@ -80,7 +80,7 @@ namespace WebDAVServer.SqlStorage.AspNet
                    AND RowNum <= @EndRow
                    ORDER BY RowNum", string.Join(",", orderByProperies));
 
-               children = await Context.ExecuteItemAsync<IHierarchyItemAsync>(
+               children = await Context.ExecuteItemAsync<IHierarchyItem>(
                     Path,
                     command,
                     "@Parent", ItemId,
@@ -99,7 +99,7 @@ namespace WebDAVServer.SqlStorage.AspNet
                         , Modified                        , FileAttributes                       FROM Item
                        WHERE ParentItemId = @Parent";
 
-                children = await Context.ExecuteItemAsync<IHierarchyItemAsync>(
+                children = await Context.ExecuteItemAsync<IHierarchyItem>(
                     Path,
                     command,
                     "@Parent", ItemId);
@@ -112,17 +112,22 @@ namespace WebDAVServer.SqlStorage.AspNet
         /// Creates file with specified name in this folder.
         /// </summary>
         /// <param name="name">File name.</param>
+        /// <param name="content">Stream to read the content of the file from.</param>
+        /// <param name="contentType">Indicates the media type of the file.</param>
+        /// <param name="totalFileSize">Size of file as it will be after all parts are uploaded. -1 if unknown (in case of chunked upload).</param>
         /// <returns>Instance of <see cref="File"/> referring to newly created file.</returns>
-        public async Task<IFileAsync> CreateFileAsync(string name)
+        public async Task<IFile> CreateFileAsync(string name, Stream content, string contentType, long totalFileSize)
         {
             if (!await ClientHasTokenAsync())
             {
                 throw new LockedException();
             }
-            var child = await createChildAsync(name, ItemType.File);
-            await Context.socketService.NotifyCreatedAsync(System.IO.Path.Combine(Path, name));
+            DavFile file = (DavFile)await createChildAsync(name, ItemType.File);
+            // write file content
+            await file.WriteInternalAsync(content, contentType, 0, totalFileSize);
+            await Context.socketService.NotifyCreatedAsync(System.IO.Path.Combine(Path, EncodeUtil.EncodeUrlPart(name)), GetWebSocketID());
 
-            return (IFileAsync)child;
+            return (IFile)file;
         }
 
         /// <summary>
@@ -137,7 +142,7 @@ namespace WebDAVServer.SqlStorage.AspNet
             }
 
             await createChildAsync(name, ItemType.Folder);
-            await Context.socketService.NotifyCreatedAsync(System.IO.Path.Combine(Path, name));
+            await Context.socketService.NotifyCreatedAsync(System.IO.Path.Combine(Path, EncodeUtil.EncodeUrlPart(name)), GetWebSocketID());
         }
 
         /// <summary>
@@ -149,10 +154,28 @@ namespace WebDAVServer.SqlStorage.AspNet
         /// <param name="multistatus">Container for errors. We put here errors which occur with
         /// individual items being copied.</param>
         public override async Task CopyToAsync(
-            IItemCollectionAsync destFolder,
+            IItemCollection destFolder,
             string destName,
             bool deep,
             MultistatusException multistatus)
+        {
+            await CopyToInternalAsync(destFolder, destName, deep, multistatus, 0);
+        }
+
+        /// <summary>
+        /// Called when this folder is being copied.
+        /// </summary>
+        /// <param name="destFolder">Destination parent folder.</param>
+        /// <param name="destName">New folder name.</param>
+        /// <param name="deep">Whether children items shall be copied.</param>
+        /// <param name="multistatus">Information about child items that failed to copy.</param>
+        /// <param name="recursionDepth">Recursion depth.</param>
+        public override async Task CopyToInternalAsync(
+            IItemCollection destFolder, 
+            string destName, 
+            bool deep, 
+            MultistatusException multistatus, 
+            int recursionDepth)
         {
             DavFolder destDavFolder = destFolder as DavFolder;
             if (destFolder == null)
@@ -169,13 +192,13 @@ namespace WebDAVServer.SqlStorage.AspNet
                 throw new DavException("Cannot copy folder to its subtree", DavStatus.FORBIDDEN);
             }
 
-            IHierarchyItemAsync destItem = await destDavFolder.FindChildAsync(destName);
+            DavHierarchyItem destItem = await destDavFolder.FindChildAsync(destName);
 
             if (destItem != null)
             {
                 try
                 {
-                    await destItem.DeleteAsync(multistatus);
+                    await destItem.DeleteInternalAsync(multistatus, recursionDepth + 1);
                 }
                 catch (DavException ex)
                 {
@@ -189,20 +212,22 @@ namespace WebDAVServer.SqlStorage.AspNet
             // copy children
             if (deep)
             {
-                foreach (IHierarchyItemAsync child in (await GetChildrenAsync(new PropertyName[0], null, null, null)).Page)
+                foreach (DavHierarchyItem child in (await GetChildrenAsync(new PropertyName[0], null, null, null)).Page)
                 {
-                    var dbchild = child as DavHierarchyItem;
                     try
                     {
-                        await dbchild.CopyToAsync(newDestFolder, child.Name, deep, multistatus);
+                        await child.CopyToInternalAsync(newDestFolder, child.Name, deep, multistatus, recursionDepth + 1);
                     }
                     catch (DavException ex)
                     {
-                        multistatus.AddInnerException(dbchild.Path, ex);
+                        multistatus.AddInnerException(child.Path, ex);
                     }
                 }
             }
-            await Context.socketService.NotifyCreatedAsync(newDestFolder.Path);
+            if (recursionDepth == 0)
+            {
+                await Context.socketService.NotifyCreatedAsync(newDestFolder.Path, GetWebSocketID());
+            }
         }
 
         /// <summary>
@@ -212,7 +237,19 @@ namespace WebDAVServer.SqlStorage.AspNet
         /// <param name="destName">New name of this folder.</param>
         /// <param name="multistatus">Container for errors. We put here errors occurring while moving
         /// individual files/folders.</param>
-        public override async Task MoveToAsync(IItemCollectionAsync destFolder, string destName, MultistatusException multistatus)
+        public override async Task MoveToAsync(IItemCollection destFolder, string destName, MultistatusException multistatus)
+        {
+            await MoveToInternalAsync(destFolder, destName, multistatus, 0);
+        }
+
+
+        /// <summary>
+        /// Called when this folder is being moved or renamed.
+        /// </summary>
+        /// <param name="destFolder">Destination folder.</param>
+        /// <param name="destName">New name of this folder.</param>
+        /// <param name="multistatus">Information about child items that failed to move.</param>
+        public override async Task MoveToInternalAsync(IItemCollection destFolder, string destName, MultistatusException multistatus, int recursionDepth)
         {
             // in this function we move item by item, because we want to check if each item is not locked.
             DavFolder destDavFolder = destFolder as DavFolder;
@@ -242,11 +279,11 @@ namespace WebDAVServer.SqlStorage.AspNet
             // copy this folder
             if (destItem != null)
             {
-                if (destItem is IFileAsync)
+                if (destItem is IFile)
                 {
                     try
                     {
-                        await destItem.DeleteAsync(multistatus);
+                        await destItem.DeleteInternalAsync(multistatus, recursionDepth + 1);
                     }
                     catch (DavException ex)
                     {
@@ -274,16 +311,15 @@ namespace WebDAVServer.SqlStorage.AspNet
 
             // move children
             bool movedAllChildren = true;
-            foreach (IHierarchyItemAsync child in (await GetChildrenAsync(new PropertyName[0], null, null, null)).Page)
+            foreach (DavHierarchyItem child in (await GetChildrenAsync(new PropertyName[0], null, null, null)).Page)
             {
-                DavHierarchyItem dbchild = child as DavHierarchyItem;
                 try
                 {
-                    await dbchild.MoveToAsync(newDestFolder, child.Name, multistatus);
+                    await child.MoveToInternalAsync(newDestFolder, child.Name, multistatus, recursionDepth + 1);
                 }
                 catch (DavException ex)
                 {
-                    multistatus.AddInnerException(dbchild.Path, ex);
+                    multistatus.AddInnerException(child.Path, ex);
                     movedAllChildren = false;
                 }
             }
@@ -292,8 +328,11 @@ namespace WebDAVServer.SqlStorage.AspNet
             {
                 await DeleteThisItemAsync(parent);
             }
-            // Refresh client UI.
-            await Context.socketService.NotifyMovedAsync(Path, newDestFolder.Path);
+            if (recursionDepth == 0)
+            {
+                // Refresh client UI.
+                await Context.socketService.NotifyMovedAsync(Path, newDestFolder.Path, GetWebSocketID());
+            }
         }
 
         /// <summary>
@@ -302,6 +341,16 @@ namespace WebDAVServer.SqlStorage.AspNet
         /// <param name="multistatus">Container for errors.
         /// If some child file/folder fails to remove we report error in this container.</param>
         public override async Task DeleteAsync(MultistatusException multistatus)
+        {
+            await DeleteInternalAsync(multistatus, 0);
+        }
+
+        /// <summary>
+        /// Called whan this folder is being deleted.
+        /// </summary>
+        /// <param name="multistatus">Information about items that failed to delete.</param>
+        /// <param name="recursionDepth">Recursion depth.</param>
+        public override async Task DeleteInternalAsync(MultistatusException multistatus, int recursionDepth)
         {
             DavFolder parent = await GetParentAsync();
             if (parent == null)
@@ -319,16 +368,15 @@ namespace WebDAVServer.SqlStorage.AspNet
             }
 
             bool deletedAllChildren = true;
-            foreach (IHierarchyItemAsync child in (await GetChildrenAsync(new PropertyName[0], null, null, null)).Page)
+            foreach (DavHierarchyItem child in (await GetChildrenAsync(new PropertyName[0], null, null, null)).Page)
             {
-                DavHierarchyItem dbchild = child as DavHierarchyItem;
                 try
                 {
-                    await dbchild.DeleteAsync(multistatus);
+                    await child.DeleteInternalAsync(multistatus, recursionDepth + 1);
                 }
                 catch (DavException ex)
                 {
-                    multistatus.AddInnerException(dbchild.Path, ex);
+                    multistatus.AddInnerException(child.Path, ex);
                     deletedAllChildren = false;
                 }
             }
@@ -336,7 +384,10 @@ namespace WebDAVServer.SqlStorage.AspNet
             if (deletedAllChildren)
             {
                 await DeleteThisItemAsync(parent);
-                await Context.socketService.NotifyDeletedAsync(Path);
+                if (recursionDepth == 0)
+                {
+                    await Context.socketService.NotifyDeletedAsync(Path, GetWebSocketID());
+                }
             }
         }
         /// <summary>
@@ -364,11 +415,11 @@ namespace WebDAVServer.SqlStorage.AspNet
         /// <param name="options">Search options.</param>
         /// <param name="propNames">
         /// List of properties to retrieve with each item returned by this method. They will be requested by the 
-        /// Engine in <see cref="IHierarchyItemAsync.GetPropertiesAsync(IList{PropertyName}, bool)"/> call.
+        /// Engine in <see cref="IHierarchyItem.GetPropertiesAsync(IList{PropertyName}, bool)"/> call.
         /// </param>
         /// <param name="offset">The number of children to skip before returning the remaining items. Start listing from from next item.</param>
         /// <param name="nResults">The number of items to return.</param>
-        /// <returns>List of <see cref="IHierarchyItemAsync"/> satisfying search request.</returns>1
+        /// <returns>List of <see cref="IHierarchyItem"/> satisfying search request.</returns>1
         /// <returns>Items satisfying search request and a total number.</returns>
         public async Task<PageResults> SearchAsync(string searchString, SearchOptions options, List<PropertyName> propNames, long? offset, long? nResults)
         {
@@ -458,7 +509,7 @@ namespace WebDAVServer.SqlStorage.AspNet
                 "@Parent", ItemId,
                 "@SearchString", searchString);
 
-            foreach (IHierarchyItemAsync item in folderSearchResults.Page)
+            foreach (IHierarchyItem item in folderSearchResults.Page)
             {
                 if (includeSnippet && item is DavFile)
                     (item as DavFile).Snippet = "Not Implemented";
@@ -471,7 +522,7 @@ namespace WebDAVServer.SqlStorage.AspNet
         /// Gets the children of current folder (non-recursive).
         /// </summary>
         /// <returns>The children folders of current folder.</returns>
-        public async Task<IEnumerable<IHierarchyItemAsync>> GetChildrenFoldersAsync()
+        public async Task<IEnumerable<IHierarchyItem>> GetChildrenFoldersAsync()
         {
             string command =
                 @"SELECT 
@@ -485,7 +536,7 @@ namespace WebDAVServer.SqlStorage.AspNet
                    FROM Item
                    WHERE ParentItemId = @Parent AND ItemType = 3"; // folders only
 
-            return await Context.ExecuteItemAsync<IHierarchyItemAsync>(
+            return await Context.ExecuteItemAsync<IHierarchyItem>(
                 Path,
                 command,
                 "@Parent", ItemId);
@@ -528,7 +579,7 @@ namespace WebDAVServer.SqlStorage.AspNet
                 return false;
             }
 
-            foreach (IHierarchyItemAsync child in (await GetChildrenAsync(new PropertyName[0], null, null, null)).Page)
+            foreach (IHierarchyItem child in (await GetChildrenAsync(new PropertyName[0], null, null, null)).Page)
             {
                 DavFolder childFolder = child as DavFolder;
                 if (childFolder != null)

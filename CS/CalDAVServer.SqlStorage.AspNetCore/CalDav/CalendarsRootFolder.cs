@@ -18,7 +18,7 @@ namespace CalDAVServer.SqlStorage.AspNetCore.CalDav
     /// Folder that contains calendars.
     /// Instances of this class correspond to the following path: [DAVLocation]/calendars/
     /// </summary>
-    public class CalendarsRootFolder : LogicalFolder, IFolderAsync
+    public class CalendarsRootFolder : LogicalFolder, IFolder
     {
         /// <summary>
         /// This folder name.
@@ -50,7 +50,7 @@ namespace CalDAVServer.SqlStorage.AspNetCore.CalDav
             return new PageResults((await CalendarFolder.LoadAllAsync(Context)).OrderBy(x => x.Name), null);
         }
 
-        public Task<IFileAsync> CreateFileAsync(string name)
+        public Task<IFile> CreateFileAsync(string name, Stream content, string contentType, long totalFileSize)
         {
             throw new DavException("Not implemented.", DavStatus.NOT_IMPLEMENTED);
         }

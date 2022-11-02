@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using System.Data.SqlClient;
 using System.Linq;
@@ -10,26 +11,27 @@ using ITHit.WebDAV.Server.CalDav;
 using ITHit.WebDAV.Server.Acl;
 using ITHit.WebDAV.Server.Class1;
 using ITHit.WebDAV.Server.Paging;
+using IPrincipal = ITHit.WebDAV.Server.Acl.IPrincipal;
 
 namespace CalDAVServer.SqlStorage.AspNetCore.CalDav
 {
     // Note:
-    //  - Mozilla Thunderbird Lightning requires ICurrentUserPrincipalAsync on calendar folder, it does not support discovery.
-    //  - Outlook CalDAV Synchronizer requires IAclHierarchyItemAsync on calendar folder.
+    //  - Mozilla Thunderbird Lightning requires ICurrentUserPrincipal on calendar folder, it does not support discovery.
+    //  - Outlook CalDAV Synchronizer requires IAclHierarchyItem on calendar folder.
 
     /// <summary>
     /// Represents a CalDAV calendar (calendar folder).
     /// Instances of this class correspond to the following path: [DAVLocation]/calendars/[CalendarFolderId]
     /// </summary>
-    public class CalendarFolder : DavHierarchyItem, ICalendarFolderAsync, IAppleCalendarAsync, ICurrentUserPrincipalAsync, IAclHierarchyItemAsync
+    public class CalendarFolder : DavHierarchyItem, ICalendarFolder, IAppleCalendar, ICurrentUserPrincipal, IAclHierarchyItem
     {
         /// <summary>
         /// Loads calendar folder by ID. Returns null if calendar folder was not found.
         /// </summary>
         /// <param name="context">Instance of <see cref="DavContext"/> class.</param>
         /// <param name="calendarFolderId">ID of the calendar folder to load.</param>
-        /// <returns><see cref="ICalendarFolderAsync"/> instance.</returns>
-        public static async Task<ICalendarFolderAsync> LoadByIdAsync(DavContext context, Guid calendarFolderId)
+        /// <returns><see cref="ICalendarFolder"/> instance.</returns>
+        public static async Task<ICalendarFolder> LoadByIdAsync(DavContext context, Guid calendarFolderId)
         {
             // Load only calendar that the use has access to. 
             // Also load complete ACL for this calendar.
@@ -52,8 +54,8 @@ namespace CalDAVServer.SqlStorage.AspNetCore.CalDav
         /// Loads all calendars.
         /// </summary>
         /// <param name="context">Instance of <see cref="DavContext"/> class.</param>
-        /// <returns>List of <see cref="ICalendarFolderAsync"/> items.</returns>
-        public static async Task<IEnumerable<ICalendarFolderAsync>> LoadAllAsync(DavContext context)
+        /// <returns>List of <see cref="ICalendarFolder"/> items.</returns>
+        public static async Task<IEnumerable<ICalendarFolder>> LoadAllAsync(DavContext context)
         {
             // Load only calendars that the use has access to. 
             // Also load complete ACL for each calendar, but only if user has access to that calendar.
@@ -73,10 +75,10 @@ namespace CalDAVServer.SqlStorage.AspNetCore.CalDav
         /// <param name="context">Instance of <see cref="DavContext"/> class.</param>
         /// <param name="sql">SQL that queries [cal_CalendarFolder] table.</param>
         /// <param name="prms">List of SQL parameters.</param>
-        /// <returns>List of <see cref="ICalendarFolderAsync"/> items.</returns>
-        private static async Task<IEnumerable<ICalendarFolderAsync>> LoadAsync(DavContext context, string sql, params object[] prms)
+        /// <returns>List of <see cref="ICalendarFolder"/> items.</returns>
+        private static async Task<IEnumerable<ICalendarFolder>> LoadAsync(DavContext context, string sql, params object[] prms)
         {
-            IList<ICalendarFolderAsync> calendarFolders = new List<ICalendarFolderAsync>();
+            IList<ICalendarFolder> calendarFolders = new List<ICalendarFolder>();
             
             await using (SqlDataReader reader = await context.ExecuteReaderAsync(sql, prms))                    
             {
@@ -212,7 +214,7 @@ namespace CalDAVServer.SqlStorage.AspNetCore.CalDav
         /// the Engine for each item that are returned from this method.
         /// </param>
         /// <returns>List of calendar files. Returns <b>null</b> for any item that is not found.</returns>
-        public async Task<IEnumerable<ICalendarFileAsync>> MultiGetAsync(IEnumerable<string> pathList, IEnumerable<PropertyName> propNames)
+        public async Task<IEnumerable<ICalendarFile>> MultiGetAsync(IEnumerable<string> pathList, IEnumerable<PropertyName> propNames)
         {
             // Get list of UIDs from path list.
             IEnumerable<string> uids = pathList.Select(a => System.IO.Path.GetFileNameWithoutExtension(a));
@@ -236,11 +238,11 @@ namespace CalDAVServer.SqlStorage.AspNetCore.CalDav
         /// the Engine for each item that are returned from this method.
         /// </param>
         /// <returns>List of calendar files. Returns <b>null</b> for any item that is not found.</returns>
-        public async Task<IEnumerable<ICalendarFileAsync>> QueryAsync(string rawQuery, IEnumerable<PropertyName> propNames)
+        public async Task<IEnumerable<ICalendarFile>> QueryAsync(string rawQuery, IEnumerable<PropertyName> propNames)
         {
             // For the sake of simplicity we just call GetChildren returning all items. 
             // Typically you will return only items that match the query.
-            return (await GetChildrenAsync(propNames.ToList(), null, null, null)).Page.Cast<ICalendarFileAsync>();
+            return (await GetChildrenAsync(propNames.ToList(), null, null, null)).Page.Cast<ICalendarFile>();
         }
 
         /// <summary>
@@ -345,7 +347,7 @@ namespace CalDAVServer.SqlStorage.AspNetCore.CalDav
 
             // Bynari submits PROPFIND without props - Engine will request getcontentlength
 
-            IList<IHierarchyItemAsync> children = new List<IHierarchyItemAsync>();
+            IList<IHierarchyItem> children = new List<IHierarchyItem>();
             return new PageResults((await CalendarFile.LoadByCalendarFolderIdAsync(Context, calendarFolderId, PropsToLoad.Minimum)), null);
         }
 
@@ -353,9 +355,12 @@ namespace CalDAVServer.SqlStorage.AspNetCore.CalDav
         /// Creates a file that contains event or to-do item in this calendar.
         /// </summary>
         /// <param name="name">Name of the file. Same as event/to-do UID but ending with '.ics'.</param>
+        /// <param name="content">Stream to read the content of the file from.</param>
+        /// <param name="contentType">Indicates the media type of the file.</param>
+        /// <param name="totalFileSize">Size of file as it will be after all parts are uploaded. -1 if unknown (in case of chunked upload).</param>
         /// <returns>The newly created file.</returns>
         /// <remarks></remarks>
-        public async Task<IFileAsync> CreateFileAsync(string name)
+        public async Task<IFile> CreateFileAsync(string name, Stream content, string contentType, long totalFileSize)
         {
             // The actual event or to-do object is created in datatbase in CardFile.Write call.
             return CalendarFile.CreateCalendarFile(Context, calendarFolderId);
@@ -378,7 +383,7 @@ namespace CalDAVServer.SqlStorage.AspNetCore.CalDav
         /// <param name="multistatus">Instance of <see cref="MultistatusException"/>
         /// to fill with errors ocurred while moving child items.</param>
         /// <returns></returns>
-        public override async Task MoveToAsync(IItemCollectionAsync destFolder, string destName, MultistatusException multistatus)
+        public override async Task MoveToAsync(IItemCollection destFolder, string destName, MultistatusException multistatus)
         {
             // Here we support only calendars renaming. Check that user has permissions to write.
             string sql = @"UPDATE [cal_CalendarFolder] SET Name=@Name
@@ -655,7 +660,7 @@ namespace CalDAVServer.SqlStorage.AspNetCore.CalDav
             }
         }
 
-        public Task SetOwnerAsync(IPrincipalAsync value)
+        public Task SetOwnerAsync(IPrincipal value)
         {
             throw new DavException("Not implemented.", DavStatus.NOT_IMPLEMENTED);
         }
@@ -665,9 +670,9 @@ namespace CalDAVServer.SqlStorage.AspNetCore.CalDav
         /// </summary>
         /// <remarks>Required by OS X.</remarks>
         /// <returns>
-        /// Item that represents owner of this item and implements <see cref="IPrincipalAsync"/>.
+        /// Item that represents owner of this item and implements <see cref="IPrincipal"/>.
         /// </returns>
-        public async Task<IPrincipalAsync> GetOwnerAsync()
+        public async Task<IPrincipal> GetOwnerAsync()
         {
             DataRow rowOwner = rowsAccess.FirstOrDefault(x => x.Field<bool>("Owner") == true);
             if (rowOwner == null)
@@ -681,7 +686,7 @@ namespace CalDAVServer.SqlStorage.AspNetCore.CalDav
         /// found on repositories that implement the Unix privileges model.
         /// </summary>
         /// <param name="value">Identifies whether to search by owner or group.</param>
-        public Task SetGroupAsync(IPrincipalAsync value)
+        public Task SetGroupAsync(IPrincipal value)
         {
             throw new DavException("Group cannot be set", DavStatus.FORBIDDEN);
         }
@@ -691,12 +696,12 @@ namespace CalDAVServer.SqlStorage.AspNetCore.CalDav
         /// found on repositories that implement the Unix privileges model.
         /// </summary>
         /// <returns>
-        /// Group principal that implements <see cref="IPrincipalAsync"/>.
+        /// Group principal that implements <see cref="IPrincipal"/>.
         /// </returns>
         /// <remarks>
         /// Can return null if group is not assigned.
         /// </remarks>
-        public async Task<IPrincipalAsync> GetGroupAsync()
+        public async Task<IPrincipal> GetGroupAsync()
         {
             return null; // Groups are not supported.
         }
@@ -789,18 +794,18 @@ namespace CalDAVServer.SqlStorage.AspNetCore.CalDav
         /// </summary>
         /// <returns>Enumerable with files/folders from which this file/folder has inherited
         /// access control entries.</returns>
-        public async Task<IEnumerable<IHierarchyItemAsync>> GetInheritedAclSetAsync()
+        public async Task<IEnumerable<IHierarchyItem>> GetInheritedAclSetAsync()
         {
-            return new IHierarchyItemAsync[] { };
+            return new IHierarchyItem[] { };
         }
 
         /// <summary>
         /// Gets collections which contain principals.
         /// </summary>
         /// <returns>Folders which contain users/groups.</returns>
-        public async Task<IEnumerable<IPrincipalFolderAsync>> GetPrincipalCollectionSetAsync()
+        public async Task<IEnumerable<IPrincipalFolder>> GetPrincipalCollectionSetAsync()
         {
-            return new IPrincipalFolderAsync[] { new Acl.UsersFolder(Context) };
+            return new IPrincipalFolder[] { new Acl.UsersFolder(Context) };
         }
 
         /// <summary>
@@ -810,12 +815,12 @@ namespace CalDAVServer.SqlStorage.AspNetCore.CalDav
         /// <param name="wellKnownPrincipal">Well known principal type.</param>
         /// <returns>Instance of corresponding user/group or <c>null</c> if corresponding user/group
         /// is not supported.</returns>
-        public async Task<IPrincipalAsync> ResolveWellKnownPrincipalAsync(WellKnownPrincipal wellKnownPrincipal)
+        public async Task<IPrincipal> ResolveWellKnownPrincipalAsync(WellKnownPrincipal wellKnownPrincipal)
         {
             return null;
         }
 
-        public Task<IEnumerable<IAclHierarchyItemAsync>> GetItemsByPropertyAsync(MatchBy matchBy, IList<PropertyName> props)
+        public Task<IEnumerable<IAclHierarchyItem>> GetItemsByPropertyAsync(MatchBy matchBy, IList<PropertyName> props)
         {
             throw new DavException("Not implemented.", DavStatus.NOT_IMPLEMENTED);
         }

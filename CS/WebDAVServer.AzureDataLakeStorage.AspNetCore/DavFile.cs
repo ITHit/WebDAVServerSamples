@@ -15,7 +15,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
     /// <summary>
     /// Represents file in WebDAV repository.
     /// </summary>
-    public class DavFile : DavHierarchyItem, IFileAsync, IResumableUploadAsync, IUploadProgressAsync
+    public class DavFile : DavHierarchyItem, IFile, IResumableUpload, IUploadProgress
     {
         /// <summary>
         /// Corresponding <see cref="DataCloudItem"/>.
@@ -108,11 +108,28 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
         public virtual async Task<bool> WriteAsync(Stream content, string contentType, long startIndex, long totalFileSize)
         {
             await RequireHasTokenAsync();
+            await WriteInternalAsync(content, contentType, startIndex, totalFileSize);
+            await context.socketService.NotifyRefreshAsync(GetParentPath(Path));
+            return true;
+        }
+
+
+        /// <summary>
+        /// Called when a file or its part is being uploaded.
+        /// </summary>
+        /// <param name="content">Stream to read the content of the file from.</param>
+        /// <param name="contentType">Indicates the media type of the file.</param>
+        /// <param name="startIndex">Starting byte in target file
+        /// for which data comes in <paramref name="content"/> stream.</param>
+        /// <param name="totalFileSize">Size of file as it will be after all parts are uploaded. -1 if unknown (in case of chunked upload).</param>
+        /// <returns>Whether the whole stream has been written. This result is used by the engine to determine
+        /// if auto check-in shall be performed (if auto versioning is used).</returns>
+        public virtual async Task<bool> WriteInternalAsync(Stream content, string contentType, long startIndex, long totalFileSize)
+        {
             await context.DataLakeStoreService.WriteItemAsync(Path, content, totalFileSize, dataCloudItem.Properties);
             await UpdateLastModified(DateTime.UtcNow);
             await context.DataLakeStoreService.SetExtendedAttributeAsync(dataCloudItem, "TotalContentLength", totalFileSize);
             await context.DataLakeStoreService.SetExtendedAttributeAsync(dataCloudItem, "SerialNumber", ++serialNumber);
-            await context.socketService.NotifyRefreshAsync(GetParentPath(Path));
             return true;
         }
 
@@ -123,7 +140,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
         /// <param name="destName">New file name.</param>
         /// <param name="deep">Whether children items shall be copied. Ignored for files.</param>
         /// <param name="multistatus">Information about items that failed to copy.</param>
-        public override async Task CopyToAsync(IItemCollectionAsync destFolder, string destName, bool deep, MultistatusException multistatus)
+        public override async Task CopyToAsync(IItemCollection destFolder, string destName, bool deep, MultistatusException multistatus)
         {
             DavFolder targetFolder = (DavFolder)destFolder;
             if (!await context.DataLakeStoreService.ExistsAsync(targetFolder.Path))
@@ -157,7 +174,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
         /// <param name="destFolder">Destination folder.</param>
         /// <param name="destName">New name of this file.</param>
         /// <param name="multistatus">Information about items that failed to move.</param>
-        public override async Task MoveToAsync(IItemCollectionAsync destFolder, string destName, MultistatusException multistatus)
+        public override async Task MoveToAsync(IItemCollection destFolder, string destName, MultistatusException multistatus)
         {
             await RequireHasTokenAsync();
 
@@ -167,7 +184,7 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
                 throw new DavException("Target directory doesn't exist", DavStatus.CONFLICT);
             }
             string targetPath = targetFolder.Path + EncodeUtil.EncodeUrlPart(destName);
-            
+
             // If an item with the same name exists in target directory - remove it.
             try
             {
@@ -238,10 +255,10 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
         }
 
         /// <summary>
-        /// Returns instance of <see cref="IUploadProgressAsync"/> interface.
+        /// Returns instance of <see cref="IUploadProgress"/> interface.
         /// </summary>
         /// <returns>Just returns this class.</returns>
-        public async Task<IEnumerable<IResumableUploadAsync>> GetUploadProgressAsync()
+        public async Task<IEnumerable<IResumableUpload>> GetUploadProgressAsync()
         {
             return new[] { this };
         }

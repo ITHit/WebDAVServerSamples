@@ -1,0 +1,139 @@
+﻿header {
+    border-bottom: 2px solid #f2f4f8;
+    margin-bottom: 15px;
+
+    .header-content {
+        padding: 0.5rem 1rem 1.5rem 1rem;
+    }
+
+    p {
+        word-break: break-word;
+    }
+
+    .logo {
+        margin-right: 10px;
+        position: absolute;
+        left: 0px;
+        top: 2px;
+    }
+
+    .bg-dark {
+        color: white;
+
+        .navbar-toggler {
+            .burger-icon span {
+                background-color: white;
+            }
+        }
+    }
+}
+
+.navbar {
+    overflow: hidden;
+
+    .nav-link {
+        margin-right: 0.5rem;
+    }
+}
+
+.navbar-toggler {
+    border: none;
+    outline: 0;
+
+    .burger-icon {
+        width: 23px;
+        height: 20px;
+        position: relative;
+        margin: 0px;
+        @include transform(rotate(0deg));
+        transition: 0.5s ease-in-out;
+        cursor: pointer;
+
+        span {
+            display: block;
+            position: absolute;
+            height: 2px;
+            width: 100%;
+            border-radius: 9px;
+            opacity: 1;
+            left: 0;
+            @include transform(rotate(0deg));
+            transition: 0.25s ease-in-out;
+            background-color: black;
+
+            &:nth-child(1) {
+                top: 1px;
+            }
+
+            &:nth-child(2) {
+                top: 8px;
+            }
+
+            &:nth-child(3) {
+                top: 16px;
+            }
+        }
+    }
+
+    &.show {
+        .burger-icon {
+            span {
+                &:nth-child(1) {
+                    top: 11px;
+                    @include transform(rotate(135deg));
+                }
+
+                &:nth-child(2) {
+                    opacity: 0;
+                    left: -60px;
+                }
+
+                &:nth-child(3) {
+                    top: 11px;
+                    @include transform(rotate(-135deg));
+                }
+            }
+        }
+    }
+
+    &:focus {
+        border: none;
+        outline: 0;
+    }
+}
+
+.navbar-brand.ellipsis {
+    width: calc(100% - 48px);
+    margin-right: 0;
+    cursor: pointer;
+
+    span {
+        left: 45px;
+        top: 5px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .navbar-toggler {
+        .burger-icon {
+            span {
+                transition: none;
+            }
+
+            transition: none;
+        }
+    }
+}
+
+@include media-breakpoint-down(sm) {
+    .navbar {
+        .nav-link {
+            margin-right: 0;
+            margin-bottom: 0.5rem;
+        }
+
+        .navbar-collapse {
+            margin-top: 0.5rem;
+        }
+    }
+}

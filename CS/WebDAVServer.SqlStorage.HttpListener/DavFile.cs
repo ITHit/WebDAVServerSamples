@@ -19,7 +19,7 @@ namespace WebDAVServer.SqlStorage.HttpListener
     /// <summary>
     /// Represents file in WebDAV repository.
     /// </summary>
-    public class DavFile : DavHierarchyItem, IFileAsync, IResumableUploadAsync, IUploadProgressAsync
+    public class DavFile : DavHierarchyItem, IFile, IResumableUpload, IUploadProgress
     {
 
         /// <summary>
@@ -183,6 +183,22 @@ namespace WebDAVServer.SqlStorage.HttpListener
         public async Task<bool> WriteAsync(Stream segment, string contentType, long startIndex, long totalContentLength)
         {
             await RequireHasTokenAsync();
+            await WriteInternalAsync(segment, contentType, startIndex, totalContentLength);
+            await Context.socketService.NotifyUpdatedAsync(Path, GetWebSocketID());
+            return true;
+        }
+
+        /// <summary>
+        /// Stores file contents to storage (when client updates it).
+        /// </summary>
+        /// <param name="segment">Stream with new file content.</param>
+        /// <param name="contentType">New content type.</param>
+        /// <param name="startIndex">Index of first byte in the file where update shall be applied.</param>
+        /// <param name="totalContentLength">Length of the file after it will be updated with the new content.</param>
+        /// <returns>Boolean value indicating if entire stream was written.</returns>
+        public async Task<bool> WriteInternalAsync(Stream segment, string contentType, long startIndex, long totalContentLength)
+        {
+
             string commandText =
                 @"UPDATE Item
                   SET
@@ -240,7 +256,6 @@ namespace WebDAVServer.SqlStorage.HttpListener
             {
                 // The remote host closed the connection (for example Cancel or Pause pressed).
             }
-            await Context.socketService.NotifyUpdatedAsync(Path);
             return true;
         }
 
@@ -252,10 +267,28 @@ namespace WebDAVServer.SqlStorage.HttpListener
         /// <param name="deep">Is not used.</param>
         /// <param name="multistatus">Container for errors with items other than this file.</param>
         public override async Task CopyToAsync(
-            IItemCollectionAsync destFolder,
+            IItemCollection destFolder,
             string destName,
             bool deep,
             MultistatusException multistatus)
+        {
+            await CopyToInternalAsync(destFolder, destName, deep, multistatus, 0);
+        }
+
+        /// <summary>
+        /// Called when this file is being copied.
+        /// </summary>
+        /// <param name="destFolder">Destination folder.</param>
+        /// <param name="destName">New file name.</param>
+        /// <param name="deep">Whether children items shall be copied. Ignored for files.</param>
+        /// <param name="multistatus">Information about items that failed to copy.</param>
+        /// <param name="recursionDepth">Recursion depth.</param>
+        public override async Task CopyToInternalAsync(
+            IItemCollection destFolder, 
+            string destName, 
+            bool deep, 
+            MultistatusException multistatus, 
+            int recursionDepth)
         {
             DavFolder destDavFolder = destFolder as DavFolder;
             if (destFolder == null)
@@ -282,7 +315,10 @@ namespace WebDAVServer.SqlStorage.HttpListener
             }
 
             await CopyThisItemAsync(destDavFolder, null, destName);
-            await Context.socketService.NotifyCreatedAsync(destFolder.Path + EncodeUtil.EncodeUrlPart(destName));
+            if (recursionDepth == 0)
+            {
+                await Context.socketService.NotifyCreatedAsync(destFolder.Path + EncodeUtil.EncodeUrlPart(destName), GetWebSocketID());
+            }
         }
 
         /// <summary>
@@ -290,6 +326,16 @@ namespace WebDAVServer.SqlStorage.HttpListener
         /// </summary>
         /// <param name="multistatus">Is not used.</param>
         public override async Task DeleteAsync(MultistatusException multistatus)
+        {
+            await DeleteInternalAsync(multistatus, 0);
+        }
+
+        /// <summary>
+        /// Called whan this file is being deleted.
+        /// </summary>
+        /// <param name="multistatus">Information about items that failed to delete.</param>
+        /// <param name="recursionDepth">Recursion depth.</param>
+        public override async Task DeleteInternalAsync(MultistatusException multistatus, int recursionDepth)
         {
             DavFolder parent = await GetParentAsync();
             if (parent == null)
@@ -307,7 +353,10 @@ namespace WebDAVServer.SqlStorage.HttpListener
             }
 
             await DeleteThisItemAsync(parent);
-            await Context.socketService.NotifyDeletedAsync(Path);
+            if (recursionDepth == 0)
+            {
+                await Context.socketService.NotifyDeletedAsync(Path, GetWebSocketID());
+            }
         }
 
         /// <summary>
@@ -316,7 +365,19 @@ namespace WebDAVServer.SqlStorage.HttpListener
         /// <param name="destFolder">Destination folder.</param>
         /// <param name="destName">New file name.</param>
         /// <param name="multistatus">Container for errors with items other than this file.</param>
-        public override async Task MoveToAsync(IItemCollectionAsync destFolder, string destName, MultistatusException multistatus)
+        public override async Task MoveToAsync(IItemCollection destFolder, string destName, MultistatusException multistatus)
+        {
+            await MoveToInternalAsync(destFolder, destName, multistatus, 0);
+        }
+
+        /// <summary>
+        /// Called when this file is being moved or renamed.
+        /// </summary>
+        /// <param name="destFolder">Destination folder.</param>
+        /// <param name="destName">New name of this file.</param>
+        /// <param name="multistatus">Information about items that failed to move.</param>
+        /// <param name="recursionDepth">Recursion depth.</param>
+        public override async Task MoveToInternalAsync(IItemCollection destFolder, string destName, MultistatusException multistatus, int recursionDepth)
         {
             DavFolder destDavFolder = destFolder as DavFolder;
             if (destFolder == null)
@@ -350,7 +411,10 @@ namespace WebDAVServer.SqlStorage.HttpListener
 
             await MoveThisItemAsync(destDavFolder, destName, parent);
             // Refresh client UI.
-            await Context.socketService.NotifyMovedAsync(Path, destDavFolder.Path);
+            if (recursionDepth == 0)
+            {
+                await Context.socketService.NotifyMovedAsync(Path, destDavFolder.Path, GetWebSocketID());
+            }
         }
         /// <summary>
         /// Cancels incomplete upload.
@@ -385,10 +449,10 @@ namespace WebDAVServer.SqlStorage.HttpListener
         }
 
         /// <summary>
-        /// Returns instance of <see cref="IResumableUploadAsync"/> interface for this item.
+        /// Returns instance of <see cref="IResumableUpload"/> interface for this item.
         /// </summary>
-        /// <returns>Instance of <see cref="IResumableUploadAsync"/> interface.</returns>
-        public async Task<IEnumerable<IResumableUploadAsync>> GetUploadProgressAsync()
+        /// <returns>Instance of <see cref="IResumableUpload"/> interface.</returns>
+        public async Task<IEnumerable<IResumableUpload>> GetUploadProgressAsync()
         {
             return new[] { this };
         }

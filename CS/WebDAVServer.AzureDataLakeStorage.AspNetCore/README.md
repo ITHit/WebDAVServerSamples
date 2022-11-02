@@ -10,8 +10,8 @@
 <li>Microsoft Azure account.</li>
 </ul>
 <h2>Setting the License</h2>
-<p>To run the example, you will need a valid IT Hit WebDAV Server Engine License. You can download the license in&nbsp;the&nbsp;<a title="Download" href="https://www.webdavsystem.com/server/download/">product download area</a>.&nbsp;Note that the Engine is fully functional with a trial license and does not have any limitations. The trial license is valid for one month and the engine will stop working after this. You can check the expiration date inside the license file.&nbsp;Download the license file and specify it's content in&nbsp;<span class="code">License</span>&nbsp;field under&nbsp;<span class="code">DavEngine</span>&nbsp;in&nbsp;<span class="code">appsettings.webdav.json</span>&nbsp;file.</p>
-<p>You can also run the sample&nbsp;without explicitly specifying a license&nbsp;for 5 days. In this case,&nbsp;the&nbsp;Engine will automatically request the trial license from IT Hit website https://www.webdavsystem.com. Make sure it is accessible via firewalls if any. After 5 days the Engine will stop working. To extend the trial period you will need to download a license in a&nbsp;<a title="Download" href="https://www.webdavsystem.com/server/download/">product download area</a>&nbsp;and specify it in&nbsp;<span class="code">appsettings.webdav.json</span></p>
+<p>To run the example, you will need a valid IT Hit WebDAV Server Engine License. You can download the license in&nbsp;the&nbsp;<a title="Download" href="https://www.webdavsystem.com/server/download/">product download area</a>.&nbsp;Note that the Engine is fully functional with a trial license and does not have any limitations. The trial license is valid for one month and the engine will stop working after this. You can check the expiration date inside the license file.&nbsp;Download the license file and specify it's content in&nbsp;<code class="code">License</code>&nbsp;field under&nbsp;<code class="code">DavEngine</code>&nbsp;in&nbsp;<code class="code">appsettings.webdav.json</code>&nbsp;file.</p>
+<p>You can also run the sample&nbsp;without explicitly specifying a license&nbsp;for 5 days. In this case,&nbsp;the&nbsp;Engine will automatically request the trial license from IT Hit website https://www.webdavsystem.com. Make sure it is accessible via firewalls if any. After 5 days the Engine will stop working. To extend the trial period you will need to download a license in a&nbsp;<a title="Download" href="https://www.webdavsystem.com/server/download/">product download area</a>&nbsp;and specify it in&nbsp;<code class="code">appsettings.webdav.json</code></p>
 <h2>Creating an Azure Blob Storage with Data Lake Support</h2>
 <ol>
 <li>
@@ -21,13 +21,13 @@
 <p>Go to the&nbsp;<em>Advanced</em> tab and enable the <em>Hierarchical namespace</em> under the <em>Data Lake Storage Gen2:</em></p>
 <p><img id="__mcenew" alt="Enable the Hierarchical namespace under the Data Lake Storage Gen2 on the Advanced tab." src="https://www.webdavsystem.com/media/1965/datalakestoragehierarchicalnamespace.png" rel="118190"></p>
 <p>&nbsp;Select <em>Review+Create</em>. Confirm the storage account creation.&nbsp;</p>
-<p>Specify the storage account name in&nbsp;<span class="code">appsettings.webdav.json</span>&nbsp;as&nbsp;<span class="code">AzureStorageAccountName</span>&nbsp;setting value.</p>
+<p>Specify the storage account name in&nbsp;<code class="code">appsettings.webdav.json</code>&nbsp;as&nbsp;<code class="code">AzureStorageAccountName</code>&nbsp;setting value.</p>
 </li>
 <li>
 <p>Go to <em>Containers</em> under the <em>Data Lake Storage</em>. Select <em>+Container</em> to create a new container. Fill the container name, you will specify it in the config file:</p>
 <p><img id="__mcenew" alt="Create a new Data Lake Storage container" src="https://www.webdavsystem.com/media/1967/datalakestorageblobcontainer.png" rel="118191"></p>
 <p>Confirm the new container creation.</p>
-<p>Specify the container name&nbsp;in&nbsp;<span class="code">appsettings.webdav.json</span>&nbsp;as&nbsp;<span class="code">DataLakeContainerName</span>&nbsp;setting value.</p>
+<p>Specify the container name&nbsp;in&nbsp;<code class="code">appsettings.webdav.json</code>&nbsp;as&nbsp;<code class="code">DataLakeContainerName</code>&nbsp;setting value.</p>
 </li>
 </ol>
 <h2>Granting the App Permissions in Azure Data Lake</h2>
@@ -36,7 +36,7 @@
 <li>
 <p>Navigate to the <em>Overview</em> in the Azure AD directory:</p>
 <p><img id="__mcenew" alt="Copy the Primary domain field and paste it into the Domain field in appsettings.webdav.json" src="https://www.webdavsystem.com/media/2058/19azureadprimarydomain.png" rel="120366"></p>
-<p>Copy the <em>Primary domain</em> field and paste it into the&nbsp;<span class="code">Domain</span> field in <span class="code">appsettings.webdav.json</span>.</p>
+<p>Copy the <em>Primary domain</em> field and paste it into the&nbsp;<code class="code">Domain</code> field in <code class="code">appsettings.webdav.json</code>.</p>
 </li>
 <li>
 <p>Navigate to <em>Azure Active Directory</em> -&gt; <em>App Registrations</em>. Select <em>New Registration</em>.</p>
@@ -45,17 +45,17 @@
 <li>
 <p>Enter the app name.&nbsp;You MUST also enter the <em>Redirect URI</em>. Confirm registration.</p>
 <p><img id="__mcenew" alt="Redirect URI is required. Path must match the setting in CallbackPath setting in appsettings.webdav.json" src="https://www.webdavsystem.com/media/2051/10azureadappregistrationnewdetails.png" rel="120361"></p>
-<p>Note that in your project in&nbsp;<span class="code">appsettings.webdav.json</span> you already have<span>&nbsp;</span><span class="code"><span class="pl-s"><span class="pl-pds">"</span>CallbackPath<span class="pl-pds">"</span></span>: <span class="pl-s"><span class="pl-pds">"</span>/signin-oidc<span class="pl-pds">"</span></span></span>&nbsp;setting specified. The path in the <em>Redirect URI</em> must match, but you should NOT change it to a full URI in setting.</p>
+<p>Note that in your project in&nbsp;<code class="code">appsettings.webdav.json</code> you already have<span>&nbsp;</span><code class="code"><span class="pl-s"><span class="pl-pds">"</code>CallbackPath<span class="pl-pds">"</span></span>: <span class="pl-s"><span class="pl-pds">"</span>/signin-oidc<span class="pl-pds">"</span></span></span>&nbsp;setting specified. The path in the <em>Redirect URI</em> must match, but you should NOT change it to a full URI in setting.</p>
 </li>
 <li>
 <p>Open the newly created app registration.</p>
 <p><img id="__mcenew" alt="Copy the Application (client) ID and Directory (tenant) ID into appsettings.webdav.json." src="https://www.webdavsystem.com/media/2059/11azureadclientidtenantid1.png" rel="120368"></p>
-<p>Copy the <em>Application (client) ID</em> and <em>Directory (tenant) ID</em> fieds and paste them into <span class="code">ClientId</span> and&nbsp;<span><span class="code">TenantId</span> settings</span>&nbsp;in&nbsp;<span class="code">appsettings.webdav.json</span>.</p>
+<p>Copy the <em>Application (client) ID</em> and <em>Directory (tenant) ID</em> fieds and paste them into <code class="code">ClientId</code> and&nbsp;<span><code class="code">TenantId</code> settings</span>&nbsp;in&nbsp;<code class="code">appsettings.webdav.json</code>.</p>
 </li>
 <li>
 <p>Navigate to <em>Certificates &amp; secrets</em>. Select <em>New client secret</em>. Enter the secret name and confirm client secret creation.</p>
 <p><img id="__mcenew" alt="Create new client secret" src="https://www.webdavsystem.com/media/2050/12azureadnewclientsecret.png" rel="120359"></p>
-<p>Copy the newly created secret value and past it into <span class="code">ClientSecret</span> setting in&nbsp;in&nbsp;<span class="code">appsettings.webdav.json</span></p>
+<p>Copy the newly created secret value and past it into <code class="code">ClientSecret</code> setting in&nbsp;in&nbsp;<code class="code">appsettings.webdav.json</code></p>
 <p><img id="__mcenew" alt="Copy the newly created secret value and past it into ClientSecret setting in in appsettings.webdav.json" src="https://www.webdavsystem.com/media/2052/14azureadcopyappsecret.png" rel="120360"></p>
 </li>
 <li>

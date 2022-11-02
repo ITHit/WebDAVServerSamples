@@ -11,7 +11,7 @@ namespace CardDAVServer.FileSystemStorage.AspNetCore
     /// Base class for logical folders which are not present in file system, like '/acl/,
     /// '/acl/groups/'
     /// </summary>
-    public abstract class LogicalFolder : Discovery , IItemCollectionAsync
+    public abstract class LogicalFolder : Discovery , IItemCollection
     {
         public DavContext Context { get; private set; }
 
@@ -36,12 +36,12 @@ namespace CardDAVServer.FileSystemStorage.AspNetCore
             get { return DateTime.UtcNow; }
         }
 
-        public async Task CopyToAsync(IItemCollectionAsync destFolder, string destName, bool deep, MultistatusException multistatus)
+        public async Task CopyToAsync(IItemCollection destFolder, string destName, bool deep, MultistatusException multistatus)
         {
             throw new NotImplementedException();
         }
 
-        public async Task MoveToAsync(IItemCollectionAsync destFolder, string destName, MultistatusException multistatus)
+        public async Task MoveToAsync(IItemCollection destFolder, string destName, MultistatusException multistatus)
         {
             throw new NotImplementedException();
         }

@@ -1,0 +1,42 @@
+﻿.dropdown-menu {
+  position: initial;
+  float: unset;
+}
+
+.popover {
+  border: none;
+}
+
+.tooltip {
+  display: block !important;
+  z-index: 1030;
+  max-width: 360px;
+  right: 0;
+
+  .tooltip-inner {
+    background: $whiteColor;
+    color: $whiteColor;
+    border-radius: 16px;
+    border: none;
+    padding: 0;
+    max-width: 360px;
+  }
+}
+
+.tooltip.popover {
+  .popover-arrow {
+    border-color: #f9f9f9;
+  }
+}
+
+.tooltip {
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.15s, visibility 0.15s;
+
+  &.open {
+    visibility: visible;
+    opacity: 1;
+    transition: opacity 0.15s;
+  }
+}
