@@ -23,7 +23,7 @@
 		<PackageReference Include="ITHit.Server.Core" Version="13.1.12216-Beta" />
 		<PackageReference Include="ITHit.WebDAV.Server" Version="13.1.12216-Beta" />
 		<PackageReference Include="ITHit.GSuite.Server" Version="13.1.12216-Beta" />
-		<PackageReference Include="System.Data.SqlClient" Version="4.8.3" />
+		<PackageReference Include="System.Data.SqlClient" Version="4.8.5" />
 	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="ITHit.Collab" Version="1.0.0.759" />
