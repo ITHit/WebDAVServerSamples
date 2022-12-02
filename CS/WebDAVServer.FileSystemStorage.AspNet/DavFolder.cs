@@ -125,7 +125,6 @@ namespace WebDAVServer.FileSystemStorage.AspNet
         {
             await RequireHasTokenAsync();
             string fileName = System.IO.Path.Combine(fileSystemInfo.FullName, name);
-
             using (FileStream stream = new FileStream(fileName, FileMode.CreateNew))
             {
             }
@@ -155,7 +154,6 @@ namespace WebDAVServer.FileSystemStorage.AspNet
         private async Task CreateFolderInternalAsync(string name)
         {
             await RequireHasTokenAsync();
-
             bool isRoot = dirInfo.Parent == null;
             DirectoryInfo di = isRoot ? new DirectoryInfo(@"\\?\" + context.RepositoryPath.TrimEnd(System.IO.Path.DirectorySeparatorChar)) : dirInfo;
             di.CreateSubdirectory(name);

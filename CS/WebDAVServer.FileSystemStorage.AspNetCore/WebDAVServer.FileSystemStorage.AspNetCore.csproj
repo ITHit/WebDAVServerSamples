@@ -1,10 +1,10 @@
 
 <Project Sdk="Microsoft.NET.Sdk.Web">
 	<PropertyGroup>
-		<VersionPrefix>13.0.12190-Beta</VersionPrefix>
+		<VersionPrefix>13.1.12216-Beta</VersionPrefix>
 		<AssemblyName>WebDAVServer.FileSystemStorage.AspNetCore</AssemblyName>
 		<TargetFramework>net6.0</TargetFramework>
-		<LangVersion>8.0</LangVersion>
+		<LangVersion>9.0</LangVersion>
 		<NullableContextOptions>enable</NullableContextOptions>
 		<SpaRoot>ClientAppSrc</SpaRoot>
 	</PropertyGroup>
@@ -111,10 +111,10 @@
 		</Content>
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="ITHit.Server" Version="13.0.12190-Beta" />
-		<PackageReference Include="ITHit.Server.Core" Version="13.0.12190-Beta" />
-		<PackageReference Include="ITHit.WebDAV.Server" Version="13.0.12190-Beta" />
-		<PackageReference Include="ITHit.GSuite.Server" Version="13.0.12190-Beta" />
+		<PackageReference Include="ITHit.Server" Version="13.1.12216-Beta" />
+		<PackageReference Include="ITHit.Server.Core" Version="13.1.12216-Beta" />
+		<PackageReference Include="ITHit.WebDAV.Server" Version="13.1.12216-Beta" />
+		<PackageReference Include="ITHit.GSuite.Server" Version="13.1.12216-Beta" />
 		<PackageReference Include="System.Data.OleDb" Version="6.0.0" />
 	</ItemGroup>
 	<PropertyGroup>

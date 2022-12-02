@@ -1626,6 +1626,11 @@ import { WebDAVUploaderGridView } from "./webdav-uploader";
     );
   }
 
+  // Set Webdav server version
+  if (webDavSettings.WebDavServerVersion) {
+    $(".webdav-server-version").text(webDavSettings.WebDavServerVersion);
+  }
+
   // Set Ajax lib version
   if (ITHit.WebDAV.Client.DocManager.IsDavProtocolSupported()) {
     $(".ithit-version-value").html(

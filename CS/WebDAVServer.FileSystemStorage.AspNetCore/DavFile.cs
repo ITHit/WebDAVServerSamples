@@ -147,7 +147,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
         }
 
         /// <summary>
-        /// Called when a file or its part is being uploaded.
+        /// Called when a file or its segment is being uploaded.
         /// </summary>
         /// <param name="content">Stream to read the content of the file from.</param>
         /// <param name="contentType">Indicates the media type of the file.</param>
@@ -165,7 +165,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
         }
 
         /// <summary>
-        /// Called when a file or its part is being uploaded.
+        /// Called when a file or it's segment is being uploaded. Does not check for locks and does not send notification to client.
         /// </summary>
         /// <param name="content">Stream to read the content of the file from.</param>
         /// <param name="contentType">Indicates the media type of the file.</param>
@@ -248,7 +248,6 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
 
             string newFilePath = System.IO.Path.Combine(targetFolder.FullPath, destName);
             string targetPath = targetFolder.Path + EncodeUtil.EncodeUrlPart(destName);
-
             // If an item with the same name exists - remove it.
             try
             {
@@ -325,7 +324,6 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
 
             string newDirPath = System.IO.Path.Combine(targetFolder.FullPath, destName);
             string targetPath = targetFolder.Path + EncodeUtil.EncodeUrlPart(destName);
-
             // If an item with the same name exists in target directory - remove it.
             try
             {
@@ -396,7 +394,6 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
             {
                 await fileSystemInfo.DeleteExtendedAttributes();
             }
-
             fileSystemInfo.Delete();
             if (recursionDepth == 0)
             {

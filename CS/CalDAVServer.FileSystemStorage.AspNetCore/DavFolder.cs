@@ -118,7 +118,6 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore
         public virtual async Task<IFile> CreateFileAsync(string name, Stream content, string contentType, long totalFileSize)
         {
             string fileName = System.IO.Path.Combine(fileSystemInfo.FullName, name);
-
             await using (FileStream stream = new FileStream(fileName, FileMode.CreateNew))
             {
             }
@@ -145,7 +144,6 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore
         /// <param name="name">Name of the new folder.</param>
         private async Task CreateFolderInternalAsync(string name)
         {
-
             bool isRoot = dirInfo.Parent == null;
             DirectoryInfo di = isRoot ? new DirectoryInfo(@"\\?\" + context.RepositoryPath.TrimEnd(System.IO.Path.DirectorySeparatorChar)) : dirInfo;
             di.CreateSubdirectory(name);

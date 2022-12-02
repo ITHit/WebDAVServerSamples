@@ -137,7 +137,7 @@ Public Class DavFile
     End Function
 
     ''' <summary>
-    ''' Called when a file or its part is being uploaded.
+    ''' Called when a file or its segment is being uploaded.
     ''' </summary>
     ''' <param name="content">Stream to read the content of the file from.</param>
     ''' <param name="contentType">Indicates the media type of the file.</param>
@@ -154,7 +154,7 @@ Public Class DavFile
     End Function
 
     ''' <summary>
-    ''' Called when a file or its part is being uploaded.
+    ''' Called when a file or it's segment is being uploaded. Does not check for locks and does not send notification to client.
     ''' </summary>
     ''' <param name="content">Stream to read the content of the file from.</param>
     ''' <param name="contentType">Indicates the media type of the file.</param>

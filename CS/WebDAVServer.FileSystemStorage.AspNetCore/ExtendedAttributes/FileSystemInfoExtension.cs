@@ -84,7 +84,6 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore.ExtendedAttributes
         {
             return info.IsExtendedAttributesSupportedAsync().ConfigureAwait(false).GetAwaiter().GetResult();
         }
-
         /// <summary>
         /// Checks whether a FileInfo or DirectoryInfo object is a directory, or intended to be a directory.
         /// </summary>

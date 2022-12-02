@@ -79,6 +79,7 @@ module.exports = (env) => {
         filename: "app.html",
         minify: false,
         templateParameters: {
+          imagesPath: env.IMAGES_PATH ? env.IMAGES_PATH : "/images/",
           leftPanel: fs.readFileSync("./src/html/leftPanel.html"),
           rightPanel: env.ISGSUITE
             ? fs.readFileSync("./src/html/rightPanel.html")
@@ -89,7 +90,10 @@ module.exports = (env) => {
         patterns: [{ from: "index.html" }],
       }),
       new CopyPlugin({
-        patterns: [{ from: "src/images", to: "images" }],
+        patterns: [
+          { from: "src/images", to: "images" },
+          { from: "src/favicon.ico", to: "favicon.ico" },
+        ],
       }),
       new webpack.DefinePlugin({
         "process.env": {

@@ -120,7 +120,6 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore.Cookies
         {
             await RequireHasTokenAsync();
             string fileName = System.IO.Path.Combine(fileSystemInfo.FullName, name);
-
             await using (FileStream stream = new FileStream(fileName, FileMode.CreateNew))
             {
             }
@@ -150,7 +149,6 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore.Cookies
         private async Task CreateFolderInternalAsync(string name)
         {
             await RequireHasTokenAsync();
-
             bool isRoot = dirInfo.Parent == null;
             DirectoryInfo di = isRoot ? new DirectoryInfo(@"\\?\" + context.RepositoryPath.TrimEnd(System.IO.Path.DirectorySeparatorChar)) : dirInfo;
             di.CreateSubdirectory(name);

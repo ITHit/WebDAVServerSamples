@@ -19,7 +19,6 @@ using CalDAVServer.FileSystemStorage.AspNetCore.Configuration;
 using CalDAVServer.FileSystemStorage.AspNetCore.ExtendedAttributes;
 
 
-
 namespace CalDAVServer.FileSystemStorage.AspNetCore
 {
     /// <summary>

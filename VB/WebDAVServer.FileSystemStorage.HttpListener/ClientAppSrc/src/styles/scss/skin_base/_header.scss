@@ -26,6 +26,17 @@
             }
         }
     }
+
+    .blocks {
+        .flex-column {
+            padding-bottom: 38px;
+            margin-bottom: 20px;
+            .btn {
+                position: absolute;
+                bottom: 0;
+            }
+        }
+    }
 }
 
 .navbar {
@@ -33,6 +44,28 @@
 
     .nav-link {
         margin-right: 0.5rem;
+    }
+
+    .show,
+    [aria-expanded="true"] {
+        .burger-icon {
+            span {
+                &:nth-child(1) {
+                    top: 11px;
+                    @include transform(rotate(135deg));
+                }
+
+                &:nth-child(2) {
+                    opacity: 0;
+                    left: -60px;
+                }
+
+                &:nth-child(3) {
+                    top: 11px;
+                    @include transform(rotate(-135deg));
+                }
+            }
+        }
     }
 }
 
@@ -75,39 +108,22 @@
         }
     }
 
-    &.show {
-        .burger-icon {
-            span {
-                &:nth-child(1) {
-                    top: 11px;
-                    @include transform(rotate(135deg));
-                }
-
-                &:nth-child(2) {
-                    opacity: 0;
-                    left: -60px;
-                }
-
-                &:nth-child(3) {
-                    top: 11px;
-                    @include transform(rotate(-135deg));
-                }
-            }
-        }
-    }
-
     &:focus {
         border: none;
         outline: 0;
     }
 }
 
-.navbar-brand.ellipsis {
+.navbar-brand {
+    display: flex;
+    align-items: center;
+    position: relative;
+
     width: calc(100% - 48px);
     margin-right: 0;
     cursor: pointer;
 
-    span {
+    .brand-name {
         left: 45px;
         top: 5px;
     }

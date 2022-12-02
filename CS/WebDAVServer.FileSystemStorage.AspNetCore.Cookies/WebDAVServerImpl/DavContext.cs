@@ -17,7 +17,6 @@ using WebDAVServer.FileSystemStorage.AspNetCore.Cookies.Configuration;
 using WebDAVServer.FileSystemStorage.AspNetCore.Cookies.ExtendedAttributes;
 
 
-
 namespace WebDAVServer.FileSystemStorage.AspNetCore.Cookies
 {
     /// <summary>

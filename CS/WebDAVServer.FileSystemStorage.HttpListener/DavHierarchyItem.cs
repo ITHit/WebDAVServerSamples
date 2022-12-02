@@ -58,7 +58,6 @@ namespace WebDAVServer.FileSystemStorage.HttpListener
         /// Gets full path for this file/folder in the file system.
         /// </summary>
         public string FullPath { get { return fileSystemInfo.FullName.TrimEnd(System.IO.Path.DirectorySeparatorChar); } }
-
         /// <summary>
         /// Corresponding file or folder in the file system.
         /// </summary>

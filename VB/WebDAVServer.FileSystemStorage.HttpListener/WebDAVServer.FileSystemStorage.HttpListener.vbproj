@@ -6,7 +6,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>D9BAC695-3299-4695-BF30-FC004CDE595B</ProjectGuid>
+    <ProjectGuid>C78F5F72-3498-44E0-A02D-20607B5CAF86</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>WebDAVServer.FileSystemStorage.HttpListener</RootNamespace>
@@ -162,28 +162,28 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="ITHit.WebDAV.Server">
-      <HintPath>..\packages\ITHit.WebDAV.Server.13.0.12190-Beta\lib\net451\ITHit.WebDAV.Server.dll</HintPath>
+      <HintPath>..\packages\ITHit.WebDAV.Server.13.1.12216-Beta\lib\net451\ITHit.WebDAV.Server.dll</HintPath>
     </Reference>
     <Reference Include="ITHit.Server">
-      <HintPath>..\packages\ITHit.Server.13.0.12190-Beta\lib\net451\ITHit.Server.dll</HintPath>
+      <HintPath>..\packages\ITHit.Server.13.1.12216-Beta\lib\net451\ITHit.Server.dll</HintPath>
     </Reference>
     <Reference Include="ITHit.Server.HttpListener">
-      <HintPath>..\packages\ITHit.Server.HttpListener.13.0.12190-Beta\lib\net451\ITHit.Server.HttpListener.dll</HintPath>
+      <HintPath>..\packages\ITHit.Server.HttpListener.13.1.12216-Beta\lib\net451\ITHit.Server.HttpListener.dll</HintPath>
     </Reference>
     <Reference Include="ITHit.GSuite.Server">
-      <HintPath>..\packages\ITHit.GSuite.Server.13.0.12190-Beta\lib\net451\ITHit.GSuite.Server.dll</HintPath>
+      <HintPath>..\packages\ITHit.GSuite.Server.13.1.12216-Beta\lib\net451\ITHit.GSuite.Server.dll</HintPath>
     </Reference>
     <Reference Include="ITHit.WebDAV.Server">
-      <HintPath>..\packages\ITHit.WebDAV.Server.13.0.12190-Beta\lib\net451\ITHit.WebDAV.Server.dll</HintPath>
+      <HintPath>..\packages\ITHit.WebDAV.Server.13.1.12216-Beta\lib\net451\ITHit.WebDAV.Server.dll</HintPath>
     </Reference>
     <Reference Include="ITHit.Server">
-      <HintPath>..\packages\ITHit.Server.13.0.12190-Beta\lib\net451\ITHit.Server.dll</HintPath>
+      <HintPath>..\packages\ITHit.Server.13.1.12216-Beta\lib\net451\ITHit.Server.dll</HintPath>
     </Reference>
     <Reference Include="ITHit.Server.HttpListener">
-      <HintPath>..\packages\ITHit.Server.HttpListener.13.0.12190-Beta\lib\net451\ITHit.Server.HttpListener.dll</HintPath>
+      <HintPath>..\packages\ITHit.Server.HttpListener.13.1.12216-Beta\lib\net451\ITHit.Server.HttpListener.dll</HintPath>
     </Reference>
     <Reference Include="ITHit.GSuite.Server">
-      <HintPath>..\packages\ITHit.GSuite.Server.13.0.12190-Beta\lib\net451\ITHit.GSuite.Server.dll</HintPath>
+      <HintPath>..\packages\ITHit.GSuite.Server.13.1.12216-Beta\lib\net451\ITHit.GSuite.Server.dll</HintPath>
     </Reference>
   </ItemGroup>
   <PropertyGroup>

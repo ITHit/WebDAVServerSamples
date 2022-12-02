@@ -19,7 +19,6 @@ using CardDAVServer.FileSystemStorage.AspNetCore.Configuration;
 using CardDAVServer.FileSystemStorage.AspNetCore.ExtendedAttributes;
 
 
-
 namespace CardDAVServer.FileSystemStorage.AspNetCore
 {
     /// <summary>

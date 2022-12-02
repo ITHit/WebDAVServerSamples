@@ -17,7 +17,6 @@ using WebDAVServer.FileSystemStorage.AspNetCore.Configuration;
 using WebDAVServer.FileSystemStorage.AspNetCore.ExtendedAttributes;
 
 
-
 namespace WebDAVServer.FileSystemStorage.AspNetCore
 {
     /// <summary>

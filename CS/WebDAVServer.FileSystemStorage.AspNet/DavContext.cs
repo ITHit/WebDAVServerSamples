@@ -16,7 +16,6 @@ using ILogger = ITHit.Server.ILogger;
 using WebDAVServer.FileSystemStorage.AspNet.ExtendedAttributes;
 
 
-
 namespace WebDAVServer.FileSystemStorage.AspNet
 {
     /// <summary>

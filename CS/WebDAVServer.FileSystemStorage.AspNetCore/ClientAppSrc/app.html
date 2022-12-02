@@ -1,60 +1,111 @@
-<div id="ithit-dropzone">
-  <div class="row no-gutters"><%= leftPanel %> <%= rightPanel %></div>
-  <div class="row d-none">
-    <div class="col-12">
-      <p>
-        This is a demo sever for
-        <a href="https://www.webdavsystem.com/server/"
-          >WebDAV Server Engine for .NET</a
-        >
-        and
-        <a href="https://www.webdavsystem.com/ajax/">WebDAV Ajax Library</a>.
-      </p>
-      <hr />
-      <h3>Your Test Folder</h3>
-      <p>
-        The following folder was created for you for testing purposes:
-        <b><span class="ithit-current-folder-value"></span></b>
-      </p>
-      <p>
-        Note that this folder and all files in it will be deleted within 72
-        hours. You can use the above url to test WebDAV server with various
-        <a href="http://www.webdavsystem.com/server/access">WebDAV clients</a>.
-      </p>
-      <hr />
-      <h3>Editing Microsoft Office and Other Docs</h3>
-      <p>
-        You can open for editing Microsoft Office and any other types of files
-        directly from this web page and save back to server without
-        download/upload steps. See how to
-        <a
-          href="https://www.webdavsystem.com/ajax/programming/opening_ms_office_docs/"
-          title="Opening Microsoft Office Documents and Other Types of Files for Editing From a Web Page"
-        >
-          open documents from WebDAV server </a
-        >and
-        <a
-          href="https://www.webdavsystem.com/ajax/programming/opening_os_file_manager/"
-          title="Opening OS File Manager from a Web Page"
-          >run OS File Manager</a
-        >
-        using WebDAV Ajax Library.
-      </p>
-      <hr />
-      <h3>Test Limitations</h3>
-      <p>
-        This demo server is not intended for heavy testing. If you would like to
-        test server performance please download the fully functional trial
-        version of
-        <a href="https://www.webdavsystem.com/server/download/"
-          >IT Hit .NET WebDAV Server Engine</a
-        >
-        and test with
-        <a href="https://www.webdavsystem.com/server/server_examples/"
-          >WebDAV Server Examples in C# & VB</a
-        >
-        provided with SDK.
-      </p>
+<header>
+  <div class="navbar navbar-dark bg-dark shadow-sm">
+    <div
+      class="container-fluid d-flex justify-content-between js-collapse"
+      data-toggle="collapse"
+      data-target="#navbarHeader"
+      aria-controls="navbarHeader"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-brand ellipsis">
+        <img src="<%= imagesPath %>logo.svg" alt="IT Hit logo" class="logo" />
+        <span class="brand-name"
+          >IT Hit WebDAV Server Engine
+          <div class="webdav-server-version d-inline"></div
+        ></span>
+      </span>
+      <button class="navbar-toggler burger-button" type="button">
+        <div class="burger-icon"><span></span><span></span><span></span></div>
+      </button>
     </div>
+  </div>
+  <div class="collapse bg-dark" id="navbarHeader">
+    <div class="header-content">
+      <div class="container-fluid justify-content-between">
+        <div class="row">
+          <div class="col">
+            <p>
+              This page is displayed when user accesses any folder on your
+              WebDAV server in a web browser. You can customize this page to
+              your needs.
+            </p>
+          </div>
+        </div>
+        <div class="row blocks">
+          <div class="col-12 col-lg-4 d-flex flex-column">
+            <h3>Test Your Server</h3>
+            <p>
+              To test your WebDAV server you can run Ajax integration tests
+              right from this page.
+            </p>
+            <a
+              href="javascript:void(0)"
+              onclick="OpenTestsWindow()"
+              class="align-self-start btn btn-primary"
+              role="button"
+              >Run Integration Tests</a
+            >
+          </div>
+          <div class="col-12 col-lg-4 d-flex flex-column">
+            <h3>Manage Docs with Ajax File Browser</h3>
+            <p>
+              Use the
+              <a
+                href="https://www.webdavsystem.com/ajaxfilebrowser/programming/"
+                >IT Hit Ajax File Browser</a
+              >
+              to browse your documents, open for editing from a web page and -
+              uploading with pause/resume and auto-restore upload.
+            </p>
+            <a
+              href="javascript:void(0)"
+              onclick="OpenAjaxFileBrowserWindow()"
+              class="align-self-start btn btn-primary"
+              role="button"
+              >Browse Using Ajax File Browser</a
+            >
+          </div>
+          <div class="col-12 col-lg-4 d-flex flex-column">
+            <h3>Connect with WebDAV Client</h3>
+            <p>
+              Use a WebDAV client provided with almost any OS. Refer to
+              <a href="https://www.webdavsystem.com/server/access"
+                >Accessing WebDAV Server</a
+              >
+              page for - detailed instructions. The button below is using
+              <a href="https://www.webdavsystem.com/ajax/"
+                >IT Hit WebDAV Ajax Library</a
+              >
+              to mount WebDAV - folder and open the default OS file manager.
+            </p>
+            <a
+              href="javascript:void(0)"
+              onclick="WebDAVController && WebDAVController.OpenCurrentFolderInOsFileManager()"
+              class="align-self-start btn btn-primary"
+              role="button"
+              >Browse Using OS File Manager</a
+            >
+          </div>
+        </div>
+        <div class="row mt-1">
+          <div class="col">
+            <p class="versions">
+              IT Hit WebDAV Server Engine for .NET:
+              <span class="webdav-server-version"></span>
+            </p>
+            <p class="versions">
+              IT Hit WebDAV AJAX Library:
+              <span class="ithit-version-value"></span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+<div class="container-fluid">
+  <div id="ithit-dropzone">
+    <div class="row no-gutters"><%= leftPanel %> <%= rightPanel %></div>
   </div>
 </div>
