@@ -1,0 +1,205 @@
+.icon {
+  &:before {
+    content: "";
+    background-repeat: no-repeat;
+    display: block;
+    background-color: $mainColor;
+  }
+
+  &.icon-logo:before {
+    width: 34px;
+    height: 36px;
+    @include icon-mask(url(#{$image-base-path+"logo.svg"}));
+  }
+
+  &.icon-folder:before {
+    height: 14px;
+    width: 16px;
+    @include icon-mask(url(#{$image-base-path+"folder.svg"}));
+  }
+
+  &.icon-open-folder:before {
+    height: 19px;
+    width: 19px;
+    background-color: $whiteColor;
+    @include icon-mask(url(#{$image-base-path+"open-folder.svg"}));
+  }
+
+  &.icon-edit:before {
+    height: 19px;
+    width: 19px;
+    background-color: $whiteColor;
+    @include icon-mask(url(#{$image-base-path+"edit.svg"}));
+  }
+
+  &.icon-microsoft-edit:before {
+    height: 18px;
+    width: 19px;
+    margin-top: 3px;
+    margin-bottom: -2px;
+    background-color: $whiteColor;
+    @include mask-size(contain);
+    @include icon-mask(url(#{$image-base-path+"menu-microsoft-edit.svg"}));
+  }
+
+  &.icon-action-microsoft-edit:before{
+    width: 25px;
+    height: 26px;
+    margin-top: -9px;
+    background-color: $primary;
+    @include mask-size(contain);
+    @include icon-mask(url(#{$image-base-path+"menu-microsoft-edit.svg"}));
+  }
+
+  &.icon-gsuite-edit:before{
+    width: 25px;
+    height: 26px;
+    margin-top: -9px;
+    background-color: $primary;
+    @include mask-size(contain);
+    @include icon-mask(url(#{$image-base-path+"menu-gsuit-edit.svg"}));
+  }
+
+  &.icon-edit-associated:before {
+    width: 27px;
+    height: 30px;
+    @include icon-mask(url(#{$image-base-path+"edit-associated.svg"}));
+  }
+
+  &.icon-edit-ms-associated:before {
+    width: 27px;
+    height: 30px;
+    @include icon-mask(url(#{$image-base-path+"menu-microsoft-edit.svg"}));
+  }
+
+  &.icon-locked:before {
+    width: 17px;
+    height: 22px;
+    @include icon-mask(url(#{$image-base-path+"locked.svg"}));
+  }
+
+  &.icon-home:before {
+    height: 16px;
+    width: 14px;
+    @include icon-mask(url(#{$image-base-path+"home.svg"}));
+  }
+
+  &.icon-pause:before {
+    width: 28px;
+    height: 28px;
+    @include icon-mask(url(#{$image-base-path+"pause.svg"}));
+  }
+
+  &.icon-play:before {
+    width: 28px;
+    height: 28px;
+    @include icon-mask(url(#{$image-base-path+"play.svg"}));
+  }
+
+  &.icon-close:before {
+    width: 28px;
+    height: 28px;
+    background-color: $grayColor;
+    @include icon-mask(url(#{$image-base-path+"cancel.svg"}));
+  }
+}
+
+.btn-tool,
+.drop-files-header {
+  .icon {
+    &:before {
+      content: "";
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      margin-right: 10px;
+      position: relative;
+      text-align: center;
+      vertical-align: bottom;
+      background-color: $mainColor;
+    }
+
+    &.icon-create-folder:before {
+      @include icon-mask(url(#{$image-base-path+"create-folder.svg"}));
+    }
+
+    &.icon-rename-item:before {
+      @include icon-mask(url(#{$image-base-path+"rename.svg"}));
+    }
+
+    &.icon-download-items:before {
+      @include icon-mask(url(#{$image-base-path+"download.svg"}));
+    }
+
+    &.icon-upload-items:before {
+      @include icon-mask(url(#{$image-base-path+"upload.svg"}));
+    }
+
+    &.icon-copy-items:before {
+      @include icon-mask(url(#{$image-base-path+"copy.svg"}));
+    }
+
+    &.icon-cut-items:before {
+      @include icon-mask(url(#{$image-base-path+"cut.svg"}));
+    }
+
+    &.icon-paste-items:before {
+      @include icon-mask(url(#{$image-base-path+"paste.svg"}));
+    }
+
+    &.icon-reload-items:before {
+      @include icon-mask(url(#{$image-base-path+"reload.svg"}));
+    }
+
+    &.icon-print-items:before {
+      @include icon-mask(url(#{$image-base-path+"print.svg"}));
+    }
+
+    &.icon-delete-items:before {
+      @include icon-mask(url(#{$image-base-path+"delete.svg"}));
+    }
+
+    &.icon-up-one-level:before {
+      @include icon-mask(url(#{$image-base-path+"up-one-level.svg"}));
+    }
+  }
+}
+
+.icon.icon-file {
+  &:before {
+    position: relative;
+    width: 38px;
+    height: 49px;
+    @include icon-mask(url(#{$image-base-path+"file-default.svg"}));
+    &.icon-file-zip:before,
+    &.icon-file-7z:before,
+    &.icon-file-rar:before,
+    &.icon-file-gz:before,
+    &.icon-file-tar:before {
+      @include icon-mask(url(#{$image-base-path+"file-archive.svg"}));
+    }
+
+    &.icon-file-jpeg:before,
+    &.icon-file-jpg:before,
+    &.icon-file-png:before,
+    &.icon-file-gif:before,
+    &.icon-file-svg:before {
+      @include icon-mask(url(#{$image-base-path+"file-image.svg"}));
+    }
+
+    &.icon-file-pdf:before {
+      @include icon-mask(url(#{$image-base-path+"file-pdf.svg"}));
+    }
+  }
+
+  .file-extension {
+    font-family: Arial, Helvetica, sans-serif;
+    color: white;
+    font-size: 12px;
+    position: absolute;
+    bottom: 0;
+    line-height: 1.1;
+    left: 50%;
+    transform: translate(-50%, 0);
+  }
+}

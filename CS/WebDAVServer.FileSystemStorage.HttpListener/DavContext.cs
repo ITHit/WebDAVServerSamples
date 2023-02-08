@@ -14,7 +14,6 @@ using ITHit.WebDAV.Server.Quota;
 using ILogger = ITHit.Server.ILogger;
 using WebDAVServer.FileSystemStorage.HttpListener.ExtendedAttributes;
 
-
 namespace WebDAVServer.FileSystemStorage.HttpListener
 {
     /// <summary>
@@ -118,7 +117,6 @@ namespace WebDAVServer.FileSystemStorage.HttpListener
 
             return null; // no hierarchy item that corresponds to path parameter was found in the repository
         }
-
         /// <summary>
         /// Returns the physical file path that corresponds to the specified virtual path on the Web server.
         /// </summary>

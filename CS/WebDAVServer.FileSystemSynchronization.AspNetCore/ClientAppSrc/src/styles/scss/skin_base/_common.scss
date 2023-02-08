@@ -1,0 +1,215 @@
+﻿html {
+  height: 100%;
+}
+
+body {
+  min-height: 100%;
+  //font-family: 'Questrial', sans-serif;
+}
+
+#leftPanel {
+  &.extra-large-point .d-xxl-inline {
+    display: none !important;
+  }
+
+  &.large-point {
+    .d-xl-table-cell,
+    .d-xl-inline {
+      display: none !important;
+    }
+  }
+
+  &.medium-point {
+    .d-lg-table-cell,
+    .d-xl-table-cell,
+    .d-xl-inline,
+    .d-lg-inline,
+    .d-hide-medium {
+      display: none !important;
+    }
+
+    .toolbar-section {
+      padding: 0;
+    }
+  }
+}
+
+.ellipsis {
+  position: relative;
+
+  &:before {
+    content: "&nbsp;";
+    visibility: hidden;
+  }
+
+  span {
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  a,
+  .btn-link {
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.alert {
+  margin-top: 1rem;
+}
+
+p.error-message {
+  margin: 0;
+}
+
+.info-panel {
+  border-left: 2px solid #f2f4f8;
+  padding-top: 15px;
+
+  .versions {
+    padding-right: 0;
+  }
+}
+
+.pagination {
+  .page-link {
+    cursor: default;
+    &:not(:disabled):not(.disabled) {
+      cursor: pointer;
+    }
+  }
+}
+
+.progress {
+  height: 3px;
+}
+
+.progress-bar {
+  background-color: $mainColor;
+}
+
+.snippet {
+  overflow: hidden;
+  font-size: 12px;
+  line-height: 18px;
+  color: #999;
+  b {
+    color: #555;
+  }
+}
+
+.tr-snippet-url {
+  .snippet {
+    padding: 0 0 0 0.313rem;
+    margin-bottom: 8px;
+  }
+}
+
+.ithit-grid-toolbar {
+  margin-top: 7px;
+  padding: 0 0.625rem;
+
+  .toolbar-section {
+    padding: 0;
+  }
+
+  @include media-breakpoint-up(lg) {
+    .toolbar-section {
+      padding: 0 0.5rem;
+    }
+  }
+}
+
+.actions {
+  .icon-edit-associated,
+  .icon-edit-ms-associated {
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 10px;
+  }
+
+  .icon-edit-associated {
+    margin-top: -10px;
+  }
+
+  .icon-edit-ms-associated {
+    margin-top: -5px;
+  }
+
+  .dropdown-item {
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .dropdown-item.desktop-app {
+    padding-left: 61px;
+  }
+
+  .dropdown-item.dropdown-radio {
+    margin-top: -28px;
+    z-index: 2;
+    padding-left: 40px;
+
+    .icon {
+      vertical-align: middle;
+      margin-right: 10px;
+    }
+  }
+
+  input[type="radio"] {
+    position: relative;
+    top: 0;
+    left: 0;
+    width: 20px;
+    height: 20px;
+    z-index: 3;
+  }
+}
+
+.sceleton-loader {
+  background-color: $sceletonColor;
+  display: block;
+
+  &.sceleton-p {
+    border-radius: 7px;
+    height: 7px;
+    margin: 13px 0;
+  }
+}
+
+.hide-disabled-sm {
+  @include media-breakpoint-down(sm) {
+    &:disabled,
+    &[disabled] {
+      display: none;
+    }
+  }
+}
+
+.modal {
+  @include media-breakpoint-up(lg) {
+    padding-right: 17px;
+  }
+
+  &.show {
+    display: block;
+  }
+
+  .modal-footer {
+    .btn {
+      min-width: 75px;
+    }
+  }
+}
+
+.error-details-row .card {
+  min-height: 325px;
+}

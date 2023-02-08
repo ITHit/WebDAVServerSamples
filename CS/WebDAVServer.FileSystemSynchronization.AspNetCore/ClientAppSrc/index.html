@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>.NET WebDAV Server & Ajax Library Demo</title>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <meta
+      name="description"
+      content="A demo server for WebDAV Server Engine for .NET and WebDAV Ajax Library"
+    />
+    <meta
+      name="keywords"
+      content="WebDAV Server Engine for .NET Ajax Library"
+    />
+    <link href="/app.css" rel="stylesheet" />
+  </head>
+  <body>
+    <main role="main">
+      <div id="app" data-template="/app.html"></div>
+    </main>
+    <script>
+      var webDavSettings = {
+        WebDavServerPath: "https://webdavserver.net/User6915969",
+        WebSocketPath: "wss://webdavserver.net",
+        ApplicationProtocolsPath: "node_modules/webdav.client/Plugins/",
+        EditDocAuth: {
+          Authentication: "anonymous", // Authentication to use when opening documents for editing: 'anonymous', 'challenge', 'ms-ofba', 'cookies'
+          CookieNames: null, // Coma separated list of cookie names to search for.
+          SearchIn: null, // Web browsers to search and copy permanent cookies from: 'current', 'none', 'all'.
+          LoginUrl: null, // Login URL to redirect to in case any cookies specified in CookieNames parameter are not found.
+        },
+      };
+
+      function OpenAjaxFileBrowserWindow() {
+        window.open(
+          "/AjaxFileBrowser/AjaxFileBrowser.html",
+          "",
+          "menubar=1,location=1,status=1,scrollbars=1,resizable=1,width=900,height=600"
+        );
+      }
+
+      function OpenTestsWindow() {
+        var width = Math.round(screen.width * 0.5);
+        var height = Math.round(screen.height * 0.8);
+        window.open(
+          "/AjaxFileBrowser/AjaxIntegrationTests.html",
+          "",
+          "menubar=1,location=1,status=1,scrollbars=1,resizable=1,width=" +
+            width +
+            ",height=" +
+            height
+        );
+      }
+    </script>
+    <!--
+    JavaScript file required to run WebDAV Ajax library is loaded from Node.js Package Manager.
+    To load files from your website download them here: https://www.webdavsystem.com/ajax/download,
+    deploy them to your website and replace the path below in this file.
+    -->
+    <script src="/app.js"></script>
+  </body>
+</html>

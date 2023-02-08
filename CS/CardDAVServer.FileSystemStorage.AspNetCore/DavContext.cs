@@ -18,7 +18,6 @@ using CardDAVServer.FileSystemStorage.AspNetCore.CardDav;
 using CardDAVServer.FileSystemStorage.AspNetCore.Configuration;
 using CardDAVServer.FileSystemStorage.AspNetCore.ExtendedAttributes;
 
-
 namespace CardDAVServer.FileSystemStorage.AspNetCore
 {
     /// <summary>
@@ -139,7 +138,6 @@ namespace CardDAVServer.FileSystemStorage.AspNetCore
 
             return null; // no hierarchy item that corresponds to path parameter was found in the repository
         }
-
         /// <summary>
         /// Returns the physical file path that corresponds to the specified virtual path on the Web server.
         /// </summary>

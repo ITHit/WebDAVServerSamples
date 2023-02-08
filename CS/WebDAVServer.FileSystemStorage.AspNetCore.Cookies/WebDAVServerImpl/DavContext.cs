@@ -16,7 +16,6 @@ using ILogger = ITHit.Server.ILogger;
 using WebDAVServer.FileSystemStorage.AspNetCore.Cookies.Configuration;
 using WebDAVServer.FileSystemStorage.AspNetCore.Cookies.ExtendedAttributes;
 
-
 namespace WebDAVServer.FileSystemStorage.AspNetCore.Cookies
 {
     /// <summary>
@@ -118,7 +117,6 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore.Cookies
 
             return null; // no hierarchy item that corresponds to path parameter was found in the repository
         }
-
         /// <summary>
         /// Returns the physical file path that corresponds to the specified virtual path on the Web server.
         /// </summary>

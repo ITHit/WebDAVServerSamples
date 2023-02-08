@@ -18,7 +18,6 @@ using CalDAVServer.FileSystemStorage.AspNetCore.CalDav;
 using CalDAVServer.FileSystemStorage.AspNetCore.Configuration;
 using CalDAVServer.FileSystemStorage.AspNetCore.ExtendedAttributes;
 
-
 namespace CalDAVServer.FileSystemStorage.AspNetCore
 {
     /// <summary>
@@ -139,7 +138,6 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore
 
             return null; // no hierarchy item that corresponds to path parameter was found in the repository
         }
-
         /// <summary>
         /// Returns the physical file path that corresponds to the specified virtual path on the Web server.
         /// </summary>
