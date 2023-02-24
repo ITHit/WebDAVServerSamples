@@ -74,6 +74,7 @@ namespace WebDAVServer.FileSystemSynchronization.AspNetCore
         /// Unique identifier of the resource parent. 
         /// </summary>
         public string ParentId { get => $"{context.Request.UrlPrefix}/ServerRoot/{Directory.GetParent(fileSystemInfo.FullName).GetId()}"; }
+
         /// <summary>
         /// Corresponding file or folder in the file system.
         /// </summary>

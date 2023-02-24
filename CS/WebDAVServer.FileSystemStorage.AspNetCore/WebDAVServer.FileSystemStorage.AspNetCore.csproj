@@ -1,7 +1,7 @@
 
 <Project Sdk="Microsoft.NET.Sdk.Web">
 	<PropertyGroup>
-		<VersionPrefix>13.2.12442-Beta</VersionPrefix>
+		<VersionPrefix>13.2.12573-Beta</VersionPrefix>
 		<AssemblyName>WebDAVServer.FileSystemStorage.AspNetCore</AssemblyName>
 		<TargetFramework>net6.0</TargetFramework>
 		<LangVersion>9.0</LangVersion>
@@ -111,10 +111,10 @@
 		</Content>
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="ITHit.Server" Version="13.2.12442-Beta" />
-		<PackageReference Include="ITHit.Server.Core" Version="13.2.12442-Beta" />
-		<PackageReference Include="ITHit.WebDAV.Server" Version="13.2.12442-Beta" />
-		<PackageReference Include="ITHit.GSuite.Server" Version="13.2.12442-Beta" />
+		<PackageReference Include="ITHit.Server" Version="13.2.12573-Beta" />
+		<PackageReference Include="ITHit.Server.Core" Version="13.2.12573-Beta" />
+		<PackageReference Include="ITHit.WebDAV.Server" Version="13.2.12573-Beta" />
+		<PackageReference Include="ITHit.GSuite.Server" Version="13.2.12573-Beta" />
 		<PackageReference Include="System.Data.OleDb" Version="6.0.0" />
 	</ItemGroup>
 	<PropertyGroup>
@@ -127,6 +127,11 @@
 			<Output TaskParameter="ExitCode" PropertyName="ErrorCode" />
 		</Exec>
 		<Error Condition="'$(ErrorCode)' != '0'" Text="Node.js is required to build and run this project. To continue, please install Node.js from https://nodejs.org/, and then restart your command prompt or IDE." />
-		<Exec WorkingDirectory="$(SpaRoot)" Command="call run.bat $(IsNetFramework) $(IsGSuite)" StdOutEncoding="utf-8" />
+		
+		<Exec WorkingDirectory="$(SpaRoot)" Command="node run.js $(IsNetFramework) $(IsGSuite)" ContinueOnError="true" ConsoleToMsBuild="true" StdOutEncoding="utf-8">
+			<Output TaskParameter="ExitCode" PropertyName="ErrorCode" />
+			<Output TaskParameter="ConsoleOutput" PropertyName="ErrorText" />
+		</Exec>
+		<Error Condition="'$(ErrorCode)' != '0'" Text="More Details: $([System.String]::Concat('$([System.String]::Copy('$(ErrorText)').Substring(0, 580))', ' ... See more information in Output.'))" />
 	</Target>
 </Project>

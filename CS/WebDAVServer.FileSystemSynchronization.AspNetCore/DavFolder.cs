@@ -278,15 +278,13 @@ namespace WebDAVServer.FileSystemSynchronization.AspNetCore
 
             string newDirPath = System.IO.Path.Combine(targetFolder.FullPath, destName);
             string targetPath = targetFolder.Path + EncodeUtil.EncodeUrlPart(destName);
-
             try
             {
                 // Remove item with the same name at destination if it exists.
-                DavHierarchyItem item = (await context.GetHierarchyItemAsync(targetPath) as DavHierarchyItem);
-                if (item != null)
-                    await item.DeleteInternalAsync(multistatus, recursionDepth + 1);
+                if (Directory.Exists(newDirPath))
+                    Directory.Delete(newDirPath);
 
-                await targetFolder.CreateFolderInternalAsync(destName);
+                dirInfo.MoveTo(newDirPath);
             }
             catch (DavException ex)
             {
@@ -294,33 +292,8 @@ namespace WebDAVServer.FileSystemSynchronization.AspNetCore
                 multistatus.AddInnerException(targetPath, ex);
                 return;
             }
-
-            // Move child items.
-            bool movedSuccessfully = true;
-            IFolder createdFolder = (IFolder)await context.GetHierarchyItemAsync(targetPath);
-            foreach (DavHierarchyItem item in (await GetChildrenAsync(new PropertyName[0], null, null, new List<OrderProperty>())).Page)
-            {
-                try
-                {
-                    await item.MoveToInternalAsync(createdFolder, item.Name, multistatus, recursionDepth + 1);
-                }
-                catch (DavException ex)
-                {
-                    // Continue the operation but report error with child item to client.
-                    multistatus.AddInnerException(item.Path, ex);
-                    movedSuccessfully = false;
-                }
-            }
-
-            if (movedSuccessfully)
-            {
-                await DeleteInternalAsync(multistatus, recursionDepth + 1);
-            }
-            if (recursionDepth == 0)
-            {
-                // Refresh client UI.
-                await context.socketService.NotifyMovedAsync(Path, targetPath, GetWebSocketID());
-            }
+            // Refresh client UI.
+            await context.socketService.NotifyMovedAsync(Path, targetPath, GetWebSocketID());
         }
 
         /// <summary>

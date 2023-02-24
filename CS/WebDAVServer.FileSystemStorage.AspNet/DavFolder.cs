@@ -271,7 +271,6 @@ namespace WebDAVServer.FileSystemStorage.AspNet
 
             string newDirPath = System.IO.Path.Combine(targetFolder.FullPath, destName);
             string targetPath = targetFolder.Path + EncodeUtil.EncodeUrlPart(destName);
-
             try
             {
                 // Remove item with the same name at destination if it exists.

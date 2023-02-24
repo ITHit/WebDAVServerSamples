@@ -87,12 +87,10 @@ module.exports = (env) => {
         },
       }),
       new CopyPlugin({
-        patterns: [{ from: "index.html" }],
-      }),
-      new CopyPlugin({
         patterns: [
+          { from: "index.html" },
+          { from: "src/favicon.ico" },
           { from: "src/images", to: "images" },
-          { from: "src/favicon.ico", to: "favicon.ico" },
         ],
       }),
       new webpack.DefinePlugin({
