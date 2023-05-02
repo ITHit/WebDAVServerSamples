@@ -8,10 +8,10 @@ Imports System.Threading.Tasks
 Imports ITHit.WebDAV.Server
 Imports ITHit.WebDAV.Server.Acl
 Imports ITHit.WebDAV.Server.Class1
-Imports CardDAVServer.FileSystemStorage.AspNet.Acl
 Imports CardDAVServer.FileSystemStorage.AspNet.ExtendedAttributes
 Imports ITHit.WebDAV.Server.Search
 Imports ITHit.WebDAV.Server.Paging
+Imports CardDAVServer.FileSystemStorage.AspNet.Acl
 
 ''' <summary>
 ''' Folder in WebDAV repository.

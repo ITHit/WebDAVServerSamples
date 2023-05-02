@@ -1,12 +1,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
+using System.Data.OleDb;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-
+using ITHit.FileSystem.Core;
 using ITHit.WebDAV.Server;
 using ITHit.WebDAV.Server.Acl;
 using ITHit.WebDAV.Server.Class1;
@@ -16,7 +18,6 @@ using ITHit.WebDAV.Server.Search;
 using ITHit.WebDAV.Server.Synchronization;
 using ITHit.WebDAV.Server.ResumableUpload;
 using ITHit.WebDAV.Server.Paging;
-using System.Data.OleDb;
 
 namespace WebDAVServer.FileSystemSynchronization.AspNetCore
 {
@@ -353,15 +354,18 @@ namespace WebDAVServer.FileSystemSynchronization.AspNetCore
             }
         }
         /// <summary>
-        /// Returns a list of changes that correspond to a synchronization request. 
+        /// Returns a list of changes that correspond to a synchronization request.
         /// </summary>
-        /// <param name="propNames">List of properties to retrieve with the children. They will be queried by the engine later.</param>
-        /// <param name="syncToken">The synchronization token provided by the server and  returned by the client.</param>
+        /// <param name="propNames">List of properties requested by the client.</param>
+        /// <param name="syncToken">The synchronization token provided by the server and returned by the client. This method must return items that changed since this token was retuned by the server. This parameter is null or empty in case of full synchronization.</param>
         /// <param name="deep">Indicates the "scope" of the synchronization report request, false - immediate children and true - all children at any depth.</param>
-        /// <param name="limit">Limits the number of member URLs in a response.</param>
-        /// <returns></returns>
+        /// <param name="limit">The number of items to return. Null in case of no limit.</param>
+        /// <returns>List of changes that that happened since the synchronization token provided.</returns>
         public async Task<IChanges> GetChangesAsync(IList<PropertyName> propNames, string syncToken, bool deep, long? limit = null)
         {
+            // In this sample we use item's USN as a sync token.
+            // USN increases on every item update, move, creation and deletion. 
+
             DavChanges changes = new DavChanges();
             long? syncUsn = null;
             long maxUsn = 0;
@@ -373,9 +377,9 @@ namespace WebDAVServer.FileSystemSynchronization.AspNetCore
 
             // Get all file system entries with usn.
             List<Tuple<DavHierarchyItem, long>> children = new List<Tuple<DavHierarchyItem, long>>();
-            foreach (string item in Directory.GetFileSystemEntries(dirInfo.FullName, "*", deep ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly))
+            foreach ((string Path, long Usn) item in await GetUsnsAsync())
             {
-                string childPath = Path.TrimEnd('/') + "/" + item.Substring(dirInfo.FullName.Length).Replace(System.IO.Path.DirectorySeparatorChar.ToString(), "/");
+                string childPath = Path.TrimEnd('/') + "/" + item.Path.Substring(dirInfo.FullName.Length).Replace(System.IO.Path.DirectorySeparatorChar.ToString(), "/");
 
                 DavHierarchyItem child = await DavFolder.GetFolderAsync(context, childPath);
                 if (child == null)
@@ -385,7 +389,7 @@ namespace WebDAVServer.FileSystemSynchronization.AspNetCore
 
                 if (child != null)
                 {
-                    children.Add(new Tuple<DavHierarchyItem, long>(child, await child.fileSystemInfo.GetUsnAsync()));
+                    children.Add(new Tuple<DavHierarchyItem, long>(child, item.Usn));
                 }
             }
 
@@ -410,6 +414,27 @@ namespace WebDAVServer.FileSystemSynchronization.AspNetCore
             changes.NewSyncToken = maxUsn.ToString();
 
             return changes;
+        }
+
+        /// <summary>
+        /// Returns USNs for all items in the folder.
+        /// </summary>
+        /// <returns>List of all items path under this folder and USN of each item.</returns>
+        private async Task<IEnumerable<(string Path, long Usn)>> GetUsnsAsync()
+        {
+            // First we must read max existing USN. However, for the sake of simplicity, we just read all changes under this folder.
+            
+            ConcurrentBag<(string Path, long Usn)> list = new ConcurrentBag<(string Path, long Usn)>();
+            ParallelOptions parallelOptions = new()
+            {
+                MaxDegreeOfParallelism = 1000
+            };
+            await Parallel.ForEachAsync(Directory.GetFileSystemEntries(dirInfo.FullName, "*", SearchOption.AllDirectories), parallelOptions, async (item, token) =>
+            {
+                list.Add(new(item, await new FileSystemItem(item).GetUsnByPathAsync()));
+            });
+
+            return list;
         }
 
         /// <summary>

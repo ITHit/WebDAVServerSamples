@@ -31,9 +31,6 @@ namespace CalDAVServer.SqlStorage.AspNetCore
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddWebDav(Configuration, HostingEnvironment);
-
-            //Enables documents editing and preview in Google G Suite online editor.
-            services.AddGSuite(Configuration);
       
         }
 
@@ -49,9 +46,6 @@ namespace CalDAVServer.SqlStorage.AspNetCore
             // - In case of Mac OS X & MS Office: https://support.microsoft.com/en-us/kb/2498069
             app.UseBasicAuth();
             app.UseProvisioninge();
-
-            //Enables documents editing and preview in Google G Suite online editor.
-            app.UseGSuite();
             app.UseWebDav(HostingEnvironment);
         }
     }

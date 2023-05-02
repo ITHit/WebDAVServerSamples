@@ -6,6 +6,13 @@
 	<SpaRoot>ClientAppSrc</SpaRoot>
   </PropertyGroup>
 
+  <ItemGroup>
+		<!-- Don't publish the SPA source files, but do show them in the project files list -->
+		<Content Remove="$(SpaRoot)\**" />
+		<None Remove="$(SpaRoot)\**" />
+		<None Include="$(SpaRoot)\**" Exclude="$(SpaRoot)\node_modules\**" />
+		<None Remove="App_Data\WebDav\Storage\qtest_*\**" />
+  </ItemGroup>  
 
   <ItemGroup>
 	<PackageReference Include="ITHit.Server" Version="13.0.12190-Beta" />
@@ -27,23 +34,14 @@
 		<IsGSuite>true</IsGSuite>
    </PropertyGroup>
    <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <!-- Ensure Node.js is installed -->
-    <Exec Command="node --version" ContinueOnError="true">
-      <Output TaskParameter="ExitCode" PropertyName="ErrorCode" />
-    </Exec>
-    <Error Condition="'$(ErrorCode)' != '0'" Text="Node.js is required to build and run this project. To continue, please install Node.js from https://nodejs.org/, and then restart your command prompt or IDE." />
-    <Exec WorkingDirectory="$(SpaRoot)" Command="call run.bat $(IsNetFramework) $(IsGSuite)" StdOutEncoding="utf-8" />
-  </Target>
-  <ItemGroup>
-    <Content Include="App_Data\WebDAV\Storage\**">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="MyCustomHandlerPage.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="wwwroot\webdav.client\**">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-	<None Include="$(SpaRoot)\**" Exclude="$(SpaRoot)\node_modules\**" />
-  </ItemGroup>
+		<!-- Ensure Node.js is installed -->
+		<Exec Command="node --version" ContinueOnError="true">
+			<Output TaskParameter="ExitCode" PropertyName="ErrorCode" />
+		</Exec>
+		<Error Condition="'$(ErrorCode)' != '0'" Text="Node.js is required to build and run this project. To continue, please install Node.js from https://nodejs.org/, and then restart your command prompt or IDE." />
+		<Exec WorkingDirectory="$(SpaRoot)" Command="node run.js $(IsNetFramework) $(IsGSuite)" ContinueOnError="true" ConsoleToMsBuild="true" StdOutEncoding="utf-8">
+			<Output TaskParameter="ExitCode" PropertyName="ErrorCode" />
+			<Output TaskParameter="ConsoleOutput" PropertyName="ErrorText" />
+		</Exec>
+	</Target>
 </Project>

@@ -14,14 +14,23 @@ if (fs.existsSync(".\\node_modules\\webdav.client")) {
 
 if (newVersion == currVersion) {
   console.log("webdav.client version is up to date");
+  if (currVersion == undefined) {
+    execSync("npm install webdav.client --save", { stdio: "inherit" });
+    installAndBuild();
+  }
+
   if (!fs.existsSync("..\\wwwroot\\app.js")) {
-    execSync("npm install", { stdio: "inherit" });
-    buildApp();
-    copyClient();
+    installAndBuild();
   }
 } else {
   console.log("Found new webdav.client version " + newVersion);
   execSync("npm install webdav.client --save", { stdio: "inherit" });
+  buildApp();
+  copyClient();
+}
+
+function installAndBuild() {
+  execSync("npm install", { stdio: "inherit" });
   buildApp();
   copyClient();
 }

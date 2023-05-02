@@ -1,20 +1,19 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.OleDb;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-
 using ITHit.WebDAV.Server;
 using ITHit.WebDAV.Server.Acl;
 using ITHit.WebDAV.Server.Class1;
-using CardDAVServer.FileSystemStorage.AspNetCore.Acl;
 using CardDAVServer.FileSystemStorage.AspNetCore.ExtendedAttributes;
 using ITHit.WebDAV.Server.Search;
 using ITHit.WebDAV.Server.Paging;
-using System.Data.OleDb;
+using CardDAVServer.FileSystemStorage.AspNetCore.Acl;
 
 namespace CardDAVServer.FileSystemStorage.AspNetCore
 {

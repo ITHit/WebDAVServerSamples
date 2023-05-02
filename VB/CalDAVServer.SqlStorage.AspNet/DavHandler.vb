@@ -8,7 +8,6 @@ Imports System.Xml.Serialization
 Imports System.Threading.Tasks
 Imports ITHit.Server
 Imports ITHit.WebDAV.Server
-Imports ITHit.GSuite.Server
 
 ''' <summary>
 ''' This handler processes WebDAV requests.
@@ -22,26 +21,6 @@ Public Class DavHandler
     '''  - IT Hit iCalendar and vCard Library if used in a project
     ''' </summary>
     Private ReadOnly license As String = File.ReadAllText(HttpContext.Current.Request.PhysicalApplicationPath & "License.lic")
-
-    ''' <summary>
-    ''' Google Service Account ID (client_email field from JSON file).
-    ''' </summary>
-    Private Shared ReadOnly googleServiceAccountID As String = ConfigurationManager.AppSettings("GoogleServiceAccountID")
-
-    ''' <summary>
-    ''' Google Service private key (private_key field from JSON file).
-    ''' </summary>
-    Private Shared ReadOnly googleServicePrivateKey As String = ConfigurationManager.AppSettings("GoogleServicePrivateKey")
-
-    ''' <summary>
-    ''' Relative Url of "Webhook" callback. It handles the API notification messages that are triggered when a resource changes.
-    ''' </summary>
-    Private Shared ReadOnly googleNotificationsRelativeUrl As String = ConfigurationManager.AppSettings("GoogleNotificationsRelativeUrl")
-
-    ''' <summary>
-    ''' This license file is used to activate G Suite Documents Editing for IT Hit WebDAV Server
-    ''' </summary>
-    Private ReadOnly gSuiteLicense As String = If(File.Exists(HttpContext.Current.Request.PhysicalApplicationPath & "GSuiteLicense.lic"), File.ReadAllText(HttpContext.Current.Request.PhysicalApplicationPath & "GSuiteLicense.lic"), String.Empty)
 
     ''' <summary>
     ''' If debug logging is enabled reponses are output as formatted XML,
@@ -74,12 +53,8 @@ Public Class DavHandler
     Public Overrides Async Function ProcessRequestAsync(context As HttpContext) As Task
         Dim webDavEngine As DavEngineAsync = getOrInitializeWebDavEngine(context)
         context.Response.BufferOutput = False
-        Dim gSuiteEngine As GSuiteEngineAsync = getOrInitializeGSuiteEngine(context)
         Using sqlDavContext = New DavContext(context)
             Await webDavEngine.RunAsync(sqlDavContext)
-            If gSuiteEngine IsNot Nothing Then
-                Await gSuiteEngine.RunAsync(ContextConverter.ConvertToGSuiteContext(sqlDavContext))
-            End If
         End Using
     End Function
 
@@ -126,28 +101,5 @@ Public Class DavHandler
         End If
 
         Return CType(context.Application(ENGINE_KEY), DavEngineAsync)
-    End Function
-
-    ''' <summary>
-    ''' Initializes or gets engine singleton.
-    ''' </summary>
-    ''' <param name="context">Instance of <see cref="HttpContext"/> .</param>
-    ''' <returns>Instance of <see cref="GSuiteEngineAsync"/> .</returns>
-    Private Function getOrInitializeGSuiteEngine(context As HttpContext) As GSuiteEngineAsync
-        'we don't use any double check lock pattern here because nothing wrong
-        'is going to happen if we created occasionally several engines.
-        Const ENGINE_KEY As String = "$GSuiteEngine$"
-        If String.IsNullOrEmpty(googleServiceAccountID) OrElse String.IsNullOrEmpty(googleServicePrivateKey) Then
-            Return Nothing
-        End If
-
-        If context.Application(ENGINE_KEY) Is Nothing Then
-            Dim gSuiteEngine = New GSuiteEngineAsync(googleServiceAccountID, googleServicePrivateKey, googleNotificationsRelativeUrl) With {.License = gSuiteLicense, 
-                                                                                                                                      .Logger = CalDAVServer.SqlStorage.AspNet.Logger.Instance
-                                                                                                                                      }
-            context.Application(ENGINE_KEY) = gSuiteEngine
-        End If
-
-        Return CType(context.Application(ENGINE_KEY), GSuiteEngineAsync)
     End Function
 End Class
