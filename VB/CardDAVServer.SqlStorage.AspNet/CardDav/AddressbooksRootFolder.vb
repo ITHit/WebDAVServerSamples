@@ -57,8 +57,8 @@ Namespace CardDav
         ''' Creates a new address book.
         ''' </summary>
         ''' <param name="name">Name of the new address book.</param>
-        Public Async Function CreateFolderAsync(name As String) As Task Implements IFolder.CreateFolderAsync
-            Await AddressbookFolder.CreateAddressbookFolderAsync(Context, name, "")
+        Public Async Function CreateFolderAsync(name As String) As Task(Of IFolder) Implements IFolder.CreateFolderAsync
+            Return Await AddressbookFolder.CreateAddressbookFolderAsync(Context, name, "")
         End Function
     End Class
 End Namespace

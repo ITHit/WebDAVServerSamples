@@ -57,8 +57,8 @@ Namespace CalDav
         ''' Creates a new calendar.
         ''' </summary>
         ''' <param name="name">Name of the new calendar.</param>
-        Public Async Function CreateFolderAsync(name As String) As Task Implements IFolder.CreateFolderAsync
-            Await CalendarFolder.CreateCalendarFolderAsync(Context, name, "")
+        Public Async Function CreateFolderAsync(name As String) As Task(Of IFolder) Implements IFolder.CreateFolderAsync
+            Return Await CalendarFolder.CreateCalendarFolderAsync(Context, name, "")
         End Function
     End Class
 End Namespace

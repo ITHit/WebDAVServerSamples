@@ -104,7 +104,7 @@ namespace CardDAVServer.SqlStorage.AspNetCore.CardDav
         /// <param name="context">Instance of <see cref="DavContext"/> class.</param> 
         /// <param name="name">Address book name.</param>
         /// <param name="description">Address book description.</param>
-        internal static async Task CreateAddressbookFolderAsync(DavContext context, string name, string description)
+        internal static async Task<IAddressbookFolder> CreateAddressbookFolderAsync(DavContext context, string name, string description)
         {
             // 1. Create address book.
             // 2. Grant owner privileges to the user on the created address book(s).
@@ -142,6 +142,7 @@ namespace CardDAVServer.SqlStorage.AspNetCore.CardDav
                 , "@Read"               , true
                 , "@Write"              , true
                 );
+            return await LoadByIdAsync(context, addressbookFolderId);
         }
 
         /// <summary>
@@ -295,7 +296,7 @@ namespace CardDAVServer.SqlStorage.AspNetCore.CardDav
         /// Creating new folders is not allowed in address book folders.
         /// </summary>
         /// <param name="name">Name of the folder.</param>
-        public async Task CreateFolderAsync(string name)
+        public async Task<IFolder> CreateFolderAsync(string name)
         {
             throw new DavException("Not allowed.", DavStatus.NOT_ALLOWED);
         }

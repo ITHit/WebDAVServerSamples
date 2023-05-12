@@ -59,9 +59,9 @@ namespace CardDAVServer.SqlStorage.AspNetCore.CardDav
         /// Creates a new address book.
         /// </summary>
         /// <param name="name">Name of the new address book.</param>
-        public async Task CreateFolderAsync(string name)
+        public async Task<IFolder> CreateFolderAsync(string name)
         {
-            await AddressbookFolder.CreateAddressbookFolderAsync(Context, name, "");
+            return await AddressbookFolder.CreateAddressbookFolderAsync(Context, name, "");
         }
     }
 }

@@ -63,7 +63,7 @@ Namespace CardDav
         '/// <remarks>
         '/// New user folders are created during first log-in.
         '/// </remarks>
-        'override public async Task CreateFolderAsync(string name)
+        'override public async Task<IFolder> CreateFolderAsync(string name)
         '{
         'throw new DavException("Creating sub-folders in this folder is not implemented.", DavStatus.NOT_IMPLEMENTED);
         '}

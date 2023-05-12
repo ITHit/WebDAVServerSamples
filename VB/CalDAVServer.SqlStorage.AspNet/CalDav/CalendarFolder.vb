@@ -94,7 +94,7 @@ Namespace CalDav
         ''' </summary>
         ''' <param name="context">Instance of <see cref="DavContext"/>  class.</param> 
         ''' <param name="name">Calendar folder name.</param>
-        Public Shared Async Function CreateCalendarFolderAsync(context As DavContext, name As String, description As String) As Task
+        Public Shared Async Function CreateCalendarFolderAsync(context As DavContext, name As String, description As String) As Task(Of ICalendarFolder)
             ' 1. Create calendar.
             ' 2. Grant owner privileges to the user on the created calendar.
             Dim sql As String = "INSERT INTO [cal_CalendarFolder] (
@@ -126,6 +126,7 @@ Namespace CalDav
                                               "@Description", description,
                                               "@UserId", context.UserId,
                                               "@Owner", True, "@Read", True, "@Write", True)
+            Return Await LoadByIdAsync(context, calendarFolderId)
         End Function
 
         ''' <summary>
@@ -342,7 +343,7 @@ Namespace CalDav
         ''' Creating new folders is not allowed in calendar folders.
         ''' </summary>
         ''' <param name="name">Name of the folder.</param>
-        Public Async Function CreateFolderAsync(name As String) As Task Implements IFolder.CreateFolderAsync
+        Public Async Function CreateFolderAsync(name As String) As Task(Of IFolder) Implements IFolder.CreateFolderAsync
             Throw New DavException("Not allowed.", DavStatus.NOT_ALLOWED)
         End Function
 

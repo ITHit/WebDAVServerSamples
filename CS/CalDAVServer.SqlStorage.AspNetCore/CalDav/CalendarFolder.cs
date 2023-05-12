@@ -107,7 +107,7 @@ namespace CalDAVServer.SqlStorage.AspNetCore.CalDav
         /// </summary>
         /// <param name="context">Instance of <see cref="DavContext"/> class.</param> 
         /// <param name="name">Calendar folder name.</param>
-        public static async Task CreateCalendarFolderAsync(DavContext context, string name, string description)
+        public static async Task<ICalendarFolder> CreateCalendarFolderAsync(DavContext context, string name, string description)
         {
             // 1. Create calendar.
             // 2. Grant owner privileges to the user on the created calendar.
@@ -145,6 +145,8 @@ namespace CalDAVServer.SqlStorage.AspNetCore.CalDav
                 , "@Read"               , true
                 , "@Write"              , true
                 );
+
+            return await LoadByIdAsync(context, calendarFolderId);
         }
 
         /// <summary>
@@ -370,7 +372,7 @@ namespace CalDAVServer.SqlStorage.AspNetCore.CalDav
         /// Creating new folders is not allowed in calendar folders.
         /// </summary>
         /// <param name="name">Name of the folder.</param>
-        public async Task CreateFolderAsync(string name)
+        public async Task<IFolder> CreateFolderAsync(string name)
         {
             throw new DavException("Not allowed.", DavStatus.NOT_ALLOWED);
         }

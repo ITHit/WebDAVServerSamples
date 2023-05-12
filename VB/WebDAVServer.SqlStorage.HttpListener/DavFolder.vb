@@ -114,13 +114,14 @@ Public Class DavFolder
     ''' Creates folder with specified name in this folder.
     ''' </summary>
     ''' <param name="name">Name of folder to be created.</param>
-    Public Async Function CreateFolderAsync(name As String) As Task Implements IFolder.CreateFolderAsync
+    Public Async Function CreateFolderAsync(name As String) As Task(Of IFolder) Implements IFolder.CreateFolderAsync
         If Not Await ClientHasTokenAsync() Then
             Throw New LockedException()
         End If
 
-        Await createChildAsync(name, ItemType.Folder)
+        Dim folder As DavFolder = CType(Await createChildAsync(name, ItemType.Folder), DavFolder)
         Await Context.socketService.NotifyCreatedAsync(System.IO.Path.Combine(Path, EncodeUtil.EncodeUrlPart(name)), GetWebSocketID())
+        Return folder
     End Function
 
     ''' <summary>

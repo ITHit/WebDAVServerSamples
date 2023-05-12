@@ -1,7 +1,7 @@
 
 <Project Sdk="Microsoft.NET.Sdk.Web">
 	<PropertyGroup>
-		<VersionPrefix>13.2.12826-Beta</VersionPrefix>
+		<VersionPrefix>13.3.12916-Beta</VersionPrefix>
 		<AssemblyName>WebDAVServer.FileSystemSynchronization.AspNetCore</AssemblyName>
 		<TargetFramework>net6.0</TargetFramework>
 		<LangVersion>9.0</LangVersion>
@@ -111,12 +111,12 @@
 		</Content>
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="ITHit.Server" Version="13.2.12826-Beta" />
-		<PackageReference Include="ITHit.Server.Core" Version="13.2.12826-Beta" />
-		<PackageReference Include="ITHit.WebDAV.Server" Version="13.2.12826-Beta" />
-		<PackageReference Include="ITHit.GSuite.Server" Version="13.2.12826-Beta" />
+		<PackageReference Include="ITHit.Server" Version="13.3.12916-Beta" />
+		<PackageReference Include="ITHit.Server.Core" Version="13.3.12916-Beta" />
+		<PackageReference Include="ITHit.WebDAV.Server" Version="13.3.12916-Beta" />
+		<PackageReference Include="ITHit.GSuite.Server" Version="13.3.12916-Beta" />
 		<PackageReference Include="System.Data.OleDb" Version="6.0.0" />
-		<PackageReference Include="ITHit.FileSystem.Core" Version="13.2.12826-Beta" />
+		<PackageReference Include="ITHit.FileSystem.Core" Version="13.3.12916-Beta" />
 	</ItemGroup>
 	<PropertyGroup>
 		<IsNetFramework>false</IsNetFramework>

@@ -134,15 +134,17 @@ namespace WebDAVServer.SqlStorage.AspNetCore
         /// Creates folder with specified name in this folder.
         /// </summary>
         /// <param name="name">Name of folder to be created.</param>
-        public async Task CreateFolderAsync(string name)
+        public async Task<IFolder> CreateFolderAsync(string name)
         {
             if (!await ClientHasTokenAsync())
             {
                 throw new LockedException();
             }
 
-            await createChildAsync(name, ItemType.Folder);
+            DavFolder folder = (DavFolder)await createChildAsync(name, ItemType.Folder);
             await Context.socketService.NotifyCreatedAsync(System.IO.Path.Combine(Path, EncodeUtil.EncodeUrlPart(name)), GetWebSocketID());
+
+            return folder;
         }
 
         /// <summary>

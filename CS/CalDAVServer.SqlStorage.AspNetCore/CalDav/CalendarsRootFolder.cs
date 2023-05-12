@@ -59,9 +59,9 @@ namespace CalDAVServer.SqlStorage.AspNetCore.CalDav
         /// Creates a new calendar.
         /// </summary>
         /// <param name="name">Name of the new calendar.</param>
-        public async Task CreateFolderAsync(string name)
+        public async Task<IFolder> CreateFolderAsync(string name)
         {
-            await CalendarFolder.CreateCalendarFolderAsync(Context, name, "");
+            return await CalendarFolder.CreateCalendarFolderAsync(Context, name, "");
         }
     }
 }

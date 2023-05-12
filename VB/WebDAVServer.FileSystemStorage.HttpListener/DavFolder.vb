@@ -123,9 +123,11 @@ Public Class DavFolder
     ''' Called when a new folder is being created in this folder.
     ''' </summary>
     ''' <param name="name">Name of the new folder.</param>
-    Overridable Public Async Function CreateFolderAsync(name As String) As Task Implements IFolder.CreateFolderAsync
+    Overridable Public Async Function CreateFolderAsync(name As String) As Task(Of IFolder) Implements IFolder.CreateFolderAsync
         Await CreateFolderInternalAsync(name)
+        Dim folder As DavFolder = CType(Await context.GetHierarchyItemAsync(Path & EncodeUtil.EncodeUrlPart(name)), DavFolder)
         Await context.socketService.NotifyCreatedAsync(System.IO.Path.Combine(Path, EncodeUtil.EncodeUrlPart(name)), GetWebSocketID())
+        Return folder
     End Function
 
     ''' <summary>

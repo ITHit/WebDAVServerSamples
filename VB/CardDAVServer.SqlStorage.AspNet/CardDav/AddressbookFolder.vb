@@ -92,7 +92,7 @@ Namespace CardDav
         ''' <param name="context">Instance of <see cref="DavContext"/>  class.</param> 
         ''' <param name="name">Address book name.</param>
         ''' <param name="description">Address book description.</param>
-        Friend Shared Async Function CreateAddressbookFolderAsync(context As DavContext, name As String, description As String) As Task
+        Friend Shared Async Function CreateAddressbookFolderAsync(context As DavContext, name As String, description As String) As Task(Of IAddressbookFolder)
             ' 1. Create address book.
             ' 2. Grant owner privileges to the user on the created address book(s).
             Dim sql As String = "INSERT INTO [card_AddressbookFolder] (
@@ -124,6 +124,7 @@ Namespace CardDav
                                               "@Description", description,
                                               "@UserId", context.UserId,
                                               "@Owner", True, "@Read", True, "@Write", True)
+            Return Await LoadByIdAsync(context, addressbookFolderId)
         End Function
 
         ''' <summary>
@@ -268,7 +269,7 @@ Namespace CardDav
         ''' Creating new folders is not allowed in address book folders.
         ''' </summary>
         ''' <param name="name">Name of the folder.</param>
-        Public Async Function CreateFolderAsync(name As String) As Task Implements IFolder.CreateFolderAsync
+        Public Async Function CreateFolderAsync(name As String) As Task(Of IFolder) Implements IFolder.CreateFolderAsync
             Throw New DavException("Not allowed.", DavStatus.NOT_ALLOWED)
         End Function
 

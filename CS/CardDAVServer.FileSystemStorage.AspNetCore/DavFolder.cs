@@ -132,9 +132,13 @@ namespace CardDAVServer.FileSystemStorage.AspNetCore
         /// Called when a new folder is being created in this folder.
         /// </summary>
         /// <param name="name">Name of the new folder.</param>
-        virtual public async Task CreateFolderAsync(string name)
+        virtual public async Task<IFolder> CreateFolderAsync(string name)
         {
             await CreateFolderInternalAsync(name);
+
+            DavFolder folder = (DavFolder)await context.GetHierarchyItemAsync(Path + EncodeUtil.EncodeUrlPart(name));
+
+            return folder;
         }
 
         /// <summary>
