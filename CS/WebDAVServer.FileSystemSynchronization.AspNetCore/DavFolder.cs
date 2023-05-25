@@ -397,21 +397,29 @@ namespace WebDAVServer.FileSystemSynchronization.AspNetCore
                 }
             }
 
-            foreach (Tuple<DavHierarchyItem, long> item in children.OrderBy(p => p.Item2))
+            if (limit.HasValue && limit.Value == 0)
             {
-                // Don't include deleted files/folders when syncToken is empty, because this is full sync.
-                if (!(item.Item1.ChangeType == Change.Deleted && string.IsNullOrEmpty(syncToken)))
+                // return latest sync token when limit is equal to 0.
+                maxUsn = children.Max(p => p.Item2);
+            }
+            else
+            {
+                foreach (Tuple<DavHierarchyItem, long> item in children.OrderBy(p => p.Item2))
                 {
-                    maxUsn = item.Item2;
-                    if (!syncUsn.HasValue || item.Item2 > syncUsn.Value)
+                    // Don't include deleted files/folders when syncToken is empty, because this is full sync.
+                    if (!(item.Item1.ChangeType == Change.Deleted && string.IsNullOrEmpty(syncToken)))
                     {
-                        changes.Add(item.Item1);                        
-                    }
+                        maxUsn = item.Item2;
+                        if (!syncUsn.HasValue || item.Item2 > syncUsn.Value)
+                        {
+                            changes.Add(item.Item1);
+                        }
 
-                    if (limit.HasValue && limit.Value == changes.Count)
-                    {
-                        changes.MoreResults = true;
-                        break;
+                        if (limit.HasValue && limit.Value <= changes.Count)
+                        {
+                            changes.MoreResults = true;
+                            break;
+                        }
                     }
                 }
             }
