@@ -64,13 +64,13 @@
       <div class="uploading-controls">
         Uploaded <span class="persent">0 %</span>
         <button
-          class="btn-transparent pause-all-button float-right"
+          class="btn-transparent pause-all-button float-end"
           title="Pause  upload"
         >
           <i class="icon icon-pause"></i>
         </button>
         <button
-          class="btn-transparent play-all-button float-right"
+          class="btn-transparent play-all-button float-end"
           title="Resume  upload"
         >
           <i class="icon icon-play"></i>
@@ -84,7 +84,7 @@
       <div class="details-header text-center">
         <span class="details-title">Files upload</span>
         <button
-          class="btn-transparent close-button float-right"
+          class="btn-transparent close-button float-end"
           title="Close window"
         >
           <i class="icon icon-close"></i>
@@ -171,7 +171,7 @@
   </div>
   <div
     id="ConfirmModal"
-    class="modal"
+    class="modal fade"
     tabindex="-1"
     role="dialog"
     aria-labelledby="ConfirmModalLabel"
@@ -182,19 +182,17 @@
           <h5 class="modal-title">Confirm</h5>
           <button
             type="button"
-            class="close"
-            data-dismiss="modal"
+            class="btn-close"
+            data-bs-dismiss="modal"
             aria-label="Close"
-          >
-            <span aria-hidden="true">&times;</span>
-          </button>
+          ></button>
         </div>
         <div class="modal-body">
           <p class="message"></p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-primary btn-ok">OK</button>
-          <button type="button" class="btn btn-default" data-dismiss="modal">
+          <button type="button" class="btn btn-default" data-bs-dismiss="modal">
             Cancel
           </button>
         </div>
@@ -203,24 +201,22 @@
   </div>
   <div
     id="CreateFolderModal"
-    class="modal"
+    class="modal fade"
     tabindex="-1"
     role="dialog"
     aria-labelledby="CreateFolderModalLabel"
   >
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog">
       <div class="modal-content">
         <form action="/" method="post">
           <div class="modal-header">
             <h5 class="modal-title">Create Folder</h5>
             <button
               type="button"
-              class="close"
-              data-dismiss="modal"
+              class="btn-close"
+              data-bs-dismiss="modal"
               aria-label="Close"
-            >
-              <span aria-hidden="true">&times;</span>
-            </button>
+            ></button>
           </div>
           <div class="modal-body">
             <div class="form-group">
@@ -235,7 +231,11 @@
           </div>
           <div class="modal-footer">
             <button type="submit" class="btn btn-primary btn-submit">OK</button>
-            <button type="button" class="btn btn-default" data-dismiss="modal">
+            <button
+              type="button"
+              class="btn btn-default"
+              data-bs-dismiss="modal"
+            >
               Cancel
             </button>
           </div>
@@ -245,7 +245,7 @@
   </div>
   <div
     id="RenameItemModal"
-    class="modal"
+    class="modal fade"
     tabindex="-1"
     role="dialog"
     aria-labelledby="RenameItemModalLabel"
@@ -257,12 +257,10 @@
             <h5 class="modal-title">Rename Item</h5>
             <button
               type="button"
-              class="close"
-              data-dismiss="modal"
+              class="btn-close"
+              data-bs-dismiss="modal"
               aria-label="Close"
-            >
-              <span aria-hidden="true">&times;</span>
-            </button>
+            ></button>
           </div>
           <div class="modal-body">
             <div class="form-group">
@@ -277,7 +275,11 @@
           </div>
           <div class="modal-footer">
             <button type="submit" class="btn btn-primary btn-submit">OK</button>
-            <button type="button" class="btn btn-default" data-dismiss="modal">
+            <button
+              type="button"
+              class="btn btn-default"
+              data-bs-dismiss="modal"
+            >
               Cancel
             </button>
           </div>
@@ -287,7 +289,7 @@
   </div>
   <div
     id="ConfirmRewriteModal"
-    class="modal"
+    class="modal fade"
     tabindex="-1"
     role="dialog"
     aria-labelledby="ConfirmRewriteModalLabel"
@@ -298,12 +300,10 @@
           <h5 class="modal-title">Confirm</h5>
           <button
             type="button"
-            class="close"
-            data-dismiss="modal"
+            class="btn-close"
+            data-bs-dismiss="modal"
             aria-label="Close"
-          >
-            <span aria-hidden="true">&times;</span>
-          </button>
+          ></button>
         </div>
         <div class="modal-body">
           <p class="message"></p>
@@ -312,8 +312,10 @@
           <button type="button" class="btn btn-primary btn-ok">
             Yes to All
           </button>
-          <button type="button" class="btn btn-no">No to All</button>
-          <button type="button" class="btn btn-default" data-dismiss="modal">
+          <button type="button" class="btn btn-default btn-no">
+            No to All
+          </button>
+          <button type="button" class="btn btn-default" data-bs-dismiss="modal">
             Cancel
           </button>
         </div>
@@ -322,7 +324,7 @@
   </div>
   <div
     id="ErrorModal"
-    class="modal"
+    class="modal fade"
     tabindex="-1"
     role="dialog"
     aria-labelledby="ConfirmModalLabel"
@@ -333,12 +335,10 @@
           <h5 class="modal-title">Error</h5>
           <button
             type="button"
-            class="close"
-            data-dismiss="modal"
+            class="btn-close"
+            data-bs-dismiss="modal"
             aria-label="Close"
-          >
-            <span aria-hidden="true">&times;</span>
-          </button>
+          ></button>
         </div>
         <div class="modal-body">
           <div class="container-fluid">
@@ -356,8 +356,8 @@
                   <button
                     class="btn btn-default"
                     type="button"
-                    data-toggle="collapse"
-                    data-target="#error-details-collapse"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#error-details-collapse"
                     aria-expanded="false"
                     aria-controls="error-details-collapse"
                   >
@@ -394,7 +394,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-dismiss="modal">
+          <button type="button" class="btn btn-default" data-bs-dismiss="modal">
             Close
           </button>
         </div>
@@ -403,7 +403,7 @@
   </div>
   <div
     id="DownloadProtocolModal"
-    class="modal"
+    class="modal fade"
     tabindex="-1"
     role="dialog"
     aria-labelledby="DownloadProtocolModalLabel"
@@ -414,12 +414,10 @@
           <h5 class="modal-title">Install a Custom Protocol</h5>
           <button
             type="button"
-            class="close"
-            data-dismiss="modal"
+            class="btn-close"
+            data-bs-dismiss="modal"
             aria-label="Close"
-          >
-            <span aria-hidden="true">&times;</span>
-          </button>
+          ></button>
         </div>
         <div class="modal-body">
           <div class="container-fluid">
@@ -519,7 +517,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-dismiss="modal">
+          <button type="button" class="btn btn-default" data-bs-dismiss="modal">
             Close
           </button>
         </div>

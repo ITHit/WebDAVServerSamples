@@ -1,4 +1,5 @@
 import $ from "jquery";
+import { Tab } from "bootstrap";
 import { ITHit } from "webdav.client";
 import { WebdavCommon } from "./webdav-common";
 import Split from "split.js";
@@ -88,29 +89,33 @@ GSuiteEditor.prototype = {
       window.WebDAVController.OptionsInfo.Features &
       ITHit.WebDAV.Client.Features.GSuite
     ) {
+      let editTabSelector = document.querySelector("#edit-tab");
+      let previewTabSelector = document.querySelector("#preview-tab");
       if (self.activeSelectedTab == "edit") {
         this._RenderEditor(oItem);
-        this.$gSuiteTabs.find("#edit-tab").tab("show");
+        var editTab = new Tab(editTabSelector);
+        editTab.show();
       } else {
         this._RenderPreview(oItem);
-        this.$gSuiteTabs.find("#preview-tab").tab("show");
+        var previewTab = new Tab(previewTabSelector);
+        previewTab.show();
       }
 
-      // add handler for preview tab
-      this.$gSuiteTabs
-        .find("#preview-tab")
-        .unbind()
-        .on("shown.bs.tab", function () {
+      previewTabSelector.addEventListener(
+        "shown.bs.tab",
+        function () {
           self._RenderPreview(oItem);
-        });
+        },
+        { once: true }
+      );
 
-      // add handler for edit tab
-      this.$gSuiteTabs
-        .find("#edit-tab")
-        .unbind()
-        .on("shown.bs.tab", function () {
+      editTabSelector.addEventListener(
+        "shown.bs.tab",
+        function () {
           self._RenderEditor(oItem);
-        });
+        },
+        { once: true }
+      );
     } else if (
       !(
         window.WebDAVController.OptionsInfo.Features &

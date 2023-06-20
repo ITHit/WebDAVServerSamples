@@ -42,7 +42,17 @@
     @include icon-mask(url(#{$image-base-path+"menu-microsoft-edit.svg"}));
   }
 
-  &.icon-action-microsoft-edit:before{
+  &.icon-gsuite-edit:before {
+    height: 18px;
+    width: 19px;
+    margin-top: 3px;
+    margin-bottom: -2px;
+    background-color: $whiteColor;
+    @include mask-size(contain);
+    @include icon-mask(url(#{$image-base-path+"menu-gsuit-edit.svg"}));
+  }
+
+  &.icon-action-microsoft-edit:before {
     width: 25px;
     height: 26px;
     margin-top: -9px;
@@ -51,7 +61,7 @@
     @include icon-mask(url(#{$image-base-path+"menu-microsoft-edit.svg"}));
   }
 
-  &.icon-gsuite-edit:before{
+  &.icon-action-gsuite-edit:before {
     width: 25px;
     height: 26px;
     margin-top: -9px;
@@ -166,6 +176,7 @@
 }
 
 .icon.icon-file {
+  position: relative;
   &:before {
     position: relative;
     width: 38px;

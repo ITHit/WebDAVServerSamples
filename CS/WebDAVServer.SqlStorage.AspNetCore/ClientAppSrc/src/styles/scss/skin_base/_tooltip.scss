@@ -12,6 +12,11 @@
   z-index: 1030;
   max-width: 360px;
   right: 0;
+  padding: 0;
+
+  .tooltip-arrow {
+    display: none;
+  }
 
   .tooltip-inner {
     background: $whiteColor;
@@ -20,12 +25,6 @@
     border: none;
     padding: 0;
     max-width: 360px;
-  }
-}
-
-.tooltip.popover {
-  .popover-arrow {
-    border-color: #f9f9f9;
   }
 }
 
@@ -38,5 +37,11 @@
     visibility: visible;
     opacity: 1;
     transition: opacity 0.15s;
+  }
+}
+
+.tooltip.popover {
+  .popover-arrow {
+    border-color: #f9f9f9;
   }
 }

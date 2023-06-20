@@ -7,6 +7,10 @@ body {
   //font-family: 'Questrial', sans-serif;
 }
 
+a {
+  text-decoration: none;
+}
+
 #leftPanel {
   &.extra-large-point .d-xxl-inline {
     display: none !important;
@@ -185,8 +189,8 @@ p.error-message {
   }
 }
 
-.hide-disabled-sm {
-  @include media-breakpoint-down(sm) {
+.hide-disabled-md {
+  @include media-breakpoint-down(md) {
     &:disabled,
     &[disabled] {
       display: none;

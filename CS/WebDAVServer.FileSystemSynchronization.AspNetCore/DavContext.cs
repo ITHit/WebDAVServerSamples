@@ -107,7 +107,8 @@ namespace WebDAVServer.FileSystemSynchronization.AspNetCore
             string[] decodedParts = encodedParts.Select<string, string>(EncodeUtil.DecodeUrlPart).ToArray();
 
             // check scheme with resource id
-            if (relativePath.StartsWith("ServerRoot/"))
+            if (relativePath.StartsWith("ID/"))
+         
             {
                 string fileSystemItemPath = FileSystemItem.GetPathByItemId(decodedParts[decodedParts.Length - 1]);
                 relativePath = fileSystemItemPath.Substring(RepositoryPath.Length).Replace(Path.DirectorySeparatorChar.ToString(), "/");

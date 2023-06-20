@@ -92,7 +92,7 @@ namespace WebDAVServer.FileSystemSynchronization.AspNetCore.ExtendedAttributes
         /// <returns>File or folder USN.</returns>
         public static async Task<long> GetUsnAsync(this FileSystemInfo info)
         {
-            return await new FileSystemItem(info.FullName).GetUsnByPathAsync();
+            return await new FileSystemItem(info.FullName).GetUsnAsync();
         }
 
         /// <summary>

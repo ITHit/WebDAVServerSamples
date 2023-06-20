@@ -28,6 +28,7 @@
     }
 
     .blocks {
+        position: relative;
         .flex-column {
             padding-bottom: 38px;
             margin-bottom: 20px;
@@ -141,7 +142,7 @@
     }
 }
 
-@include media-breakpoint-down(sm) {
+@include media-breakpoint-down(md) {
     .navbar {
         .nav-link {
             margin-right: 0;

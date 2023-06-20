@@ -1,4 +1,5 @@
 ﻿﻿import $ from "jquery";
+import { Modal } from "bootstrap";
 import { ITHit } from "webdav.client";
 import { webDavSettings } from "./webdav-settings";
 import { Toolbar } from "./toolbar/webdav-toolbar";
@@ -77,7 +78,7 @@ import { WebDAVUploaderGridView } from "./webdav-uploader";
                   self._RenderLokedIconTooltip(oItem) +
                   '"></span>' +
                   (oItem.ActiveLocks[0].LockScope === "Shared"
-                    ? '<span class="badge badge-pill badge-dark">' +
+                    ? '<span class="badge">' +
                       oItem.ActiveLocks.length +
                       "</span>"
                     : "")
@@ -294,7 +295,7 @@ import { WebDAVUploaderGridView } from "./webdav-uploader";
           );
 
         var $dropdownToggle = $(
-          '<button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split btn-sm" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span class="sr-only">Toggle Dropdown</span></button>'
+          '<button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split btn-sm" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span class="visually-hidden">Toggle Dropdown</span></button>'
         )
           .appendTo($btnGroup)
           .prop(
@@ -433,7 +434,7 @@ import { WebDAVUploaderGridView } from "./webdav-uploader";
           '<a class="dropdown-item ' +
             (displayRadioBtns ? "dropdown-radio" : "") +
             (supportGSuiteFeature && !isExclusiveLocked ? "" : " disabled") +
-            '" href="javascript:void()" title="Edit document in G Suite Editor."><i class="icon icon-gsuite-edit"></i>Edit with Google G Suite Online</a>'
+            '" href="javascript:void()" title="Edit document in G Suite Editor."><i class="icon icon-action-gsuite-edit"></i>Edit with Google G Suite Online</a>'
         )
           .appendTo($dropdownMenu)
           .on("click", function () {
@@ -471,11 +472,11 @@ import { WebDAVUploaderGridView } from "./webdav-uploader";
 
     _ChangeContextMenuRadionBtnHandler: function ($radioBtn) {
       var self = this;
-      var iconClassName = $radioBtn
-        .parent()
-        .next()
-        .find("i:first")
-        .attr("class");
+      var iconClassName =
+        $radioBtn.parent().next().find("i:first").attr("class") ==
+        "icon icon-action-microsoft-edit"
+          ? "icon icon-microsoft-edit"
+          : "icon icon-gsuite-edit";
 
       this._defaultEditor = $radioBtn.val();
       $('input[value="' + self._defaultEditor + '"]').prop("checked", true);
@@ -998,12 +999,13 @@ import { WebDAVUploaderGridView } from "./webdav-uploader";
   // Confirm Bootstrap Modal
   var ConfirmModal = function (selector) {
     var self = this;
+    this.bsModal = new Modal(document.querySelector(selector));
     this.$el = $(selector);
     this.$el.find(".btn-ok").click(function () {
       if (self.successfulCallback) {
         self.successfulCallback();
       }
-      self.$el.modal("hide");
+      self.bsModal.hide();
     });
   };
   ConfirmModal.prototype = {
@@ -1015,7 +1017,7 @@ import { WebDAVUploaderGridView } from "./webdav-uploader";
         $modalDialog.removeClass("modal-sm").addClass("modal-lg");
       else $modalDialog.removeClass("modal-lg").addClass("modal-sm");
 
-      this.$el.modal("show");
+      this.bsModal.show();
     },
   };
 
@@ -1565,7 +1567,7 @@ import { WebDAVUploaderGridView } from "./webdav-uploader";
           }
         }
 
-        $("#DownloadProtocolModal").modal("show");
+        new Modal(document.querySelector("#DownloadProtocolModal")).show();
         $("#DownloadProtocolModal .more-lnk")
           .unbind()
           .click(function () {

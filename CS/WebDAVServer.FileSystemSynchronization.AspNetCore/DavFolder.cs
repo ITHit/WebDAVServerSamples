@@ -357,6 +357,7 @@ namespace WebDAVServer.FileSystemSynchronization.AspNetCore
                 }
             }
         }
+
         /// <summary>
         /// Returns a list of changes that correspond to a synchronization request.
         /// </summary>
@@ -365,85 +366,112 @@ namespace WebDAVServer.FileSystemSynchronization.AspNetCore
         /// <param name="deep">Indicates the "scope" of the synchronization report request, false - immediate children and true - all children at any depth.</param>
         /// <param name="limit">The number of items to return. Null in case of no limit.</param>
         /// <returns>List of changes that that happened since the synchronization token provided.</returns>
-        public async Task<IChanges> GetChangesAsync(IList<PropertyName> propNames, string syncToken, bool deep, long? limit = null)
+        public async Task<DavChanges> GetChangesAsync(IList<PropertyName> propNames, string syncToken, bool deep, long? limit = null)
         {
             // In this sample we use item's USN as a sync token.
             // USN increases on every item update, move, creation and deletion. 
 
             DavChanges changes = new DavChanges();
-            long? syncUsn = null;
-            long maxUsn = 0;
-
-            if (!string.IsNullOrEmpty(syncToken))
-            {
-                syncUsn = long.Parse(syncToken);
-            }
+            long syncId = string.IsNullOrEmpty(syncToken) ? 0 : long.Parse(syncToken);
 
             // Get all file system entries with usn.
-            List<Tuple<DavHierarchyItem, long>> children = new List<Tuple<DavHierarchyItem, long>>();
-            foreach ((string Path, long Usn) item in await GetUsnsAsync())
+            List<(IChangedItem HierarchyItem, long SyncId)> childrenList = new List<(IChangedItem HierarchyItem, long SyncId)>();
+            foreach ((string Path, long SyncId) item in await GetSyncIdsAsync(syncId, deep))
             {
-                string childPath = Path.TrimEnd('/') + "/" + item.Path.Substring(dirInfo.FullName.Length).Replace(System.IO.Path.DirectorySeparatorChar.ToString(), "/");
-
-                DavHierarchyItem child = await DavFolder.GetFolderAsync(context, childPath);
-                if (child == null)
-                {
-                    child = await DavFile.GetFileAsync(context, childPath);
-                }
+                IChangedItem child = (IChangedItem)await GetChildAsync(item.Path);
 
                 if (child != null)
                 {
-                    children.Add(new Tuple<DavHierarchyItem, long>(child, item.Usn));
+                    childrenList.Add((child, item.SyncId));
                 }
             }
 
-            if (limit.HasValue && limit.Value == 0)
+            // If limit==0 this is a sync-token request, no need to return any changes.
+            bool isSyncTokenRequest = limit.HasValue && limit.Value == 0;
+            if (isSyncTokenRequest)
             {
-                // return latest sync token when limit is equal to 0.
-                maxUsn = children.Max(p => p.Item2);
+                changes.NewSyncToken = childrenList.Max(p => p.SyncId).ToString();
+                return changes;
             }
-            else
-            {
-                foreach (Tuple<DavHierarchyItem, long> item in children.OrderBy(p => p.Item2))
-                {
-                    // Don't include deleted files/folders when syncToken is empty, because this is full sync.
-                    if (!(item.Item1.ChangeType == Change.Deleted && string.IsNullOrEmpty(syncToken)))
-                    {
-                        maxUsn = item.Item2;
-                        if (!syncUsn.HasValue || item.Item2 > syncUsn.Value)
-                        {
-                            changes.Add(item.Item1);
-                        }
 
-                        if (limit.HasValue && limit.Value <= changes.Count)
-                        {
-                            changes.MoreResults = true;
-                            break;
-                        }
-                    }
-                }
+            IEnumerable<(IChangedItem HierarchyItem, long SyncId)> children = childrenList;
+
+            // If syncId == 0 this is a full sync request.
+            // We do not want to return deleted items in this case, removing them from the list.
+            if (syncId == 0)
+            {
+                children = children.Where(item => item.HierarchyItem.ChangeType != Change.Deleted);
             }
-            changes.NewSyncToken = maxUsn.ToString();
+
+            // Truncate results if limit is specified.
+            if (limit.HasValue)
+            {
+                // Order children by sync ID, so we can truncate results.
+                children = children.OrderBy(p => p.SyncId);
+
+                // Truncate results.
+                children = children.Take((int)limit.Value);
+
+                // Specify if more changes can be returned.
+                changes.MoreResults = limit.Value < childrenList.Count;
+            }
+
+            // Return new sync token.
+            changes.NewSyncToken = children.Count() != 0 ? children.Max(p => p.SyncId).ToString() : syncToken;
+
+            // Return changes.
+            changes.AddRange(children.Select(p => p.HierarchyItem));
 
             return changes;
         }
 
         /// <summary>
-        /// Returns USNs for all items in the folder.
+        /// Creates child <see cref="IHierarchyItem"/> instance by path.
         /// </summary>
-        /// <returns>List of all items path under this folder and USN of each item.</returns>
-        private async Task<IEnumerable<(string Path, long Usn)>> GetUsnsAsync()
+        /// <param name="childPath">Item path.</param>
+        /// <returns>Instance of corresponding <see cref="IHierarchyItem"/> or null if item is not found.</returns>
+        private async Task<IHierarchyItem> GetChildAsync(string childPath)
         {
-            // First we must read max existing USN. However, for the sake of simplicity, we just read all changes under this folder.
-            
+            string childRelPath = childPath.Substring(dirInfo.FullName.Length).Replace(System.IO.Path.DirectorySeparatorChar.ToString(), "/").TrimStart('/');
+            IEnumerable<string> encodedParts = childRelPath.Split('/').Select(EncodeUtil.EncodeUrlPart);
+            string childRelUrl = Path.TrimEnd('/') + "/" + string.Join("/", encodedParts);
+
+            DavHierarchyItem child = await DavFolder.GetFolderAsync(context, childRelUrl);
+            if (child == null)
+            {
+                child = await DavFile.GetFileAsync(context, childRelUrl);
+            }
+
+            return child;
+        }
+
+        /// <summary>
+        /// Gets all items under this folder that changed since provided sync ID.
+        /// </summary>
+        /// <param name="minSyncId">Synchronization token</param>
+        /// <param name="deep">True if children at any depth should be returned. False - if immediate children only.</param>
+        /// <returns>List of all items path under this folder and sync ID of each item.</returns>
+        private async Task<IEnumerable<(string Path, long SyncId)>> GetSyncIdsAsync(long minSyncId, bool deep)
+        {
+            // First we must read max existing USN. However, in this sample,
+            // for the sake of simplicity, we just read all changes under this folder.
+
+            SearchOption searchOptions = deep ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
+
             ConcurrentBag<(string Path, long Usn)> list = new ConcurrentBag<(string Path, long Usn)>();
+
+            string[] decendants = Directory.GetFileSystemEntries(dirInfo.FullName, "*", searchOptions);
             ParallelOptions parallelOptions = new()
             {
                 MaxDegreeOfParallelism = 1000
             };
-            await Parallel.ForEachAsync(Directory.GetFileSystemEntries(dirInfo.FullName, "*", SearchOption.AllDirectories), parallelOptions, async (item, token) =>
+            await Parallel.ForEachAsync(decendants, parallelOptions, async (path, token) =>
             {
-                list.Add(new(item, await new FileSystemItem(item).GetUsnByPathAsync()));
+                long syncId = await new FileSystemItem(path).GetUsnAsync();
+                if (syncId > minSyncId)
+                {
+                    list.Add(new(path, syncId));
+                }
             });
 
             return list;

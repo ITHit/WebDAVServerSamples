@@ -1,4 +1,5 @@
 ﻿import $ from "jquery";
+import { Modal } from "bootstrap";
 import { ITHit } from "webdav.client";
 import { WebdavCommon } from "./webdav-common";
 
@@ -18,6 +19,7 @@ import { WebdavCommon } from "./webdav-common";
   ///////////////////
   // Confirm Bootstrap Modal
   var ConfirmRewriteModal = function (selector) {
+    this.bsModal = new Modal(document.querySelector(selector));
     this.$el = $(selector);
     this.$el.find(".btn-ok").click(this._onOkClickHandler.bind(this));
     this.$el.find(".btn-no").click(this._onNoClickHandler.bind(this));
@@ -36,19 +38,19 @@ import { WebdavCommon } from "./webdav-common";
       this.cancelCallback = cancelCallback || $.noop;
       this.$el.find(".message").html(message);
       this.$el.find(".modal-dialog").addClass("modal-lg");
-      this.$el.modal("show");
+      this.bsModal.show();
     },
 
     _onOkClickHandler: function (e) {
       this.isConfirmed = true;
       this.successfulCallback();
-      this.$el.modal("hide");
+      this.bsModal.hide();
     },
 
     _onNoClickHandler: function (e) {
       this.isDiscarded = true;
       this.discardCallback();
-      this.$el.modal("hide");
+      this.bsModal.hide();
     },
 
     _onModalHideHandler: function () {
@@ -678,7 +680,7 @@ import { WebdavCommon } from "./webdav-common";
   UploaderGridRow.prototype._Render = function (oUploadItem) {
     var $cancelBlock = $('<div class="col-auto px-0" />').append(
       $(
-        '<button class="btn-transparent cancel-button float-left" title="Cancel" />'
+        '<button class="btn-transparent cancel-button float-start" title="Cancel" />'
       )
         .html('<i class="icon icon-close"></i>')
         .click(this._CancelClickHandler.bind(this))
@@ -715,14 +717,14 @@ import { WebdavCommon } from "./webdav-common";
     var $actions = $('<div class="col-auto px-0" />')
       .append(
         $(
-          '<button class="btn-transparent pause-button float-right" title="Pause upload" />'
+          '<button class="btn-transparent pause-button float-end" title="Pause upload" />'
         )
           .click(this._PauseClickHandler.bind(this))
           .html('<i class="icon icon-pause"></i>')
       )
       .append(
         $(
-          '<button class="btn-transparent play-button float-right" title="Resume upload" />'
+          '<button class="btn-transparent play-button float-end" title="Resume upload" />'
         )
           .click(this._StartClickHandler.bind(this))
           .html('<i class="icon icon-play"></i>')

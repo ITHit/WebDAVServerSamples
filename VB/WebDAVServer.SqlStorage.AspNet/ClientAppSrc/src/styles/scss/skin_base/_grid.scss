@@ -6,7 +6,7 @@
   .drop-files-header {
     display: none;
   }
-  
+
   .table-responsive {
     overflow-x: inherit;
   }
@@ -75,6 +75,10 @@
   button.btn-labeled {
     border-radius: 5px;
   }
+}
+
+.table-hover.ithit-grid-container > tbody > tr:hover > * {
+  --bs-table-accent-bg: $tableHoverColor;
 }
 
 table.ithit-grid-container {
@@ -201,10 +205,14 @@ table.ithit-grid-container {
   }
 
   td {
+    border-bottom-width: 0;
+    border-top-width: 1px;
     padding: 0.5rem;
   }
 
   th {
+    border-bottom-width: 0;
+    border-top-width: 1px;
     padding: 0.5rem;
   }
 
@@ -245,7 +253,7 @@ table.ithit-grid-container {
 .more-lnk {
   margin: 1rem 0;
   display: inline-block;
-  
+
   &:focus {
     box-shadow: none;
   }

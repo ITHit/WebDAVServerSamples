@@ -1,7 +1,7 @@
 
 <Project Sdk="Microsoft.NET.Sdk.Web">
 	<PropertyGroup>
-		<VersionPrefix>13.3.12932-Beta</VersionPrefix>
+		<VersionPrefix>13.3.13068</VersionPrefix>
 		<AssemblyName>WebDAVServer.FileSystemSynchronization.AspNetCore</AssemblyName>
 		<TargetFramework>net6.0</TargetFramework>
 		<LangVersion>9.0</LangVersion>
@@ -111,16 +111,15 @@
 		</Content>
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="ITHit.Server" Version="13.3.12932-Beta" />
-		<PackageReference Include="ITHit.Server.Core" Version="13.3.12932-Beta" />
-		<PackageReference Include="ITHit.WebDAV.Server" Version="13.3.12932-Beta" />
-		<PackageReference Include="ITHit.GSuite.Server" Version="13.3.12932-Beta" />
+		<PackageReference Include="ITHit.Server" Version="13.3.13068" />
+		<PackageReference Include="ITHit.Server.Core" Version="13.3.13068" />
+		<PackageReference Include="ITHit.WebDAV.Server" Version="13.3.13068" />
 		<PackageReference Include="System.Data.OleDb" Version="6.0.0" />
-		<PackageReference Include="ITHit.FileSystem.Core" Version="13.3.12932-Beta" />
+		<PackageReference Include="ITHit.FileSystem.Core" Version="13.3.13068" />
 	</ItemGroup>
 	<PropertyGroup>
 		<IsNetFramework>false</IsNetFramework>
-		<IsGSuite>true</IsGSuite>
+		<IsGSuite>false</IsGSuite>
 	</PropertyGroup>
 	<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
 		<!-- Ensure Node.js is installed -->

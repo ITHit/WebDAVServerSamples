@@ -63,17 +63,17 @@ namespace WebDAVServer.FileSystemSynchronization.AspNetCore
         {
             get => fileSystemInfo.Attributes.HasFlag(FileAttributes.Hidden) &&
                 (this is DavFolder || (this as DavFile).ContentLength == 0) ? Change.Deleted : Change.Changed;
-        }    
+        }
 
         /// <summary>
         /// Unique identifier of the resource.
         /// </summary>
-        public string Id { get => $"{context.Request.UrlPrefix}/ServerRoot/{fileSystemInfo.GetId()}"; }
+        public string Id { get => $"{context.Request.UrlPrefix}/ID/{fileSystemInfo.GetId()}"; }
 
         /// <summary>
         /// Unique identifier of the resource parent. 
         /// </summary>
-        public string ParentId { get => $"{context.Request.UrlPrefix}/ServerRoot/{Directory.GetParent(fileSystemInfo.FullName).GetId()}"; }
+        public string ParentId { get => $"{context.Request.UrlPrefix}/ID/{Directory.GetParent(fileSystemInfo.FullName).GetId()}"; }
 
         /// <summary>
         /// Corresponding file or folder in the file system.

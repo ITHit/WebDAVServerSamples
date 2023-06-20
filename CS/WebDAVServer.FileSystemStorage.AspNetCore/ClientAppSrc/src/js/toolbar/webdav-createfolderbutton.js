@@ -1,4 +1,5 @@
 ﻿﻿import $ from "jquery";
+import { Modal } from "bootstrap";
 import { BaseButton } from "./webdav-basebutton";
 import { ITHit } from "webdav.client";
 import { WebdavCommon } from "../webdav-common";
@@ -22,18 +23,20 @@ CreateFolderController.prototype = {
 
 ///////////////////
 // Create Folder Bootstrap Modal
-function CreateFolderModal(modalSelector, createFolderController) {
+function CreateFolderModal(selector, createFolderController) {
   var sCreateFolderErrorMessage = "Create folder error.";
 
   var self = this;
-  this.$modal = $(modalSelector);
-  this.$txt = $(modalSelector).find('input[type="text"]');
-  this.$submitButton = $(modalSelector).find(".btn-submit");
-  this.$alert = $(modalSelector).find(".alert-danger");
+  this.bsModal = new Modal(document.querySelector(selector));
+  this.$modal = $(selector);
+  this.$txt = this.$modal.find('input[type="text"]');
+  this.$submitButton = this.$modal.find(".btn-submit");
+  this.$alert = this.$modal.find(".alert-danger");
 
   this.$modal.on("shown.bs.modal", function () {
     self.$txt.focus();
   });
+
   this.$modal.find("form").submit(function () {
     self.$alert.addClass("d-none");
     if (self.$txt.val() !== null && self.$txt.val().match(/^ *$/) === null) {
@@ -69,7 +72,7 @@ function CreateFolderModal(modalSelector, createFolderController) {
               );
             }
           } else {
-            self.$modal.modal("hide");
+            self.bsModal.hide();
           }
           self.$submitButton.removeAttr("disabled");
         }
@@ -96,7 +99,7 @@ export function ToolbarCreateFolderButton(name, toolbar) {
     this.$Button.on("click", function () {
       oCreateFolderModal.$txt.val("");
       oCreateFolderModal.$alert.addClass("d-none");
-      oCreateFolderModal.$modal.modal("show");
+      oCreateFolderModal.bsModal.show();
     });
   };
 }

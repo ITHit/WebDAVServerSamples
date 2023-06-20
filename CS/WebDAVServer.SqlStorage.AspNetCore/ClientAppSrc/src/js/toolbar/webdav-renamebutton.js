@@ -1,4 +1,5 @@
 ﻿﻿import $ from "jquery";
+import { Modal } from "bootstrap";
 import { BaseButton } from "./webdav-basebutton";
 import { ITHit } from "webdav.client";
 import { WebdavCommon } from "../webdav-common";
@@ -29,12 +30,13 @@ RenameItemController.prototype = {
 
 ///////////////////
 // Create Folder Bootstrap Modal
-function RenameItemModal(modalSelector, renameItemController) {
+function RenameItemModal(selector, renameItemController) {
   var self = this;
-  this.$modal = $(modalSelector);
-  this.$txt = $(modalSelector).find('input[type="text"]');
-  this.$submitButton = $(modalSelector).find(".btn-submit");
-  this.$alert = $(modalSelector).find(".alert-danger");
+  this.bsModal = new Modal(document.querySelector(selector));
+  this.$modal = $(selector);
+  this.$txt = this.$modal.find('input[type="text"]');
+  this.$submitButton = this.$modal.find(".btn-submit");
+  this.$alert = this.$modal.find(".alert-danger");
   this.oldItemName = "";
 
   this.$modal.on("shown.bs.modal", function () {
@@ -43,7 +45,7 @@ function RenameItemModal(modalSelector, renameItemController) {
   this.$modal.find("form").submit(function () {
     self.$alert.addClass("d-none");
     if (self.$txt.val() == self.oldItemName) {
-      self.$modal.modal("hide");
+      self.bsModal.hide();
     } else if (
       self.$txt.val() !== null &&
       self.$txt.val().match(/^ *$/) === null
@@ -77,7 +79,7 @@ function RenameItemModal(modalSelector, renameItemController) {
               );
             }
           }
-          self.$modal.modal("hide");
+          self.bsModal.hide();
           self.$submitButton.removeAttr("disabled");
           renameItemController.Toolbar.ResetToolbar();
           self.$txt.val("");
@@ -107,7 +109,7 @@ export function ToolbarRenameButton(name, toolbar) {
           toolbar.FolderGrid.selectedItems[0].DisplayName;
       }
       oRenameItemModal.$alert.addClass("d-none");
-      oRenameItemModal.$modal.modal("show");
+      oRenameItemModal.bsModal.show();
     });
   };
 }

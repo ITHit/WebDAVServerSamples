@@ -13,6 +13,7 @@ const outputFolder = "../wwwroot/";
 module.exports = (env) => {
   return {
     name: "default",
+    devtool: "source-map",
     //devtool: dev ? "eval-cheap-module-source-map" : "source-map",
     target: "web",
     entry: {

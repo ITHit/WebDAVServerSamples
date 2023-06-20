@@ -1,4 +1,5 @@
 ﻿﻿import $ from "jquery";
+import { Modal } from "bootstrap";
 import { ITHit } from "webdav.client";
 import moment from "moment";
 import { webDavSettings } from "./webdav-settings";
@@ -234,6 +235,7 @@ export const WebdavCommon = (window.WebdavCommon = (function () {
    * @memberof! WebdavCommon
    */
   function ErrorModal(selector) {
+    this.bsModal = new Modal(document.querySelector(selector));
     this.$el = $(selector);
     this.$el.on("hidden.bs.modal", this._onModalHideHandler.bind(this));
   }
@@ -259,7 +261,7 @@ export const WebdavCommon = (window.WebdavCommon = (function () {
         this._SetBody(oError.InnerException.toString());
       }
 
-      this.$el.modal("show");
+      this.bsModal.show();
     },
 
     _SetErrorMessage: function (sMessage) {
