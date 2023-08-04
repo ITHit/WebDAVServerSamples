@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 
 using ITHit.Server;
 using ITHit.WebDAV.Server;
-using ITHit.GSuite.Server;
 
 namespace WebDAVServer.FileSystemStorage.AspNet
 {
@@ -24,25 +23,6 @@ namespace WebDAVServer.FileSystemStorage.AspNet
         ///  - IT Hit iCalendar and vCard Library if used in a project
         /// </summary>
         private readonly string license = File.ReadAllText(HttpContext.Current.Request.PhysicalApplicationPath + "License.lic");
-        /// <summary>
-        /// Google Service Account ID (client_email field from JSON file).
-        /// </summary>
-        private static readonly string googleServiceAccountID = ConfigurationManager.AppSettings["GoogleServiceAccountID"];
-
-        /// <summary>
-        /// Google Service private key (private_key field from JSON file).
-        /// </summary>
-        private static readonly string googleServicePrivateKey = ConfigurationManager.AppSettings["GoogleServicePrivateKey"];
-
-        /// <summary>
-        /// Relative Url of "Webhook" callback. It handles the API notification messages that are triggered when a resource changes.
-        /// </summary>
-        private static readonly string googleNotificationsRelativeUrl = ConfigurationManager.AppSettings["GoogleNotificationsRelativeUrl"];
-
-        /// <summary>
-        /// This license file is used to activate G Suite Documents Editing for IT Hit WebDAV Server
-        /// </summary>
-        private readonly string gSuiteLicense = File.Exists(HttpContext.Current.Request.PhysicalApplicationPath + "GSuiteLicense.lic") ? File.ReadAllText(HttpContext.Current.Request.PhysicalApplicationPath + "GSuiteLicense.lic") : string.Empty;
 
         /// <summary>
         /// If debug logging is enabled reponses are output as formatted XML,
@@ -80,12 +60,7 @@ namespace WebDAVServer.FileSystemStorage.AspNet
 
             context.Response.BufferOutput = false;
             DavContext ntfsDavContext = new DavContext(context);
-            GSuiteEngineAsync gSuiteEngine = getOrInitializeGSuiteEngine(context);
             await webDavEngine.RunAsync(ntfsDavContext);
-            if (gSuiteEngine != null)
-            {
-                await gSuiteEngine.RunAsync(ContextConverter.ConvertToGSuiteContext(ntfsDavContext));
-            }
         }
 
         /// <summary>
@@ -137,34 +112,6 @@ namespace WebDAVServer.FileSystemStorage.AspNet
             }
 
             return (DavEngineAsync)context.Application[ENGINE_KEY];
-        }
-        /// <summary>
-        /// Initializes or gets engine singleton.
-        /// </summary>
-        /// <param name="context">Instance of <see cref="HttpContext"/>.</param>
-        /// <returns>Instance of <see cref="GSuiteEngineAsync"/>.</returns>
-        private GSuiteEngineAsync getOrInitializeGSuiteEngine(HttpContext context)
-        {
-            //we don't use any double check lock pattern here because nothing wrong
-            //is going to happen if we created occasionally several engines.
-            const string ENGINE_KEY = "$GSuiteEngine$";
-            if (string.IsNullOrEmpty(googleServiceAccountID) || string.IsNullOrEmpty(googleServicePrivateKey))
-            {
-                return null;
-            }
-
-            if (context.Application[ENGINE_KEY] == null)
-            {
-                var gSuiteEngine = new GSuiteEngineAsync(googleServiceAccountID, googleServicePrivateKey, googleNotificationsRelativeUrl)
-                {
-                    License = gSuiteLicense, 
-                    Logger = WebDAVServer.FileSystemStorage.AspNet.Logger.Instance
-                };
-
-                context.Application[ENGINE_KEY] = gSuiteEngine;
-            }
-
-            return (GSuiteEngineAsync)context.Application[ENGINE_KEY];
         }
     }
 }

@@ -12,10 +12,9 @@
 		<None Remove="App_Data\WebDav\Storage\qtest_*\**" />
   </ItemGroup>  
   <ItemGroup>
-	<PackageReference Include="ITHit.Server" Version="13.3.13068" />
-    <PackageReference Include="ITHit.Server.Core" Version="13.3.13068" />
-    <PackageReference Include="ITHit.WebDAV.Server" Version="13.3.13068" />
-	<PackageReference Include="ITHit.GSuite.Server" Version="13.3.13068" />
+	<PackageReference Include="ITHit.Server" Version="13.3.13124" />
+    <PackageReference Include="ITHit.Server.Core" Version="13.3.13124" />
+    <PackageReference Include="ITHit.WebDAV.Server" Version="13.3.13124" />
 	<PackageReference Include="System.Data.OleDb" Version="6.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="6.0.6" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.6" />
@@ -27,8 +26,8 @@
     </PackageReference>
   </ItemGroup>
   <PropertyGroup>
-		<IsNetFramework>false</IsNetFramework>
-		<IsGSuite>true</IsGSuite>
+		<IsNetFramework>true</IsNetFramework>
+		<IsGSuite>false</IsGSuite>
    </PropertyGroup>
    <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
 		<!-- Ensure Node.js is installed -->

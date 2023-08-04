@@ -17,7 +17,6 @@ using System.Threading;
 using WebDAVServer.FileSystemStorage.HttpListener.ExtendedAttributes;
 
 using ITHit.Server;
-using ITHit.GSuite.Server;
 
 namespace WebDAVServer.FileSystemStorage.HttpListener
 {
@@ -29,23 +28,6 @@ namespace WebDAVServer.FileSystemStorage.HttpListener
         public static bool Listening { get; set; }
 
         private static DavEngineAsync webDavEngine;
-
-        private static GSuiteEngineAsync gSuiteEngine;
-
-        /// <summary>
-        /// Google Service Account ID (client_email field from JSON file).
-        /// </summary>
-        private static readonly string googleServiceAccountID = ConfigurationManager.AppSettings["GoogleServiceAccountID"];
-
-        /// <summary>
-        /// Google Service private key (private_key field from JSON file).
-        /// </summary>
-        private static readonly string googleServicePrivateKey = ConfigurationManager.AppSettings["GoogleServicePrivateKey"];
-
-        /// <summary>
-        /// Relative Url of "Webhook" callback. It handles the API notification messages that are triggered when a resource changes.
-        /// </summary>
-        private static readonly string googleNotificationsRelativeUrl = ConfigurationManager.AppSettings["GoogleNotificationsRelativeUrl"];
 
         private static readonly string repositoryPath =
             ConfigurationManager.AppSettings["RepositoryPath"].TrimEnd(Path.DirectorySeparatorChar);
@@ -130,17 +112,6 @@ namespace WebDAVServer.FileSystemStorage.HttpListener
             string license = File.ReadAllText(Path.Combine(contentRootPath, "License.lic"));
 
             webDavEngine.License = license;
-
-            /// This license file is used to activate G Suite Documents Editing for IT Hit WebDAV Server
-            string gSuiteLicense = File.Exists(Path.Combine(contentRootPath, "GSuiteLicense.lic")) ? File.ReadAllText(Path.Combine(contentRootPath,"GSuiteLicense.lic")) : string.Empty;
-            if (!string.IsNullOrEmpty(gSuiteLicense))
-            {
-                gSuiteEngine = new GSuiteEngineAsync(googleServiceAccountID, googleServicePrivateKey, googleNotificationsRelativeUrl)
-                {
-                    License = gSuiteLicense,
-                    Logger = logger
-                };
-            }
 
             // Set custom handler to process GET and HEAD requests to folders and display 
             // info about how to connect to server. We are using the same custom handler 
@@ -255,10 +226,6 @@ namespace WebDAVServer.FileSystemStorage.HttpListener
                 {
                 }
                 await webDavEngine.RunAsync(ntfsDavContext);
-                if (gSuiteEngine != null)
-                {
-                    await gSuiteEngine.RunAsync(ContextConverter.ConvertToGSuiteContext(ntfsDavContext));
-                }
 
                 if (context.Response.StatusCode == 401)
                 {

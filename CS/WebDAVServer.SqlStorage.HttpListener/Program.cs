@@ -17,7 +17,6 @@ using System.Net.WebSockets;
 using System.Threading;
 
 using ITHit.Server;
-using ITHit.GSuite.Server;
 
 namespace WebDAVServer.SqlStorage.HttpListener
 {
@@ -29,23 +28,6 @@ namespace WebDAVServer.SqlStorage.HttpListener
         public static bool Listening { get; set; }
 
         private static DavEngineAsync webDavEngine;
-
-        private static GSuiteEngineAsync gSuiteEngine;
-
-        /// <summary>
-        /// Google Service Account ID (client_email field from JSON file).
-        /// </summary>
-        private static readonly string googleServiceAccountID = ConfigurationManager.AppSettings["GoogleServiceAccountID"];
-
-        /// <summary>
-        /// Google Service private key (private_key field from JSON file).
-        /// </summary>
-        private static readonly string googleServicePrivateKey = ConfigurationManager.AppSettings["GoogleServicePrivateKey"];
-
-        /// <summary>
-        /// Relative Url of "Webhook" callback. It handles the API notification messages that are triggered when a resource changes.
-        /// </summary>
-        private static readonly string googleNotificationsRelativeUrl = ConfigurationManager.AppSettings["GoogleNotificationsRelativeUrl"];
 
         /// <summary>
         /// Whether requests/responses shall be logged.
@@ -127,17 +109,6 @@ namespace WebDAVServer.SqlStorage.HttpListener
             string license = File.ReadAllText(Path.Combine(contentRootPath, "License.lic"));
 
             webDavEngine.License = license;
-
-            /// This license file is used to activate G Suite Documents Editing for IT Hit WebDAV Server
-            string gSuiteLicense = File.Exists(Path.Combine(contentRootPath, "GSuiteLicense.lic")) ? File.ReadAllText(Path.Combine(contentRootPath,"GSuiteLicense.lic")) : string.Empty;
-            if (!string.IsNullOrEmpty(gSuiteLicense))
-            {
-                gSuiteEngine = new GSuiteEngineAsync(googleServiceAccountID, googleServicePrivateKey, googleNotificationsRelativeUrl)
-                {
-                    License = gSuiteLicense,
-                    Logger = logger
-                };
-            }
 
             // Set custom handler to process GET and HEAD requests to folders and display 
             // info about how to connect to server. We are using the same custom handler 
@@ -239,10 +210,6 @@ namespace WebDAVServer.SqlStorage.HttpListener
                 using (var sqlDavContext = new DavContext(context, listener.Prefixes, principal, webDavEngine.Logger))
                 {
                     await webDavEngine.RunAsync(sqlDavContext);
-                    if (gSuiteEngine != null)
-                    {
-                        await gSuiteEngine.RunAsync(ContextConverter.ConvertToGSuiteContext(sqlDavContext));
-                    }
                 }
             }
             finally

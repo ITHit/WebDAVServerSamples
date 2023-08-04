@@ -32,9 +32,6 @@ namespace WebDAVServer.SqlStorage.AspNetCore
         {
             services.AddWebDav(Configuration, HostingEnvironment);
 
-            //Enables documents editing and preview in Google G Suite online editor.
-            services.AddGSuite(Configuration);
-
             //Enables web sockets. Web sockets are used to update the documents list in case of any changes on the server.
             services.AddSingleton<WebSocketsService>();
       
@@ -57,9 +54,6 @@ namespace WebDAVServer.SqlStorage.AspNetCore
             //Enables web sockets. Web sockets are used to update the documents list in case of any changes on the server.
             app.UseWebSockets();
             app.UseWebSocketsMiddleware();
-
-            //Enables documents editing and preview in Google G Suite online editor.
-            app.UseGSuite();
             app.UseWebDav(HostingEnvironment);
         }
     }
