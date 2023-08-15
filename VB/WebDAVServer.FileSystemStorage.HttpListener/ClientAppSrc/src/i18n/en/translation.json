@@ -1,0 +1,111 @@
+{
+  "phrases": {
+    "toolbar": {
+      "createFolderButton": "Create Folder",
+      "renameButton": "Rename Item",
+      "copyButton": "Copy",
+      "pasteButton": "Paste",
+      "cutButton": "Cut",
+      "reloadButton": "Reload",
+      "printButton": "Print",
+      "deleteButton": "Delete",
+      "uploadButton": "Upload",
+      "downloadButton": "Download"
+    },
+    "modals": {
+      "renameMessage": "Are you sure want to rename selected items?",
+      "deleteMessage": "Are you sure want to delete selected items?",
+      "printMessage": "Are you sure want to print selected items?",
+      "defaultModalTitle": "Confirm",
+      "downloadProtocolTitle": "Install a Custom Protocol",
+      "errorTitle": "Error",
+      "renameItemTitle": "Rename Item",
+      "createFolderTitle": "Create Folder",
+      "folderNamePlaceholder": "Folder Name",
+      "itemNamePlaceholder": "Item Name"
+    },
+    "grid": {
+      "dragFiles": "Drag files here",
+      "folder": "Folder",
+      "file": "File",
+      "tableHeader": {
+        "displayName": "Display Name",
+        "type": "Type",
+        "size": "Size",
+        "modified": "Modified"
+      },
+      "actions": {
+        "editWithDesctopApp": {
+          "title": "Edit document with desktop associated application.",
+          "text": "Edit with Associated Desktop Application"
+        },
+        "editWithMsOffice": {
+          "title": "Edit with Microsoft Office Desktop.",
+          "text": "Edit with Microsoft Office Desktop"
+        },
+        "selectDesctopApp": {
+          "title": "Select application to open this file with.",
+          "text": "Select Desktop Application"
+        }
+      }
+    },
+    "breadcrumb": {
+      "upOneLevelTitle": "Up one level"
+    },
+    "validations": {
+      "nameIsRequired": "Name is required!",
+      "folderExists": "Folder already exists.",
+      "followingItemExist": "The following item(s) exist on the server",
+      "notSupportSearch": "The server does not support search",
+      "notContainFollowingCharacters": "The name cannot contain any of the following characters"
+    },
+    "downloadProtocol": {
+      "installCustomProtocol": "To open this document, you must install a custom protocol on a client machine and enable a web browser extension.",
+      "downloadAndInstallFiles": "Download and install the file below",
+      "enableITHitEditDocumentOpener": "Enable the IT Hit Edit Document Opener web browser extension",
+      "notRequiredForInternetExplorer": "The extension is not required for Internet Explorer",
+      "howInstallProtocolApp": "how to install the protocol app",
+      "installAndVerifyExtensions": "install and verify web browser extensions"
+    },
+    "errors": {
+      "errorMessage": "Error message",
+      "errorDetails": "Error Details",
+      "supportedFeaturesErrorMessage": "Supported Features error.",
+      "profindErrorMessage": "Profind request error.",
+      "searchErrorMessage": "Search is not supported.",
+      "deletetemsErrorMessage": "Delete items error.",
+      "copyItemsErrorMessage": "Copy items error.",
+      "cutItemsErrorMessage": "Cut items error.",
+      "cutItemsSameNameErrorMessage": "The source and destination file names are the same.",
+      "cutItemsLockedErrorMessage": "Items are locked.",
+      "renameItemErrorMessage": "Rename item error.",
+      "renameItemLockedErrorMessage": "Item is locked.",
+      "validationErrorMessage": "Validation Error",
+      "failedCheckExistsErrorMessage": "Check for already exists item failed with error."
+    },
+    "uploader": {
+      "filesUpload": "Files upload",
+      "pauseUpload": "Pause upload",
+      "resumeUpload": "Resume upload",
+      "cancelAllUpload": "Cancel all uploads",
+      "uploaded": "Uploaded"
+    },
+    "browse": "Browse",
+    "edit": "Edit",
+    "ok": "OK",
+    "cancel": "Cancel",
+    "close": "Close",
+    "url": "Url",
+    "see": "See",
+    "and": "and",
+    "overwrite": "Overwrite",
+    "yesToAll": "Yes to All",
+    "noToAll": "No to All",
+    "details": "Details",
+    "done": "done",
+    "secondShortened": "sec",
+    "otherOs": "Other OS",
+    "otherWebBrowsers": "Other web browsers",
+    "extensionFor": "Extension for {{browser}}"
+  }
+}

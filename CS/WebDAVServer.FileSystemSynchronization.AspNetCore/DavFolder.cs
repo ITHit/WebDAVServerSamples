@@ -122,7 +122,7 @@ namespace WebDAVServer.FileSystemSynchronization.AspNetCore
         {
             await RequireHasTokenAsync();
             string fileName = System.IO.Path.Combine(fileSystemInfo.FullName, name);
-            // delete hidden file 
+            // If file with same name existed here we delete it to delete all streams attached to it.
             if (File.Exists(fileName) && File.GetAttributes(fileName).HasFlag(FileAttributes.Hidden))
             {
                 File.Delete(fileName);

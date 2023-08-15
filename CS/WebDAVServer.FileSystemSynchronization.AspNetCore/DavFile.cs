@@ -46,7 +46,9 @@ namespace WebDAVServer.FileSystemSynchronization.AspNetCore
         /// </summary>
         public long ContentLength
         {
-            get { return fileInfo.Length; }
+            // We do not want a user to download a file that is being uploaded.
+            get { return IsBeingUploaded() ? 0 : fileInfo.Length; }
+
         }
 
         /// <summary>
@@ -159,6 +161,10 @@ namespace WebDAVServer.FileSystemSynchronization.AspNetCore
         public virtual async Task<bool> WriteAsync(Stream content, string contentType, long startIndex, long totalFileSize)
         {
             await RequireHasTokenAsync();
+            if (startIndex == 0 && fileInfo.Length > 0)
+            {
+                await using (FileStream filestream = fileInfo.Open(FileMode.Truncate)) { }
+            }
             await WriteInternalAsync(content, contentType, startIndex, totalFileSize);
             await context.socketService.NotifyUpdatedAsync(Path, GetWebSocketID());
             return true;
@@ -176,10 +182,6 @@ namespace WebDAVServer.FileSystemSynchronization.AspNetCore
         /// if auto checkin shall be performed (if auto versioning is used).</returns>
         public async Task<bool> WriteInternalAsync(Stream content, string contentType, long startIndex, long totalFileSize)
         {
-            if (startIndex == 0 && fileInfo.Length > 0)
-            {
-                await using (FileStream filestream = fileInfo.Open(FileMode.Truncate)) { }
-            }
             await fileInfo.SetExtendedAttributeAsync("TotalContentLength", (object)totalFileSize);
             await fileInfo.SetExtendedAttributeAsync("SerialNumber", ++this.serialNumber);
 
@@ -363,7 +365,8 @@ namespace WebDAVServer.FileSystemSynchronization.AspNetCore
             }
             if (recursionDepth == 0)
             {
-                // hide file, it is needed for sync-collection report.
+                // Hide file, so we can find it and report as deleted in sync-collection report.
+                // Truncte content to avoid storing large file.
                 fileSystemInfo.Attributes = fileSystemInfo.Attributes | FileAttributes.Hidden;
                 using (FileStream fileStream = new FileStream(fileSystemInfo.FullName, FileMode.Truncate))
                 {
@@ -401,7 +404,7 @@ namespace WebDAVServer.FileSystemSynchronization.AspNetCore
         /// </summary>
         public long BytesUploaded
         {
-            get { return ContentLength; }
+            get { return fileInfo.Length; }
         }
 
         /// <summary>
@@ -430,6 +433,11 @@ namespace WebDAVServer.FileSystemSynchronization.AspNetCore
                 return param.Any(p => p.StartsWith("download"));
             }
             return false;
+        }
+
+        internal bool IsBeingUploaded()
+        {
+            return TotalContentLength != 0 && fileInfo.Length != TotalContentLength;
         }
 
         /// <summary>

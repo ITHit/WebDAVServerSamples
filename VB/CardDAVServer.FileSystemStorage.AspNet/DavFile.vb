@@ -142,6 +142,11 @@ Public Class DavFile
     Public Overridable Async Function WriteAsync(content As Stream, contentType As String, startIndex As Long, totalFileSize As Long) As Task(Of Boolean) Implements IContent.WriteAsync
         'Set timeout to maximum value to be able to upload large files.
         HttpContext.Current.Server.ScriptTimeout = Integer.MaxValue
+        If startIndex = 0 AndAlso fileInfo.Length > 0 Then
+            Using filestream As FileStream = fileInfo.Open(FileMode.Truncate)
+                 End Using
+        End If
+
         Await WriteInternalAsync(content, contentType, startIndex, totalFileSize)
         Return True
     End Function
@@ -157,11 +162,6 @@ Public Class DavFile
     ''' <returns>Whether the whole stream has been written. This result is used by the engine to determine
     ''' if auto checkin shall be performed (if auto versioning is used).</returns>
     Public Async Function WriteInternalAsync(content As Stream, contentType As String, startIndex As Long, totalFileSize As Long) As Task(Of Boolean)
-        If startIndex = 0 AndAlso fileInfo.Length > 0 Then
-            Using filestream As FileStream = fileInfo.Open(FileMode.Truncate)
-                 End Using
-        End If
-
         Await fileInfo.SetExtendedAttributeAsync("SerialNumber", System.Threading.Interlocked.Increment(Me.serialNumber))
         Using fileStream As FileStream = fileInfo.Open(FileMode.OpenOrCreate, FileAccess.Write, FileShare.Read)
             If fileStream.Length < startIndex Then

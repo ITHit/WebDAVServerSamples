@@ -148,6 +148,11 @@ Public Class DavFile
     ''' if auto checkin shall be performed (if auto versioning is used).</returns>
     Public Overridable Async Function WriteAsync(content As Stream, contentType As String, startIndex As Long, totalFileSize As Long) As Task(Of Boolean) Implements IContent.WriteAsync
         Await RequireHasTokenAsync()
+        If startIndex = 0 AndAlso fileInfo.Length > 0 Then
+            Using filestream As FileStream = fileInfo.Open(FileMode.Truncate)
+                 End Using
+        End If
+
         Await WriteInternalAsync(content, contentType, startIndex, totalFileSize)
         Await context.socketService.NotifyUpdatedAsync(Path, GetWebSocketID())
         Return True
@@ -164,11 +169,6 @@ Public Class DavFile
     ''' <returns>Whether the whole stream has been written. This result is used by the engine to determine
     ''' if auto checkin shall be performed (if auto versioning is used).</returns>
     Public Async Function WriteInternalAsync(content As Stream, contentType As String, startIndex As Long, totalFileSize As Long) As Task(Of Boolean)
-        If startIndex = 0 AndAlso fileInfo.Length > 0 Then
-            Using filestream As FileStream = fileInfo.Open(FileMode.Truncate)
-                 End Using
-        End If
-
         Await fileInfo.SetExtendedAttributeAsync("TotalContentLength", CObj(totalFileSize))
         Await fileInfo.SetExtendedAttributeAsync("SerialNumber", System.Threading.Interlocked.Increment(Me.serialNumber))
         Using fileStream As FileStream = fileInfo.Open(FileMode.OpenOrCreate, FileAccess.Write, FileShare.Read)
@@ -371,7 +371,7 @@ Public Class DavFile
     ''' </summary>
     Public ReadOnly Property BytesUploaded As Long Implements IResumableUpload.BytesUploaded
         Get
-            Return ContentLength
+            Return fileInfo.Length
         End Get
     End Property
 

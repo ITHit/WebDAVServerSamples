@@ -3,7 +3,6 @@ const fs = require("fs");
 const { execSync } = require("child_process");
 
 let isNetFramework = argv[2] == "true" ? true : false;
-let isGsuite = argv[3] == "true" ? true : false;
 
 let currVersion;
 let newVersion;
@@ -37,15 +36,15 @@ function installAndBuild() {
 
 function buildApp() {
   try {
-    let command = "npm run build";
-
-    if (isNetFramework) command += ":netframework";
-
-    if (isGsuite) command += ":gsuite";
-
-    execSync(command, {
-      stdio: "inherit",
-    });
+    if (isNetFramework) {
+      execSync("npm run build:netframework & npm run postbuild", {
+        stdio: "inherit",
+      });
+    } else {
+      execSync("npm run build & npm run postbuild", {
+        stdio: "inherit",
+      });
+    }
   } catch (err) {
     console.error(err);
   }

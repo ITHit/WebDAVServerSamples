@@ -149,6 +149,10 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore
         /// if auto checkin shall be performed (if auto versioning is used).</returns>
         public virtual async Task<bool> WriteAsync(Stream content, string contentType, long startIndex, long totalFileSize)
         {
+            if (startIndex == 0 && fileInfo.Length > 0)
+            {
+                await using (FileStream filestream = fileInfo.Open(FileMode.Truncate)) { }
+            }
             await WriteInternalAsync(content, contentType, startIndex, totalFileSize);
             return true;
         }
@@ -165,10 +169,6 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore
         /// if auto checkin shall be performed (if auto versioning is used).</returns>
         public async Task<bool> WriteInternalAsync(Stream content, string contentType, long startIndex, long totalFileSize)
         {
-            if (startIndex == 0 && fileInfo.Length > 0)
-            {
-                await using (FileStream filestream = fileInfo.Open(FileMode.Truncate)) { }
-            }
             await fileInfo.SetExtendedAttributeAsync("SerialNumber", ++this.serialNumber);
 
             await using (FileStream fileStream = fileInfo.Open(FileMode.OpenOrCreate, FileAccess.Write, FileShare.Read))

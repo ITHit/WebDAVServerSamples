@@ -39,8 +39,6 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore.Cookies
             services.AddWebDav(Configuration, HostingEnvironment);
             //Adds WebSocketsService which notifies client about changes in WebDAV items.
             services.AddSingleton<WebSocketsService>();
-            //Adds a GSuite services to the specified <see cref="IServiceCollection"/>.
-            services.AddGSuite(Configuration);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -81,8 +79,6 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore.Cookies
                     pattern: "{controller=Home}/{action=Index}/{id?}");
                 endpoints.MapRazorPages();
             });
-            //Adds a GSuite Engine middleware type to the application's request pipeline.
-            app.UseGSuite();
 
             app.MapWhen(context =>
             {

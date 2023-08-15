@@ -1,39 +1,73 @@
 {
-  "scripts": {
-    "serve": "webpack --mode development",
-    "build": "webpack --mode production",
-    "serve:gsuite": "webpack --mode development --env ISGSUITE=true",
-    "build:gsuite": "webpack --mode production --env ISGSUITE=true",
-    "serve:netframework": "webpack --mode development --env IMAGES_PATH=/wwwroot/images/",
-    "build:netframework": "webpack --mode production --env IMAGES_PATH=/wwwroot/images/",
-    "serve:netframework:gsuite": "webpack --mode development --env ISGSUITE=true IMAGES_PATH=/wwwroot/images/",
-    "build:netframework:gsuite": "webpack --mode production --env ISGSUITE=true IMAGES_PATH=/wwwroot/images/"
-  },
+  "name": "react-app",
+  "version": "0.1.0",
+  "private": true,
   "dependencies": {
-    "fs": "^0.0.1-security",
-    "jquery": "^3.1.0",
-    "jquery-ui-dist": "^1.13.1",
-    "moment": "^2.29.3",
-    "split.js": "^1.6.5",
-    "webdav.client": "^5.21.5941"
+    "@reduxjs/toolkit": "^1.6.2",
+    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/react": "^11.2.7",
+    "@testing-library/user-event": "^12.8.3",
+    "@types/history": "^4.7.9",
+    "@types/jest": "^26.0.24",
+    "@types/node": "^12.20.36",
+    "@types/react": "^17.0.34",
+    "@types/react-dom": "^17.0.11",
+    "@types/react-redux": "^7.1.20",
+    "bootstrap": "^5.2.3",
+    "connected-react-router": "^6.9.1",
+    "i18next": "^21.4.0",
+    "moment": "^2.29.1",
+    "query-string": "^7.1.1",
+    "react": "^17.0.2",
+    "react-bootstrap": "^2.6.0",
+    "react-dom": "^17.0.2",
+    "react-draggable": "^4.4.5",
+    "react-i18next": "^11.13.0",
+    "react-popper-tooltip": "^4.3.1",
+    "react-redux": "^7.2.6",
+    "react-router-dom": "^6.0.0",
+    "react-scripts": "^5.0.1",
+    "redux": "^4.1.2",
+    "sass": "^1.44.0",
+    "typescript": "^4.4.4",
+    "web-vitals": "^1.1.2",
+    "webdav.client": "^5.21.5897"
   },
   "devDependencies": {
-    "bootstrap": "^5.2.3",
-    "copy-webpack-plugin": "^11.0.0",
-    "css-loader": "^6.7.1",
-    "css-minimizer-webpack-plugin": "^4.0.0",
-    "eslint": "^8.16.0",
-    "html-loader": "^3.1.0",
-    "html-webpack-plugin": "^5.5.0",
-    "mini-css-extract-plugin": "^2.6.0",
-    "sass": "^1.52.1",
-    "sass-loader": "^13.0.0",
-    "style-loader": "^3.3.1",
-    "terser-webpack-plugin": "^5.3.6",
-    "webpack": "^5.76.0",
-    "webpack-cli": "^4.9.2"
+    "rewire": "^6.0.0"
+  },
+  "overrides": {
+    "svgo": "3.0.1",
+    "jest": "29.5.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "node ./build.js",
+    "build:netframework": "node ./build.js --netframework=true",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "postbuild": "(robocopy .\\build\\ ..\\wwwroot\\ /E) ^& IF %ERRORLEVEL% LEQ 1 exit 0"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   },
   "engines": {
-    "node": "^14.17.0 || ^16.10.0 || >=18.0.0"
+    "node": "^14.17.0 || ^16.10.0 || >=18.0.0",
+    "npm": ">=7.0.0"
   }
 }

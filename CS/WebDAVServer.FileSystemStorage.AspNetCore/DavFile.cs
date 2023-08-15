@@ -159,6 +159,10 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
         public virtual async Task<bool> WriteAsync(Stream content, string contentType, long startIndex, long totalFileSize)
         {
             await RequireHasTokenAsync();
+            if (startIndex == 0 && fileInfo.Length > 0)
+            {
+                await using (FileStream filestream = fileInfo.Open(FileMode.Truncate)) { }
+            }
             await WriteInternalAsync(content, contentType, startIndex, totalFileSize);
             await context.socketService.NotifyUpdatedAsync(Path, GetWebSocketID());
             return true;
@@ -176,10 +180,6 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
         /// if auto checkin shall be performed (if auto versioning is used).</returns>
         public async Task<bool> WriteInternalAsync(Stream content, string contentType, long startIndex, long totalFileSize)
         {
-            if (startIndex == 0 && fileInfo.Length > 0)
-            {
-                await using (FileStream filestream = fileInfo.Open(FileMode.Truncate)) { }
-            }
             await fileInfo.SetExtendedAttributeAsync("TotalContentLength", (object)totalFileSize);
             await fileInfo.SetExtendedAttributeAsync("SerialNumber", ++this.serialNumber);
 
@@ -425,7 +425,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore
         /// </summary>
         public long BytesUploaded
         {
-            get { return ContentLength; }
+            get { return fileInfo.Length; }
         }
 
         /// <summary>
