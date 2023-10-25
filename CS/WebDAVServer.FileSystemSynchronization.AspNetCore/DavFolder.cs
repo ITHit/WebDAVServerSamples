@@ -349,7 +349,7 @@ namespace WebDAVServer.FileSystemSynchronization.AspNetCore
                 }
                 else
                 {
-                    dirInfo.Delete();
+                    dirInfo.Delete(true);
                 }
                 if (recursionDepth == 0)
                 {

@@ -295,7 +295,7 @@ Public Class DavContext
     ''' <returns>Command result of type <typeparamref name="T"/> .</returns>
     Public Function ExecuteScalar(Of T)(command As String, ParamArray prms As Object()) As T
         Dim o As Object = prepareCommand(command, prms).ExecuteScalar()
-        Return If(TypeOf o Is DBNull, Nothing, CType(o, T))
+        Return If(o Is Nothing OrElse TypeOf o Is DBNull, Nothing, CType(o, T))
     End Function
 
     ''' <summary>
@@ -307,7 +307,7 @@ Public Class DavContext
     ''' <returns>Command result of type <typeparamref name="T"/> .</returns>
     Public Async Function ExecuteScalarAsync(Of T)(command As String, ParamArray prms As Object()) As Task(Of T)
         Dim o As Object = Await prepareCommand(command, prms).ExecuteScalarAsync()
-        Return If(TypeOf o Is DBNull, Nothing, CType(o, T))
+        Return If(o Is Nothing OrElse TypeOf o Is DBNull, Nothing, CType(o, T))
     End Function
 
     ''' <summary>

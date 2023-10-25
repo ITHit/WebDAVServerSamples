@@ -352,7 +352,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
         public T ExecuteScalar<T>(string command, params object[] prms)
         {
             object o = prepareCommand(command, prms).ExecuteScalar();
-            return o is DBNull ? default(T) : (T)o;
+            return o == null || o is DBNull ? default(T) : (T)o;
         }
         /// <summary>
         /// Executes SQL command which returns scalar result.
@@ -364,7 +364,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
         public async Task<T> ExecuteScalarAsync<T>(string command, params object[] prms)
         {
             object o = await prepareCommand(command, prms).ExecuteScalarAsync();
-            return o is DBNull ? default(T) : (T)o;
+            return o == null || o is DBNull ? default(T) : (T)o;
         }
 
         /// <summary>

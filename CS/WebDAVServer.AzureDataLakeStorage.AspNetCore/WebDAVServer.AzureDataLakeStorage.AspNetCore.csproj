@@ -45,9 +45,9 @@
   <ItemGroup>
     <PackageReference Include="Azure.Search.Documents" Version="11.1.1" />
     <PackageReference Include="Azure.Storage.Files.DataLake" Version="12.4.0" />
-    <PackageReference Include="ITHit.Server" Version="13.0.12190-Beta" />
-    <PackageReference Include="ITHit.Server.Core" Version="13.0.12190-Beta" />
-    <PackageReference Include="ITHit.WebDAV.Server" Version="13.0.12190-Beta" />
+    <PackageReference Include="ITHit.Server" Version="13.3.13192" />
+    <PackageReference Include="ITHit.Server.Core" Version="13.3.13192" />
+    <PackageReference Include="ITHit.WebDAV.Server" Version="13.3.13192" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.AzureAD.UI" Version="3.1.6" />
     <PackageReference Include="RestSharp" Version="106.12.0" />
     <PackageReference Include="System.Data.OleDb" Version="4.7.0" />

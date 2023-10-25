@@ -4,6 +4,14 @@ const { execSync } = require("child_process");
 
 let isNetFramework = argv[2] == "true" ? true : false;
 
+//show npm version
+console.log("npm version: ");
+execSync("npm -v", { stdio: "inherit" });
+
+//show node version
+console.log("node version: ");
+execSync("node -v", { stdio: "inherit" });
+
 let currVersion;
 let newVersion;
 if (fs.existsSync(".\\node_modules\\webdav.client")) {
