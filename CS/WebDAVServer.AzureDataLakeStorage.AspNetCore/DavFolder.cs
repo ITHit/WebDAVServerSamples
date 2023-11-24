@@ -11,6 +11,7 @@ using ITHit.WebDAV.Server.Search;
 using WebDAVServer.AzureDataLakeStorage.AspNetCore.DataLake;
 using WebDAVServer.AzureDataLakeStorage.AspNetCore.Search;
 using System.IO;
+using System.Runtime.Remoting.Contexts;
 
 namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
 {
@@ -114,11 +115,12 @@ namespace WebDAVServer.AzureDataLakeStorage.AspNetCore
         /// Called when a new folder is being created in this folder.
         /// </summary>
         /// <param name="name">Name of the new folder.</param>
-        public virtual async Task CreateFolderAsync(string name)
+        public virtual async Task<IFolder> CreateFolderAsync(string name)
         {
             await RequireHasTokenAsync();
             await context.DataLakeStoreService.CreateDirectoryAsync(Path, name);
             await context.socketService.NotifyRefreshAsync(Path);
+            return (DavFolder)await context.GetHierarchyItemAsync(Path + EncodeUtil.EncodeUrlPart(name));
         }
 
         /// <summary>

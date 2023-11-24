@@ -32,7 +32,7 @@
     "sass": "^1.44.0",
     "typescript": "^4.4.4",
     "web-vitals": "^1.1.2",
-    "webdav.client": "^5.21.5897"
+    "webdav.client": "^5.21.5960"
   },
   "devDependencies": {
     "rewire": "^6.0.0"
