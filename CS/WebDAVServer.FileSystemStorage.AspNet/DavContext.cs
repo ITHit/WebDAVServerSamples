@@ -62,12 +62,7 @@ namespace WebDAVServer.FileSystemStorage.AspNet
                 if (!string.IsNullOrEmpty(attrStoragePath))
                 {
                     FileSystemInfoExtension.UseFileSystemAttribute(new FileSystemExtendedAttribute(attrStoragePath, this.RepositoryPath));
-                } 
-                else if (!(new DirectoryInfo(RepositoryPath).IsExtendedAttributesSupported()))
-                {
-                    var tempPath = Path.Combine(Path.GetTempPath(), System.Reflection.Assembly.GetExecutingAssembly().GetName().Name);
-                    FileSystemInfoExtension.UseFileSystemAttribute(new FileSystemExtendedAttribute(tempPath, this.RepositoryPath));
-                }
+                }            
             }
 
 

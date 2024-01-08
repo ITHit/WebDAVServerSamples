@@ -160,7 +160,7 @@ export class ProtocolService {
         return "edge";
       case agent.indexOf("chrome") > -1 && !!(window as any).chrome:
         return "chrome";
-      case agent.indexOf("msie ") > -1 || !!agent.match(/trident.*rv\\:11\./):
+      case agent.indexOf("msie") > -1 || !!agent.match(/trident.*rv\\:11\./):
         return "ie";
       case agent.indexOf("firefox") > -1:
         return "firefox";

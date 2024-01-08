@@ -128,11 +128,6 @@ namespace WebDAVServer.FileSystemStorage.HttpListener
             {
                 FileSystemInfoExtension.UseFileSystemAttribute(new FileSystemExtendedAttribute(attrStoragePath, repositoryPath));
             }
-            else if (!(new DirectoryInfo(repositoryPath).IsExtendedAttributesSupported()))
-            {
-                var tempPath = Path.Combine(Path.GetTempPath(), System.Reflection.Assembly.GetExecutingAssembly().GetName().Name);
-                FileSystemInfoExtension.UseFileSystemAttribute(new FileSystemExtendedAttribute(tempPath, repositoryPath));
-            }
         }
 
         public static async void ThreadProcAsync()

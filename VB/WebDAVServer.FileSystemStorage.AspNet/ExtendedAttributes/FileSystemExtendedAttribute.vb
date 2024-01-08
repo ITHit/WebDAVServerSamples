@@ -37,15 +37,6 @@ Namespace ExtendedAttributes
         End Sub
 
         ''' <summary>
-        ''' Determines whether extended attributes are supported.
-        ''' </summary>
-        ''' <param name="path">File or folder path.</param>
-        ''' <returns>True if extended attributes or NTFS file alternative streams are supported, false otherwise.</returns>
-        Public Async Function IsExtendedAttributesSupportedAsync(path As String) As Task(Of Boolean) Implements IExtendedAttribute.IsExtendedAttributesSupportedAsync
-            Return False
-        End Function
-
-        ''' <summary>
         ''' Checks extended attribute existence.
         ''' </summary>
         ''' <param name="path">File or folder path.</param>

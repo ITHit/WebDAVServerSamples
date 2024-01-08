@@ -6,7 +6,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>7C8D5F2C-667B-4B2A-9111-1F2577AF3753</ProjectGuid>
+    <ProjectGuid>F795F002-ED7F-4B2C-ACAA-144F5A072E15</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>WebDAVServer.FileSystemStorage.HttpListener</RootNamespace>
@@ -68,8 +68,6 @@
     <Compile Include="ExtendedAttributes\FileSystemInfoExtension.cs" />
     <Compile Include="ExtendedAttributes\FileSystemExtendedAttribute.cs" />
     <Compile Include="ExtendedAttributes\IExtendedAttribute.cs" />
-    <Compile Include="ExtendedAttributes\LinuxExtendedAttribute.cs" />
-    <Compile Include="ExtendedAttributes\OSXExtendedAttribute.cs" />
     <Compile Include="ExtendedAttributes\WindowsExtendedAttribute.cs" />
     <Compile Include="Service.cs">
       <SubType>Component</SubType>
@@ -144,13 +142,13 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="ITHit.WebDAV.Server">
-      <HintPath>..\packages\ITHit.WebDAV.Server.13.4.13237\lib\net451\ITHit.WebDAV.Server.dll</HintPath>
+      <HintPath>..\packages\ITHit.WebDAV.Server.14.0.13424-Beta\lib\net451\ITHit.WebDAV.Server.dll</HintPath>
     </Reference>
     <Reference Include="ITHit.Server">
-      <HintPath>..\packages\ITHit.Server.13.4.13237\lib\net451\ITHit.Server.dll</HintPath>
+      <HintPath>..\packages\ITHit.Server.14.0.13424-Beta\lib\net451\ITHit.Server.dll</HintPath>
     </Reference>
     <Reference Include="ITHit.Server.HttpListener">
-      <HintPath>..\packages\ITHit.Server.HttpListener.13.4.13237\lib\net451\ITHit.Server.HttpListener.dll</HintPath>
+      <HintPath>..\packages\ITHit.Server.HttpListener.14.0.13424-Beta\lib\net451\ITHit.Server.HttpListener.dll</HintPath>
     </Reference>
   </ItemGroup>
   <PropertyGroup>

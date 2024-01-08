@@ -14,42 +14,7 @@ namespace WebDAVServer.FileSystemStorage.HttpListener.ExtendedAttributes
     public class WindowsExtendedAttribute : IExtendedAttribute
     {
         private readonly string pathFormat = "{0}:{1}";
-        private readonly int fileSystemAttributeBlockSize = 262144;
         private const int systemErrorCodeDiskFull = 0x70;
-
-        /// <summary>
-        /// Determines whether extended attributes are supported. 
-        /// </summary>
-        /// <param name="checkPath">File or folder path.</param>
-        /// <returns>True if extended attributes are supported, false otherwise.</returns>
-        /// <exception cref="ArgumentNullException">Throw when path is null or empty.</exception>
-        /// <exception cref="COMException">Throw when happens some system exception.</exception>
-        public async Task<bool> IsExtendedAttributesSupportedAsync(string checkPath)
-        {
-            if (string.IsNullOrEmpty(checkPath))
-            {
-                throw new ArgumentNullException("path");
-            }
-
-            checkPath = Path.GetPathRoot(checkPath);
-            if (!checkPath.EndsWith("\\"))
-                checkPath += "\\";
-
-            StringBuilder volumeName = new StringBuilder(261);
-            StringBuilder fileSystemName = new StringBuilder(261);
-            int volSerialNumber;
-            int maxFileNameLen;
-            int fileSystemFlags;
-
-            if (!GetVolumeInformation(GetWin32LongPath(checkPath), volumeName, volumeName.Capacity
-                , out volSerialNumber, out maxFileNameLen, out fileSystemFlags
-                , fileSystemName, fileSystemName.Capacity))
-            {
-                ThrowLastError();
-            }
-
-            return (fileSystemFlags & fileSystemAttributeBlockSize) == fileSystemAttributeBlockSize;
-        }
 
         /// <summary>
         /// Checks extended attribute existence.
@@ -292,10 +257,7 @@ namespace WebDAVServer.FileSystemStorage.HttpListener.ExtendedAttributes
             return @"\\?\" + path;
         }
 
-
-        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-        private static extern bool GetVolumeInformation(string lpRootPathName, StringBuilder volumeName, int volumeNameBufLen, out int volSerialNumber, out int maxFileNameLen, out int fileSystemFlags, StringBuilder fileSystemName, int fileSystemNameBufLen);
-
+       
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         private static extern SafeFileHandle CreateFile(string lpFileName, int dwDesiredAccess, FileShare dwShareMode, IntPtr lpSecurityAttributes, FileMode dwCreationDisposition, int dwFlagsAndAttributes, IntPtr hTemplateFile);
 

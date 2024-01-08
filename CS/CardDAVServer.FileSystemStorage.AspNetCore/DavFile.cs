@@ -152,6 +152,9 @@ namespace CardDAVServer.FileSystemStorage.AspNetCore
             if (startIndex == 0 && fileInfo.Length > 0)
             {
                 await using (FileStream filestream = fileInfo.Open(FileMode.Truncate)) { }
+
+                // Refresh file state since file was truncated.
+                fileInfo.Refresh();
             }
             await WriteInternalAsync(content, contentType, startIndex, totalFileSize);
             return true;

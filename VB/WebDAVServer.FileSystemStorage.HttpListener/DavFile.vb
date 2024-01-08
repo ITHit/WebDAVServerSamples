@@ -151,6 +151,9 @@ Public Class DavFile
         If startIndex = 0 AndAlso fileInfo.Length > 0 Then
             Using filestream As FileStream = fileInfo.Open(FileMode.Truncate)
                  End Using
+
+            ' Refresh file state since file was truncated.
+            fileInfo.Refresh()
         End If
 
         Await WriteInternalAsync(content, contentType, startIndex, totalFileSize)

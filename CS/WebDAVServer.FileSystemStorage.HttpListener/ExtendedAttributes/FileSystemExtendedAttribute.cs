@@ -37,16 +37,6 @@ namespace WebDAVServer.FileSystemStorage.HttpListener.ExtendedAttributes
         }
 
         /// <summary>
-        /// Determines whether extended attributes are supported.
-        /// </summary>
-        /// <param name="path">File or folder path.</param>
-        /// <returns>True if extended attributes or NTFS file alternative streams are supported, false otherwise.</returns>
-        public async Task<bool> IsExtendedAttributesSupportedAsync(string path)
-        {
-            return false;
-        }
-
-        /// <summary>
         /// Checks extended attribute existence.
         /// </summary>
         /// <param name="path">File or folder path.</param>

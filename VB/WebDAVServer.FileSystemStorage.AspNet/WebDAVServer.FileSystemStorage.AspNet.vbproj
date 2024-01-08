@@ -6,7 +6,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>05ED654F-1BDF-473D-92AB-1A04AE4E98E9</ProjectGuid>
+    <ProjectGuid>B8B23893-CD57-4419-ABC5-DB5781519E63</ProjectGuid>
     <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{f184b08f-c81c-45f6-a57f-5abd9991f28f}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
@@ -73,8 +73,6 @@
     <Compile Include="ExtendedAttributes\FileSystemInfoExtension.vb" />
     <Compile Include="ExtendedAttributes\FileSystemExtendedAttribute.vb" />
     <Compile Include="ExtendedAttributes\IExtendedAttribute.vb" />
-    <Compile Include="ExtendedAttributes\LinuxExtendedAttribute.vb" />
-    <Compile Include="ExtendedAttributes\OSXExtendedAttribute.vb" />
     <Compile Include="ExtendedAttributes\WindowsExtendedAttribute.vb" />
     <Compile Include="DavHandler.vb" />
     <Compile Include="MyCustomGetHandler.vb" />
@@ -133,13 +131,13 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="ITHit.WebDAV.Server">
-      <HintPath>..\packages\ITHit.WebDAV.Server.13.4.13237\lib\net451\ITHit.WebDAV.Server.dll</HintPath>
+      <HintPath>..\packages\ITHit.WebDAV.Server.14.0.13424-Beta\lib\net451\ITHit.WebDAV.Server.dll</HintPath>
     </Reference>
     <Reference Include="ITHit.Server">
-      <HintPath>..\packages\ITHit.Server.13.4.13237\lib\net451\ITHit.Server.dll</HintPath>
+      <HintPath>..\packages\ITHit.Server.14.0.13424-Beta\lib\net451\ITHit.Server.dll</HintPath>
     </Reference>
     <Reference Include="ITHit.Server.Web">
-      <HintPath>..\packages\ITHit.Server.Web.13.4.13237\lib\net451\ITHit.Server.Web.dll</HintPath>
+      <HintPath>..\packages\ITHit.Server.Web.14.0.13424-Beta\lib\net451\ITHit.Server.Web.dll</HintPath>
     </Reference>
   </ItemGroup>
   <PropertyGroup>
@@ -157,7 +155,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>9658</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:21083/</IISUrl>
+          <IISUrl>http://localhost:16179/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

@@ -101,9 +101,6 @@ Friend Class Program
         Dim attrStoragePath As String =(If(ConfigurationManager.AppSettings("AttrStoragePath"), String.Empty)).TrimEnd(Path.DirectorySeparatorChar)
         If Not String.IsNullOrEmpty(attrStoragePath) Then
             FileSystemInfoExtension.UseFileSystemAttribute(New FileSystemExtendedAttribute(attrStoragePath, repositoryPath))
-        ElseIf Not(New DirectoryInfo(repositoryPath).IsExtendedAttributesSupported()) Then
-            Dim tempPath = Path.Combine(Path.GetTempPath(), System.Reflection.Assembly.GetExecutingAssembly().GetName().Name)
-            FileSystemInfoExtension.UseFileSystemAttribute(New FileSystemExtendedAttribute(tempPath, repositoryPath))
         End If
     End Sub
 

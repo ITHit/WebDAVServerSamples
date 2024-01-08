@@ -14,9 +14,9 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore.ExtendedAttributes
     public static class FileSystemInfoExtension
     {
         /// <summary>
-        /// Depending on OS holds WindowsExtendedAttribute, OSXExtendedAttribute or LinuxExtendedAttribute class instance.
+        /// Implementation of <see cref="IExtendedAttribute"/>.
         /// </summary>
-        private static IExtendedAttribute extendedAttribute;
+        private static IExtendedAttribute extendedAttribute = new ExtendedAttribute();
 
         /// <summary>
         /// Sets <see cref="FileSystemExtendedAttribute"/> as a storage for attributes.
@@ -35,54 +35,6 @@ namespace CalDAVServer.FileSystemStorage.AspNetCore.ExtendedAttributes
         public static bool IsUsingFileSystemAttribute
         {
             get { return extendedAttribute is FileSystemExtendedAttribute; }
-        }
-
-        /// <summary>
-        /// Initializes static class members.
-        /// </summary>
-        static FileSystemInfoExtension()
-        {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                extendedAttribute = new WindowsExtendedAttribute();
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                extendedAttribute = new LinuxExtendedAttribute();
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                extendedAttribute = new OSXExtendedAttribute();
-            }
-            else
-            {
-                throw new Exception("Not Supported OS");
-            }
-        }
-
-        /// <summary>
-        /// Determines whether extended attributes are supported.
-        /// </summary>
-        /// <param name="info"><see cref="FileSystemInfo"/> instance.</param>
-        /// <returns>True if extended attributes or NTFS file alternative streams are supported, false otherwise.</returns>
-        public static async Task<bool> IsExtendedAttributesSupportedAsync(this FileSystemInfo info)
-        {
-            if (info == null)
-            {
-                throw new ArgumentNullException("info");
-            }
-
-            return await extendedAttribute.IsExtendedAttributesSupportedAsync(info.FullName);
-        }
-
-        /// <summary>
-        /// Determines whether extended attributes are supported.
-        /// </summary>
-        /// <param name="info"><see cref="FileSystemInfo"/> instance.</param>
-        /// <returns>True if extended attributes or NTFS file alternative streams are supported, false otherwise.</returns>
-        public static bool IsExtendedAttributesSupported(this FileSystemInfo info)
-        {
-            return info.IsExtendedAttributesSupportedAsync().ConfigureAwait(false).GetAwaiter().GetResult();
         }
         /// <summary>
         /// Checks whether a FileInfo or DirectoryInfo object is a directory, or intended to be a directory.

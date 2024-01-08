@@ -15,9 +15,9 @@ Namespace ExtendedAttributes
     Module FileSystemInfoExtension
 
         ''' <summary>
-        ''' Depending on OS holds WindowsExtendedAttribute, OSXExtendedAttribute or LinuxExtendedAttribute class instance.
+        ''' Implementation of <see cref="IExtendedAttribute"/> .
         ''' </summary>
-        Private extendedAttribute As IExtendedAttribute
+        Private extendedAttribute As IExtendedAttribute = New WindowsExtendedAttribute()
 
         ''' <summary>
         ''' Sets <see cref="FileSystemExtendedAttribute"/>  as a storage for attributes.
@@ -37,45 +37,6 @@ Namespace ExtendedAttributes
                 Return TypeOf extendedAttribute Is FileSystemExtendedAttribute
             End Get
         End Property
-
-        ''' <summary>
-        ''' Initializes static class members.
-        ''' </summary>
-        Sub New()
-            If RuntimeInformation.IsOSPlatform(OSPlatform.Windows) Then
-                extendedAttribute = New WindowsExtendedAttribute()
-            ElseIf RuntimeInformation.IsOSPlatform(OSPlatform.Linux) Then
-                extendedAttribute = New LinuxExtendedAttribute()
-            ElseIf RuntimeInformation.IsOSPlatform(OSPlatform.OSX) Then
-                extendedAttribute = New OSXExtendedAttribute()
-            Else
-                Throw New Exception("Not Supported OS")
-            End If
-        End Sub
-
-        ''' <summary>
-        ''' Determines whether extended attributes are supported.
-        ''' </summary>
-        ''' <param name="info"><see cref="FileSystemInfo"/>  instance.</param>
-        ''' <returns>True if extended attributes or NTFS file alternative streams are supported, false otherwise.</returns>
-        <Extension()>
-        Async Function IsExtendedAttributesSupportedAsync(info As FileSystemInfo) As Task(Of Boolean)
-            If info Is Nothing Then
-                Throw New ArgumentNullException("info")
-            End If
-
-            Return Await extendedAttribute.IsExtendedAttributesSupportedAsync(info.FullName)
-        End Function
-
-        ''' <summary>
-        ''' Determines whether extended attributes are supported.
-        ''' </summary>
-        ''' <param name="info"><see cref="FileSystemInfo"/>  instance.</param>
-        ''' <returns>True if extended attributes or NTFS file alternative streams are supported, false otherwise.</returns>
-        <Extension()>
-        Function IsExtendedAttributesSupported(info As FileSystemInfo) As Boolean
-            Return info.IsExtendedAttributesSupportedAsync().ConfigureAwait(False).GetAwaiter().GetResult()
-        End Function
 
         ''' <summary>
         ''' Checks whether a FileInfo or DirectoryInfo object is a directory, or intended to be a directory.

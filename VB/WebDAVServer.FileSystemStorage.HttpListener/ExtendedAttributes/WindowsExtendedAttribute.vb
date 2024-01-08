@@ -17,37 +17,7 @@ Namespace ExtendedAttributes
 
         Private ReadOnly pathFormat As String = "{0}:{1}"
 
-        Private ReadOnly fileSystemAttributeBlockSize As Integer = 262144
-
         Private Const systemErrorCodeDiskFull As Integer = 112
-
-        ''' <summary>
-        ''' Determines whether extended attributes are supported. 
-        ''' </summary>
-        ''' <param name="checkPath">File or folder path.</param>
-        ''' <returns>True if extended attributes are supported, false otherwise.</returns>
-        ''' <exception cref="ArgumentNullException">Throw when path is null or empty.</exception>
-        ''' <exception cref="COMException">Throw when happens some system exception.</exception>
-        Public Async Function IsExtendedAttributesSupportedAsync(checkPath As String) As Task(Of Boolean) Implements IExtendedAttribute.IsExtendedAttributesSupportedAsync
-            If String.IsNullOrEmpty(checkPath) Then
-                Throw New ArgumentNullException("path")
-            End If
-
-            checkPath = Path.GetPathRoot(checkPath)
-            If Not checkPath.EndsWith("\") Then checkPath += "\"
-            Dim volumeName As StringBuilder = New StringBuilder(261)
-            Dim fileSystemName As StringBuilder = New StringBuilder(261)
-            Dim volSerialNumber As Integer
-            Dim maxFileNameLen As Integer
-            Dim fileSystemFlags As Integer
-            If Not GetVolumeInformation(GetWin32LongPath(checkPath), volumeName, volumeName.Capacity,
-                                       volSerialNumber, maxFileNameLen, fileSystemFlags,
-                                       fileSystemName, fileSystemName.Capacity) Then
-                ThrowLastError()
-            End If
-
-            Return(fileSystemFlags And fileSystemAttributeBlockSize) = fileSystemAttributeBlockSize
-        End Function
 
         ''' <summary>
         ''' Checks extended attribute existence.
@@ -245,10 +215,6 @@ Namespace ExtendedAttributes
             End If
 
             Return "\\?\" & path
-        End Function
-
-        <DllImport("kernel32.dll", CharSet:=CharSet.Unicode, SetLastError:=True)>
-        Private Shared Function GetVolumeInformation(lpRootPathName As String, volumeName As StringBuilder, volumeNameBufLen As Integer, ByRef volSerialNumber As Integer, ByRef maxFileNameLen As Integer, ByRef fileSystemFlags As Integer, fileSystemName As StringBuilder, fileSystemNameBufLen As Integer) As Boolean
         End Function
 
         <DllImport("kernel32.dll", CharSet:=CharSet.Unicode, SetLastError:=True)>

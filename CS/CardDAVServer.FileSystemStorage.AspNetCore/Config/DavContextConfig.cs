@@ -65,11 +65,6 @@ namespace CardDAVServer.FileSystemStorage.AspNetCore.Configuration
             {
                 FileSystemInfoExtension.UseFileSystemAttribute(new FileSystemExtendedAttribute(config.AttrStoragePath, config.RepositoryPath));
             }
-            else if (!await new DirectoryInfo(config.RepositoryPath).IsExtendedAttributesSupportedAsync())
-            {
-                var tempPath = Path.Combine(Path.GetTempPath(), System.Reflection.Assembly.GetExecutingAssembly().GetName().Name);
-                FileSystemInfoExtension.UseFileSystemAttribute(new FileSystemExtendedAttribute(tempPath, config.RepositoryPath));
-            }
         }
     }
 }

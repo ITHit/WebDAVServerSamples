@@ -8,13 +8,6 @@ namespace WebDAVServer.FileSystemSynchronization.AspNetCore.ExtendedAttributes
     public interface IExtendedAttribute
     {
         /// <summary>
-        /// Determines whether extended attributes are supported.
-        /// </summary>
-        /// <param name="path">File or folder path.</param>
-        /// <returns>True if extended attributes or NTFS file alternative streams are supported, false otherwise.</returns>
-        Task<bool> IsExtendedAttributesSupportedAsync(string path);
-
-        /// <summary>
         /// Checks extended attribute existence.
         /// </summary>
         /// <param name="path">File or folder path.</param>

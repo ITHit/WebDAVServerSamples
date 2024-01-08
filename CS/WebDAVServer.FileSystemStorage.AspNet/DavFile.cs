@@ -167,6 +167,9 @@ namespace WebDAVServer.FileSystemStorage.AspNet
             if (startIndex == 0 && fileInfo.Length > 0)
             {
                 using (FileStream filestream = fileInfo.Open(FileMode.Truncate)) { }
+
+                // Refresh file state since file was truncated.
+                fileInfo.Refresh();
             }
             await WriteInternalAsync(content, contentType, startIndex, totalFileSize);
             await context.socketService.NotifyUpdatedAsync(Path, GetWebSocketID());

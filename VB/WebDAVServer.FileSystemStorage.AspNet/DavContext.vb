@@ -59,9 +59,6 @@ Public Class DavContext
         If Not FileSystemInfoExtension.IsUsingFileSystemAttribute Then
             If Not String.IsNullOrEmpty(attrStoragePath) Then
                 FileSystemInfoExtension.UseFileSystemAttribute(New FileSystemExtendedAttribute(attrStoragePath, Me.RepositoryPath))
-            ElseIf Not(New DirectoryInfo(RepositoryPath).IsExtendedAttributesSupported()) Then
-                Dim tempPath = Path.Combine(Path.GetTempPath(), System.Reflection.Assembly.GetExecutingAssembly().GetName().Name)
-                FileSystemInfoExtension.UseFileSystemAttribute(New FileSystemExtendedAttribute(tempPath, Me.RepositoryPath))
             End If
         End If
 
