@@ -156,7 +156,6 @@ namespace CardDAVServer.FileSystemStorage.AspNetCore
         public async Task<IEnumerable<PropertyValue>> GetPropertiesAsync(IList<PropertyName> props, bool allprop)
         {
             List<PropertyValue> propertyValues = await GetPropertyValuesAsync();
-
             if (!allprop)
             {
                 propertyValues = propertyValues.Where(p => props.Contains(p.QualifiedName)).ToList();

@@ -315,6 +315,8 @@ Public Class DavFile
 
             ' Locks should not be copied, delete them.
             If Await newFileInfo.HasExtendedAttributeAsync("Locks") Then Await newFileInfo.DeleteExtendedAttributeAsync("Locks")
+            ' Update file system info to new.
+            fileSystemInfo = newFileInfo
         Catch __unusedUnauthorizedAccessException1__ As UnauthorizedAccessException
             ' Exception occurred with the item for which MoveTo was called - fail the operation.
             Dim ex As NeedPrivilegesException = New NeedPrivilegesException("Not enough privileges")

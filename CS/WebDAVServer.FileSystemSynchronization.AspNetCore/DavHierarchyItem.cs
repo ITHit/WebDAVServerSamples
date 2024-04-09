@@ -24,6 +24,10 @@ namespace WebDAVServer.FileSystemSynchronization.AspNetCore
         /// Property name to return text anound search phrase.
         /// </summary>
         internal const string snippetProperty = "snippet";
+        /// <summary>
+        /// Property name of metadata Etag.
+        /// </summary>
+        internal const string metadataEtagProperty = "metadata-Etag";
 
         /// <summary>
         /// Name of properties attribute.
@@ -180,7 +184,12 @@ namespace WebDAVServer.FileSystemSynchronization.AspNetCore
             {
                 propertyValues.Add(new PropertyValue(snippet, ((DavFile)this).Snippet));
             }
-
+            PropertyName metadataEtag = props.FirstOrDefault(s => s.Name == metadataEtagProperty);
+            if (metadataEtag.Name == metadataEtagProperty)
+            {
+                propertyValues.Add(new PropertyValue(metadataEtag,
+                    ((await fileSystemInfo.GetExtendedAttributeAsync<int?>("MetadateSerialNumber")) ?? 0).ToString()));
+            }
             if (!allprop)
             {
                 propertyValues = propertyValues.Where(p => props.Contains(p.QualifiedName)).ToList();
@@ -269,6 +278,7 @@ namespace WebDAVServer.FileSystemSynchronization.AspNetCore
             propertyValues.RemoveAll(prop => delProps.Contains(prop.QualifiedName));
 
             await fileSystemInfo.SetExtendedAttributeAsync(propertiesAttributeName, propertyValues);
+            await UpdateMetadateEtagAsync();
             await context.socketService.NotifyUpdatedAsync(Path, GetWebSocketID());
         }
 
@@ -523,6 +533,7 @@ namespace WebDAVServer.FileSystemSynchronization.AspNetCore
             }
 
             await fileSystemInfo.SetExtendedAttributeAsync(locksAttributeName, locks);
+            await UpdateMetadateEtagAsync();
         }
 
         private async Task RemoveExpiredLocksAsync(string unlockedToken)
@@ -539,6 +550,7 @@ namespace WebDAVServer.FileSystemSynchronization.AspNetCore
             }
 
             await fileSystemInfo.SetExtendedAttributeAsync(locksAttributeName, locks);
+            await UpdateMetadateEtagAsync();
         }
 
         /// <summary>
@@ -562,6 +574,12 @@ namespace WebDAVServer.FileSystemSynchronization.AspNetCore
         {
             return context.Request.Headers.ContainsKey("InstanceId") ?
                 context.Request.Headers["InstanceId"] : string.Empty;
+        }
+        protected async Task UpdateMetadateEtagAsync()
+        {
+            int serialNumber = await fileSystemInfo.GetExtendedAttributeAsync<int?>("MetadateSerialNumber") ?? 0;
+
+            await fileSystemInfo.SetExtendedAttributeAsync("MetadateSerialNumber", ++serialNumber);
         }
     }
 }

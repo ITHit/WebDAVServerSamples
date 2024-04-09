@@ -7,7 +7,6 @@ import {
   clearSelectedItems,
   clearStoredItems,
   getSelectedItems,
-  clearItems,
   setOptionsInfo,
   setError,
   setCurrentPage,
@@ -16,6 +15,7 @@ import {
   setSearchQuery,
   setItem,
   showProtocolModal,
+  setLoadingWithSceleton,
 } from "../features/grid/gridSlice";
 import { StoredType } from "../models/StoredType";
 import { ITHit } from "webdav.client";
@@ -31,7 +31,11 @@ import { UploadService } from "../services/UploadService";
 const i18n = getI18n();
 
 export class StoreWorker {
-  static refresh(url?: string, queryParams?: QueryParams) {
+  static refresh(
+    url?: string | null,
+    queryParams?: QueryParams | null,
+    showSceleton?: boolean
+  ) {
     const { searchMode, searchQuery } = this._getGrid();
     let curSearchMode = searchMode;
     let location = "";
@@ -66,7 +70,7 @@ export class StoreWorker {
       store.dispatch(setCurrentPage(1));
     }
     store.dispatch(clearSelectedItems());
-    store.dispatch(clearItems());
+    store.dispatch(setLoadingWithSceleton(!!showSceleton));
     store.dispatch(setCurrentFolder(curSearchMode)).then(() => {
       store.dispatch(setOptionsInfo());
       store.dispatch(push(location + this._getHash()));

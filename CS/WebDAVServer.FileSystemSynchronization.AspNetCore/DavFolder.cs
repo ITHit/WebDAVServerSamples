@@ -43,7 +43,11 @@ namespace WebDAVServer.FileSystemSynchronization.AspNetCore
         /// <returns>Folder instance or null if physical folder not found in file system.</returns>
         public static async Task<DavFolder> GetFolderAsync(DavContext context, string path)
         {
-            string folderPath = context.MapPath(ref path).TrimEnd(System.IO.Path.DirectorySeparatorChar);
+            string folderPath = context.MapPath(ref path)?.TrimEnd(System.IO.Path.DirectorySeparatorChar);
+            if (string.IsNullOrEmpty(folderPath))
+            {
+                return null;
+            }
             DirectoryInfo folder = new DirectoryInfo(folderPath);
 
             // This code blocks vulnerability when "%20" folder can be injected into path and folder.Exists returns 'true'.
@@ -290,6 +294,9 @@ namespace WebDAVServer.FileSystemSynchronization.AspNetCore
                     Directory.Delete(newDirPath);
 
                 dirInfo.MoveTo(newDirPath);
+
+                // Update file system info to new.
+                fileSystemInfo = new DirectoryInfo(newDirPath);
             }
             catch (DavException ex)
             {
@@ -297,6 +304,7 @@ namespace WebDAVServer.FileSystemSynchronization.AspNetCore
                 multistatus.AddInnerException(targetPath, ex);
                 return;
             }
+            await UpdateMetadateEtagAsync();
             // Refresh client UI.
             await context.socketService.NotifyMovedAsync(Path, targetPath, GetWebSocketID());
         }

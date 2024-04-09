@@ -43,7 +43,7 @@ namespace WebDAVServer.SqlStorage.AspNetCore
 
         public async Task Invoke(HttpContext context)
         {
-            if(context.WebSockets.IsWebSocketRequest && context.Request.Path.StartsWithSegments(new PathString("/dav")))
+            if(context.WebSockets.IsWebSocketRequest)
             {
                 // If current request is web socket request.
                 WebSocket client = await context.WebSockets.AcceptWebSocketAsync();

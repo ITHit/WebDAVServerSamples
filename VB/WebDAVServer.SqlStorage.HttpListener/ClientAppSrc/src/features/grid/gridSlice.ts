@@ -48,6 +48,7 @@ export interface GridState {
   storedItems: ITHit.WebDAV.Client.HierarchyItem[];
   selectedIndexes: number[];
   loading: boolean;
+  loadingWithSceleton: boolean;
   error: WebDavError | null;
   currentPage: number;
   pageSize: number;
@@ -71,6 +72,7 @@ export const initialState: GridState = {
   storedItems: [],
   selectedIndexes: [],
   loading: true,
+  loadingWithSceleton: false,
   error: null,
   pageSize: 10,
   currentPage: 1,
@@ -231,6 +233,9 @@ export const gridSlice = createSlice({
       state.countPages = 1;
       state.searchMode = true;
     },
+    setLoadingWithSceleton: (state, action: PayloadAction<boolean>) => {
+      state.loadingWithSceleton = action.payload;
+    },
     addSelectedItem: (state, action: PayloadAction<number>) => {
       state.selectedIndexes.push(action.payload);
       state.allSelected = isAllSelected(state);
@@ -290,7 +295,7 @@ export const gridSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder.addCase(setCurrentFolder.fulfilled, (state, action) => {
-      state.loading = false;
+      if (state.loading) state.loading = false;
       state.items = action.payload.result
         .Page as ITHit.WebDAV.Client.HierarchyItem[];
       state.countPages = Math.ceil(
@@ -306,11 +311,11 @@ export const gridSlice = createSlice({
     });
 
     builder.addCase(setCurrentFolder.pending, (state) => {
-      state.loading = true;
+      if (state.loadingWithSceleton) state.loading = true;
     });
 
     builder.addCase(setCurrentFolder.rejected, (state) => {
-      state.loading = false;
+      if (state.loading) state.loading = false;
     });
 
     builder.addCase(setItem.fulfilled, (state, action) => {
@@ -353,6 +358,7 @@ export const {
   setCurrentPage,
   setSearchQuery,
   setSearchedItem,
+  setLoadingWithSceleton,
   addSelectedItem,
   removeSelectedItem,
   clearSelectedItems,

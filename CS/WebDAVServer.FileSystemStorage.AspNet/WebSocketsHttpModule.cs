@@ -44,7 +44,7 @@ namespace WebDAVServer.FileSystemStorage.AspNet
         private void CheckState(object sender, EventArgs e)
         {
             HttpContext context = ((HttpApplication)sender).Context;
-            if(context.IsWebSocketRequest && context.Request.RawUrl.StartsWith("/dav"))
+            if(context.IsWebSocketRequest)
             {
                 // Handle request if it is web socket request and end pipeline.
                 context.AcceptWebSocketRequest(HandleWebSocketRequest);

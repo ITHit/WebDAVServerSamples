@@ -110,8 +110,8 @@ namespace WebDAVServer.FileSystemSynchronization.AspNetCore
             if (relativePath.StartsWith("ID/"))
          
             {
-                string fileSystemItemPath = FileSystemItem.GetPathByItemId(decodedParts[decodedParts.Length - 1]);
-                relativePath = fileSystemItemPath.Substring(RepositoryPath.Length).Replace(Path.DirectorySeparatorChar.ToString(), "/");
+                string fileSystemItemPath = FileSystemItem.GetPathByFileId((new DriveInfo(RepositoryPath)).Name, long.Parse(decodedParts[decodedParts.Length - 1]));
+                relativePath = fileSystemItemPath?.Substring(RepositoryPath.Length).Replace(Path.DirectorySeparatorChar.ToString(), "/");
 
                 return fileSystemItemPath;
             }

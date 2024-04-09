@@ -73,6 +73,10 @@ namespace WebDAVServer.FileSystemSynchronization.AspNetCore
         public static async Task<DavFile> GetFileAsync(DavContext context, string path)
         {
             string filePath = context.MapPath(ref path);
+            if (string.IsNullOrEmpty(filePath))
+            {
+                return null;
+            }
             FileInfo file = new FileInfo(filePath);
 
             // This code blocks vulnerability when "%20" folder can be injected into path and file.Exists returns 'true'.
@@ -338,6 +342,7 @@ namespace WebDAVServer.FileSystemSynchronization.AspNetCore
                 ex.AddRequiredPrivilege(parentPath, Privilege.Unbind);
                 throw ex;
             }
+            await UpdateMetadateEtagAsync();
             if (recursionDepth == 0)
             {
                 // Refresh client UI.

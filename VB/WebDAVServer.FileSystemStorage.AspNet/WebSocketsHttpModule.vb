@@ -40,7 +40,7 @@ Public Class WebSocketsHttpModule
     ''' <param name="e">Event arguments.</param>
     Private Sub CheckState(sender As Object, e As EventArgs)
         Dim context As HttpContext = CType(sender, HttpApplication).Context
-        If context.IsWebSocketRequest AndAlso context.Request.RawUrl.StartsWith("/dav") Then
+        If context.IsWebSocketRequest Then
             ' Handle request if it is web socket request and end pipeline.
             context.AcceptWebSocketRequest(AddressOf HandleWebSocketRequest)
             context.ApplicationInstance.CompleteRequest()

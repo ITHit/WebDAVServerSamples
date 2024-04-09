@@ -18,7 +18,7 @@ const Pagination: React.FC<Props> = () => {
   })();
   const handleClick = (page: number) => {
     dispatch(setCurrentPage(page));
-    StoreWorker.refresh();
+    StoreWorker.refresh(null, null, true);
   };
   return (
     <div>

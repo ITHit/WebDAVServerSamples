@@ -15,9 +15,9 @@ export function WebSocketConnect() {
     }
 
     if (window.location.protocol === "https:") {
-      socketSource = new WebSocket("wss://" + host + "/dav");
+      socketSource = new WebSocket("wss://" + host);
     } else {
-      socketSource = new WebSocket("ws://" + host + "/dav");
+      socketSource = new WebSocket("ws://" + host);
     }
   }
 

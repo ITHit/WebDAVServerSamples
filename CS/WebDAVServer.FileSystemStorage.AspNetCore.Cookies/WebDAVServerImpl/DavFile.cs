@@ -358,6 +358,9 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore.Cookies
                 // Locks should not be copied, delete them.
                 if (await newFileInfo.HasExtendedAttributeAsync("Locks"))
                     await newFileInfo.DeleteExtendedAttributeAsync("Locks");
+
+                // Update file system info to new.
+                fileSystemInfo = newFileInfo;
             }
             catch (UnauthorizedAccessException)
             {

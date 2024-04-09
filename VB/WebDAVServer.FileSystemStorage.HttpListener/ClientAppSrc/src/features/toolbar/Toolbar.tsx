@@ -81,7 +81,7 @@ const Toolbar: React.FC<Props> = () => {
   };
 
   const handleReloadClick = () => {
-    StoreWorker.refresh();
+    StoreWorker.refresh(null, null, true);
   };
 
   const storeItems = (type: StoredType) => {

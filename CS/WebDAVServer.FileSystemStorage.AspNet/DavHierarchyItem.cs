@@ -164,7 +164,6 @@ namespace WebDAVServer.FileSystemStorage.AspNet
             {
                 propertyValues.Add(new PropertyValue(snippet, ((DavFile)this).Snippet));
             }
-
             if (!allprop)
             {
                 propertyValues = propertyValues.Where(p => props.Contains(p.QualifiedName)).ToList();

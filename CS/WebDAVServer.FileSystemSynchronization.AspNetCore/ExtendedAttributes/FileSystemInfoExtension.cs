@@ -52,9 +52,9 @@ namespace WebDAVServer.FileSystemSynchronization.AspNetCore.ExtendedAttributes
         /// </summary>
         /// <param name="path">File or folder path.</param>
         /// <returns>File or folder ID.</returns>
-        public static string GetId(this FileSystemInfo info)
+        public static long GetId(this FileSystemInfo info)
         {
-            return new FileSystemItem(info.FullName).GetId();
+            return new FileSystemItem(info.FullName).GetFileId();
         }
         /// <summary>
         /// Checks whether a FileInfo or DirectoryInfo object is a directory, or intended to be a directory.
