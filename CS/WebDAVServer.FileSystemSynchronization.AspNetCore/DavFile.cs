@@ -325,6 +325,9 @@ namespace WebDAVServer.FileSystemSynchronization.AspNetCore
                 var newFileInfo = new FileInfo(newDirPath);
                 if (await newFileInfo.HasExtendedAttributeAsync("Locks"))
                     await newFileInfo.DeleteExtendedAttributeAsync("Locks");
+
+                // Update file system info to new.
+                fileSystemInfo = newFileInfo;
             }
             catch (DavException ex)
             {
