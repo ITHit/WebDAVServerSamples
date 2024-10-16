@@ -1,7 +1,7 @@
 
 <Project Sdk="Microsoft.NET.Sdk.Web">
 	<PropertyGroup>
-		<VersionPrefix>14.1.13916</VersionPrefix>
+		<VersionPrefix>14.1.13942</VersionPrefix>
 		<AssemblyName>WebDAVServer.FileSystemStorage.AspNetCore</AssemblyName>
 		<TargetFramework>net8.0</TargetFramework>
 		<LangVersion>9.0</LangVersion>
@@ -28,10 +28,10 @@
 		</Content>
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="ITHit.Server" Version="14.1.13916" />
-		<PackageReference Include="ITHit.Server.Core" Version="14.1.13916" />
-		<PackageReference Include="ITHit.WebDAV.Server" Version="14.1.13916" />
-		<PackageReference Include="System.Data.OleDb" Version="8.0.0" />
+		<PackageReference Include="ITHit.Server" Version="14.1.13942" />
+		<PackageReference Include="ITHit.Server.Core" Version="14.1.13942" />
+		<PackageReference Include="ITHit.WebDAV.Server" Version="14.1.13942" />
+		<PackageReference Include="System.Data.OleDb" Version="8.0.1" />
 	</ItemGroup>
 	<PropertyGroup>
 		<IsNetFramework>false</IsNetFramework>

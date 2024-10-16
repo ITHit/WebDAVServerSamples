@@ -1,3 +1,4 @@
+import "./webDavInitializeLicense";
 import React from "react";
 import ReactDOM from "react-dom";
 import "./i18n/config";
@@ -9,11 +10,6 @@ import { getPath } from "./app/routerPaths";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "./styles/scss/skin_base/app.scss";
 import { WebSocketConnect } from "./services/WebSocketService";
-//import { ITHit } from "webdav.client"
-
-//if (window.webDavSettings && window.webDavSettings.LicenseId && !ITHit.WebDAV.Client.LicenseId) {
-//  ITHit.WebDAV.Client.LicenseId = window.webDavSettings.LicenseId;
-//}
 
 WebSocketConnect();
 ReactDOM.render(

@@ -12,15 +12,15 @@
 		<None Remove="App_Data\WebDav\Storage\qtest_*\**" />
   </ItemGroup>  
   <ItemGroup>
-	<PackageReference Include="ITHit.Server" Version="14.1.13916" />
-    <PackageReference Include="ITHit.Server.Core" Version="14.1.13916" />
-    <PackageReference Include="ITHit.WebDAV.Server" Version="14.1.13916" />
-	<PackageReference Include="System.Data.OleDb" Version="8.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.0">
+	<PackageReference Include="ITHit.Server" Version="14.1.13942" />
+    <PackageReference Include="ITHit.Server.Core" Version="14.1.13942" />
+    <PackageReference Include="ITHit.WebDAV.Server" Version="14.1.13942" />
+    <PackageReference Include="System.Data.OleDb" Version="8.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.10" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.10" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.10" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.10" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.10">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

@@ -10,11 +10,11 @@ namespace CalDAVServer.SqlStorage.AspNetCore.Configuration
     /// </summary>
     public class DavContextConfig
     {
+
         /// <summary>
         /// Database conntion string.
         /// </summary>
         public string ConnectionString { get; set; } = string.Empty;
-       
     }
 
     /// <summary>

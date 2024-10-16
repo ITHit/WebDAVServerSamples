@@ -33,7 +33,7 @@ namespace WebDAVServer.FileSystemStorage.AspNetCore.Cookies
             CorsAllowedFor              = engineConfig.CorsAllowedFor;
             License                     = engineConfig.License;
 
-            Logger                      = logger;
+            Logger = logger;
 
             // Set custom handler to process GET and HEAD requests to folders and display 
             // info about how to connect to server. We are using the same custom handler 
