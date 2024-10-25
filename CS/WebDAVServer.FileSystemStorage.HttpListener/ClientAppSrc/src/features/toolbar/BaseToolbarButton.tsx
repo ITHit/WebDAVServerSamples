@@ -4,11 +4,13 @@ import { toolbarConfig, ButtonConfig } from "./settings";
 type Props = {
   config: ButtonConfig;
   isDisabled: boolean;
+  showing?: boolean;
   handleClick: () => void;
 };
 const BaseToolbarButton: React.FC<Props> = ({
   config,
   isDisabled,
+  showing = true,
   handleClick,
 }) => {
   const getInnerHtml = () => {
@@ -24,7 +26,7 @@ const BaseToolbarButton: React.FC<Props> = ({
       id={config.name}
       className={`btn-tool ${
         toolbarConfig.hideDisabledOnMobile ? "hide-disabled-md" : ""
-      }`}
+      } ${showing ? "" : "d-none"}`}
       title={config.title}
     >
       <i className={`icon ${config.iconClassName}`}></i>

@@ -10,7 +10,9 @@
       "printButton": "Print",
       "deleteButton": "Delete",
       "uploadButton": "Upload",
-      "downloadButton": "Download"
+      "downloadButton": "Download",
+      "lockButton": "Lock",
+      "unlockButton": "Unlock"
     },
     "modals": {
       "renameMessage": "Are you sure want to rename selected items?",
@@ -62,10 +64,9 @@
     "downloadProtocol": {
       "installCustomProtocol": "To open this document, you must install a custom protocol on a client machine and enable a web browser extension.",
       "downloadAndInstallFiles": "Download and install the file below",
-      "enableITHitEditDocumentOpener": "Enable the IT Hit Edit Document Opener web browser extension",
+      "enableITHitEditDocumentOpener": "(Optional) Enable the IT Hit Edit Document Opener web browser extension",
       "notRequiredForInternetExplorer": "The extension is not required for Internet Explorer",
-      "howInstallProtocolApp": "how to install the protocol app",
-      "installAndVerifyExtensions": "install and verify web browser extensions"
+      "installAndVerifyExtensions": "how to install and verify web browser extensions"
     },
     "errors": {
       "errorMessage": "Error message",

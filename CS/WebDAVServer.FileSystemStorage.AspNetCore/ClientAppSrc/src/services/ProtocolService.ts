@@ -46,22 +46,15 @@ export const allOs = [
   new WebDavProtocolApp(
     "windows",
     "Windows: ",
-    WebDavSettings.ApplicationProtocolsPath + "ITHitEditDocumentOpener.msi",
-    "ITHitEditDocumentOpener.msi",
+    "ms-windows-store://pdp/?ProductId=9nqb82r5hmnh",
+    "WebDAV Drive",
     "window"
-  ),
-  new WebDavProtocolApp(
-    "linux",
-    "Linux: ",
-    WebDavSettings.ApplicationProtocolsPath + "ITHitEditDocumentOpener.deb",
-    "ITHitEditDocumentOpener.deb",
-    "linux"
   ),
   new WebDavProtocolApp(
     "mac",
     "Mac OS: ",
-    WebDavSettings.ApplicationProtocolsPath + "ITHitEditDocumentOpener.pkg",
-    "ITHitEditDocumentOpener.pkg",
+    "https://apps.apple.com/us/app/webdav-drive/id6502366145",
+    "WebDAV Drive",
     "mac-os"
   ),
 ];
@@ -180,5 +173,17 @@ export class ProtocolService {
       default:
         return "other";
     }
+  }
+
+  static getInstallerFileUrl() {
+    if (this.getOsName(navigator.userAgent) === "windows") {
+      return "ms-windows-store://pdp/?ProductId=9nqb82r5hmnh";
+    } else if (this.getOsName(navigator.userAgent) === "mac") {
+      return "https://apps.apple.com/us/app/webdav-drive/id6502366145";
+    }
+    return (
+      WebDavSettings.ApplicationProtocolsPath +
+      ITHit.WebDAV.Client.DocManager.GetProtocolInstallFileNames()[0]
+    );
   }
 }

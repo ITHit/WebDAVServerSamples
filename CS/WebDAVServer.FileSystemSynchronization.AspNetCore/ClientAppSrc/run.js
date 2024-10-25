@@ -14,9 +14,13 @@ execSync("node -v", { stdio: "inherit" });
 
 let currVersion;
 let newVersion;
+let newBetaVersion;
 if (fs.existsSync(".\\node_modules\\webdav.client")) {
   currVersion = require("webdav.client/package.json").version;
   newVersion = execSync("npm show webdav.client version").toString().trim();
+  newBetaVersion = execSync("npm show webdav.client@beta version")
+    .toString()
+    .trim();
 }
 
 if (newVersion == currVersion) {
@@ -29,9 +33,24 @@ if (newVersion == currVersion) {
   if (!fs.existsSync("..\\wwwroot\\app.js")) {
     installAndBuild();
   }
+} else if (newBetaVersion == currVersion) {
+  console.log("webdav.client version is up to date");
+  if (currVersion == undefined) {
+    execSync("npm install webdav.client@beta --save", { stdio: "inherit" });
+    installAndBuild();
+  }
+
+  if (!fs.existsSync("..\\wwwroot\\app.js")) {
+    installAndBuild();
+  }
 } else {
-  console.log("Found new webdav.client version " + newVersion);
-  execSync("npm install webdav.client --save", { stdio: "inherit" });
+  let isBeta = currVersion.includes("beta");
+  let newV = isBeta ? newBetaVersion : newVersion;
+  let npmTag = isBeta ? "@beta" : "";
+  console.log("Found new webdav.client version " + newV);
+  execSync("npm install webdav.client" + npmTag + " --save", {
+    stdio: "inherit",
+  });
   buildApp();
   copyClient();
 }

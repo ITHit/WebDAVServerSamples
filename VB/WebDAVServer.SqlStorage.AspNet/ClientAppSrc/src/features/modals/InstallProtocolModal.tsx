@@ -155,14 +155,6 @@ const InstallProtocolModal: React.FC<Props> = () => {
                   <br />
                   {t("phrases.see")}{" "}
                   <a
-                    href="https://www.webdavsystem.com/ajax/programming/open-doc-webpage/install/windows/"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {t("phrases.downloadProtocol.howInstallProtocolApp")}
-                  </a>{" "}
-                  {t("phrases.and")}{" "}
-                  <a
                     href="https://www.webdavsystem.com/ajax/programming/open-doc-webpage/install/web_browser_extensions/"
                     target="_blank"
                     rel="noreferrer"

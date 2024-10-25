@@ -62,6 +62,18 @@ export const toolbarConfig = new ToolbarConfig(true, [
     ""
   ),
   new ButtonConfig(
+    "lockButton",
+    i18n.t("phrases.toolbar.lockButton"),
+    "icon-lock",
+    ""
+  ),
+  new ButtonConfig(
+    "unlockButton",
+    i18n.t("phrases.toolbar.unlockButton"),
+    "icon-unlock",
+    ""
+  ),
+  new ButtonConfig(
     "copyButton",
     i18n.t("phrases.toolbar.copyButton"),
     "icon-copy-items",

@@ -4,6 +4,7 @@ import { UrlResolveService } from "../services/UrlResolveService";
 import { useAppSelector } from "../app/hooks/common";
 import { getCurrentUrl } from "./grid/gridSlice";
 import { useTranslation } from "react-i18next";
+import { ProtocolService } from "../services/ProtocolService";
 type Props = { itemUrl?: string; isSearchMode: boolean };
 const Breadcrumb: React.FC<Props> = ({ itemUrl, isSearchMode }) => {
   const { t } = useTranslation();
@@ -48,6 +49,10 @@ const Breadcrumb: React.FC<Props> = ({ itemUrl, isSearchMode }) => {
       homeUrl += "/";
     }
     StoreWorker.refresh(homeUrl);
+  };
+  
+  const getInstallerFileUrl = () => {
+    return ProtocolService.getInstallerFileUrl();
   };
 
   const handleItemClick = useCallback(
@@ -99,6 +104,16 @@ const Breadcrumb: React.FC<Props> = ({ itemUrl, isSearchMode }) => {
             );
           })}
         </ol>
+        <a
+        id="ithit-webdav-drive"
+        href={getInstallerFileUrl()}
+        className="btn btn-primary btn-sm btn-labeled"
+        type="button"
+        title="Download WebDAV Drive application."
+      >
+        <span className="btn-label"><i className="icon-webdav-drive"></i></span>
+        <span className="d-none d-lg-inline-block">Download WebDAV Drive</span>
+      </a>
       </div>
     </nav>
   );

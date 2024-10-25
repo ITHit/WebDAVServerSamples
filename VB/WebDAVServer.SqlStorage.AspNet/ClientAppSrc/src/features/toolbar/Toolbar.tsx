@@ -2,7 +2,11 @@ import React, { useState } from "react";
 import { toolbarConfig } from "./settings";
 import BaseToolbarButton from "./BaseToolbarButton";
 import UploadInput from "./UploadInput";
-import { getSelectedItems, getStoredItems } from "../grid/gridSlice";
+import {
+  getSelectedItems,
+  getStoredItems,
+  showProtocolModal,
+} from "../grid/gridSlice";
 import { useAppDispatch, useAppSelector } from "../../app/hooks/common";
 import { WebDavService } from "../../services/WebDavService";
 import { ProtocolService } from "../../services/ProtocolService";
@@ -14,6 +18,9 @@ import RenameItemModal from "../modals/RenameItemModal";
 import SubmitModal from "../modals/SubmitModal";
 import { StoreWorker } from "../../app/storeWorker";
 import { useTranslation } from "react-i18next";
+import { WebDavSettings } from "../../webDavSettings";
+import { UrlResolveService } from "../../services/UrlResolveService";
+import { ITHit } from "webdav.client";
 
 type Props = {};
 const Toolbar: React.FC<Props> = () => {
@@ -29,7 +36,8 @@ const Toolbar: React.FC<Props> = () => {
   const getButton = (
     btnName: string,
     handleClick: () => void = () => {},
-    isDisabled: boolean = false
+    isDisabled: boolean = false,
+    showing: boolean = true
   ) => {
     let btnConfig = toolbarConfig.buttons.find((c) => c.name === btnName);
     if (btnConfig) {
@@ -38,6 +46,7 @@ const Toolbar: React.FC<Props> = () => {
           handleClick={handleClick}
           isDisabled={isDisabled}
           config={btnConfig}
+          showing={showing}
         />
       );
     }
@@ -84,6 +93,39 @@ const Toolbar: React.FC<Props> = () => {
     StoreWorker.refresh(null, null, true);
   };
 
+  const handleLockClick = () => {
+    lockUnlockDocs(true);
+  };
+
+  const handleUnlockClick = () => {
+    lockUnlockDocs(false);
+  };
+
+  const showProtocolInstallModal = () => {
+    dispatch(showProtocolModal());
+  };
+
+  const lockUnlockDocs = (lock: boolean) => {
+    var filesUrls: string[] = [];
+
+    selectedItems.forEach((item) => {
+      if (!WebDavService.isFolder(item)) {
+        filesUrls.push(item.Href);
+      }
+    });
+
+    ITHit.WebDAV.Client.DocManager.DavProtocolEditDocument(
+      filesUrls,
+      UrlResolveService.getRootUrl(),
+      showProtocolInstallModal,
+      null,
+      WebDavSettings.EditDocAuth.SearchIn,
+      WebDavSettings.EditDocAuth.CookieNames,
+      WebDavSettings.EditDocAuth.LoginUrl,
+      lock ? "Lock" : "Unlock"
+    );
+  };
+
   const storeItems = (type: StoredType) => {
     dispatch(storeSelectedItems(type));
   };
@@ -114,6 +156,30 @@ const Toolbar: React.FC<Props> = () => {
               setIsRenameItemModalShown(true);
             },
             !selectedItems.length || selectedItems.length > 1
+          )}
+          {getButton(
+            "lockButton",
+            () => {
+              handleLockClick();
+            },
+            !selectedItems.length ||
+              !selectedItems.every((item) => item.ActiveLocks.length === 0),
+            !!(
+              !selectedItems.every((item) => item.ActiveLocks.length > 0) ||
+              !selectedItems.length
+            )
+          )}
+          {getButton(
+            "unlockButton",
+            () => {
+              handleUnlockClick();
+            },
+            !selectedItems.length ||
+              !selectedItems.every((item) => item.ActiveLocks.length > 0),
+            !!(
+              selectedItems.length &&
+              selectedItems.every((item) => item.ActiveLocks.length > 0)
+            )
           )}
         </div>
         <div className="col-auto px-0 px-xl-2">

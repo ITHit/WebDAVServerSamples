@@ -75,6 +75,13 @@
   }
 }
 
+#ithit-webdav-drive {
+  height: 34px;
+  line-height: 34px;
+  display: flex;
+  width: inherit;
+}
+
 .btn-default {
   @include button-variant($light, $light);
 }

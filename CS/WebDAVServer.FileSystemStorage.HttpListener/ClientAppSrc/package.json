@@ -32,7 +32,7 @@
     "sass": "^1.44.0",
     "typescript": "^4.4.4",
     "web-vitals": "^1.1.2",
-    "webdav.client": "^5.21.5974"
+    "webdav.client": "^6.0.8745-beta"
   },
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",

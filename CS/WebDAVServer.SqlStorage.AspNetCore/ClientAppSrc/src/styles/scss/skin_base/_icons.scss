@@ -169,6 +169,14 @@
       @include icon-mask(url(#{$image-base-path+"delete.svg"}));
     }
 
+    &.icon-lock:before {
+      @include icon-mask(url(#{$image-base-path+"lock.svg"}));
+    }
+
+    &.icon-unlock:before {
+      @include icon-mask(url(#{$image-base-path+"unlock.svg"}));
+    }
+
     &.icon-up-one-level:before {
       @include icon-mask(url(#{$image-base-path+"up-one-level.svg"}));
     }
@@ -213,4 +221,14 @@
     left: 50%;
     transform: translate(-50%, 0);
   }
+}
+
+.icon-webdav-drive {
+  background-image: url(#{$image-base-path+"webdav-drive-icon.svg"});
+  background-repeat: no-repeat;
+  display: inline-block;
+  height: 19px;
+  width: 19px;
+  position: relative;
+  background-size: 100%;
 }
