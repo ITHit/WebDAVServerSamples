@@ -58,7 +58,7 @@ export class WebDavService {
     pageSize: number,
     sPhrase: string
   ) {
-    let searchQuery = new ITHit.WebDAV.Client.SearchQuery(
+    const searchQuery = new ITHit.WebDAV.Client.SearchQuery(
       sPhrase
         .replace(/\\/g, "\\\\")
         .replace(/\\%/g, "\\%")
@@ -120,8 +120,8 @@ export class WebDavService {
     sortColumn: string,
     sortAscending: boolean
   ) {
-    var namespaceUri = "DAV:";
-    var sortColumns = [
+    const namespaceUri = "DAV:";
+    const sortColumns = [
       new ITHit.WebDAV.Client.OrderProperty(
         new ITHit.WebDAV.Client.PropertyName("is-directory", namespaceUri),
         false

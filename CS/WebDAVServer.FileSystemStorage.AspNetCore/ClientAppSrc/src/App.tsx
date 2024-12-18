@@ -1,24 +1,21 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import MainContainer from "./features/MainContainer";
 
 import { StoreWorker } from "./app/storeWorker";
 import { useLocation } from "react-router-dom";
 import { UrlResolveService } from "./services/UrlResolveService";
 import { UploadService } from "./services/UploadService";
-import { parse } from "query-string";
-import { QueryParams } from "./models/QueryParams";
+import queryString from "query-string";
+import { IQueryParams, QueryParams } from "./models/QueryParams";
 
 function App() {
   const location = useLocation();
-  const query = parse(location.search);
-  const queryParams = new QueryParams(query);
+  const query = queryString.parse(location.search);
+  const queryParams = new QueryParams(query as IQueryParams);
 
   const currentUrl =
     UrlResolveService.getRootUrl() +
-    UrlResolveService.getTail(
-      UrlResolveService.getOrigin() + location.pathname,
-      UrlResolveService.getRootUrl()
-    );
+    UrlResolveService.getTail(UrlResolveService.getOrigin() + location.pathname, UrlResolveService.getRootUrl());
 
   useEffect(() => {
     StoreWorker.refresh(currentUrl, queryParams);
@@ -27,10 +24,10 @@ function App() {
   useEffect(() => {
     UploadService.addDropzone();
 
-    return function cleanup() {
+    return () => {
       UploadService.destroy();
     };
-  });
+  }, []);
   return <MainContainer />;
 }
 

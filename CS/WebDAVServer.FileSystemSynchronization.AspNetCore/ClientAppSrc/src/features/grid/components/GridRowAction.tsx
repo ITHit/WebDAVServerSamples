@@ -14,20 +14,17 @@ type Props = { item: ITHit.WebDAV.Client.HierarchyItem };
 const GridRowAction: React.FC<Props> = ({ item }) => {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
-  const { getTooltipProps, setTooltipRef, setTriggerRef, visible } =
-    usePopperTooltip({
-      trigger: "click",
-      placement: "bottom-end",
-    });
+  const { getTooltipProps, setTooltipRef, setTriggerRef, visible } = usePopperTooltip({
+    trigger: "click",
+    placement: "bottom-end",
+  });
 
   const isMicrosoftOfficeDocument = () => {
     return ProtocolService.isMicrosoftOfficeDocument(item.Href);
   };
 
   const isDisabledAction = (() => {
-    return !(
-      ProtocolService.isDavProtocolSupported() || isMicrosoftOfficeDocument()
-    );
+    return !(ProtocolService.isDavProtocolSupported() || isMicrosoftOfficeDocument());
   })();
 
   const showProtocolInstallModal = () => {
@@ -61,11 +58,7 @@ const GridRowAction: React.FC<Props> = ({ item }) => {
         WebDavSettings.EditDocAuth.LoginUrl
       );
     } else {
-      ITHit.WebDAV.Client.DocManager.EditDocument(
-        item.Href,
-        UrlResolveService.getRootUrl(),
-        showProtocolInstallModal
-      );
+      ITHit.WebDAV.Client.DocManager.EditDocument(item.Href, UrlResolveService.getRootUrl(), showProtocolInstallModal);
     }
   };
 
@@ -96,9 +89,7 @@ const GridRowAction: React.FC<Props> = ({ item }) => {
               <span className="btn-label">
                 <i className="icon icon-open-folder" />
               </span>
-              <span className="d-none d-lg-inline-block">
-                {t("phrases.browse")}
-              </span>
+              <span className="d-none d-lg-inline-block">{t("phrases.browse")}</span>
             </button>
           );
         } else {
@@ -111,17 +102,9 @@ const GridRowAction: React.FC<Props> = ({ item }) => {
                 onClick={handleEditDocClick}
               >
                 <span className="btn-label">
-                  <i
-                    className={`icon ${
-                      isMicrosoftOfficeDocument()
-                        ? "icon-microsoft-edit"
-                        : "icon-edit"
-                    }`}
-                  />
+                  <i className={`icon ${isMicrosoftOfficeDocument() ? "icon-microsoft-edit" : "icon-edit"}`} />
                 </span>
-                <span className="d-none d-lg-inline-block btn-edit-label">
-                  {t("phrases.edit")}
-                </span>
+                <span className="d-none d-lg-inline-block btn-edit-label">{t("phrases.edit")}</span>
               </button>
               <button
                 className="btn btn-primary dropdown-toggle dropdown-toggle-split btn-sm"
@@ -141,9 +124,7 @@ const GridRowAction: React.FC<Props> = ({ item }) => {
                       {isMicrosoftOfficeDocument() && (
                         <button
                           className="dropdown-item"
-                          title={t(
-                            "phrases.grid.actions.editWithMsOffice.title"
-                          )}
+                          title={t("phrases.grid.actions.editWithMsOffice.title")}
                           onClick={handleEditDocClick}
                         >
                           <i className="icon icon-edit-ms-associated" />
@@ -153,9 +134,7 @@ const GridRowAction: React.FC<Props> = ({ item }) => {
                       {!isMicrosoftOfficeDocument() && (
                         <button
                           className="dropdown-item"
-                          title={t(
-                            "phrases.grid.actions.editWithDesctopApp.title"
-                          )}
+                          title={t("phrases.grid.actions.editWithDesctopApp.title")}
                           onClick={handleEditDocClick}
                         >
                           <i className="icon icon-edit-associated" />

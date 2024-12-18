@@ -3,20 +3,15 @@ import DefaultModal from "./DefaultModal";
 import { useTranslation } from "react-i18next";
 import { ProtocolService } from "../../services/ProtocolService";
 import { useAppDispatch, useAppSelector } from "../../app/hooks/common";
-import {
-  hideProtocolModal,
-  getProtocolModalDisplayed,
-} from "../grid/gridSlice";
-type Props = {};
+import { hideProtocolModal, getProtocolModalDisplayed } from "../grid/gridSlice";
 
-const InstallProtocolModal: React.FC<Props> = () => {
+const InstallProtocolModal: React.FC = () => {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const protocolModalDisplayed = useAppSelector(getProtocolModalDisplayed);
   const webDavProtocol = ProtocolService.getProtocol();
   const [moreOsDisplayed, setMoreOsDisplayed] = useState<boolean>(false);
-  const [moreBrowsersDisplayed, setMoreBrowsersDisplayed] =
-    useState<boolean>(false);
+  const [moreBrowsersDisplayed, setMoreBrowsersDisplayed] = useState<boolean>(false);
   const closeModal = () => {
     dispatch(hideProtocolModal());
   };
@@ -41,38 +36,23 @@ const InstallProtocolModal: React.FC<Props> = () => {
                         <span className="current-os">
                           <span className={webDavProtocol.currentOs.cssClass}>
                             <span>{webDavProtocol.currentOs.name}</span>
-                            <a
-                              target="_blank"
-                              href={webDavProtocol.currentOs.downloadLink}
-                              rel="noreferrer"
-                            >
+                            <a target="_blank" href={webDavProtocol.currentOs.downloadLink} rel="noreferrer">
                               {webDavProtocol.currentOs.fileName}
                             </a>
                             <br />
                           </span>
                         </span>
                       )}
-                      <button
-                        className="btn btn-link more-lnk"
-                        onClick={() => setMoreOsDisplayed(!moreOsDisplayed)}
-                      >
+                      <button className="btn btn-link more-lnk" onClick={() => setMoreOsDisplayed(!moreOsDisplayed)}>
                         <span>{moreOsDisplayed ? "- " : "+"}</span>
                         {t("phrases.otherOs")}:
                       </button>
-                      <p
-                        className={`more-pnl ${
-                          moreOsDisplayed ? "d-block" : ""
-                        }`}
-                      >
+                      <p className={`more-pnl ${moreOsDisplayed ? "d-block" : ""}`}>
                         {webDavProtocol.otherOs.map((item, index) => {
                           return (
                             <span key={"os-" + index} className={item.cssClass}>
                               <span>{item.name}</span>
-                              <a
-                                target="_blank"
-                                href={item.downloadLink}
-                                rel="noreferrer"
-                              >
+                              <a target="_blank" href={item.downloadLink} rel="noreferrer">
                                 {item.fileName}
                               </a>
                               <br />
@@ -82,34 +62,19 @@ const InstallProtocolModal: React.FC<Props> = () => {
                       </p>
                     </li>
                     <li>
-                      {t(
-                        "phrases.downloadProtocol.enableITHitEditDocumentOpener"
-                      )}
+                      {t("phrases.downloadProtocol.enableITHitEditDocumentOpener")}
                       :
                       <br />
-                      <span
-                        className="not-required-internet-explorer"
-                        style={{ display: "none" }}
-                      >
-                        {t(
-                          "phrases.downloadProtocol.notRequiredForInternetExplorer"
-                        )}
+                      <span className="not-required-internet-explorer" style={{ display: "none" }}>
+                        {t("phrases.downloadProtocol.notRequiredForInternetExplorer")}
                         .<br />
                       </span>
                       {!!webDavProtocol.currentBrowser && (
                         <span className="current-browser">
-                          <span
-                            className={webDavProtocol.currentBrowser.cssClass}
-                          >
+                          <span className={webDavProtocol.currentBrowser.cssClass}>
                             <span>{webDavProtocol.currentBrowser.name}</span>
                             {webDavProtocol.currentBrowser.downloadLink && (
-                              <a
-                                target="_blank"
-                                href={
-                                  webDavProtocol.currentBrowser.downloadLink
-                                }
-                                rel="noreferrer"
-                              >
+                              <a target="_blank" href={webDavProtocol.currentBrowser.downloadLink} rel="noreferrer">
                                 {webDavProtocol.currentBrowser.fileName}
                               </a>
                             )}
@@ -120,29 +85,16 @@ const InstallProtocolModal: React.FC<Props> = () => {
                       )}
                       <button
                         className="btn btn-link more-lnk"
-                        onClick={() =>
-                          setMoreBrowsersDisplayed(!moreBrowsersDisplayed)
-                        }
+                        onClick={() => setMoreBrowsersDisplayed(!moreBrowsersDisplayed)}
                       >
                         <span>{moreBrowsersDisplayed ? "- " : "+"}</span>
                         {t("phrases.otherWebBrowsers")}:
                       </button>
-                      <p
-                        className={`more-pnl ${
-                          moreBrowsersDisplayed ? "d-block" : ""
-                        }`}
-                      >
+                      <p className={`more-pnl ${moreBrowsersDisplayed ? "d-block" : ""}`}>
                         {webDavProtocol.otherBrowsers.map((item, index) => {
                           return (
-                            <span
-                              key={"browser" + index}
-                              className={item.cssClass}
-                            >
-                              <a
-                                target="_blank"
-                                href={item.downloadLink}
-                                rel="noreferrer"
-                              >
+                            <span key={"browser" + index} className={item.cssClass}>
+                              <a target="_blank" href={item.downloadLink} rel="noreferrer">
                                 {item.fileName}
                               </a>
                               <br />
@@ -166,11 +118,7 @@ const InstallProtocolModal: React.FC<Props> = () => {
             </div>
           </div>
           <div className="modal-footer">
-            <button
-              type="button"
-              className="btn btn-light"
-              onClick={closeModal}
-            >
+            <button type="button" className="btn btn-light" onClick={closeModal}>
               {t("phrases.close")}
             </button>
           </div>

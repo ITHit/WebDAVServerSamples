@@ -2,14 +2,12 @@ import { configureStore, ThunkAction, Action } from "@reduxjs/toolkit";
 import rootReducer from "./rootReducer";
 import { createBrowserHistory } from "history";
 import { options } from "./storeMiddleware";
-import { routerMiddleware } from "connected-react-router";
 
 export const history = createBrowserHistory();
 
 export const store = configureStore({
-  reducer: rootReducer(history),
-  middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware(options).concat(routerMiddleware(history)),
+  reducer: rootReducer,
+  middleware: (getDefaultMiddleware) => getDefaultMiddleware(options),
 });
 
 export type AppDispatch = typeof store.dispatch;

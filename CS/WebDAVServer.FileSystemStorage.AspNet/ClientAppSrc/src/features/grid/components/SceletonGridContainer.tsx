@@ -1,9 +1,8 @@
 import React from "react";
 import { useAppSelector } from "../../../app/hooks/common";
 import { getPageSize } from "../gridSlice";
-type Props = {};
 
-const SceletonGridContainer: React.FC<Props> = () => {
+const SceletonGridContainer: React.FC = () => {
   const pageSize = useAppSelector(getPageSize);
   return (
     <table className="table table-hover ithit-grid-container">
@@ -24,7 +23,7 @@ const SceletonGridContainer: React.FC<Props> = () => {
         </tr>
       </thead>
       <tbody>
-        {Array.from({ length: pageSize }, (_, i) => i).map((item, i) => {
+        {Array.from({ length: pageSize }, (_, i) => i).map((_item, i) => {
           return (
             <tr key={i}>
               <td className="select-disabled">
@@ -35,10 +34,7 @@ const SceletonGridContainer: React.FC<Props> = () => {
               </td>
               <td />
               <td>
-                <span
-                  className="sceleton-loader sceleton-p"
-                  style={{ width: "110px" }}
-                />
+                <span className="sceleton-loader sceleton-p" style={{ width: "110px" }} />
               </td>
               <td className="d-none d-xl-table-cell">
                 <span className="sceleton-loader sceleton-p" />

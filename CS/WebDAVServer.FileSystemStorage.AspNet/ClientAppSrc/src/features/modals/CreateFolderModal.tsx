@@ -11,8 +11,8 @@ type Props = { closeModal: () => void };
 const CreateFolderModal: React.FC<Props> = ({ closeModal }) => {
   const { t } = useTranslation();
   const currentFolder = useAppSelector(getCurrentFolder);
-  let [errorMessage, setErrorMessage] = useState<string | undefined>("");
-  let [folderName, setFolderName] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string | undefined>("");
+  const [folderName, setFolderName] = useState("");
   const createFolder = () => {
     if (currentFolder !== null)
       WebDavService.createFolder(currentFolder, folderName)
@@ -21,14 +21,9 @@ const CreateFolderModal: React.FC<Props> = ({ closeModal }) => {
           closeModal();
         })
         .catch((resp) => {
-          if (
-            resp.Error instanceof
-            ITHit.WebDAV.Client.Exceptions.MethodNotAllowedException
-          ) {
+          if (resp.Error instanceof ITHit.WebDAV.Client.Exceptions.MethodNotAllowedException) {
             setErrorMessage(
-              resp.Error.Error.Description
-                ? resp.Error.Error.Description
-                : t("phrases.validations.folderExists")
+              resp.Error.Error.Description ? resp.Error.Error.Description : t("phrases.validations.folderExists")
             );
           }
         });
@@ -53,10 +48,7 @@ const CreateFolderModal: React.FC<Props> = ({ closeModal }) => {
   };
 
   return (
-    <DefaultModal
-      title={t("phrases.modals.createFolderTitle")}
-      closeModal={closeModal}
-    >
+    <DefaultModal title={t("phrases.modals.createFolderTitle")} closeModal={closeModal}>
       <form onSubmit={handleSubmit}>
         <div className="modal-body">
           <div className="form-group">
@@ -68,9 +60,7 @@ const CreateFolderModal: React.FC<Props> = ({ closeModal }) => {
               placeholder={t("phrases.modals.folderNamePlaceholder")}
               onChange={handleInputChange}
             />
-            {errorMessage && (
-              <div className="alert alert-danger">{errorMessage}</div>
-            )}
+            {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
           </div>
         </div>
         <div className="modal-footer">

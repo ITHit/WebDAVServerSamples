@@ -1,3 +1,4 @@
 interface Window {
-  webDavSettings: any;
+  webDavSettings: WindowWebDavSettings | null;
+  chrome?: object;
 }

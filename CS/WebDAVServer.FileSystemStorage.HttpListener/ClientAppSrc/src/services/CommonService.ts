@@ -1,4 +1,4 @@
-import moment from "moment";
+import { formatDistanceToNow } from "date-fns";
 import { getI18n } from "react-i18next";
 const i18n = getI18n();
 
@@ -7,7 +7,7 @@ const sFileNameSpecialCharactersRestrictionFormat =
 const sForbiddenNameChars = '\\/:*?"<>|';
 export class CommonService {
   static getFileExtension(fileName: string) {
-    var index = fileName.lastIndexOf(".");
+    const index = fileName.lastIndexOf(".");
     return index !== -1 ? fileName.substr(index + 1).toLowerCase() : "";
   }
 
@@ -15,7 +15,7 @@ export class CommonService {
     if (!iSize) {
       return "0.00 B";
     }
-    var i = Math.floor(Math.log(iSize) / Math.log(1024));
+    const i = Math.floor(Math.log(iSize) / Math.log(1024));
     return (
       (iSize / Math.pow(1024, i)).toFixed(2) +
       " " +
@@ -24,13 +24,13 @@ export class CommonService {
   }
 
   static formatDate(oDate: Date) {
-    return moment(oDate).fromNow();
+    return formatDistanceToNow(oDate, { addSuffix: true });
   }
 
   static validateName(sName: string) {
-    var oRegExp = new RegExp("[" + sForbiddenNameChars + "]", "g");
+    const oRegExp = new RegExp("[" + sForbiddenNameChars + "]", "g");
     if (oRegExp.test(sName)) {
-      var sMessage = this.pasteFormat(
+      const sMessage = this.pasteFormat(
         sFileNameSpecialCharactersRestrictionFormat,
         sForbiddenNameChars.replace(/\\?(.)/g, "$1 ")
       );
@@ -40,7 +40,7 @@ export class CommonService {
 
   static formatSnippet(html: string | null) {
     if (html) {
-      var safePrefix = "__b__tag" + new Date().getTime();
+      const safePrefix = "__b__tag" + new Date().getTime();
       html = html
         .replace(/<b>/g, safePrefix + "_0")
         .replace(/<\/b>/g, safePrefix + "_1");
@@ -52,24 +52,24 @@ export class CommonService {
     return html;
   }
 
-  static pasteFormat(sPhrase: string, args: any) {
-    var callbackReplace = function (this: any, oArguments: any) {
-      this._arguments = oArguments;
-    } as any as { new (oArguments: any): any };
+  static pasteFormat(sPhrase: string, ...args: string[]) {
+    class CallbackReplace {
+      private _arguments: string[];
 
-    callbackReplace.prototype.Replace = function (sPlaceholder: string) {
-      var iIndex = sPlaceholder.substr(1, sPlaceholder.length - 2);
-      return "undefined" !== typeof this._arguments[iIndex]
-        ? this._arguments[iIndex]
-        : sPlaceholder;
-    };
+      constructor(oArguments: string[]) {
+        this._arguments = oArguments;
+      }
+
+      Replace(sPlaceholder: string): string {
+        const iIndex = parseInt(sPlaceholder.substr(1, sPlaceholder.length - 2), 10);
+        return this._arguments[iIndex] !== undefined ? this._arguments[iIndex] : sPlaceholder;
+      }
+    }
 
     if (/\{\d+?\}/.test(sPhrase)) {
-      var oReplace = new callbackReplace(
-        Array.prototype.slice.call(arguments, 1)
-      );
-      sPhrase = sPhrase.replace(/\{(\d+?)\}/g, function (args) {
-        return oReplace.Replace(args);
+      const oReplace = new CallbackReplace(args);
+      sPhrase = sPhrase.replace(/\{(\d+?)\}/g, function (match) {
+        return oReplace.Replace(match);
       });
     }
 
@@ -80,29 +80,29 @@ export class CommonService {
    * Gets name with copy suffix or number of copies
    */
   static getCopySuffix(itemName: string, bWithCopySuffix: boolean) {
-    var sCopySuffixName = "Copy";
+    const sCopySuffixName = "Copy";
 
-    var aExtensionMatches = /\.[^\\.]+$/.exec(itemName);
-    var sName =
+    const aExtensionMatches = /\.[^\\.]+$/.exec(itemName);
+    let sName =
       aExtensionMatches !== null
         ? itemName.replace(aExtensionMatches[0], "")
         : itemName;
-    var sDotAndExtension =
+    const sDotAndExtension =
       aExtensionMatches !== null ? aExtensionMatches[0] : "";
 
-    var sLangCopy = sCopySuffixName;
-    var oSuffixPattern = new RegExp(
+    const sLangCopy = sCopySuffixName;
+    const oSuffixPattern = new RegExp(
       "- " + sLangCopy + "( \\(([0-9]+)\\))?$",
       "i"
     );
 
-    var aSuffixMatches = oSuffixPattern.exec(sName);
+    const aSuffixMatches = oSuffixPattern.exec(sName);
     if (aSuffixMatches === null && bWithCopySuffix) {
       sName += " - " + sLangCopy;
     } else if (aSuffixMatches !== null && !aSuffixMatches[1]) {
       sName += " (2)";
     } else if (aSuffixMatches !== null) {
-      var iNextNumber = parseInt(aSuffixMatches[2]) + 1;
+      const iNextNumber = parseInt(aSuffixMatches[2]) + 1;
       sName = sName.replace(
         oSuffixPattern,
         "- " + sLangCopy + " (" + iNextNumber + ")"
@@ -154,10 +154,10 @@ export class CommonService {
   }
 
   static timeSpan(iSeconds: number): string {
-    var hours = Math.floor(iSeconds / 3600);
-    var minutes = Math.floor((iSeconds - hours * 3600) / 60);
-    var seconds = iSeconds - hours * 3600 - minutes * 60;
-    var sResult = "";
+    const hours = Math.floor(iSeconds / 3600);
+    const minutes = Math.floor((iSeconds - hours * 3600) / 60);
+    const seconds = iSeconds - hours * 3600 - minutes * 60;
+    let sResult = "";
     if (hours) sResult += hours + "h ";
     if (minutes) sResult += minutes + "m ";
     sResult += seconds + "s ";

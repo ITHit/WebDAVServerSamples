@@ -6,9 +6,7 @@ import { getLoading } from "../gridSlice";
 import SceletonGridContainer from "./SceletonGridContainer";
 import { useTranslation } from "react-i18next";
 
-type Props = {};
-
-const GridContainer: React.FC<Props> = () => {
+const GridContainer: React.FC = () => {
   const { t } = useTranslation();
   const loading = useAppSelector(getLoading);
 

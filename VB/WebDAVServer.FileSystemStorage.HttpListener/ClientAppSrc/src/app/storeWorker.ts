@@ -6,7 +6,6 @@ import {
   setCurrentFolder,
   clearSelectedItems,
   clearStoredItems,
-  getSelectedItems,
   setOptionsInfo,
   setError,
   setCurrentPage,
@@ -16,6 +15,7 @@ import {
   setItem,
   showProtocolModal,
   setLoadingWithSceleton,
+  refreshFolder
 } from "../features/grid/gridSlice";
 import { StoredType } from "../models/StoredType";
 import { ITHit } from "webdav.client";
@@ -25,12 +25,21 @@ import { CommonService } from "../services/CommonService";
 import { WebDavService } from "../services/WebDavService";
 import { WebDavSettings } from "../webDavSettings";
 import { UrlResolveService } from "../services/UrlResolveService";
-import { push } from "connected-react-router";
+import { createBrowserHistory } from "history";
+import { NavigateFunction } from "react-router-dom";
 import { QueryParams } from "../models/QueryParams";
 import { UploadService } from "../services/UploadService";
+import { getSelectedItems } from "./storeSelectors";
 const i18n = getI18n();
+const history = createBrowserHistory();
 
 export class StoreWorker {
+  static navigate: NavigateFunction;
+
+  static setNavigate(navigateFunction: NavigateFunction) {
+    this.navigate = navigateFunction;
+  }
+
   static refresh(
     url?: string | null,
     queryParams?: QueryParams | null,
@@ -39,10 +48,13 @@ export class StoreWorker {
     const { searchMode, searchQuery } = this._getGrid();
     let curSearchMode = searchMode;
     let location = "";
-    if (!!url) {
+    if (url) {
       store.dispatch(setCurrentUrl(url));
       UploadService.setUploadUrl(url);
-      let tail = UrlResolveService.getTail(url, UrlResolveService.getOrigin());
+      const tail = UrlResolveService.getTail(
+        url,
+        UrlResolveService.getOrigin()
+      );
       if (tail) {
         location = tail;
       } else {
@@ -73,7 +85,11 @@ export class StoreWorker {
     store.dispatch(setLoadingWithSceleton(!!showSceleton));
     store.dispatch(setCurrentFolder(curSearchMode)).then(() => {
       store.dispatch(setOptionsInfo());
-      store.dispatch(push(location + this._getHash()));
+      if (this.navigate) {
+        this.navigate(location + this._getHash());
+      } else {
+        history.push(location + this._getHash());
+      }
     });
   }
 
@@ -86,7 +102,7 @@ export class StoreWorker {
     let items: ITHit.WebDAV.Client.HierarchyItem[] = [];
     if (currentFolder) {
       try {
-        let response = await WebDavService.getItemsByQuery(
+        const response = await WebDavService.getItemsByQuery(
           currentFolder,
           1,
           pageSize,
@@ -106,6 +122,10 @@ export class StoreWorker {
     }
   }
 
+  static refreshCurrentItems() {
+    store.dispatch(refreshFolder())
+  }
+
   static pasteStoredItems() {
     const { storedType } = this._getGrid();
     switch (storedType) {
@@ -121,15 +141,15 @@ export class StoreWorker {
   }
 
   static deleteSelectedItems() {
-    let selectedItems = getSelectedItems(store.getState());
+    const selectedItems = getSelectedItems(store.getState());
 
     selectedItems.forEach((item) => {
       item.DeleteAsync(null, (data) => {
         if (data.IsSuccess) {
           this.refresh();
         } else {
-          let error = new WebDavError(
-            i18n.t("phrases.erros.deletetemsErrorMessage"),
+          const error = new WebDavError(
+            i18n.t("phrases.errors.deletetemsErrorMessage"),
             data.Error
           );
           store.dispatch(setError(error));
@@ -139,7 +159,7 @@ export class StoreWorker {
   }
 
   static renameSelectedItem(name: string) {
-    let selectedItems = getSelectedItems(store.getState());
+    const selectedItems = getSelectedItems(store.getState());
     const { currentFolder } = this._getGrid();
 
     if (selectedItems.length === 1 && currentFolder !== null) {
@@ -152,12 +172,12 @@ export class StoreWorker {
             data.Error instanceof ITHit.WebDAV.Client.Exceptions.LockedException
           ) {
             error = new WebDavError(
-              i18n.t("phrases.erros.renameItemLockedErrorMessage"),
+              i18n.t("phrases.errors.renameItemLockedErrorMessage"),
               data.Error
             );
           } else {
             error = new WebDavError(
-              i18n.t("phrases.erros.renameItemErrorMessage"),
+              i18n.t("phrases.errors.renameItemErrorMessage"),
               data.Error
             );
           }
@@ -168,9 +188,9 @@ export class StoreWorker {
   }
 
   static printSelectedItems() {
-    let selectedItems = getSelectedItems(store.getState());
+    const selectedItems = getSelectedItems(store.getState());
 
-    let filesUrls: string[] = [];
+    const filesUrls: string[] = [];
     selectedItems.forEach((item) => {
       if (!WebDavService.isFolder(item)) {
         filesUrls.push(item.Href);
@@ -200,13 +220,13 @@ export class StoreWorker {
           if (data.IsSuccess) {
             this.refresh();
           } else {
-            var error;
+            let error;
             if (
               data.Error instanceof
               ITHit.WebDAV.Client.Exceptions.ForbiddenException
             ) {
               error = new WebDavError(
-                i18n.t("phrases.erros.cutItemsSameNameErrorMessage"),
+                i18n.t("phrases.errors.cutItemsSameNameErrorMessage"),
                 data.Error
               );
             } else if (
@@ -214,12 +234,12 @@ export class StoreWorker {
               ITHit.WebDAV.Client.Exceptions.LockedException
             ) {
               error = new WebDavError(
-                i18n.t("phrases.erros.cutItemsLockedErrorMessage"),
+                i18n.t("phrases.errors.cutItemsLockedErrorMessage"),
                 data.Error
               );
             } else {
               error = new WebDavError(
-                i18n.t("phrases.erros.cutItemsErrorMessage"),
+                i18n.t("phrases.errors.cutItemsErrorMessage"),
                 data.Error
               );
             }
@@ -232,7 +252,7 @@ export class StoreWorker {
   private static _copyItems() {
     const { storedItems, currentFolder } = this._getGrid();
     storedItems.forEach((item) => {
-      var itemCopyName = CommonService.getCopySuffix(item.DisplayName, false);
+      const itemCopyName = CommonService.getCopySuffix(item.DisplayName, false);
       if (currentFolder !== null) {
         this._copyItem(item, itemCopyName, currentFolder);
       }
@@ -250,15 +270,15 @@ export class StoreWorker {
       } else {
         if (
           data.Error instanceof
-            ITHit.WebDAV.Client.Exceptions.PreconditionFailedException ||
+          ITHit.WebDAV.Client.Exceptions.PreconditionFailedException ||
           data.Error instanceof
-            ITHit.WebDAV.Client.Exceptions.ForbiddenException
+          ITHit.WebDAV.Client.Exceptions.ForbiddenException
         ) {
-          let newCopyName = CommonService.getCopySuffix(copyName, true);
+          const newCopyName = CommonService.getCopySuffix(copyName, true);
           this._copyItem(item, newCopyName, folder);
         } else {
-          let error = new WebDavError(
-            i18n.t("phrases.erros.copyItemsErrorMessage"),
+          const error = new WebDavError(
+            i18n.t("phrases.errors.copyItemsErrorMessage"),
             data.Error
           );
           store.dispatch(setError(error));
@@ -270,7 +290,7 @@ export class StoreWorker {
   private static _getHash() {
     const { currentPage, sortColumn, sortAscending, searchQuery } =
       this._getGrid();
-    let hashArray = [];
+    const hashArray = [];
     if (currentPage !== initialState.currentPage) {
       hashArray.push(`page=${currentPage}`);
     }

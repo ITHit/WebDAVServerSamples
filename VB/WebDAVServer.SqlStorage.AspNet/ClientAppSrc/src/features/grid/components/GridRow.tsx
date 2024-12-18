@@ -4,12 +4,7 @@ import { useTranslation } from "react-i18next";
 import { CommonService } from "../../../services/CommonService";
 import { WebDavService } from "../../../services/WebDavService";
 import { ITHit } from "webdav.client";
-import {
-  addSelectedItem,
-  removeSelectedItem,
-  getSelectedIndexes,
-  getSearchMode,
-} from "../gridSlice";
+import { addSelectedItem, removeSelectedItem, getSelectedIndexes, getSearchMode } from "../gridSlice";
 import { StoreWorker } from "../../../app/storeWorker";
 import GridRowAction from "./GridRowAction";
 import Snippet from "../../search/Snippet";
@@ -25,8 +20,7 @@ const GridRow: React.FC<Props> = ({ item, index }) => {
   const isDragging = useAppSelector(getIsDragging);
   const searchMode = useAppSelector(getSearchMode);
   const [snippetHovered, setSnippetHovered] = useState(false);
-  let isSelected =
-    useAppSelector(getSelectedIndexes).findIndex((el) => el === index) !== -1;
+  let isSelected = useAppSelector(getSelectedIndexes).findIndex((el) => el === index) !== -1;
   const handleChangeCheckbox = () => {
     isSelected = !isSelected;
     if (isSelected) {
@@ -44,12 +38,11 @@ const GridRow: React.FC<Props> = ({ item, index }) => {
   );
 
   const renderLokedIconTooltip = () => {
-    var tooltipTitle = "Exclusive lock: " + item.ActiveLocks[0].Owner;
+    let tooltipTitle = "Exclusive lock: " + item.ActiveLocks[0].Owner;
     if (item.ActiveLocks[0].LockScope === "Shared") {
-      var userNames = [];
-      tooltipTitle =
-        "Shared lock" + (item.ActiveLocks.length > 1 ? "(s)" : "") + ": ";
-      for (var i = 0; i < item.ActiveLocks.length; i++) {
+      const userNames = [];
+      tooltipTitle = "Shared lock" + (item.ActiveLocks.length > 1 ? "(s)" : "") + ": ";
+      for (let i = 0; i < item.ActiveLocks.length; i++) {
         userNames.push(item.ActiveLocks[i].Owner);
       }
       tooltipTitle += userNames.join(", ");
@@ -66,25 +59,14 @@ const GridRow: React.FC<Props> = ({ item, index }) => {
       >
         <td className="select-disabled">
           <label className="custom-checkbox">
-            <input
-              type="checkbox"
-              checked={isSelected}
-              onChange={handleChangeCheckbox}
-            />
+            <input type="checkbox" checked={isSelected} onChange={handleChangeCheckbox} />
             <span className="checkmark" />
           </label>
         </td>
         <td>
-          <span
-            className={`${
-              WebDavService.isFolder(item) ? "icon icon-folder" : ""
-            }`}
-          >
+          <span className={`${WebDavService.isFolder(item) ? "icon icon-folder" : ""}`}>
             {item.ActiveLocks.length ? (
-              <span
-                className="icon icon-locked"
-                title={renderLokedIconTooltip()}
-              >
+              <span className="icon icon-locked" title={renderLokedIconTooltip()}>
                 {item.ActiveLocks[0].LockScope === "Shared" ? (
                   <span className="badge">{item.ActiveLocks.length}</span>
                 ) : (
@@ -98,10 +80,7 @@ const GridRow: React.FC<Props> = ({ item, index }) => {
         </td>
         <td className="ellipsis">
           {WebDavService.isFolder(item) ? (
-            <button
-              className="btn btn-link"
-              onClick={handleClickLink(item.Href)}
-            >
+            <button className="btn btn-link" onClick={handleClickLink(item.Href)}>
               {item.DisplayName}
             </button>
           ) : (
@@ -112,23 +91,17 @@ const GridRow: React.FC<Props> = ({ item, index }) => {
           <span>
             {WebDavService.isFolder(item)
               ? t("phrases.grid.folder")
-              : `${t("phrases.grid.file")} ${CommonService.getFileExtension(
-                  item.DisplayName
-                )}`}
+              : `${t("phrases.grid.file")} ${CommonService.getFileExtension(item.DisplayName)}`}
           </span>
         </td>
         <td className="text-right">
           <span>
             {!WebDavService.isFolder(item)
-              ? CommonService.formatFileSize(
-                  (item as ITHit.WebDAV.Client.File).ContentLength
-                )
+              ? CommonService.formatFileSize((item as ITHit.WebDAV.Client.File).ContentLength)
               : ""}
           </span>
         </td>
-        <td className="d-none d-lg-table-cell modified-date">
-          {CommonService.formatDate(item.LastModified)}
-        </td>
+        <td className="d-none d-lg-table-cell modified-date">{CommonService.formatDate(item.LastModified)}</td>
         <td className="text-right select-disabled position-relative">
           <GridRowAction item={item} />
         </td>

@@ -4,9 +4,8 @@ import { useTranslation } from "react-i18next";
 import { ITHit } from "webdav.client";
 import { useAppSelector, useAppDispatch } from "../../app/hooks/common";
 import { getError, clearError } from "../grid/gridSlice";
-type Props = {};
 
-const ErrorModal: React.FC<Props> = () => {
+const ErrorModal: React.FC = () => {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const webDavError = useAppSelector(getError);
@@ -25,10 +24,7 @@ const ErrorModal: React.FC<Props> = () => {
   return (
     <>
       {!!webDavError && (
-        <DefaultModal
-          closeModal={closeModal}
-          title={t("phrases.modals.errorTitle")}
-        >
+        <DefaultModal closeModal={closeModal} title={t("phrases.modals.errorTitle")}>
           <div className="modal-body">
             <div className="container-fluid">
               <div className="row">
@@ -52,10 +48,7 @@ const ErrorModal: React.FC<Props> = () => {
                       {t("phrases.errors.errorDetails")}
                     </button>
                   </p>
-                  <div
-                    id="error-details-collapse"
-                    className={`collapse ${isOpenedDetails ? "show" : ""}`}
-                  >
+                  <div id="error-details-collapse" className={`collapse ${isOpenedDetails ? "show" : ""}`}>
                     <div className="card card-body">
                       <div className="row">
                         <div className="col-md-2">
@@ -63,14 +56,10 @@ const ErrorModal: React.FC<Props> = () => {
                         </div>
                         <div className="col-md-10">
                           {webDavError.error &&
-                            webDavError.error instanceof
-                              ITHit.WebDAV.Client.Exceptions
-                                .WebDavHttpException && (
+                            webDavError.error instanceof ITHit.WebDAV.Client.Exceptions.WebDavHttpException && (
                               <p
                                 className="error-details-url"
-                                dangerouslySetInnerHTML={getHtml(
-                                  webDavError.error.Uri
-                                )}
+                                dangerouslySetInnerHTML={getHtml(webDavError.error.Uri)}
                               />
                             )}
                         </div>
@@ -82,9 +71,7 @@ const ErrorModal: React.FC<Props> = () => {
                         <div className="col-md-8">
                           <p
                             className="error-details-message"
-                            dangerouslySetInnerHTML={getHtml(
-                              webDavError.getServerMessage()
-                            )}
+                            dangerouslySetInnerHTML={getHtml(webDavError.getServerMessage())}
                           />
                         </div>
                       </div>
@@ -95,11 +82,7 @@ const ErrorModal: React.FC<Props> = () => {
             </div>
           </div>
           <div className="modal-footer">
-            <button
-              type="button"
-              className="btn btn-light"
-              onClick={closeModal}
-            >
+            <button type="button" className="btn btn-light" onClick={closeModal}>
               {t("phrases.close")}
             </button>
           </div>

@@ -6,12 +6,18 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
-    <link href="_webDavServerRoot_/app.css" rel="stylesheet" />
+    <!--
+    JavaScript file required to run WebDAV Ajax library is loaded from Node.js Package Manager.
+    To load files from your website download them here: https://www.webdavsystem.com/ajax/download,
+    deploy them to your website and replace the path below in this file.
+    -->
+    <script type="module" crossorigin src="_webDavServerRoot_/app.js"></script>
+    <link rel="stylesheet" crossorigin href="_webDavServerRoot_/app.css" />
     <link rel="icon" href="_webDavServerRoot_/favicon.ico" />
 </head>
 <body>
     <main role="main">
-        <div id="app" data-template="_webDavServerRoot_/app.html"></div>
+        <div id="app"></div>
     </main>
     <script>
         var webDavSettings = {
@@ -42,11 +48,5 @@
             window.open("_webDavServerRoot_/AjaxFileBrowser/AjaxIntegrationTests.html#" + window.location.origin + "/DAV", "", "menubar=1,location=1,status=1,scrollbars=1,resizable=1,width=" + width + ",height=" + height);
         }
     </script>
-    <!--
-    JavaScript file required to run WebDAV Ajax library is loaded from Node.js Package Manager.
-    To load files from your website download them here: https://www.webdavsystem.com/ajax/download,
-    deploy them to your website and replace the path below in this file.
-    -->
-    <script src="_webDavServerRoot_/app.js"></script>
 </body>
 </html>

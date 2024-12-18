@@ -1,27 +1,11 @@
-class EditDocAuth {
-  Authentication: string | null;
-  CookieNames: string | null;
-  SearchIn: string | null;
-  LoginUrl: string | null;
-  constructor(
-    authentication: string | null,
-    cookieNames: string | null,
-    searchIn: string | null,
-    loginUrl: string | null
-  ) {
-    this.Authentication = authentication;
-    this.CookieNames = cookieNames;
-    this.SearchIn = searchIn;
-    this.LoginUrl = loginUrl;
-  }
-}
+import { EditDocAuth } from "./models/EditDocAuth";
 
 export class WebDavSettings {
   static WebsiteRootUrl: string =
     window.webDavSettings && window.webDavSettings.WebDavServerPath
       ? WebDavSettings._getWebsiteRootUrl(
-          window.webDavSettings.WebDavServerPath
-        )
+        window.webDavSettings.WebDavServerPath
+      )
       : "";
   static WebSocketPath: string =
     window.webDavSettings && window.webDavSettings.WebSocketPath
@@ -39,9 +23,9 @@ export class WebDavSettings {
       ? window.webDavSettings.ApplicationProtocolsPath
       : "";
   static _sliceLastSymbol(str: string, symbol: string) {
-    var strVal = str;
+    let strVal = str;
     if (strVal) {
-      var lastChar = strVal.slice(-1);
+      const lastChar = strVal.slice(-1);
       if (lastChar === symbol) {
         strVal = strVal.slice(0, -1);
       }

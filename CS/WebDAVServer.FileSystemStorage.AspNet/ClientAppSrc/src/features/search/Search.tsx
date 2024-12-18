@@ -17,8 +17,7 @@ import { SearchParams } from "../../models/SearchParams";
 import useDebounce from "../../app/hooks/useDebounce";
 import { StoreWorker } from "../../app/storeWorker";
 
-type Props = {};
-const Search: React.FC<Props> = () => {
+const Search: React.FC = () => {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
 
@@ -27,11 +26,11 @@ const Search: React.FC<Props> = () => {
   const optionsInfo = useAppSelector(getOptionsInfo);
   const storeSearchQuery = useAppSelector(getSearchQuery);
   const searchMode = useAppSelector(getSearchMode);
-  let [query, setQuery] = useState("");
-  let [mouseOverMenuDisplayed, setMouseOverMenuDisplayed] = useState(false);
-  let [isFocusInput, setIsFocusInput] = useState(false);
-  let [showMenu, setShowMenu] = useState(false);
-  let [isFirstRender, setIsFirstRender] = useState(true);
+  const [query, setQuery] = useState("");
+  const [mouseOverMenuDisplayed, setMouseOverMenuDisplayed] = useState(false);
+  const [isFocusInput, setIsFocusInput] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+  const [isFirstRender, setIsFirstRender] = useState(true);
 
   const debouncedQuery = useDebounce<string>(query, 400);
 
@@ -82,9 +81,7 @@ const Search: React.FC<Props> = () => {
 
   useEffect(() => {
     if (debouncedQuery) {
-      dispatch(
-        setSearchedItems(new SearchParams(debouncedQuery, maxShowItems))
-      );
+      dispatch(setSearchedItems(new SearchParams(debouncedQuery, maxShowItems)));
     } else {
       dispatch(clearSearchedItems());
     }
@@ -106,19 +103,14 @@ const Search: React.FC<Props> = () => {
           value={query}
           className="form-control"
           disabled={isDisabled()}
-          placeholder={
-            isDisabled() ? t("phrases.validations.notSupportSearch") : ""
-          }
+          placeholder={isDisabled() ? t("phrases.validations.notSupportSearch") : ""}
           onChange={handleInputChange}
           onKeyPress={handleKeyPress}
           onFocus={() => setIsFocusInput(true)}
           onBlur={() => setIsFocusInput(false)}
         />
         {query.length > 0 && (
-          <button
-            className="btn-transparent btn-clear-search"
-            onClick={() => clearSearch()}
-          >
+          <button className="btn-transparent btn-clear-search" onClick={() => clearSearch()}>
             <i className="icon icon-close"></i>
           </button>
         )}
@@ -130,7 +122,7 @@ const Search: React.FC<Props> = () => {
             position: "absolute",
             top: "100%",
             left: "0px",
-            zIndex: 100,
+            zIndex: 999,
           }}
           onMouseEnter={() => setMouseOverMenuDisplayed(true)}
           onMouseLeave={() => setMouseOverMenuDisplayed(false)}

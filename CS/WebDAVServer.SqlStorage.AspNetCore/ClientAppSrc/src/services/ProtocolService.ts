@@ -84,10 +84,10 @@ export const allBrowsers = [
 ];
 export class ProtocolService {
   static getProtocol() {
-    let currentBrowserProtocol = this.getCurrentBrowserProtocolApp();
-    let currentOsProtocol = this.getCurrentOsProtocolApp();
+    const currentBrowserProtocol = this.getCurrentBrowserProtocolApp();
+    const currentOsProtocol = this.getCurrentOsProtocolApp();
 
-    let webDavProtocol = new WebDavProtocol(
+    const webDavProtocol = new WebDavProtocol(
       currentOsProtocol,
       currentBrowserProtocol,
       currentOsProtocol
@@ -103,7 +103,7 @@ export class ProtocolService {
    * Gets current browser Protocol item
    */
   static getCurrentBrowserProtocolApp() {
-    let browserName = this.getBrowserName(
+    const browserName = this.getBrowserName(
       navigator.userAgent.toLocaleLowerCase()
     );
     let currentBrowserProtocol = allBrowsers
@@ -127,7 +127,7 @@ export class ProtocolService {
    * Gets current OS Protocol item
    */
   static getCurrentOsProtocolApp() {
-    let currentOsProtocol = allOs
+    const currentOsProtocol = allOs
       .filter((c) => c.id === this.getOsName(navigator.userAgent))
       .shift();
 
@@ -151,7 +151,7 @@ export class ProtocolService {
         return "edge";
       case agent.indexOf("edg/") > -1:
         return "edge";
-      case agent.indexOf("chrome") > -1 && !!(window as any).chrome:
+      case agent.indexOf("chrome") > -1 && !!window.chrome:
         return "chrome";
       case agent.indexOf("msie") > -1 || !!agent.match(/trident.*rv\\:11\./):
         return "ie";

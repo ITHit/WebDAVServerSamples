@@ -6,8 +6,7 @@ import { useTranslation } from "react-i18next";
 import UploadingItem from "./UploadingItem";
 import Draggable from "react-draggable";
 
-type Props = {};
-const Uploader: React.FC<Props> = () => {
+const Uploader: React.FC = () => {
   const { t } = useTranslation();
   const uploadItemRows = useAppSelector(getUploadItemRows);
   const [showDetails, setShowDetails] = useState<boolean>(false);
@@ -18,7 +17,7 @@ const Uploader: React.FC<Props> = () => {
   const [isShowUploading, setIsShowUploading] = useState(false);
 
   const isUploading = useCallback(() => {
-    var isShow = false;
+    let isShow = false;
     uploadItemRows.forEach((el) => {
       if (
         !(
@@ -42,7 +41,7 @@ const Uploader: React.FC<Props> = () => {
     }
 
     const getUploadedPersent = () => {
-      var uploaded = 0;
+      let uploaded = 0;
       if (uploadItemRows.length) {
         uploadItemRows.forEach((element) => {
           uploaded += element.uploadItem.GetProgress().Completed;
@@ -53,7 +52,7 @@ const Uploader: React.FC<Props> = () => {
       return Math.round(uploaded);
     };
 
-    let intervalId = setInterval(() => {
+    const intervalId = setInterval(() => {
       setUploadedPersent(getUploadedPersent());
     }, 500);
     return () => {
@@ -137,30 +136,20 @@ const Uploader: React.FC<Props> = () => {
             </div>
           </div>
           <div
-            className={`uploading-block ${
-              (isUploadingHover || isFirstShowBlock) && !showDetails
-                ? "show"
-                : ""
-            } ${showDetails ? "d-none" : ""}`}
+            className={`uploading-block ${(isUploadingHover || isFirstShowBlock) && !showDetails ? "show" : ""} ${
+              showDetails ? "d-none" : ""
+            }`}
           >
             <div className="uploading-controls">
               {t("phrases.uploader.uploaded")}
               <span className="persent"> {uploadedPersent}%</span>
               {!isPaused && (
-                <button
-                  className="btn-transparent float-end"
-                  title="Pause upload"
-                  onClick={pauseAll}
-                >
+                <button className="btn-transparent float-end" title="Pause upload" onClick={pauseAll}>
                   <i className="icon icon-pause"></i>
                 </button>
               )}
               {isPaused && (
-                <button
-                  className="btn-transparent float-end"
-                  title="Resume upload"
-                  onClick={playAll}
-                >
+                <button className="btn-transparent float-end" title="Resume upload" onClick={playAll}>
                   <i className="icon icon-play"></i>
                 </button>
               )}
@@ -175,9 +164,7 @@ const Uploader: React.FC<Props> = () => {
             <Draggable>
               <div className="uploading-details" style={{ position: "fixed" }}>
                 <div className="details-header text-center">
-                  <span className="details-title">
-                    {t("phrases.uploader.filesUpload")}
-                  </span>
+                  <span className="details-title">{t("phrases.uploader.filesUpload")}</span>
                   <button
                     className="btn-transparent float-end"
                     //:disabled="disabledPauseButton"
@@ -220,11 +207,7 @@ const Uploader: React.FC<Props> = () => {
                       {t("phrases.uploader.resumeUpload")}
                     </button>
                   )}
-                  <button
-                    className="btn btn-primary"
-                    title={t("phrases.uploader.cancelAllUpload")}
-                    onClick={cancelAll}
-                  >
+                  <button className="btn btn-primary" title={t("phrases.uploader.cancelAllUpload")} onClick={cancelAll}>
                     {t("phrases.uploader.cancelAllUpload")}
                   </button>
                 </div>

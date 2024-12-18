@@ -1,34 +1,36 @@
 .dropzone {
   .ithit-grid-wrapper {
     border: 2px solid $mainColor;
+    border-top-width: 0px;
 
     .drop-files-header {
       display: block;
-      position: absolute;
+      position: sticky;
       left: 0;
       right: 0;
-      top: 0;
-      height: 2.625rem;
+      top: 43px;
+      height: 2.75rem;
       width: 100%;
-      z-index: 2;
+      z-index: 999;
       background-color: $whiteColor;
       border-bottom: 1px solid $mainColor;
       color: $mainColor;
       text-align: center;
-
       .drop-files-title {
-        margin-top: 0.438rem;
+        padding-top: 0.438rem;
+        padding-bottom: 0.25rem;
         font-size: 1.25rem;
         line-height: 1.688rem;
+        border-top: 2px solid $mainColor;
       }
     }
-
-    // .table-row-drag {
-    //   background: rgba($mainColor, 0.2);
-    // }
 
     .table-row-file {
       opacity: 0.4;
     }
+  }
+
+  .drop-files-header + .table-responsive {
+    margin-top: -2.625rem;
   }
 }

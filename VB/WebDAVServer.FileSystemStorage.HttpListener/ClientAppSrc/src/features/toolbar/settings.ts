@@ -36,24 +36,24 @@ export const toolbarConfig = new ToolbarConfig(true, [
     i18n.t("phrases.toolbar.createFolderButton"),
     "icon-create-folder",
     '<span class="d-none d-lg-inline text-nowrap">' +
-      i18n.t("phrases.toolbar.createFolderButton") +
-      "</span>"
+    i18n.t("phrases.toolbar.createFolderButton") +
+    "</span>"
   ),
   new ButtonConfig(
     "downloadButton",
     i18n.t("phrases.toolbar.downloadButton"),
     "icon-download-items",
     '<span class="d-none d-xl-inline">' +
-      i18n.t("phrases.toolbar.downloadButton") +
-      "</span>"
+    i18n.t("phrases.toolbar.downloadButton") +
+    "</span>"
   ),
   new ButtonConfig(
     "uploadButton",
     i18n.t("phrases.toolbar.uploadButton"),
     "icon-upload-items",
     '<span class="d-none d-xl-inline">' +
-      i18n.t("phrases.toolbar.uploadButton") +
-      "</span>"
+    i18n.t("phrases.toolbar.uploadButton") +
+    "</span>"
   ),
   new ButtonConfig(
     "renameButton",
@@ -102,15 +102,15 @@ export const toolbarConfig = new ToolbarConfig(true, [
     i18n.t("phrases.toolbar.printButton"),
     "icon-print-items",
     '<span class="d-none d-lg-inline">' +
-      i18n.t("phrases.toolbar.printButton") +
-      "</span>"
+    i18n.t("phrases.toolbar.printButton") +
+    "</span>"
   ),
   new ButtonConfig(
     "deleteButton",
     i18n.t("phrases.toolbar.deleteButton"),
     "icon-delete-items",
     '<span class="d-none d-lg-inline">' +
-      i18n.t("phrases.toolbar.deleteButton") +
-      "</span>"
+    i18n.t("phrases.toolbar.deleteButton") +
+    "</span>"
   ),
 ]);

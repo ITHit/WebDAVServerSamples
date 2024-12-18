@@ -2,7 +2,7 @@ import {
   createAsyncThunk,
   createSlice,
   PayloadAction,
-  AnyAction,
+  UnknownAction,
 } from "@reduxjs/toolkit";
 import { RootState } from "../../app/store";
 import { ITHit } from "webdav.client";
@@ -20,20 +20,18 @@ import {
 } from "../../app/storeFunctions";
 const i18n = getI18n();
 
-const isRejectedAction = (action: AnyAction) => {
+const isRejectedAction = (action: UnknownAction) => {
   return action.type.endsWith("rejected");
 };
 
-const isAllSelected = (state: GridState) => {
-  return (
-    state.selectedIndexes.length > 0 &&
-    state.selectedIndexes.length === state.items.length
-  );
-};
-
 interface CurrentFolderResult {
+  page: ITHit.WebDAV.Client.HierarchyItem[];
+  totalItems: number;
+}
+
+interface CurrentFolderResponse {
   folder: ITHit.WebDAV.Client.Folder;
-  result: any;
+  result: CurrentFolderResult;
   withSearch: boolean;
 }
 
@@ -53,12 +51,14 @@ export interface GridState {
   currentPage: number;
   pageSize: number;
   countPages: number;
-  allSelected: boolean;
   currentUrl: string;
   storedType: StoredType;
   optionsInfo: ITHit.WebDAV.Client.OptionsInfo | null;
   optionsInfoLoading: boolean;
   protocolModalDisplayed: boolean;
+  countPagesLoaded: number;
+  loadMore: boolean;
+  totalItemsCount: number;
 }
 
 export const initialState: GridState = {
@@ -74,15 +74,58 @@ export const initialState: GridState = {
   loading: true,
   loadingWithSceleton: false,
   error: null,
-  pageSize: 10,
+  pageSize: 20,
   currentPage: 1,
   countPages: 0,
-  allSelected: false,
   currentUrl: UrlResolveService.getRootUrl(),
   storedType: StoredType.Copy,
   optionsInfo: null,
   optionsInfoLoading: true,
   protocolModalDisplayed: false,
+  countPagesLoaded: 0,
+  loadMore: false,
+  totalItemsCount: 0,
+};
+
+//todo: add selectors
+
+
+const fetchFolderItems = async (
+  currentUrl: string,
+  pageSize: number,
+  sortColumn: string,
+  sortAscending: boolean,
+  page: number,
+  withSearch: boolean,
+  searchQuery?: string
+) => {
+  const response = await WebDavService.getCurrentFolder(currentUrl);
+  const folder = response.Result as ITHit.WebDAV.Client.Folder;
+  let itemsResponse;
+  if (withSearch && searchQuery) {
+    itemsResponse = await WebDavService.getItemsByQuery(
+      folder,
+      page,
+      pageSize,
+      searchQuery
+    );
+  } else {
+    itemsResponse = await WebDavService.getItems(
+      folder,
+      sortColumn,
+      sortAscending == null ? false : sortAscending,
+      page,
+      pageSize
+    );
+  }
+  return {
+    folder: folder,
+    result: {
+      page: itemsResponse.Result.Page,
+      totalItems: itemsResponse.Result.TotalItems,
+    } as CurrentFolderResult,
+    withSearch: withSearch,
+  } as CurrentFolderResponse;
 };
 
 export const setCurrentFolder = createAsyncThunk(
@@ -98,41 +141,59 @@ export const setCurrentFolder = createAsyncThunk(
       searchQuery,
     } = grid;
     try {
-      const response = await WebDavService.getCurrentFolder(currentUrl);
-      if (response.IsSuccess) {
-        let folder = response.Result as ITHit.WebDAV.Client.Folder;
+      return await fetchFolderItems(
+        currentUrl,
+        pageSize,
+        sortColumn,
+        sortAscending,
+        currentPage,
+        withSearch,
+        searchQuery
+      );
+    } catch (err) {
+      return rejectWithValue(
+        new WebDavError(i18n.t("phrases.errors.profindErrorMessage"), err)
+      );
+    }
+  }
+);
 
-        try {
-          let itemsResponse;
-          if (withSearch) {
-            itemsResponse = await WebDavService.getItemsByQuery(
-              folder,
-              currentPage,
-              pageSize,
-              searchQuery
-            );
-          } else {
-            itemsResponse = await WebDavService.getItems(
-              folder,
-              sortColumn,
-              sortAscending == null ? false : sortAscending,
-              currentPage,
-              pageSize
-            );
-          }
+export const refreshFolder = createAsyncThunk(
+  "grid/refreshFolder",
+  async (_, { getState, rejectWithValue }) => {
+    const { grid } = getState() as { grid: GridState };
+    const { sortColumn, sortAscending, currentUrl, searchMode, searchQuery, items, pageSize } = grid;
+    try {
+      const refreshCountItems = pageSize < items.length ? items.length : pageSize;
+      return await fetchFolderItems(currentUrl, refreshCountItems, sortColumn, sortAscending, 1, searchMode, searchQuery);
+    } catch (err) {
+      return rejectWithValue(
+        new WebDavError(i18n.t("phrases.errors.profindErrorMessage"), err)
+      );
+    }
+  }
+);
 
-          let currentFolderResult: CurrentFolderResult = {
-            folder: folder,
-            result: itemsResponse.Result,
-            withSearch: withSearch,
-          };
-          return currentFolderResult as any;
-        } catch (err) {
-          return rejectWithValue(
-            new WebDavError(i18n.t("phrases.errors.profindErrorMessage"), err)
-          );
-        }
-      }
+export const appendNewPage = createAsyncThunk(
+  "grid/appendNewPage",
+  async (_, { getState, rejectWithValue }) => {
+    const { grid } = getState() as { grid: GridState };
+    const {
+      pageSize,
+      sortColumn,
+      sortAscending,
+      currentUrl,
+      countPagesLoaded,
+    } = grid;
+    try {
+      return await fetchFolderItems(
+        currentUrl,
+        pageSize,
+        sortColumn,
+        sortAscending,
+        countPagesLoaded + 1,
+        false
+      );
     } catch (err) {
       return rejectWithValue(
         new WebDavError(i18n.t("phrases.errors.profindErrorMessage"), err)
@@ -147,7 +208,7 @@ export const setItem = createAsyncThunk(
     try {
       const { grid } = getState() as { grid: GridState };
       const { items } = grid;
-      var item = items.find((p) => p.Href === itemPath);
+      const item = items.find((p) => p.Href === itemPath);
       if (item && item.Href) {
         const response = await WebDavService.getItem(item.Href);
         if (response.IsSuccess) {
@@ -238,7 +299,6 @@ export const gridSlice = createSlice({
     },
     addSelectedItem: (state, action: PayloadAction<number>) => {
       state.selectedIndexes.push(action.payload);
-      state.allSelected = isAllSelected(state);
     },
     removeSelectedItem: (state, action: PayloadAction<number>) => {
       state.selectedIndexes.forEach((selectedIndex, index) => {
@@ -247,22 +307,19 @@ export const gridSlice = createSlice({
           return false;
         }
       });
-      state.allSelected = isAllSelected(state);
     },
     clearSelectedItems: (state) => {
       state.selectedIndexes = [];
-      state.allSelected = isAllSelected(state);
     },
     addAllSelectedItems: (state) => {
-      if (state.items.length - 1 > 0) {
+      if (state.items.length > 0) {
         state.selectedIndexes = Array.from(
           { length: state.items.length },
-          (v, k) => k
+          (_v, k) => k
         );
       } else {
         state.selectedIndexes = [];
       }
-      state.allSelected = isAllSelected(state);
     },
     storeSelectedItems: (state, action: PayloadAction<StoredType>) => {
       state.storedItems = [...state.selectedIndexes.map((i) => state.items[i])];
@@ -296,13 +353,33 @@ export const gridSlice = createSlice({
   extraReducers: (builder) => {
     builder.addCase(setCurrentFolder.fulfilled, (state, action) => {
       if (state.loading) state.loading = false;
-      state.items = action.payload.result
-        .Page as ITHit.WebDAV.Client.HierarchyItem[];
+      state.items = action.payload.result.page;
       state.countPages = Math.ceil(
-        action.payload.result.TotalItems / state.pageSize
+        action.payload.result.totalItems / state.pageSize
       );
+      state.totalItemsCount = action.payload.result.totalItems;
+      state.countPagesLoaded = 1;
       state.currentFolder = action.payload.folder;
       state.searchMode = action.payload.withSearch;
+    });
+
+    builder.addCase(refreshFolder.fulfilled, (state, action) => {
+      if (state.loading) state.loading = false;
+      state.items = action.payload.result.page;
+      state.countPages = Math.ceil(
+        action.payload.result.totalItems / state.pageSize
+      );
+      state.totalItemsCount = action.payload.result.totalItems;
+      state.selectedIndexes = [];
+    });
+
+    builder.addCase(appendNewPage.fulfilled, (state, action) => {
+      state.items = [...state.items, ...action.payload.result.page];
+      state.countPages = Math.ceil(
+        action.payload.result.totalItems / state.pageSize
+      );
+      state.totalItemsCount = action.payload.result.totalItems;
+      state.countPagesLoaded = state.countPagesLoaded + 1;
     });
 
     builder.addCase(setSearchedItems.fulfilled, (state, action) => {
@@ -319,8 +396,8 @@ export const gridSlice = createSlice({
     });
 
     builder.addCase(setItem.fulfilled, (state, action) => {
-      let updatedItem = action.payload as ITHit.WebDAV.Client.HierarchyItem;
-      let index = state.items.findIndex(
+      const updatedItem = action.payload as ITHit.WebDAV.Client.HierarchyItem;
+      const index = state.items.findIndex(
         (p) => p.DisplayName === updatedItem.DisplayName
       );
       if (index >= 0) {
@@ -332,7 +409,7 @@ export const gridSlice = createSlice({
       state.optionsInfo = action.payload as ITHit.WebDAV.Client.OptionsInfo;
     });
 
-    builder.addMatcher(isRejectedAction, (state, action) => {
+    builder.addMatcher(isRejectedAction, (state, action: UnknownAction) => {
       if (action.payload instanceof WebDavError) {
         state.error = action.payload;
       } else if (action.payload instanceof ITHit.WebDAV.Client.Error) {
@@ -385,9 +462,6 @@ export const getSearchQuery = (state: RootState) => state.grid.searchQuery;
 export const getSearchMode = (state: RootState) => state.grid.searchMode;
 export const getSelectedIndexes = (state: RootState) =>
   state.grid.selectedIndexes;
-export const getSelectedItems = (state: RootState) =>
-  state.grid.selectedIndexes.map((i) => state.grid.items[i]);
-export const getAllSelected = (state: RootState) => state.grid.allSelected;
 export const getLoading = (state: RootState) => state.grid.loading;
 export const getCurrentFolder = (state: RootState) => state.grid.currentFolder;
 export const getSearchedItems = (state: RootState) => state.grid.searchedItems;
@@ -409,6 +483,10 @@ export const gridMidIgnoredActions = [
   getMidIgnoredAction(setItem.typePrefix, ReducerType.fulfilled),
   getMidIgnoredAction(setOptionsInfo.typePrefix, ReducerType.rejected),
   getMidIgnoredAction(setOptionsInfo.typePrefix, ReducerType.fulfilled),
+  getMidIgnoredAction(refreshFolder.typePrefix, ReducerType.rejected),
+  getMidIgnoredAction(refreshFolder.typePrefix, ReducerType.fulfilled),
+  getMidIgnoredAction(appendNewPage.typePrefix, ReducerType.rejected),
+  getMidIgnoredAction(appendNewPage.typePrefix, ReducerType.fulfilled),
 ];
 
 export const gridMidIgnoredPaths = [

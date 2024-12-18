@@ -1,22 +1,15 @@
 import { useAppSelector, useAppDispatch } from "../../../app/hooks/common";
-import {
-  setSortColumn,
-  setSortAscending,
-  getSortColumn,
-  getSortAscending,
-} from "../gridSlice";
+import { setSortColumn, setSortAscending, getSortColumn, getSortAscending } from "../gridSlice";
 import { StoreWorker } from "../../../app/storeWorker";
+import { ReactNode } from "react";
 
 type Props = {
+  children: ReactNode;
   cssClass: string;
   fieldName: string;
 };
 
-const TableSortHeader: React.FC<Props> = ({
-  children,
-  cssClass,
-  fieldName,
-}) => {
+const TableSortHeader: React.FC<Props> = ({ children, cssClass, fieldName }) => {
   const storeSortColumn = useAppSelector(getSortColumn);
   const storeSortAscending = useAppSelector(getSortAscending);
 

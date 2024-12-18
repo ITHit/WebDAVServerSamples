@@ -2,15 +2,15 @@ import { WebDavSettings } from "../webDavSettings";
 import { StoreWorker } from "../app/storeWorker";
 import { UrlResolveService } from "./UrlResolveService";
 export function WebSocketConnect() {
-  var socketSource: any;
+  let socketSource: WebSocket | undefined;
 
   if (WebDavSettings.WebSocketPath) {
     socketSource = new WebSocket(WebDavSettings.WebSocketPath);
   } else {
-    var host = window.location.host;
+    let host = window.location.host;
 
     if (WebDavSettings.WebsiteRootUrl) {
-      var oAppPath = new URL(WebDavSettings.WebsiteRootUrl);
+      const oAppPath = new URL(WebDavSettings.WebsiteRootUrl);
       host = oAppPath.host;
     }
 
@@ -23,11 +23,11 @@ export function WebSocketConnect() {
 
   socketSource.addEventListener(
     "message",
-    function (e: any) {
-      var notifyObject = JSON.parse(e.data);
+    function (e: MessageEvent) {
+      const notifyObject = JSON.parse(e.data);
 
       // Removing domain and trailing slash.
-      var currentLocation = window.location.pathname.replace(/^\/|\/$/g, "");
+      const currentLocation = window.location.pathname.replace(/^\/|\/$/g, "");
 
       // Checking message type after receiving.
       if (
@@ -43,8 +43,8 @@ export function WebSocketConnect() {
         ) {
           StoreWorker.updateItem(
             new URL(UrlResolveService.getRootUrl()).origin +
-              "/" +
-              notifyObject.ItemPath
+            "/" +
+            notifyObject.ItemPath
           );
         }
       } else if (notifyObject.EventType === "created") {
@@ -55,7 +55,7 @@ export function WebSocketConnect() {
             notifyObject.ItemPath.lastIndexOf("/")
           ).toUpperCase() === currentLocation.toUpperCase()
         ) {
-          StoreWorker.refresh();
+          StoreWorker.refreshCurrentItems();
         }
       } else if (notifyObject.EventType === "moved") {
         // Refresh folder structure if file or folder is moved.
@@ -69,7 +69,7 @@ export function WebSocketConnect() {
             notifyObject.TargetPath.lastIndexOf("/")
           ).toUpperCase() === currentLocation.toUpperCase()
         ) {
-          StoreWorker.refresh();
+          StoreWorker.refreshCurrentItems();
         }
       } else if (notifyObject.EventType === "deleted") {
         if (
@@ -79,14 +79,14 @@ export function WebSocketConnect() {
           ).toUpperCase() === currentLocation.toUpperCase()
         ) {
           // Refresh folder structure if any item in this folder is deleted.
-          StoreWorker.refresh();
+          StoreWorker.refreshCurrentItems();
         } else if (
           currentLocation
             .toUpperCase()
             .indexOf(notifyObject.ItemPath.toUpperCase()) === 0
         ) {
           // Redirect client to the root folder if current path is being deleted.
-          var originPath = window.location.origin + "/";
+          const originPath = window.location.origin + "/";
           window.history.pushState({ Url: originPath }, "", originPath);
           StoreWorker.refresh(originPath);
         }
@@ -94,13 +94,16 @@ export function WebSocketConnect() {
     },
     false
   );
-
-  socketSource.addEventListener("error", function (err: any) {
-    console.error("Socket encountered error: ", err.message, "Closing socket");
-    socketSource.close();
+  socketSource.addEventListener("error", function (err: Event) {
+    console.error(
+      "Socket encountered error: ",
+      (err as ErrorEvent).message,
+      "Closing socket"
+    );
+    socketSource?.close();
   });
 
-  socketSource.addEventListener("close", function (e: any) {
+  socketSource.addEventListener("close", function (e: CloseEvent) {
     console.log(
       "Socket is closed. Reconnect will be attempted in 5 seconds.",
       e.reason

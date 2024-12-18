@@ -105,8 +105,11 @@ Public Class DavFolder
              End Using
 
         Dim file As DavFile = CType(Await context.GetHierarchyItemAsync(Path & EncodeUtil.EncodeUrlPart(name)), DavFile)
-        ' write file content
-        Await file.WriteInternalAsync(content, contentType, 0, totalFileSize)
+        If content IsNot Nothing Then
+            ' write file content
+            Await file.WriteInternalAsync(content, contentType, 0, totalFileSize)
+        End If
+
         Return file
     End Function
 

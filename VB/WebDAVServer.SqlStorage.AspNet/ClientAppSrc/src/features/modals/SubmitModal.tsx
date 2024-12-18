@@ -9,19 +9,12 @@ type Props = {
 const SubmitModal: React.FC<Props> = ({ closeModal, submitModal, message }) => {
   const { t } = useTranslation();
   return (
-    <DefaultModal
-      closeModal={closeModal}
-      title={t("phrases.modals.defaultModalTitle")}
-    >
+    <DefaultModal closeModal={closeModal} title={t("phrases.modals.defaultModalTitle")}>
       <div className="modal-body">
         <p className="message">{message}</p>
       </div>
       <div className="modal-footer">
-        <button
-          type="button"
-          className="btn btn-primary btn-ok"
-          onClick={submitModal}
-        >
+        <button type="button" className="btn btn-primary btn-ok" onClick={submitModal}>
           {t("phrases.ok")}
         </button>
         <button type="button" className="btn btn-light" onClick={closeModal}>

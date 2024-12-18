@@ -122,8 +122,12 @@ namespace WebDAVServer.SqlStorage.HttpListener
                 throw new LockedException();
             }
             DavFile file = (DavFile)await createChildAsync(name, ItemType.File);
-            // write file content
-            await file.WriteInternalAsync(content, contentType, 0, totalFileSize);
+
+            if (content != null)
+            {
+                // write file content
+                await file.WriteInternalAsync(content, contentType, 0, totalFileSize);
+            }
             await Context.socketService.NotifyCreatedAsync(System.IO.Path.Combine(Path, EncodeUtil.EncodeUrlPart(name)), GetWebSocketID());
 
             return (IFile)file;

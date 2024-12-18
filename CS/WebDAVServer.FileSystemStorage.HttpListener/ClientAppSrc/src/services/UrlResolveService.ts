@@ -53,7 +53,7 @@ export class UrlResolveService {
       return path;
     }
 
-    var res = path
+    const res = path
       .replace(/%7E/gi, "~")
       .replace(/%21/g, "!")
       .replace(/%40/g, "@")

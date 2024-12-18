@@ -104,8 +104,11 @@ Public Class DavFolder
         End If
 
         Dim file As DavFile = CType(Await createChildAsync(name, ItemType.File), DavFile)
-        ' write file content
-        Await file.WriteInternalAsync(content, contentType, 0, totalFileSize)
+        If content IsNot Nothing Then
+            ' write file content
+            Await file.WriteInternalAsync(content, contentType, 0, totalFileSize)
+        End If
+
         Await Context.socketService.NotifyCreatedAsync(System.IO.Path.Combine(Path, EncodeUtil.EncodeUrlPart(name)), GetWebSocketID())
         Return CType(file, IFile)
     End Function

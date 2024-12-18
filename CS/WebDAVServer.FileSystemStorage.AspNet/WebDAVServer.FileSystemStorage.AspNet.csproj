@@ -6,7 +6,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>6816BA8A-AA57-4190-A9DD-D5263AA17B5F</ProjectGuid>
+    <ProjectGuid>1D4A4B67-BF12-4E68-B007-76179B019192</ProjectGuid>
     <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
@@ -96,21 +96,21 @@
       <SubType>Designer</SubType>
     </Content>
     <Content Include="App_Data\WebDav\Storage\Library\Content.txt" />
-    <Content Include="App_Data\WebDav\Storage\Library\General.doc" />
-    <Content Include="App_Data\WebDav\Storage\Library\Introduction.ppt" />
-    <Content Include="App_Data\WebDav\Storage\Library\Stat.xls" />
+    <Content Include="App_Data\WebDav\Storage\Library\General.docx" />
+    <Content Include="App_Data\WebDav\Storage\Library\Introduction.pptx" />
+    <Content Include="App_Data\WebDav\Storage\Library\Stat.xlsx" />
     <Content Include="App_Data\WebDav\Storage\Library\Vision.mpp" />
     <Content Include="App_Data\WebDav\Storage\My Directory\Notes.txt" />
-    <Content Include="App_Data\WebDav\Storage\Products\General.doc" />
+    <Content Include="App_Data\WebDav\Storage\Products\General.docx" />
     <Content Include="App_Data\WebDav\Storage\Products\General.vsd" />
     <Content Include="App_Data\WebDav\Storage\Products\Product.mpp" />
-    <Content Include="App_Data\WebDav\Storage\Sales\Australia\Plan.doc" />
-    <Content Include="App_Data\WebDav\Storage\Sales\Australia\Prices.xls" />
-    <Content Include="App_Data\WebDav\Storage\Sales\Canada\Introduction.ppt" />
-    <Content Include="App_Data\WebDav\Storage\Sales\Canada\Prices.xls" />
+    <Content Include="App_Data\WebDav\Storage\Sales\Australia\Plan.docx" />
+    <Content Include="App_Data\WebDav\Storage\Sales\Australia\Prices.xlsx" />
+    <Content Include="App_Data\WebDav\Storage\Sales\Canada\Introduction.pptx" />
+    <Content Include="App_Data\WebDav\Storage\Sales\Canada\Prices.xlsx" />
     <Content Include="App_Data\WebDav\Storage\Sales\Canada\Product.mpp" />
-    <Content Include="App_Data\WebDav\Storage\Sales\Canada\Stat.xls" />
-    <Content Include="App_Data\WebDav\Storage\Sales\Europe\Stat.xls" />
+    <Content Include="App_Data\WebDav\Storage\Sales\Canada\Stat.xlsx" />
+    <Content Include="App_Data\WebDav\Storage\Sales\Europe\Stat.xlsx" />
     <Content Include="App_Data\WebDav\Storage\Sales\USA\Vision.mpp" />
     <Content Include="App_Data\WebDav\Storage\Templates\readme.txt" />
     <Content Include="App_Data\WebDav\Storage\Templates\template2013.dotx" />
@@ -131,13 +131,13 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="ITHit.WebDAV.Server">
-      <HintPath>..\packages\ITHit.WebDAV.Server.15.0.13942-Beta\lib\net451\ITHit.WebDAV.Server.dll</HintPath>
+      <HintPath>..\packages\ITHit.WebDAV.Server.15.1.14101-Beta\lib\net451\ITHit.WebDAV.Server.dll</HintPath>
     </Reference>
     <Reference Include="ITHit.Server">
-      <HintPath>..\packages\ITHit.Server.15.0.13942-Beta\lib\net451\ITHit.Server.dll</HintPath>
+      <HintPath>..\packages\ITHit.Server.15.1.14101-Beta\lib\net451\ITHit.Server.dll</HintPath>
     </Reference>
     <Reference Include="ITHit.Server.Web">
-      <HintPath>..\packages\ITHit.Server.Web.15.0.13942-Beta\lib\net451\ITHit.Server.Web.dll</HintPath>
+      <HintPath>..\packages\ITHit.Server.Web.15.1.14101-Beta\lib\net451\ITHit.Server.Web.dll</HintPath>
     </Reference>
   </ItemGroup>
   <PropertyGroup>
@@ -155,7 +155,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>9658</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:24271/</IISUrl>
+          <IISUrl>http://localhost:8122/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

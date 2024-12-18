@@ -2,11 +2,7 @@ import React, { useState } from "react";
 import { toolbarConfig } from "./settings";
 import BaseToolbarButton from "./BaseToolbarButton";
 import UploadInput from "./UploadInput";
-import {
-  getSelectedItems,
-  getStoredItems,
-  showProtocolModal,
-} from "../grid/gridSlice";
+import { getStoredItems, showProtocolModal } from "../grid/gridSlice";
 import { useAppDispatch, useAppSelector } from "../../app/hooks/common";
 import { WebDavService } from "../../services/WebDavService";
 import { ProtocolService } from "../../services/ProtocolService";
@@ -21,25 +17,26 @@ import { useTranslation } from "react-i18next";
 import { WebDavSettings } from "../../webDavSettings";
 import { UrlResolveService } from "../../services/UrlResolveService";
 import { ITHit } from "webdav.client";
+import { getSelectedItems } from "../../app/storeSelectors";
 
-type Props = {};
-const Toolbar: React.FC<Props> = () => {
+const Toolbar: React.FC = () => {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const selectedItems = useAppSelector(getSelectedItems);
   const storedItems = useAppSelector(getStoredItems);
 
-  let [isCreateFolderModalShown, setIsCreateFolderModalShown] = useState(false);
-  let [isRenameItemModalShown, setIsRenameItemModalShown] = useState(false);
-  let [isDeleteItemsModalShown, setIsDeleteItemsModalShown] = useState(false);
-  let [isPrintItemsModalShown, setIsPrintItemsModalShown] = useState(false);
+  const [isCreateFolderModalShown, setIsCreateFolderModalShown] =
+    useState(false);
+  const [isRenameItemModalShown, setIsRenameItemModalShown] = useState(false);
+  const [isDeleteItemsModalShown, setIsDeleteItemsModalShown] = useState(false);
+  const [isPrintItemsModalShown, setIsPrintItemsModalShown] = useState(false);
   const getButton = (
     btnName: string,
     handleClick: () => void = () => {},
     isDisabled: boolean = false,
     showing: boolean = true
   ) => {
-    let btnConfig = toolbarConfig.buttons.find((c) => c.name === btnName);
+    const btnConfig = toolbarConfig.buttons.find((c) => c.name === btnName);
     if (btnConfig) {
       return (
         <BaseToolbarButton
@@ -53,7 +50,7 @@ const Toolbar: React.FC<Props> = () => {
   };
 
   const getUploadInput = (btnName: string, inputId: string) => {
-    let btnConfig = toolbarConfig.buttons.find((c) => c.name === btnName);
+    const btnConfig = toolbarConfig.buttons.find((c) => c.name === btnName);
     if (btnConfig) {
       return <UploadInput config={btnConfig} inputId={inputId} />;
     }
@@ -106,7 +103,7 @@ const Toolbar: React.FC<Props> = () => {
   };
 
   const lockUnlockDocs = (lock: boolean) => {
-    var filesUrls: string[] = [];
+    const filesUrls: string[] = [];
 
     selectedItems.forEach((item) => {
       if (!WebDavService.isFolder(item)) {
@@ -131,9 +128,9 @@ const Toolbar: React.FC<Props> = () => {
   };
 
   return (
-    <div>
+    <div className="sticky-toolbar">
       <div className="ithit-grid-toolbar row">
-        <div className="col-auto col-md pr-0 pl-2 pr-xl-2">
+        <div className="col-auto col-md px-1">
           {getButton("createFolderButton", () => {
             setIsCreateFolderModalShown(true);
           })}

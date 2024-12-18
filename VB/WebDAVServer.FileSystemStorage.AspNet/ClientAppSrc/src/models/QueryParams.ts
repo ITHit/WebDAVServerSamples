@@ -1,11 +1,18 @@
 import { CommonService } from "../services/CommonService";
 import { initialState } from "../features/grid/gridSlice";
+export interface IQueryParams {
+  page?: string;
+  search?: string;
+  sortcolumn?: string;
+  sortascending?: string;
+}
+
 export class QueryParams {
   page: number;
   search: string;
   sortcolumn: string;
   sortascending: boolean;
-  constructor(params: any) {
+  constructor(params: IQueryParams) {
     this.page =
       params.page && parseInt(params.page)
         ? parseInt(params.page)

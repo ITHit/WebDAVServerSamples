@@ -11,6 +11,14 @@ import { StoreWorker } from "../app/storeWorker";
 import { CommonService } from "../services/CommonService";
 const i18n = getI18n();
 
+interface SenderType {
+  GetState(): string;
+  SetFailed(error: ITHit.WebDAV.Client.Exceptions.WebDavException | ITHit.WebDAV.Client.Error | null): void;
+  SetDeleteOnCancel(value: boolean): void;
+  SetOverwrite(value: boolean): void;
+  Upload(): void;
+}
+
 export class UploadItemRow {
   public currentState: string = "";
   public retryMessage: string = "";
@@ -19,7 +27,7 @@ export class UploadItemRow {
   private maxRetry: number = 10;
   private currentRetry: number = 0;
   private retryDelay: number = 10;
-  private cancelRetryCallback: Function | null = null;
+  private cancelRetryCallback: (() => void) | null = null;
 
   constructor(uploadItem: ITHit.WebDAV.Client.Upload.UploadItem) {
     this.uploadItem = uploadItem;
@@ -47,7 +55,7 @@ export class UploadItemRow {
   private onProgress = (
     e: ITHit.WebDAV.Client.Upload.Events.ProgressChanged
   ) => {
-    this.currentState = (e.Sender as any).GetState();
+    this.currentState = (e.Sender as SenderType).GetState();
   };
 
   private onStateChanged = (
@@ -62,12 +70,12 @@ export class UploadItemRow {
   private onBeforeUploadStarted = (
     e: ITHit.WebDAV.Client.Upload.Events.BeforeUploadStarted
   ) => {
-    var oItem = e.Sender as ITHit.WebDAV.Client.Upload.UploadItem;
-    var sHref = UrlResolveService.encodeUri(oItem.GetUrl());
+    const oItem = e.Sender as ITHit.WebDAV.Client.Upload.UploadItem;
+    const sHref = UrlResolveService.encodeUri(oItem.GetUrl());
     if (
       oItem.GetOverwrite() ||
       oItem.IsFolder() ||
-      (oItem.CustomData as any).FileExistanceVerified
+      (oItem.CustomData as { FileExistanceVerified: boolean }).FileExistanceVerified
     ) {
       e.Upload();
       return;
@@ -89,24 +97,24 @@ export class UploadItemRow {
           )
         );
 
-        (e.Sender as any).SetFailed(oAsyncResult.Error);
+        (e.Sender as SenderType).SetFailed(oAsyncResult.Error);
         return;
       }
 
-      var rewriteData = new RewriteItemsData(
+      const rewriteData = new RewriteItemsData(
         /* A user selected to overwrite existing file. */
         function () {
           // Do not delete item if upload canceled (it existed before the upload).
-          (e.Sender as any).SetDeleteOnCancel(false);
+          (e.Sender as SenderType).SetDeleteOnCancel(false);
 
           // The item will be overwritten if it exists on the server.
-          (e.Sender as any).SetOverwrite(true);
+          (e.Sender as SenderType).SetOverwrite(true);
 
           // All async requests completed - start upload.
           e.Upload();
         },
         /* A user selected to skip existing files. */
-        function () {},
+        function () { },
         oItem.GetRelativePath()
       );
 
@@ -128,7 +136,7 @@ export class UploadItemRow {
   }
 
   private setRetryMessage(timeLeft: number) {
-    var sRetryMessageFormat = "Retry in: {0}";
+    const sRetryMessageFormat = "Retry in: {0}";
     this.retryMessage = CommonService.pasteFormat(
       sRetryMessageFormat,
       CommonService.timeSpan(Math.ceil(timeLeft / 1000))
@@ -155,20 +163,19 @@ export class UploadItemRow {
       error.Skip();
       return;
     }
-    var me = this;
     // Retry upload.
-    var retryTime = new Date().getTime() + this.retryDelay * 1000;
-    var retryTimerId = setInterval(function () {
-      var timeLeft = retryTime - new Date().getTime();
+    const retryTime = new Date().getTime() + this.retryDelay * 1000;
+    const retryTimerId = setInterval(() => {
+      const timeLeft = retryTime - new Date().getTime();
       if (timeLeft > 0) {
-        me.setRetryMessage(timeLeft);
+        this.setRetryMessage(timeLeft);
         return;
       }
       clearInterval(retryTimerId);
-      me.currentRetry++;
-      me.removeRetryMessage();
+      this.currentRetry++;
+      this.removeRetryMessage();
 
-      // Request number of bytes succesefully saved on the server
+      // Request number of bytes successfully saved on the server
       // and retry upload from next byte.
       error.Retry();
     }, 1000);

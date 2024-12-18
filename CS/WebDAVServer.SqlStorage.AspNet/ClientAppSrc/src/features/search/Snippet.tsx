@@ -8,9 +8,7 @@ type Props = {
 };
 const Snippet: React.FC<Props> = ({ item }) => {
   const getSnippet = () => {
-    let snippet = CommonService.formatSnippet(
-      item.Properties.Find(snippetPropertyName)
-    );
+    const snippet = CommonService.formatSnippet(item.Properties.Find(snippetPropertyName));
     return snippet ? snippet : "";
   };
 
@@ -24,10 +22,7 @@ const Snippet: React.FC<Props> = ({ item }) => {
       <div>
         <Breadcrumb isSearchMode={true} itemUrl={item.Href} />
       </div>
-      <div
-        className="snippet"
-        dangerouslySetInnerHTML={getHtml(getSnippet())}
-      />
+      <div className="snippet" dangerouslySetInnerHTML={getHtml(getSnippet())} />
     </div>
   );
 };

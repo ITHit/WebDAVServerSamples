@@ -18,7 +18,7 @@ const Breadcrumb: React.FC<Props> = ({ itemUrl, isSearchMode }) => {
     url = UrlResolveService.getTail(itemUrl, rootUrl);
   }
 
-  let parts = url
+  const parts = url
     .split("/")
     .slice()
     .filter(function (v) {
@@ -33,7 +33,7 @@ const Breadcrumb: React.FC<Props> = ({ itemUrl, isSearchMode }) => {
   );
 
   const handleUpOneLevelClick = () => {
-    let tail = parts.length >= 2 ? getHref(parts.length - 2) : "";
+    const tail = parts.length >= 2 ? getHref(parts.length - 2) : "";
     let upOneLevelUrl = rootUrl;
     if (rootUrl[rootUrl.length - 1] !== "/" && !tail) {
       upOneLevelUrl += "/";
@@ -44,13 +44,13 @@ const Breadcrumb: React.FC<Props> = ({ itemUrl, isSearchMode }) => {
   };
 
   const handleHomeClick = () => {
-    var homeUrl = rootUrl;
+    let homeUrl = rootUrl;
     if (rootUrl[rootUrl.length - 1] !== "/") {
       homeUrl += "/";
     }
     StoreWorker.refresh(homeUrl);
   };
-  
+
   const getInstallerFileUrl = () => {
     return ProtocolService.getInstallerFileUrl();
   };
@@ -62,10 +62,7 @@ const Breadcrumb: React.FC<Props> = ({ itemUrl, isSearchMode }) => {
     [getHref, rootUrl]
   );
   return (
-    <nav
-      aria-label="breadcrumb"
-      className={isSearchMode ? "snippet-breadcrumb" : ""}
-    >
+    <nav aria-label="breadcrumb" className={isSearchMode ? "snippet-breadcrumb" : ""}>
       <div className="ithit-breadcrumb-container">
         {!isSearchMode && (
           <button
@@ -87,12 +84,7 @@ const Breadcrumb: React.FC<Props> = ({ itemUrl, isSearchMode }) => {
           </li>
           {parts.map((item, i) => {
             return (
-              <li
-                key={"breadcrumb-item-" + i}
-                className={`breadcrumb-item ${
-                  i === parts.length - 1 ? "active" : ""
-                }`}
-              >
+              <li key={"breadcrumb-item-" + i} className={`breadcrumb-item ${i === parts.length - 1 ? "active" : ""}`}>
                 {i !== parts.length - 1 ? (
                   <button className="btn btn-link" onClick={handleItemClick(i)}>
                     <span>{decodeURIComponent(item)}</span>
@@ -104,16 +96,20 @@ const Breadcrumb: React.FC<Props> = ({ itemUrl, isSearchMode }) => {
             );
           })}
         </ol>
-        <a
-        id="ithit-webdav-drive"
-        href={getInstallerFileUrl()}
-        className="btn btn-primary btn-sm btn-labeled"
-        type="button"
-        title="Download WebDAV Drive application."
-      >
-        <span className="btn-label"><i className="icon-webdav-drive"></i></span>
-        <span className="d-none d-lg-inline-block">Download WebDAV Drive</span>
-      </a>
+        {!isSearchMode && (
+          <a
+            id="ithit-webdav-drive"
+            href={getInstallerFileUrl()}
+            className="btn btn-primary btn-sm btn-labeled"
+            type="button"
+            title="Download WebDAV Drive application."
+          >
+            <span className="btn-label">
+              <i className="icon-webdav-drive"></i>
+            </span>
+            <span className="d-none d-lg-inline-block">Download WebDAV Drive</span>
+          </a>
+        )}
       </div>
     </nav>
   );

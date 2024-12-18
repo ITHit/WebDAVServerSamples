@@ -129,8 +129,11 @@ namespace WebDAVServer.FileSystemStorage.AspNet
             }
 
             DavFile file = (DavFile)await context.GetHierarchyItemAsync(Path + EncodeUtil.EncodeUrlPart(name));
-            // write file content
-            await file.WriteInternalAsync(content, contentType, 0, totalFileSize);
+            if (content != null)
+            {
+                // write file content
+                await file.WriteInternalAsync(content, contentType, 0, totalFileSize);
+            }
             await context.socketService.NotifyCreatedAsync(System.IO.Path.Combine(Path, EncodeUtil.EncodeUrlPart(name)), GetWebSocketID());
 
             return file;

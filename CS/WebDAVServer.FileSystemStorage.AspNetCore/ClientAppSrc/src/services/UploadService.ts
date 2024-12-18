@@ -19,6 +19,7 @@ const { grid } = store.getState() as { grid: GridState };
 
 class UploadItemsService {
   private uploader: ITHit.WebDAV.Client.Upload.Uploader | null = null;
+  private isDropzoneAdded = false;
 
   public initUploader() {
     if (this.uploader == null) {
@@ -58,9 +59,12 @@ class UploadItemsService {
   }
 
   public addDropzone() {
-    this.initUploader();
-    this.uploader?.Inputs.AddById("ithit-hidden-input");
-    this.uploader?.DropZones.AddById("ithit-dropzone");
+    if (!this.isDropzoneAdded) {
+      this.initUploader();
+      this.uploader?.Inputs.AddById("ithit-hidden-input");
+      this.uploader?.DropZones.AddById("ithit-dropzone");
+      this.isDropzoneAdded = true;
+    }
   }
 
   public addInput(inputId: string) {
@@ -83,7 +87,7 @@ class UploadItemsService {
     e: ITHit.WebDAV.Client.Upload.Events.UploadItemsCreated
   ) {
     /* Validate file extensions, size, name, etc. here. */
-    let oValidationError = this.validateUploadItems(e.Items);
+    const oValidationError = this.validateUploadItems(e.Items);
     if (oValidationError) {
       store.dispatch(setError(oValidationError));
       return;
@@ -129,7 +133,7 @@ class UploadItemsService {
 
       let sItemsList = ""; // List of items to be displayed in Overwrite / Skip / Cancel dialog.
 
-      let aExistsUploadItems: ITHit.WebDAV.Client.Upload.UploadItem[] = [];
+      const aExistsUploadItems: ITHit.WebDAV.Client.Upload.UploadItem[] = [];
       oAsyncResult.Result.forEach(function (
         oUploadItem: ITHit.WebDAV.Client.Upload.UploadItem
       ) {
@@ -140,12 +144,12 @@ class UploadItemsService {
         }
 
         // Mark item as verified to avoid additional file existence verification requests.
-        (oUploadItem.CustomData as any).FileExistanceVerified = true;
+        (oUploadItem.CustomData as { FileExistanceVerified: boolean }).FileExistanceVerified = true;
 
         sItemsList += oUploadItem.GetRelativePath() + "<br/>";
         aExistsUploadItems.push(oUploadItem);
       });
-      let onOverwrite = function () {
+      const onOverwrite = function () {
         // Mark all items that exist on the server with overwrite flag.
         aExistsUploadItems.forEach(function (oUploadItem) {
           if (oUploadItem.IsFolder()) return;
@@ -158,19 +162,19 @@ class UploadItemsService {
         e.Upload(e.Items);
       };
 
-      let onSkipExists = function () {
+      const onSkipExists = function () {
         // Create list of items that do not exist on the server.
         /** @type {ITHit.WebDAV.Client.Upload.UploadItem[]} aNotExistsUploadItems */
-        let grep = function (
+        const grep = function (
           elems: ITHit.WebDAV.Client.Upload.UploadItem[],
           callback: (arg: ITHit.WebDAV.Client.Upload.UploadItem) => boolean,
           invert: boolean
         ) {
-          let callbackInverse,
-            matches = [],
-            i = 0,
-            length = elems.length,
-            callbackExpect = !invert;
+          let callbackInverse;
+          const matches = [];
+          let i = 0;
+          const length = elems.length;
+          const callbackExpect = !invert;
 
           // Go through the array, only saving the items
           // that pass the validator function
@@ -183,7 +187,7 @@ class UploadItemsService {
 
           return matches;
         };
-        let aNotExistsUploadItems = grep(
+        const aNotExistsUploadItems = grep(
           e.Items,
           function (oUploadItem) {
             return aExistsUploadItems.indexOf(oUploadItem) >= 0;
@@ -195,7 +199,7 @@ class UploadItemsService {
         e.Upload(aNotExistsUploadItems);
       };
       /* One or more items exists on the server. Show Overwrite / Skip / Cancel dialog.*/
-      let rewriteData = new RewriteItemsData(
+      const rewriteData = new RewriteItemsData(
         /* A user selected to overwrite existing files. */
         onOverwrite,
         /* A user selected to skip existing files. */
@@ -210,7 +214,7 @@ class UploadItemsService {
     aUploadItems: ITHit.WebDAV.Client.Upload.UploadItem[]
   ) {
     for (let i = 0; i < aUploadItems.length; i++) {
-      let oValidationError = this.validateName(aUploadItems[i]);
+      const oValidationError = this.validateName(aUploadItems[i]);
       if (oValidationError) {
         return oValidationError;
       }
@@ -218,7 +222,7 @@ class UploadItemsService {
   }
 
   private validateName(oUploadItem: ITHit.WebDAV.Client.Upload.UploadItem) {
-    let sValidationMessage = CommonService.validateName(oUploadItem.GetName());
+    const sValidationMessage = CommonService.validateName(oUploadItem.GetName());
     if (sValidationMessage) {
       return new WebDavError(
         sValidationMessage + "\nUri:" + oUploadItem.GetUrl(),
@@ -234,7 +238,7 @@ class UploadItemsService {
     this.openItemsCollectionAsync(
       aUploadItems,
       function (aResultCollection: OpenItemsCollectionResult[]) {
-        let oFailedResult = aResultCollection.find(
+        const oFailedResult = aResultCollection.find(
           (el) =>
             !(el.asyncResult.IsSuccess || el.asyncResult.Status.Code === 404)
         );
@@ -244,7 +248,7 @@ class UploadItemsService {
           return;
         }
 
-        let aExistsItems = aResultCollection
+        const aExistsItems = aResultCollection
           .filter(function (oResult: OpenItemsCollectionResult) {
             return oResult.asyncResult.IsSuccess;
           })
@@ -252,8 +256,8 @@ class UploadItemsService {
             return oResult.uploadItem;
           });
 
-        const createAsyncResult = function (oResult: any) {
-          let result = {
+        const createAsyncResult = function (oResult: unknown) {
+          const result = {
             Result: oResult,
             IsSuccess: true,
             Error: null,
@@ -272,7 +276,7 @@ class UploadItemsService {
     fCallback: (arg: OpenItemsCollectionResult[]) => void
   ) {
     let iCounter = aUploadItems.length;
-    let aResults: OpenItemsCollectionResult[] = [];
+    const aResults: OpenItemsCollectionResult[] = [];
     if (iCounter === 0) {
       fCallback(aResults);
       return;
@@ -295,10 +299,7 @@ class UploadItemsService {
       );
     });
   }
-
-  private static getGrid() {
-    const { grid } = store.getState() as { grid: GridState };
-    return grid;
-  }
 }
-export const UploadService = new UploadItemsService();
+
+const UploadService = new UploadItemsService();
+export { UploadService };

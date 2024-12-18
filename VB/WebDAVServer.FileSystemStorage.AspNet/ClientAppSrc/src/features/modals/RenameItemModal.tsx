@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import DefaultModal from "./DefaultModal";
 import { useTranslation } from "react-i18next";
-import { getSelectedItems } from "../grid/gridSlice";
 import { useAppSelector } from "../../app/hooks/common";
 import { CommonService } from "../../services/CommonService";
 import { StoreWorker } from "../../app/storeWorker";
+import { getSelectedItems } from "../../app/storeSelectors";
 
 type Props = { closeModal: () => void };
 
@@ -12,9 +12,9 @@ const RenameItemModal: React.FC<Props> = ({ closeModal }) => {
   const { t } = useTranslation();
   const selectedItem = useAppSelector(getSelectedItems)[0];
 
-  let [errorMessage, setErrorMessage] = useState<string | undefined>("");
-  let [itemName, setItemName] = useState(selectedItem.DisplayName);
-  let oldItemName = selectedItem.DisplayName;
+  const [errorMessage, setErrorMessage] = useState<string | undefined>("");
+  const [itemName, setItemName] = useState(selectedItem.DisplayName);
+  const oldItemName = selectedItem.DisplayName;
 
   const renameItem = () => {
     StoreWorker.renameSelectedItem(itemName);
@@ -39,10 +39,7 @@ const RenameItemModal: React.FC<Props> = ({ closeModal }) => {
     setItemName(enteredName);
   };
   return (
-    <DefaultModal
-      closeModal={closeModal}
-      title={t("phrases.modals.renameItemTitle")}
-    >
+    <DefaultModal closeModal={closeModal} title={t("phrases.modals.renameItemTitle")}>
       <form onSubmit={handleSubmit}>
         <div className="modal-body">
           <div className="form-group">
@@ -54,9 +51,7 @@ const RenameItemModal: React.FC<Props> = ({ closeModal }) => {
               placeholder={t("phrases.modals.itemNamePlaceholder")}
               onChange={handleInputChange}
             />
-            {errorMessage && (
-              <div className="alert alert-danger">{errorMessage}</div>
-            )}
+            {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
           </div>
         </div>
         <div className="modal-footer">

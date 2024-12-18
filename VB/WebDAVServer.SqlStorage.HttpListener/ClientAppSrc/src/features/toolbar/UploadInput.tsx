@@ -14,7 +14,11 @@ const UploadInput: React.FC<Props> = ({ config, inputId }) => {
 
   useEffect(() => {
     UploadService.addInput(inputId);
-  });
+
+    return () => {
+      UploadService.destroy();
+    };
+  }, [inputId]);
 
   return (
     <>
@@ -22,13 +26,7 @@ const UploadInput: React.FC<Props> = ({ config, inputId }) => {
         <i className={`icon ${config.iconClassName}`}></i>
         <span dangerouslySetInnerHTML={getInnerHtml()}></span>
       </label>
-      <input
-        id="ithit-button-input"
-        className="d-none"
-        type="file"
-        multiple
-        hidden
-      />
+      <input id="ithit-button-input" className="d-none" type="file" multiple hidden />
     </>
   );
 };

@@ -1,5 +1,5 @@
 ﻿.ithit-grid-wrapper {
-  margin: 1.25rem 0px;
+  margin: 0.5rem 0px;
   border: 2px solid transparent;
   position: relative;
 
@@ -134,6 +134,10 @@ table.ithit-grid-container {
   }
 
   > thead {
+    position: sticky;
+    top: 43px;
+    z-index: 997;
+    box-shadow: 0 1px 0 0 rgb(222, 226, 230);
     > tr {
       > th {
         &.sort {

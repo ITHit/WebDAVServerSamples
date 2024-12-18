@@ -11,23 +11,17 @@ type Props = {
   onActionItem: () => void;
   onItemStateChanged: () => void;
 };
-const UploadingItem: React.FC<Props> = ({
-  uploadItemRow,
-  onActionItem,
-  onItemStateChanged,
-}) => {
+const UploadingItem: React.FC<Props> = ({ uploadItemRow, onActionItem, onItemStateChanged }) => {
   const { t } = useTranslation();
   const { currentState, uploadItem, retryMessage } = uploadItemRow;
   const fileName = uploadItem.GetName();
   const fileExtension = CommonService.getFileExtension(fileName);
-  const fileSize = CommonService.formatFileSize(
-    uploadItem.GetProgress().TotalBytes
-  );
+  const fileSize = CommonService.formatFileSize(uploadItem.GetProgress().TotalBytes);
   const [progress, setProgress] = useState(0);
   const [speed, setSpeed] = useState(0);
 
   useEffect(() => {
-    let intervalId = setInterval(() => {
+    const intervalId = setInterval(() => {
       setProgress(uploadItem.GetProgress().Completed);
       setSpeed(uploadItem.GetProgress().Speed);
     }, 500);
@@ -67,11 +61,7 @@ const UploadingItem: React.FC<Props> = ({
       ) && (
         <div className="row uploading-item">
           <div className="col-auto px-0">
-            <button
-              className="btn-transparent float-start"
-              disabled={disabledActions}
-              onClick={cancelUploading}
-            >
+            <button className="btn-transparent float-start" disabled={disabledActions} onClick={cancelUploading}>
               <i className="icon icon-close"></i>
             </button>
           </div>
@@ -80,13 +70,9 @@ const UploadingItem: React.FC<Props> = ({
           </div>
           <div className="col">
             <div className="row align-items-center">
-              <div className="col-auto item-name">
-                {UrlResolveService.decodeUri(fileName)}
-              </div>
+              <div className="col-auto item-name">{UrlResolveService.decodeUri(fileName)}</div>
               <div className="col-auto item-size">{fileSize}</div>
-              {!!retryMessage && (
-                <div className="col-auto text-danger">{retryMessage}</div>
-              )}
+              {!!retryMessage && <div className="col-auto text-danger">{retryMessage}</div>}
             </div>
             <div className="row">
               <div className="col">
@@ -107,28 +93,18 @@ const UploadingItem: React.FC<Props> = ({
                 {progress}% {t("phrases.done")}
               </div>
               <div className="col-auto item-speed">
-                {CommonService.formatFileSize(speed) +
-                  "/" +
-                  t("phrases.secondShortened")}
+                {CommonService.formatFileSize(speed) + "/" + t("phrases.secondShortened")}
               </div>
             </div>
           </div>
           <div className="col-auto px-0">
             {!isPaused && (
-              <button
-                disabled={disabledActions}
-                className="btn-transparent float-end"
-                onClick={pauseUploading}
-              >
+              <button disabled={disabledActions} className="btn-transparent float-end" onClick={pauseUploading}>
                 <i className="icon icon-pause"></i>
               </button>
             )}
             {isPaused && (
-              <button
-                disabled={disabledActions}
-                className="btn-transparent float-end"
-                onClick={playUploading}
-              >
+              <button disabled={disabledActions} className="btn-transparent float-end" onClick={playUploading}>
                 <i className="icon icon-play"></i>
               </button>
             )}

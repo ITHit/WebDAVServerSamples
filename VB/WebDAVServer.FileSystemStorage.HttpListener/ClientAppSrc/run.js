@@ -1,46 +1,50 @@
-const { argv } = require("process");
-const fs = require("fs");
-const { execSync } = require("child_process");
+import { argv } from "process";
+import fs from "fs";
+import { execSync } from "child_process";
 
-let isNetFramework = argv[2] == "true" ? true : false;
+let isNetFramework = argv[2] === "true" ? true : false;
 
-//show npm version
+// Show npm version
 console.log("npm version: ");
 execSync("npm -v", { stdio: "inherit" });
 
-//show node version
+// Show node version
 console.log("node version: ");
 execSync("node -v", { stdio: "inherit" });
 
 let currVersion;
 let newVersion;
 let newBetaVersion;
-if (fs.existsSync(".\\node_modules\\webdav.client")) {
-  currVersion = require("webdav.client/package.json").version;
+
+if (fs.existsSync("./node_modules/webdav.client")) {
+  const packageJson = await import("webdav.client/package.json", {
+    with: { type: "json" },
+  });
+  currVersion = packageJson.default.version;
   newVersion = execSync("npm show webdav.client version").toString().trim();
   newBetaVersion = execSync("npm show webdav.client@beta version")
     .toString()
     .trim();
 }
 
-if (newVersion == currVersion) {
+if (newVersion === currVersion) {
   console.log("webdav.client version is up to date");
   if (currVersion == undefined) {
     execSync("npm install webdav.client --save", { stdio: "inherit" });
     installAndBuild();
   }
 
-  if (!fs.existsSync("..\\wwwroot\\app.js")) {
+  if (!fs.existsSync("../wwwroot/app.js")) {
     installAndBuild();
   }
-} else if (newBetaVersion == currVersion) {
+} else if (newBetaVersion === currVersion) {
   console.log("webdav.client version is up to date");
   if (currVersion == undefined) {
     execSync("npm install webdav.client@beta --save", { stdio: "inherit" });
     installAndBuild();
   }
 
-  if (!fs.existsSync("..\\wwwroot\\app.js")) {
+  if (!fs.existsSync("../wwwroot/app.js")) {
     installAndBuild();
   }
 } else {
@@ -64,11 +68,11 @@ function installAndBuild() {
 function buildApp() {
   try {
     if (isNetFramework) {
-      execSync("npm run build:netframework & npm run postbuild", {
+      execSync("npm run build:netframework", {
         stdio: "inherit",
       });
     } else {
-      execSync("npm run build & npm run postbuild", {
+      execSync("npm run build", {
         stdio: "inherit",
       });
     }
@@ -78,13 +82,13 @@ function buildApp() {
 }
 
 function copyClient() {
-  if (!fs.existsSync("..\\wwwroot\\webdav.client")) {
-    fs.mkdirSync("..\\wwwroot\\webdav.client");
+  if (!fs.existsSync("../wwwroot/webdav.client")) {
+    fs.mkdirSync("../wwwroot/webdav.client");
   }
 
   try {
     execSync(
-      "(robocopy node_modules\\webdav.client ..\\wwwroot\\webdav.client /E) ^& IF %ERRORLEVEL% LEQ 1 exit 0",
+      `(robocopy node_modules/webdav.client ../wwwroot/webdav.client /E) ^& IF %ERRORLEVEL% LEQ 1 exit 0`,
       { stdio: "inherit" }
     );
     console.log("The documentation was copied successfully!");

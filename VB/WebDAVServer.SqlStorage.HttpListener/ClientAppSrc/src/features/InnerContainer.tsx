@@ -1,6 +1,5 @@
 import React, { useCallback, useRef } from "react";
 import GridContainer from "./grid/components/GridContainer";
-import Pagination from "./grid/components/Pagination";
 import Toolbar from "./toolbar/Toolbar";
 import Breadcrumb from "./Breadcrumb";
 import InstallProtocolModal from "./modals/InstallProtocolModal";
@@ -11,39 +10,29 @@ import { getIsDragging, setIsDragging } from "./upload/uploadSlice";
 import { useAppDispatch, useAppSelector } from "../app/hooks/common";
 import Uploader from "./upload/Uploader";
 
-type Props = {};
-const InnerContainer: React.FC<Props> = () => {
+const InnerContainer: React.FC = () => {
   const inputRef = useRef(null);
   const dispatch = useAppDispatch();
-  let dropCounter = 0;
+  const dropCounter = useRef(0);
   const isDragging = useAppSelector(getIsDragging);
 
-  const handleDragEnter = useCallback(
-    (e: React.DragEvent<HTMLDivElement>) => {
-      dropCounter++;
-      dispatch(setIsDragging(true));
-    },
-    [dropCounter, dispatch]
-  );
-  const handleDragLeave = useCallback(
-    (e: React.DragEvent<HTMLDivElement>) => {
-      dropCounter--;
-      if (dropCounter <= 0) {
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        dropCounter = 0;
-        dispatch(setIsDragging(false));
-      }
-    },
-    [dropCounter, dispatch]
-  );
-  const handleDrop = useCallback(
-    (e: React.DragEvent<HTMLDivElement>) => {
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      dropCounter = 0;
+  const handleDragEnter = useCallback(() => {
+    dropCounter.current++;
+    dispatch(setIsDragging(true));
+  }, [dispatch]);
+
+  const handleDragLeave = useCallback(() => {
+    dropCounter.current--;
+    if (dropCounter.current <= 0) {
+      dropCounter.current = 0;
       dispatch(setIsDragging(false));
-    },
-    [dropCounter, dispatch]
-  );
+    }
+  }, [dispatch]);
+
+  const handleDrop = useCallback(() => {
+    dropCounter.current = 0;
+    dispatch(setIsDragging(false));
+  }, [dispatch]);
 
   return (
     <div
@@ -56,23 +45,16 @@ const InnerContainer: React.FC<Props> = () => {
       <div className="fixed-controls">
         <Breadcrumb isSearchMode={false} />
         <Search />
-        <Toolbar />
       </div>
+      <Toolbar />
       <div>
         <Uploader />
         <GridContainer />
-        <Pagination />
       </div>
       <InstallProtocolModal />
       <ErrorModal />
       <RewriteModal />
-      <input
-        id="ithit-hidden-input"
-        className="d-none"
-        type="file"
-        multiple
-        ref={inputRef}
-      />
+      <input id="ithit-hidden-input" className="d-none" type="file" multiple ref={inputRef} />
     </div>
   );
 };
