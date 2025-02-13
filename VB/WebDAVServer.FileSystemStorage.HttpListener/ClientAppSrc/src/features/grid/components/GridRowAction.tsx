@@ -58,7 +58,7 @@ const GridRowAction: React.FC<Props> = ({ item }) => {
         WebDavSettings.EditDocAuth.LoginUrl
       );
     } else {
-      ITHit.WebDAV.Client.DocManager.EditDocument(item.Href, UrlResolveService.getRootUrl(), showProtocolInstallModal);
+      ITHit.WebDAV.Client.DocManager.DavProtocolEditDocument(item.Href, UrlResolveService.getRootUrl(), showProtocolInstallModal);
     }
   };
 

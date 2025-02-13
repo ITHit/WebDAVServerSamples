@@ -6,4 +6,5 @@ export interface WindowWebDavSettings {
     EditDocAuth: EditDocAuth | null;
     ApplicationProtocolsPath: string | null;
     WebDavServerVersion: string | null;
+    ProtocolName: string | null;
 }

@@ -7,6 +7,7 @@ import { showProtocolModal } from "./grid/gridSlice";
 import { getCurrentFolder } from "./grid/gridSlice";
 import { useAppDispatch, useAppSelector } from "../app/hooks/common";
 import logo from "/images/logo.svg";
+import { ProtocolService } from "../services/ProtocolService";
 
 const Header: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -32,7 +33,7 @@ const Header: React.FC = () => {
   };
 
   const getInstallerFileUrl = () => {
-    return WebDavSettings.ApplicationProtocolsPath + ITHit.WebDAV.Client.DocManager.GetProtocolInstallFileNames()[0];
+    return ProtocolService.getInstallerFileUrl();
   };
 
   const getAjaxLibVersion = () => {
@@ -71,7 +72,9 @@ const Header: React.FC = () => {
             <img src={logo} alt="IT Hit logo" className="logo" />
             <span className="brand-name">
               IT Hit WebDAV Server Engine&nbsp;
-              <div className="webdav-server-version d-inline">{WebDavSettings.WebDavServerVersion}</div>
+              <div className="webdav-server-version d-inline">
+                {WebDavSettings.WebDavServerVersion}
+              </div>
             </span>
           </span>
           <button className="navbar-toggler burger-button" type="button">
@@ -90,15 +93,19 @@ const Header: React.FC = () => {
               <div className="row">
                 <div className="col">
                   <p>
-                    This page is displayed when user accesses any folder on your WebDAV server in a web browser. You can
-                    customize this page to your needs.
+                    This page is displayed when user accesses any folder on your
+                    WebDAV server in a web browser. You can customize this page
+                    to your needs.
                   </p>
                 </div>
               </div>
               <div className="row blocks">
                 <div className="col-12 col-lg-4 d-flex flex-column">
                   <h3>Test Your Server</h3>
-                  <p>To test your WebDAV server you can run Ajax integration tests right from this page.</p>
+                  <p>
+                    To test your WebDAV server you can run Ajax integration
+                    tests right from this page.
+                  </p>
                   <span
                     dangerouslySetInnerHTML={{
                       __html: `
@@ -116,9 +123,12 @@ const Header: React.FC = () => {
                   <h3>Manage Docs with Ajax File Browser</h3>
                   <p>
                     Use the&nbsp;
-                    <a href="https://www.webdavsystem.com/ajaxfilebrowser/programming/">IT Hit Ajax File Browser</a>
-                    &nbsp;to browse your documents, open for editing from a web page and - uploading with pause/resume
-                    and auto-restore upload.
+                    <a href="https://www.webdavsystem.com/ajaxfilebrowser/programming/">
+                      IT Hit Ajax File Browser
+                    </a>
+                    &nbsp;to browse your documents, open for editing from a web
+                    page and - uploading with pause/resume and auto-restore
+                    upload.
                   </p>
                   <span
                     dangerouslySetInnerHTML={{
@@ -136,13 +146,23 @@ const Header: React.FC = () => {
                 <div className="col-12 col-lg-4 d-flex flex-column">
                   <h3>Connect with WebDAV Client</h3>
                   <p>
-                    Use a WebDAV client provided with almost any OS. Refer to&nbsp;
-                    <a href="https://www.webdavsystem.com/server/access">Accessing WebDAV Server</a>
-                    &nbsp;page for - detailed instructions. The button below is using&nbsp;
-                    <a href="https://www.webdavsystem.com/ajax/">IT Hit WebDAV Ajax Library</a>
-                    &nbsp;to mount WebDAV - folder and open the default OS file manager.
+                    Use a WebDAV client provided with almost any OS. Refer
+                    to&nbsp;
+                    <a href="https://www.webdavsystem.com/server/access">
+                      Accessing WebDAV Server
+                    </a>
+                    &nbsp;page for - detailed instructions. The button below is
+                    using&nbsp;
+                    <a href="https://www.webdavsystem.com/ajax/">
+                      IT Hit WebDAV Ajax Library
+                    </a>
+                    &nbsp;to mount WebDAV - folder and open the default OS file
+                    manager.
                   </p>
-                  <button className="align-self-start btn btn-primary" onClick={handleFolderClick}>
+                  <button
+                    className="align-self-start btn btn-primary"
+                    onClick={handleFolderClick}
+                  >
                     Browse Using OS File Manager
                   </button>
                 </div>
@@ -151,7 +171,9 @@ const Header: React.FC = () => {
                 <div className="col">
                   <p className="versions">
                     IT Hit WebDAV Server Engine for .NET:&nbsp;
-                    <span className="webdav-server-version">{WebDavSettings.WebDavServerVersion}</span>
+                    <span className="webdav-server-version">
+                      {WebDavSettings.WebDavServerVersion}
+                    </span>
                   </p>
                   <p className="versions">
                     IT Hit WebDAV AJAX Library:&nbsp;

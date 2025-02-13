@@ -103,7 +103,7 @@ const Search: React.FC = () => {
           value={query}
           className="form-control"
           disabled={isDisabled()}
-          placeholder={isDisabled() ? t("phrases.validations.notSupportSearch") : ""}
+          placeholder={isDisabled() && optionsInfo ? t("phrases.validations.notSupportSearch") : ""}
           onChange={handleInputChange}
           onKeyPress={handleKeyPress}
           onFocus={() => setIsFocusInput(true)}
