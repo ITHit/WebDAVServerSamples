@@ -1,16 +1,18 @@
 import { EditDocAuth } from "./models/EditDocAuth";
 
+const isDev = import.meta.env.MODE === "development";
+
 export class WebDavSettings {
-  static WebsiteRootUrl: string =
-    window.webDavSettings && window.webDavSettings.WebDavServerPath
-      ? WebDavSettings._getWebsiteRootUrl(
-        window.webDavSettings.WebDavServerPath
-      )
-      : "";
-  static WebSocketPath: string =
-    window.webDavSettings && window.webDavSettings.WebSocketPath
-      ? window.webDavSettings.WebSocketPath
-      : "";
+  static WebsiteRootUrl: string = isDev
+    ? WebDavSettings._getWebsiteRootUrl(import.meta.env.VITE_WEBDAV_SERVER_PATH)
+    : window.webDavSettings && window.webDavSettings.WebDavServerPath
+    ? WebDavSettings._getWebsiteRootUrl(window.webDavSettings.WebDavServerPath)
+    : "";
+  static WebSocketPath: string = isDev
+    ? WebDavSettings._getWebsiteRootUrl(import.meta.env.VITE_WEBDAV_SOCKET_PATH)
+    : window.webDavSettings && window.webDavSettings.WebSocketPath
+    ? window.webDavSettings.WebSocketPath
+    : "";
   static EditDocAuth: EditDocAuth = {
     Authentication: window.webDavSettings.EditDocAuth.Authentication,
     CookieNames: window.webDavSettings.EditDocAuth.CookieNames,
@@ -33,10 +35,13 @@ export class WebDavSettings {
     return strVal;
   }
 
-  static WebDavServerVersion: string =
-    window.webDavSettings && window.webDavSettings.WebDavServerVersion
-      ? window.webDavSettings.WebDavServerVersion
-      : "";
+  static WebDavServerVersion: string = isDev
+    ? WebDavSettings._getWebsiteRootUrl(
+        import.meta.env.VITE_WEBDAV_SERVER_VERSION
+      )
+    : window.webDavSettings && window.webDavSettings.WebDavServerVersion
+    ? window.webDavSettings.WebDavServerVersion
+    : "";
 
   static _getWebsiteRootUrl(url: string) {
     if (url && url[0] === "/") {

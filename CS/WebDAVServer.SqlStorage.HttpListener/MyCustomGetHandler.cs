@@ -84,9 +84,9 @@ namespace WebDAVServer.SqlStorage.HttpListener
                 // Remember to call EnsureBeforeResponseWasCalledAsync here if your context implementation
                 // makes some useful things in BeforeResponseAsync.
                 await context.EnsureBeforeResponseWasCalledAsync();
-
                 string htmlName = "MyCustomHandlerPage.html";
-                using (TextReader reader = File.OpenText(Path.Combine(htmlPath, htmlName)))
+                string filePath = Path.Combine(htmlPath, htmlName);
+                using (TextReader reader = File.OpenText(filePath))
                 {
                     string html = await reader.ReadToEndAsync();
                     html = html.Replace("_webDavServerRoot_", context.Request.ApplicationPath.TrimEnd('/'));

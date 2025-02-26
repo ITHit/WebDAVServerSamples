@@ -81,7 +81,8 @@ Friend Class MyCustomGetHandler
             ' makes some useful things in BeforeResponseAsync.
             Await context.EnsureBeforeResponseWasCalledAsync()
             Dim htmlName As String = "MyCustomHandlerPage.html"
-            Using reader As TextReader = File.OpenText(Path.Combine(htmlPath, htmlName))
+            Dim filePath As String = Path.Combine(htmlPath, htmlName)
+            Using reader As TextReader = File.OpenText(filePath)
                 Dim html As String = Await reader.ReadToEndAsync()
                 html = html.Replace("_webDavServerRoot_", context.Request.ApplicationPath.TrimEnd("/"c))
                 html = html.Replace("_webDavServerVersion_",

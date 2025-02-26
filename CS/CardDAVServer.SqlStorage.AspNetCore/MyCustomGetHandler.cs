@@ -93,9 +93,9 @@ namespace CardDAVServer.SqlStorage.AspNetCore
                     await WriteProfileAsync(context, item, htmlPath);
                     return;
                 }
-
                 string htmlName = "MyCustomHandlerPage.html";
-                using (TextReader reader = File.OpenText(Path.Combine(htmlPath, htmlName)))
+                string filePath = Path.Combine(htmlPath, htmlName);
+                using (TextReader reader = File.OpenText(filePath))
                 {
                     string html = await reader.ReadToEndAsync();
                     html = html.Replace("_webDavServerUrl_", context.Request.UrlPrefix + context.Request.ApplicationPath);

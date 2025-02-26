@@ -32,6 +32,24 @@ const Header: React.FC = () => {
       );
   };
 
+  const handleOpenAjaxFileBrowserWindow = () => {
+    window.open(
+      `/AjaxFileBrowser/AjaxFileBrowser.html#${WebDavSettings.WebsiteRootUrl}`,
+      "",
+      "menubar=1,location=1,status=1,scrollbars=1,resizable=1,width=900,height=600"
+    );
+  };
+
+  const handleOpenTestsWindow = () => {
+    const width = Math.round(screen.width * 0.5);
+    const height = Math.round(screen.height * 0.8);
+    window.open(
+      `/AjaxFileBrowser/AjaxIntegrationTests.html#${WebDavSettings.WebsiteRootUrl}`,
+      "",
+      `menubar=1,location=1,status=1,scrollbars=1,resizable=1,width=${width},height=${height}`
+    );
+  };
+
   const getInstallerFileUrl = () => {
     return ProtocolService.getInstallerFileUrl();
   };
@@ -106,18 +124,12 @@ const Header: React.FC = () => {
                     To test your WebDAV server you can run Ajax integration
                     tests right from this page.
                   </p>
-                  <span
-                    dangerouslySetInnerHTML={{
-                      __html: `
-                    <button
-                    onclick="OpenTestsWindow()"
-                    class="align-self-start btn btn-primary"
+                  <button
+                    onClick={handleOpenTestsWindow}
+                    className="align-self-start btn btn-primary"
                   >
                     Run Integration Tests
                   </button>
-  `,
-                    }}
-                  ></span>
                 </div>
                 <div className="col-12 col-lg-4 d-flex flex-column">
                   <h3>Manage Docs with Ajax File Browser</h3>
@@ -130,18 +142,12 @@ const Header: React.FC = () => {
                     page and - uploading with pause/resume and auto-restore
                     upload.
                   </p>
-                  <span
-                    dangerouslySetInnerHTML={{
-                      __html: `
-                    <button
-                    onclick="OpenAjaxFileBrowserWindow()"
-                    class="align-self-start btn btn-primary"
+                  <button
+                    onClick={handleOpenAjaxFileBrowserWindow}
+                    className="align-self-start btn btn-primary"
                   >
                     Browse Using Ajax File Browser
                   </button>
-  `,
-                    }}
-                  ></span>
                 </div>
                 <div className="col-12 col-lg-4 d-flex flex-column">
                   <h3>Connect with WebDAV Client</h3>
