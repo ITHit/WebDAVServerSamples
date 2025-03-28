@@ -14,7 +14,6 @@ builder.Configuration
 builder.Services.AddWebDav(builder.Configuration, builder.Environment);
 
 var app = builder.Build();
-
 app.UseStaticFiles(new StaticFileOptions { ServeUnknownFileTypes = true });
 app.UseHttpsRedirection();
 // Basic auth requires SSL connection. To enable non - SSL connection for testing purposes read the following articles:

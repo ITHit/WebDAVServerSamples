@@ -15,7 +15,6 @@ builder.Services.AddWebDav(builder.Configuration, builder.Environment);
 builder.Services.AddSingleton<WebSocketsService>();
 
 var app = builder.Build();
-
 app.UseStaticFiles(new StaticFileOptions { ServeUnknownFileTypes = true });
 app.UseHttpsRedirection();
 

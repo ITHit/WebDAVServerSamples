@@ -151,6 +151,10 @@ export const setCurrentFolder = createAsyncThunk(
         searchQuery
       );
     } catch (err) {
+        if (err instanceof ITHit.WebDAV.Client.Exceptions.WebDavHttpException && err.Status.Code === 401
+            && import.meta.env.MODE === "development") {
+            window.location.href = UrlResolveService.getRootUrl() + "/dev-mode";
+        }
       return rejectWithValue(
         new WebDavError(i18n.t("phrases.errors.profindErrorMessage"), err)
       );
