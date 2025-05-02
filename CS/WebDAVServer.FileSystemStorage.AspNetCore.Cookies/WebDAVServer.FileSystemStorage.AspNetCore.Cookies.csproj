@@ -12,9 +12,9 @@
 		<None Remove="App_Data\WebDav\Storage\qtest_*\**" />
   </ItemGroup>  
   <ItemGroup>
-	<PackageReference Include="ITHit.Server" Version="15.2.15012-Beta2" />
-    <PackageReference Include="ITHit.Server.Core" Version="15.2.15012-Beta2" />
-    <PackageReference Include="ITHit.WebDAV.Server" Version="15.2.15012-Beta2" />
+	<PackageReference Include="ITHit.Server" Version="15.3.15268-Beta3" />
+    <PackageReference Include="ITHit.Server.Core" Version="15.3.15268-Beta3" />
+    <PackageReference Include="ITHit.WebDAV.Server" Version="15.3.15268-Beta3" />
     <PackageReference Include="System.Data.OleDb" Version="9.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="9.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.0" />
