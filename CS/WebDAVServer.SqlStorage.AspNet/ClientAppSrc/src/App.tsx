@@ -7,11 +7,14 @@ import { UrlResolveService } from "./services/UrlResolveService";
 import { UploadService } from "./services/UploadService";
 import queryString from "query-string";
 import { IQueryParams, QueryParams } from "./models/QueryParams";
+import { useWebSocket } from "./app/hooks/useWebSocket";
 
 function App() {
   const location = useLocation();
   const query = queryString.parse(location.search);
   const queryParams = new QueryParams(query as IQueryParams);
+  // Initialize WebSocket connection
+  useWebSocket();
 
   const currentUrl =
     UrlResolveService.getRootUrl() +
@@ -28,6 +31,7 @@ function App() {
       UploadService.destroy();
     };
   }, []);
+
   return <MainContainer />;
 }
 

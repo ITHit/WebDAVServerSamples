@@ -26,6 +26,25 @@ export class UrlResolveService {
     );
   }
 
+  static getServerOrigin() {
+    return WebDavSettings.WebsiteRootUrl
+      ? WebDavSettings.WebsiteRootUrl.replace(this.getServerRootFolder(), "")
+      : window.location.origin;
+  }
+
+  static getServerRootUrl() {
+    return WebDavSettings.WebsiteRootUrl
+      ? WebDavSettings.WebsiteRootUrl
+      : window.location.origin;
+  }
+
+  static getServerRootFolder() {
+    return WebDavSettings.WebsiteRootUrl.replace(
+      new URL(WebDavSettings.WebsiteRootUrl).origin,
+      ""
+    );
+  }
+
   static getTail(url1: string, url2: string) {
     return url1.includes(url2) ? url1.replace(url2, "") : "";
   }
@@ -74,5 +93,17 @@ export class UrlResolveService {
       .replace(/%3F/gi, "?");
 
     return this.decodeUri(res);
+  }
+
+  static getParentFolderUrl(currentUrl: string): string {
+    currentUrl = currentUrl.replace(/\/$/, "");
+
+    const rootUrl = this.getServerRootUrl().replace(/\/$/, "");
+    if (currentUrl === rootUrl) {
+      return rootUrl;
+    }
+
+    const parentUrl = currentUrl.substring(0, currentUrl.lastIndexOf("/"));
+    return parentUrl || rootUrl;
   }
 }

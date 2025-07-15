@@ -14,8 +14,8 @@ import {
   setSearchQuery,
   setItem,
   showProtocolModal,
-  setLoadingWithSceleton,
-  refreshFolder
+  setLoadingWithSkeleton,
+  refreshFolder,
 } from "../features/grid/gridSlice";
 import { StoredType } from "../models/StoredType";
 import { ITHit } from "webdav.client";
@@ -43,7 +43,7 @@ export class StoreWorker {
   static refresh(
     url?: string | null,
     queryParams?: QueryParams | null,
-    showSceleton?: boolean
+    showSkeleton?: boolean
   ) {
     const { searchMode, searchQuery } = this._getGrid();
     let curSearchMode = searchMode;
@@ -82,7 +82,7 @@ export class StoreWorker {
       store.dispatch(setCurrentPage(1));
     }
     store.dispatch(clearSelectedItems());
-    store.dispatch(setLoadingWithSceleton(!!showSceleton));
+    store.dispatch(setLoadingWithSkeleton(!!showSkeleton));
     store.dispatch(setCurrentFolder(curSearchMode)).then(() => {
       store.dispatch(setOptionsInfo());
       if (this.navigate) {
@@ -122,8 +122,8 @@ export class StoreWorker {
     }
   }
 
-  static refreshCurrentItems() {
-    store.dispatch(refreshFolder())
+  static refreshFolder(tryParent: boolean | undefined) {
+    store.dispatch(refreshFolder(tryParent));
   }
 
   static pasteStoredItems() {
@@ -264,7 +264,7 @@ export class StoreWorker {
     copyName: string,
     folder: ITHit.WebDAV.Client.Folder
   ) {
-    item.CopyToAsync(folder, copyName, false, false, [], (data) => {
+    item.CopyToAsync(folder, copyName, true, false, [], (data) => {
       if (data.IsSuccess) {
         this.refresh();
       } else {

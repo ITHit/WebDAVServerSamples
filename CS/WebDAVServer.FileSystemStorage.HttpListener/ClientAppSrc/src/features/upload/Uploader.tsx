@@ -49,7 +49,7 @@ const Uploader: React.FC = () => {
         uploaded /= uploadItemRows.length;
       }
 
-      return Math.round(uploaded);
+      return Number.isNaN(uploaded) ? 0 : Math.min(100, Math.round(uploaded));
     };
 
     const intervalId = setInterval(() => {

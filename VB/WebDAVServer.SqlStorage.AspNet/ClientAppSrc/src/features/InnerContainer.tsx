@@ -47,10 +47,8 @@ const InnerContainer: React.FC = () => {
         <Search />
       </div>
       <Toolbar />
-      <div>
-        <Uploader />
-        <GridContainer />
-      </div>
+      <Uploader />
+      <GridContainer />
       <InstallProtocolModal />
       <ErrorModal />
       <RewriteModal />

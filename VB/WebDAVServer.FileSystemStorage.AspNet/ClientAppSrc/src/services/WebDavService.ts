@@ -1,5 +1,6 @@
 import { ITHit } from "webdav.client";
 import { UrlResolveService } from "./UrlResolveService";
+import { WebDavError } from "../models/WebDavError";
 
 const webDavSession = new ITHit.WebDAV.Client.WebDavSession();
 
@@ -8,9 +9,64 @@ export const snippetPropertyName = new ITHit.WebDAV.Client.PropertyName(
   "ithit"
 );
 
+export interface CurrentFolderResult {
+  page: ITHit.WebDAV.Client.HierarchyItem[];
+  totalItems: number;
+}
+
+export interface CurrentFolderResponse {
+  folder: ITHit.WebDAV.Client.Folder;
+  result: CurrentFolderResult;
+  withSearch: boolean;
+}
+
 export class WebDavService {
   public static isFolder(item: ITHit.WebDAV.Client.HierarchyItem) {
     return item.ResourceType === ITHit.WebDAV.Client.ResourceType.Folder;
+  }
+
+  public static async fetchFolderItems(
+    currentUrl: string,
+    pageSize: number,
+    sortColumn: string,
+    sortAscending: boolean,
+    page: number,
+    withSearch: boolean,
+    searchQuery?: string
+  ): Promise<CurrentFolderResponse> {
+    try {
+      const response = await WebDavService.getCurrentFolder(
+        currentUrl.replace(/\/?$/, "/")
+      );
+      const folder = response.Result as ITHit.WebDAV.Client.Folder;
+
+      const itemsResponse =
+        withSearch && searchQuery
+          ? await WebDavService.getItemsByQuery(
+            folder,
+            page,
+            pageSize,
+            searchQuery
+          )
+          : await WebDavService.getItems(
+            folder,
+            sortColumn,
+            sortAscending,
+            page,
+            pageSize
+          );
+
+      return {
+        folder,
+        result: {
+          page: itemsResponse.Result.Page,
+          totalItems: itemsResponse.Result.TotalItems,
+        },
+        withSearch,
+      };
+    } catch (err) {
+      throw new WebDavError("Error fetching folder items", err);
+    }
   }
 
   public static getCurrentFolder(sPath: string) {

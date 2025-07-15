@@ -6,7 +6,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>AE19DCDB-CE02-414D-8006-F94D936B3ED8</ProjectGuid>
+    <ProjectGuid>0C857EEF-6E1D-4E65-80B1-05DCCB257425</ProjectGuid>
     <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{f184b08f-c81c-45f6-a57f-5abd9991f28f}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
@@ -99,13 +99,13 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="ITHit.WebDAV.Server">
-      <HintPath>..\packages\ITHit.WebDAV.Server.15.3.15268-Beta3\lib\net451\ITHit.WebDAV.Server.dll</HintPath>
+      <HintPath>..\packages\ITHit.WebDAV.Server.15.3.15282-Beta3\lib\net451\ITHit.WebDAV.Server.dll</HintPath>
     </Reference>
     <Reference Include="ITHit.Server">
-      <HintPath>..\packages\ITHit.Server.15.3.15268-Beta3\lib\net451\ITHit.Server.dll</HintPath>
+      <HintPath>..\packages\ITHit.Server.15.3.15282-Beta3\lib\net451\ITHit.Server.dll</HintPath>
     </Reference>
     <Reference Include="ITHit.Server.Web">
-      <HintPath>..\packages\ITHit.Server.Web.15.3.15268-Beta3\lib\net451\ITHit.Server.Web.dll</HintPath>
+      <HintPath>..\packages\ITHit.Server.Web.15.3.15282-Beta3\lib\net451\ITHit.Server.Web.dll</HintPath>
     </Reference>
   </ItemGroup>
   <PropertyGroup>
@@ -123,7 +123,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>9658</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:35285/</IISUrl>
+          <IISUrl>http://localhost:45007/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

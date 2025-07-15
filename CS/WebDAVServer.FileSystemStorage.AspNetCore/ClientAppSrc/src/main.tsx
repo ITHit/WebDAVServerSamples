@@ -6,10 +6,8 @@ import { Provider } from "react-redux";
 import { store } from "./app/store.ts";
 import { getPath } from "./app/routerPaths.ts";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { WebSocketConnect } from "./services/WebSocketService.ts";
 import "./styles/scss/skin_base/app.scss";
 
-WebSocketConnect();
 createRoot(document.getElementById("app")!).render(
   <Provider store={store}>
     <BrowserRouter

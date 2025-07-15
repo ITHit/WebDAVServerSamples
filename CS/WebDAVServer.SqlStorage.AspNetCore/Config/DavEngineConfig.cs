@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 
@@ -52,6 +53,12 @@ namespace WebDAVServer.SqlStorage.AspNetCore.Configuration
                 throw new ArgumentNullException("configurationSection");
             }
             configurationSection.Bind(configuration);
+
+            // if License is not set, try to read it from the License.lic file in the application base directory
+            if (string.IsNullOrEmpty(configuration.License) && File.Exists(Path.Combine(AppContext.BaseDirectory, @"License.lic")))
+            {
+                configuration.License = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, @"License.lic"));
+            }
         }
     }
 }

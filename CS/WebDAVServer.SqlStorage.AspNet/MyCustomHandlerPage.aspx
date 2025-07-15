@@ -20,9 +20,7 @@
     <link rel="icon" href="<%=Request.ApplicationPath.TrimEnd('/')%>/wwwroot/favicon.ico" />
 </head>
 <body>
-    <main role="main">
-        <div id="app"></div>
-    </main>
+    <div id="app"></div>
     <script>
         var webDavSettings = {
             // IT Hit WebDAV Ajax Library activation info:

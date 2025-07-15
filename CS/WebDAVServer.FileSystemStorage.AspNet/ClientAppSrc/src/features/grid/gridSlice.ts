@@ -46,7 +46,7 @@ export interface GridState {
   storedItems: ITHit.WebDAV.Client.HierarchyItem[];
   selectedIndexes: number[];
   loading: boolean;
-  loadingWithSceleton: boolean;
+  loadingWithSkeleton: boolean;
   error: WebDavError | null;
   currentPage: number;
   pageSize: number;
@@ -59,6 +59,7 @@ export interface GridState {
   countPagesLoaded: number;
   loadMore: boolean;
   totalItemsCount: number;
+  forceRedirectUrl: string;
 }
 
 export const initialState: GridState = {
@@ -72,7 +73,7 @@ export const initialState: GridState = {
   storedItems: [],
   selectedIndexes: [],
   loading: true,
-  loadingWithSceleton: false,
+  loadingWithSkeleton: false,
   error: null,
   pageSize: 20,
   currentPage: 1,
@@ -85,10 +86,10 @@ export const initialState: GridState = {
   countPagesLoaded: 0,
   loadMore: false,
   totalItemsCount: 0,
+  forceRedirectUrl: "",
 };
 
 //todo: add selectors
-
 
 const fetchFolderItems = async (
   currentUrl: string,
@@ -151,10 +152,10 @@ export const setCurrentFolder = createAsyncThunk(
         searchQuery
       );
     } catch (err) {
-        if (err instanceof ITHit.WebDAV.Client.Exceptions.WebDavHttpException && err.Status.Code === 401
-            && import.meta.env.MODE === "development") {
-            window.location.href = UrlResolveService.getRootUrl() + "/dev-mode";
-        }
+      if (err instanceof ITHit.WebDAV.Client.Exceptions.WebDavHttpException && err.Status.Code === 401
+        && import.meta.env.MODE === "development") {
+        window.location.href = UrlResolveService.getRootUrl() + "/dev-mode";
+      }
       return rejectWithValue(
         new WebDavError(i18n.t("phrases.errors.profindErrorMessage"), err)
       );
@@ -162,15 +163,72 @@ export const setCurrentFolder = createAsyncThunk(
   }
 );
 
+export const tryOpenParentFolder = createAsyncThunk(
+  "grid/tryOpenParentFolder",
+  async (_, { dispatch, getState }) => {
+    const { grid } = getState() as { grid: GridState };
+    let url = grid.currentUrl;
+
+    while (url !== UrlResolveService.getServerRootUrl()) {
+      url = UrlResolveService.getParentFolderUrl(url);
+      if (!url) break;
+
+      try {
+        await WebDavService.fetchFolderItems(
+          url,
+          grid.pageSize,
+          grid.sortColumn,
+          grid.sortAscending,
+          1,
+          grid.searchMode,
+          grid.searchQuery
+        );
+
+        // Set the force redirect URL
+        let tail = UrlResolveService.getTail(url, UrlResolveService.getServerOrigin());
+        tail = tail ? tail : "/";
+        dispatch(setForceRedirectUrl(UrlResolveService.getOrigin() + tail));
+        return;
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    throw new Error("No accessible parent folders found");
+  }
+);
+
 export const refreshFolder = createAsyncThunk(
   "grid/refreshFolder",
-  async (_, { getState, rejectWithValue }) => {
+  async (
+    tryParent: boolean | undefined,
+    { dispatch, getState, rejectWithValue }
+  ) => {
     const { grid } = getState() as { grid: GridState };
-    const { sortColumn, sortAscending, currentUrl, searchMode, searchQuery, items, pageSize } = grid;
+    tryParent = tryParent ?? false;
     try {
-      const refreshCountItems = pageSize < items.length ? items.length : pageSize;
-      return await fetchFolderItems(currentUrl, refreshCountItems, sortColumn, sortAscending, 1, searchMode, searchQuery);
+      const refreshCountItems =
+        grid.pageSize < grid.items.length ? grid.items.length : grid.pageSize;
+
+      const response = await WebDavService.fetchFolderItems(
+        grid.currentUrl,
+        refreshCountItems,
+        grid.sortColumn,
+        grid.sortAscending,
+        1,
+        grid.searchMode,
+        grid.searchQuery
+      );
+
+      return {
+        items: response.result.page,
+        countPages: Math.ceil(response.result.totalItems / grid.pageSize),
+        totalItemsCount: response.result.totalItems,
+      };
     } catch (err) {
+      if (tryParent) {
+        await dispatch(tryOpenParentFolder());
+        return; // Handled by tryOpenParentFolder
+      }
       return rejectWithValue(
         new WebDavError(i18n.t("phrases.errors.profindErrorMessage"), err)
       );
@@ -298,8 +356,8 @@ export const gridSlice = createSlice({
       state.countPages = 1;
       state.searchMode = true;
     },
-    setLoadingWithSceleton: (state, action: PayloadAction<boolean>) => {
-      state.loadingWithSceleton = action.payload;
+    setLoadingWithSkeleton: (state, action: PayloadAction<boolean>) => {
+      state.loadingWithSkeleton = action.payload;
     },
     addSelectedItem: (state, action: PayloadAction<number>) => {
       state.selectedIndexes.push(action.payload);
@@ -353,6 +411,9 @@ export const gridSlice = createSlice({
     clearSearchedItems: (state) => {
       state.searchedItems = [];
     },
+    setForceRedirectUrl: (state, action: PayloadAction<string>) => {
+      state.forceRedirectUrl = action.payload;
+    }
   },
   extraReducers: (builder) => {
     builder.addCase(setCurrentFolder.fulfilled, (state, action) => {
@@ -369,12 +430,12 @@ export const gridSlice = createSlice({
 
     builder.addCase(refreshFolder.fulfilled, (state, action) => {
       if (state.loading) state.loading = false;
-      state.items = action.payload.result.page;
-      state.countPages = Math.ceil(
-        action.payload.result.totalItems / state.pageSize
-      );
-      state.totalItemsCount = action.payload.result.totalItems;
-      state.selectedIndexes = [];
+      if (action.payload) {
+        state.items = action.payload.items;
+        state.countPages = action.payload.countPages;
+        state.totalItemsCount = action.payload.totalItemsCount;
+        state.selectedIndexes = [];
+      }
     });
 
     builder.addCase(appendNewPage.fulfilled, (state, action) => {
@@ -392,7 +453,7 @@ export const gridSlice = createSlice({
     });
 
     builder.addCase(setCurrentFolder.pending, (state) => {
-      if (state.loadingWithSceleton) state.loading = true;
+      if (state.loadingWithSkeleton) state.loading = true;
     });
 
     builder.addCase(setCurrentFolder.rejected, (state) => {
@@ -439,7 +500,7 @@ export const {
   setCurrentPage,
   setSearchQuery,
   setSearchedItem,
-  setLoadingWithSceleton,
+  setLoadingWithSkeleton,
   addSelectedItem,
   removeSelectedItem,
   clearSelectedItems,
@@ -453,6 +514,7 @@ export const {
   setError,
   clearError,
   clearSearchedItems,
+  setForceRedirectUrl
 } = gridSlice.actions;
 
 // export getters
@@ -476,6 +538,8 @@ export const getOptionsInfo = (state: RootState) => state.grid.optionsInfo;
 export const getError = (state: RootState) => state.grid.error;
 export const getProtocolModalDisplayed = (state: RootState) =>
   state.grid.protocolModalDisplayed;
+export const getForceRedirectUrl = (state: RootState) =>
+  state.grid.forceRedirectUrl;
 
 export const gridMidIgnoredActions = [
   getMidIgnoredAction(setSearchedItems.typePrefix, ReducerType.pending),
@@ -491,6 +555,7 @@ export const gridMidIgnoredActions = [
   getMidIgnoredAction(refreshFolder.typePrefix, ReducerType.fulfilled),
   getMidIgnoredAction(appendNewPage.typePrefix, ReducerType.rejected),
   getMidIgnoredAction(appendNewPage.typePrefix, ReducerType.fulfilled),
+  setError.type,
 ];
 
 export const gridMidIgnoredPaths = [
