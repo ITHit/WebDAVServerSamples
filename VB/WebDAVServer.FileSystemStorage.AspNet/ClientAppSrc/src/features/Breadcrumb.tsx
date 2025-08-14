@@ -2,13 +2,16 @@ import React, { useCallback } from "react";
 import { StoreWorker } from "../app/storeWorker";
 import { UrlResolveService } from "../services/UrlResolveService";
 import { useAppSelector } from "../app/hooks/common";
-import { getCurrentUrl } from "./grid/gridSlice";
+import { getCurrentFolder, getCurrentUrl } from "./grid/gridSlice";
 import { useTranslation } from "react-i18next";
-import { ProtocolService } from "../services/ProtocolService";
+import { useOpenFolderInFileManagerClick } from "../app/hooks/useOpenFolderInFileManagerClick";
+import DownloadDriveButton from "./DownloadDriveButton";
 type Props = { itemUrl?: string; isSearchMode: boolean };
 const Breadcrumb: React.FC<Props> = ({ itemUrl, isSearchMode }) => {
   const { t } = useTranslation();
   const currentUrl = useAppSelector(getCurrentUrl);
+  const currentFolder = useAppSelector(getCurrentFolder);
+  const { handleOpenFolderInFileManagerClick } = useOpenFolderInFileManagerClick();
   const rootUrl = UrlResolveService.getRootUrl();
   let url = "";
 
@@ -49,10 +52,6 @@ const Breadcrumb: React.FC<Props> = ({ itemUrl, isSearchMode }) => {
       homeUrl += "/";
     }
     StoreWorker.refresh(homeUrl);
-  };
-
-  const getInstallerFileUrl = () => {
-    return ProtocolService.getInstallerFileUrl();
   };
 
   const handleItemClick = useCallback(
@@ -96,20 +95,17 @@ const Breadcrumb: React.FC<Props> = ({ itemUrl, isSearchMode }) => {
             );
           })}
         </ol>
-        {!isSearchMode && (
-          <a
-            id="ithit-webdav-drive"
-            href={getInstallerFileUrl()}
-            className="btn btn-primary btn-sm btn-labeled"
+        <div className="feature-buttons">
+          <button
+            onClick={() => handleOpenFolderInFileManagerClick(currentFolder?.Href)}
+            className="btn btn-primary"
             type="button"
-            title="Download WebDAV Drive application."
+            title="Browse Using OS File Manager"
           >
-            <span className="btn-label">
-              <i className="icon-webdav-drive"></i>
-            </span>
-            <span className="d-none d-lg-inline-block">Download WebDAV Drive</span>
-          </a>
-        )}
+            Browse Using OS File Manager
+          </button>
+          {!isSearchMode && <DownloadDriveButton />}
+        </div>
       </div>
     </nav>
   );

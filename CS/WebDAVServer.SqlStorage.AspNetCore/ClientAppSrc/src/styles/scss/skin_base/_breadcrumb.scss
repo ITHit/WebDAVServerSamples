@@ -1,5 +1,6 @@
 .ithit-breadcrumb-container {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   margin-bottom: 0.625rem;
 
@@ -20,7 +21,7 @@
   }
 }
 
-.breadcrumb{
+.breadcrumb {
   flex: 1 auto;
 }
 

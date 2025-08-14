@@ -75,11 +75,21 @@
   }
 }
 
-#ithit-webdav-drive {
+.feature-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.feature-buttons .btn {
   height: 34px;
   line-height: 34px;
   display: flex;
   width: inherit;
+  font-size: 14px;
+  padding-block: 0;
 }
 
 .btn-default {

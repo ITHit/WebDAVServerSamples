@@ -1,44 +1,15 @@
 import React, { useState } from "react";
 import Collapse from "react-bootstrap/Collapse";
-import { ITHit } from "webdav.client";
-import { UrlResolveService } from "../services/UrlResolveService";
 import { WebDavSettings } from "../webDavSettings";
-import { showProtocolModal } from "./grid/gridSlice";
 import { getCurrentFolder } from "./grid/gridSlice";
-import { useAppDispatch, useAppSelector } from "../app/hooks/common";
+import { useAppSelector } from "../app/hooks/common";
+import { useOpenFolderInFileManagerClick } from "../app/hooks/useOpenFolderInFileManagerClick";
 import logo from "/images/logo.svg";
-import { ProtocolService } from "../services/ProtocolService";
 
 const Header: React.FC = () => {
-  const dispatch = useAppDispatch();
-
   const [open, setOpen] = useState(false);
   const currentFolder = useAppSelector(getCurrentFolder);
-
-  const showProtocolInstallModal = () => {
-    dispatch(showProtocolModal());
-  };
-
-  const handleFolderClick = () => {
-    if (currentFolder)
-      ITHit.WebDAV.Client.DocManager.OpenFolderInOsFileManager(
-        currentFolder.Href,
-        UrlResolveService.getRootUrl(),
-        showProtocolInstallModal,
-        null,
-        WebDavSettings.EditDocAuth.SearchIn,
-        WebDavSettings.EditDocAuth.CookieNames,
-        WebDavSettings.EditDocAuth.LoginUrl
-      );
-  };
-
-  const handleOpenAjaxFileBrowserWindow = () => {
-    window.open(
-      `/AjaxFileBrowser/AjaxFileBrowser.html#${WebDavSettings.WebsiteRootUrl}`,
-      "",
-      "menubar=1,location=1,status=1,scrollbars=1,resizable=1,width=900,height=600"
-    );
-  };
+  const { handleOpenFolderInFileManagerClick } = useOpenFolderInFileManagerClick();
 
   const handleOpenTestsWindow = () => {
     const width = Math.round(screen.width * 0.5);
@@ -48,32 +19,6 @@ const Header: React.FC = () => {
       "",
       `menubar=1,location=1,status=1,scrollbars=1,resizable=1,width=${width},height=${height}`
     );
-  };
-
-  const getInstallerFileUrl = () => {
-    return ProtocolService.getInstallerFileUrl();
-  };
-
-  const getAjaxLibVersion = () => {
-    let innerText;
-    if (ITHit.WebDAV.Client.DocManager.IsDavProtocolSupported()) {
-      innerText =
-        "v" +
-        ITHit.WebDAV.Client.WebDavSession.Version +
-        ' (<a href="' +
-        getInstallerFileUrl() +
-        '">Protocol v' +
-        ITHit.WebDAV.Client.WebDavSession.ProtocolVersion +
-        "</a>)";
-    } else {
-      innerText =
-        "v" +
-        ITHit.WebDAV.Client.WebDavSession.Version +
-        " (Protocol v" +
-        ITHit.WebDAV.Client.WebDavSession.ProtocolVersion +
-        ")";
-    }
-    return innerText;
   };
 
   return (
@@ -90,9 +35,7 @@ const Header: React.FC = () => {
             <img src={logo} alt="IT Hit logo" className="logo" />
             <span className="brand-name">
               IT Hit WebDAV Server Engine&nbsp;
-              <div className="webdav-server-version d-inline">
-                {WebDavSettings.WebDavServerVersion}
-              </div>
+              <div className="webdav-server-version d-inline">{WebDavSettings.WebDavServerVersion}</div>
             </span>
           </span>
           <button className="navbar-toggler burger-button" type="button">
@@ -111,86 +54,62 @@ const Header: React.FC = () => {
               <div className="row">
                 <div className="col">
                   <p>
-                    This page is displayed when user accesses any folder on your
-                    WebDAV server in a web browser. You can customize this page
-                    to your needs.
+                    This page is displayed when user accesses any folder on your WebDAV server in a web browser. You can
+                    customize this page to your needs.
                   </p>
                 </div>
               </div>
               <div className="row blocks">
                 <div className="col-12 col-lg-4 d-flex flex-column">
+                  <h3>Software Used in This Solution</h3>
+                  <ul>
+                    <li>
+                      <a href="https://www.webdavsystem.com/server/" target="_blank">
+                        IT Hit WebDAV Server Engine for .NET
+                      </a>
+                      :&nbsp;
+                      <span className="webdav-server-version">{WebDavSettings.WebDavServerVersion}</span>
+                    </li>
+                    <li>
+                      <a href="https://www.webdavsystem.com/ajax/" target="_blank">
+                        IT Hit WebDAV AJAX Library
+                      </a>
+                      : { ITHit.WebDAV.Client.WebDavSession.Version }
+                    </li>
+                    {WebDavSettings.IsIntegratedProject && (
+                      <>
+                        <li>
+                          <a href="https://www.userfilesystem.com/" target="_blank">
+                            IT Hit User File System
+                          </a>
+                          : v9.0.29527
+                        </li>
+                        <li>
+                          <a href="https://www.webdavsystem.com/client/" target="_blank">
+                            IT Hit WebDAV Client Library
+                          </a>
+                          : v7.1.5044
+                        </li>
+                      </>
+                    )}
+                  </ul>
+                </div>
+                <div className="col-12 col-lg-4 d-flex flex-column">
                   <h3>Test Your Server</h3>
-                  <p>
-                    To test your WebDAV server you can run Ajax integration
-                    tests right from this page.
-                  </p>
-                  <button
-                    onClick={handleOpenTestsWindow}
-                    className="align-self-start btn btn-primary"
-                  >
+                  <p>To test your WebDAV server you can run Ajax integration tests right from this page.</p>
+                  <button onClick={handleOpenTestsWindow} className="align-self-start btn btn-primary">
                     Run Integration Tests
                   </button>
                 </div>
                 <div className="col-12 col-lg-4 d-flex flex-column">
-                  <h3>Manage Docs with Ajax File Browser</h3>
-                  <p>
-                    Use the&nbsp;
-                    <a href="https://www.webdavsystem.com/ajaxfilebrowser/programming/">
-                      IT Hit Ajax File Browser
-                    </a>
-                    &nbsp;to browse your documents, open for editing from a web
-                    page and - uploading with pause/resume and auto-restore
-                    upload.
-                  </p>
-                  <button
-                    onClick={handleOpenAjaxFileBrowserWindow}
-                    className="align-self-start btn btn-primary"
-                  >
-                    Browse Using Ajax File Browser
-                  </button>
-                </div>
-                <div className="col-12 col-lg-4 d-flex flex-column">
-                  <h3>Connect with WebDAV Client</h3>
-                  <p>
-                    Use a WebDAV client provided with almost any OS. Refer
-                    to&nbsp;
-                    <a href="https://www.webdavsystem.com/server/access">
-                      Accessing WebDAV Server
-                    </a>
-                    &nbsp;page for - detailed instructions. The button below is
-                    using&nbsp;
-                    <a href="https://www.webdavsystem.com/ajax/">
-                      IT Hit WebDAV Ajax Library
-                    </a>
-                    &nbsp;to mount WebDAV - folder and open the default OS file
-                    manager.
-                  </p>
+                  <h3>Mount WebDAV Drive</h3>
+                  <p>Install WebDAV Drive to manage files in OS File Manager and open documents for editing.</p>
                   <button
                     className="align-self-start btn btn-primary"
-                    onClick={handleFolderClick}
+                    onClick={() => handleOpenFolderInFileManagerClick(currentFolder?.Href)}
                   >
                     Browse Using OS File Manager
                   </button>
-                </div>
-              </div>
-              <div className="row mt-1">
-                <div className="col">
-                  <p className="versions">
-                    IT Hit WebDAV Server Engine for .NET:&nbsp;
-                    <span className="webdav-server-version">
-                      {WebDavSettings.WebDavServerVersion}
-                    </span>
-                  </p>
-                  <p className="versions">
-                    IT Hit WebDAV AJAX Library:&nbsp;
-                    <span className="ithit-version-value">
-                      <span
-                        dangerouslySetInnerHTML={{
-                          __html: getAjaxLibVersion(),
-                        }}
-                      ></span>
-                    </span>
-                  </p>
                 </div>
               </div>
             </div>

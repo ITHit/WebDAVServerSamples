@@ -8,12 +8,14 @@ import { WebDavSettings } from "../../../webDavSettings";
 import { usePopperTooltip } from "react-popper-tooltip";
 import { useAppDispatch } from "../../../app/hooks/common";
 import { showProtocolModal } from "../gridSlice";
+import { useOpenFolderInFileManagerClick } from "../../../app/hooks/useOpenFolderInFileManagerClick";
 import "react-popper-tooltip/dist/styles.css";
 type Props = { item: ITHit.WebDAV.Client.HierarchyItem };
 
 const GridRowAction: React.FC<Props> = ({ item }) => {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
+  const { handleOpenFolderInFileManagerClick } = useOpenFolderInFileManagerClick();
   const { getTooltipProps, setTooltipRef, setTriggerRef, visible } = usePopperTooltip({
     trigger: "click",
     placement: "bottom-end",
@@ -31,18 +33,6 @@ const GridRowAction: React.FC<Props> = ({ item }) => {
     dispatch(showProtocolModal());
   };
 
-  const handleFolderClick = () => {
-    ITHit.WebDAV.Client.DocManager.OpenFolderInOsFileManager(
-      item.Href,
-      UrlResolveService.getRootUrl(),
-      showProtocolInstallModal,
-      null,
-      WebDavSettings.EditDocAuth.SearchIn,
-      WebDavSettings.EditDocAuth.CookieNames,
-      WebDavSettings.EditDocAuth.LoginUrl
-    );
-  };
-
   const handleEditDocClick = () => {
     if (
       WebDavSettings.EditDocAuth.Authentication &&
@@ -58,7 +48,11 @@ const GridRowAction: React.FC<Props> = ({ item }) => {
         WebDavSettings.EditDocAuth.LoginUrl
       );
     } else {
-      ITHit.WebDAV.Client.DocManager.DavProtocolEditDocument(item.Href, UrlResolveService.getRootUrl(), showProtocolInstallModal);
+      ITHit.WebDAV.Client.DocManager.DavProtocolEditDocument(
+        item.Href,
+        UrlResolveService.getRootUrl(),
+        showProtocolInstallModal
+      );
     }
   };
 
@@ -84,7 +78,7 @@ const GridRowAction: React.FC<Props> = ({ item }) => {
               className="btn btn-primary btn-sm btn-labeled"
               type="button"
               disabled={isDisabledAction}
-              onClick={handleFolderClick}
+              onClick={() => handleOpenFolderInFileManagerClick(item.Href)}
             >
               <span className="btn-label">
                 <i className="icon icon-open-folder" />
