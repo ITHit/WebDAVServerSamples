@@ -1,5 +1,5 @@
 export const EVENT_TYPES = {
-  UPDATED: "upload",
+  UPDATED: "updated",
   LOCKED: "locked",
   UNLOCKED: "unlocked",
   CREATED: "created",

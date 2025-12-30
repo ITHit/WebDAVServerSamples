@@ -4,6 +4,7 @@ import { WebDavSettings } from "../webDavSettings";
 import { getCurrentFolder } from "./grid/gridSlice";
 import { useAppSelector } from "../app/hooks/common";
 import { useOpenFolderInFileManagerClick } from "../app/hooks/useOpenFolderInFileManagerClick";
+import { ITHit } from "webdav.client";
 import logo from "/images/logo.svg";
 
 const Header: React.FC = () => {
@@ -62,7 +63,7 @@ const Header: React.FC = () => {
               <div className="row blocks">
                 <div className="col-12 col-lg-4 d-flex flex-column">
                   <h3>Software Used in This Solution</h3>
-                  <ul>
+                  <ul className="mb-0">
                     <li>
                       <a href="https://www.webdavsystem.com/server/" target="_blank">
                         IT Hit WebDAV Server Engine for .NET
@@ -74,7 +75,7 @@ const Header: React.FC = () => {
                       <a href="https://www.webdavsystem.com/ajax/" target="_blank">
                         IT Hit WebDAV AJAX Library
                       </a>
-                      : { ITHit.WebDAV.Client.WebDavSession.Version }
+                      : {ITHit.WebDAV.Client.WebDavSession.Version}
                     </li>
                     {WebDavSettings.IsIntegratedProject && (
                       <>
@@ -97,7 +98,7 @@ const Header: React.FC = () => {
                 <div className="col-12 col-lg-4 d-flex flex-column">
                   <h3>Test Your Server</h3>
                   <p>To test your WebDAV server you can run Ajax integration tests right from this page.</p>
-                  <button onClick={handleOpenTestsWindow} className="align-self-start btn btn-primary">
+                  <button onClick={handleOpenTestsWindow} className="align-self-start btn btn-primary mt-auto">
                     Run Integration Tests
                   </button>
                 </div>
@@ -105,7 +106,7 @@ const Header: React.FC = () => {
                   <h3>Mount WebDAV Drive</h3>
                   <p>Install WebDAV Drive to manage files in OS File Manager and open documents for editing.</p>
                   <button
-                    className="align-self-start btn btn-primary"
+                    className="align-self-start btn btn-primary mt-auto"
                     onClick={() => handleOpenFolderInFileManagerClick(currentFolder?.Href)}
                   >
                     Browse Using OS File Manager

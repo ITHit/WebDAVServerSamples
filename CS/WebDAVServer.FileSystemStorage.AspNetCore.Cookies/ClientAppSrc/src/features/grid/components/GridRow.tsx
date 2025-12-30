@@ -9,6 +9,8 @@ import { StoreWorker } from "../../../app/storeWorker";
 import GridRowAction from "./GridRowAction";
 import Snippet from "../../search/Snippet";
 import { getIsDragging } from "../../upload/uploadSlice";
+import { useRefreshingDate } from "../../../app/hooks/useRefreshingDate";
+
 type Props = {
   item: ITHit.WebDAV.Client.HierarchyItem;
   index: number;
@@ -20,6 +22,7 @@ const GridRow: React.FC<Props> = ({ item, index }) => {
   const isDragging = useAppSelector(getIsDragging);
   const searchMode = useAppSelector(getSearchMode);
   const [snippetHovered, setSnippetHovered] = useState(false);
+  const formattedDate = useRefreshingDate(item.LastModified, 60000);
   let isSelected = useAppSelector(getSelectedIndexes).findIndex((el) => el === index) !== -1;
   const handleChangeCheckbox = () => {
     isSelected = !isSelected;
@@ -101,7 +104,7 @@ const GridRow: React.FC<Props> = ({ item, index }) => {
               : ""}
           </span>
         </td>
-        <td className="d-none d-lg-table-cell modified-date">{CommonService.formatDate(item.LastModified)}</td>
+        <td className="d-none d-lg-table-cell modified-date">{formattedDate}</td>
         <td className="text-right select-disabled position-relative">
           <GridRowAction item={item} />
         </td>
