@@ -1,0 +1,172 @@
+@theme {
+  /* Radius */
+  --radius-base: 12px;
+  --radius-lg: 18px;
+
+  /* Spacing tokens */
+  --spacing-card: 24px;
+  --spacing-section: 48px;
+
+  /* Typography */
+  --font-base: "Inter", sans-serif;
+
+  /* ============================================
+     SEMANTIC COLOR SYSTEM
+     ============================================ */
+
+  /* Primary & Secondary Colors */
+  --color-primary: #4f46e5;
+  --color-primary-hover: #4338ca;
+  --color-primary-light: #eef2ff;
+  --color-secondary: #64748b;
+  --color-secondary-hover: #475569;
+
+  /* Surface Colors */
+  --color-body: #ffffff;
+  --color-surface: #f9fafb;
+  --color-surface-elevated: #ffffff;
+  --color-surface-hover: #f3f4f6;
+  --color-surface-active: #e5e7eb;
+  --color-surface-secondary: #f3f4f6;
+  --color-surface-third: #efefef;
+
+  /* Text Colors */
+  --color-text: #1f2937;
+  --color-text-secondary: #6b7280;
+  --color-text-muted: #9ca3af;
+  --color-text-inverse: #ffffff;
+
+  /* Border Colors */
+  --color-border: #e5e7eb;
+  --color-border-light: #f3f4f6;
+  --color-border-hover: #d1d5db;
+
+  /* State Colors - Success */
+  --color-success: #10b981;
+  --color-success-hover: #059669;
+  --color-success-bg: #ecfdf5;
+  --color-success-border: #86efac;
+
+  /* State Colors - Error */
+  --color-error: #ef4444;
+  --color-error-hover: #dc2626;
+  --color-error-bg: #fef2f2;
+  --color-error-border: #fecaca;
+
+  /* State Colors - Warning */
+  --color-warning: #f59e0b;
+  --color-warning-hover: #d97706;
+  --color-warning-bg: #fffbeb;
+  --color-warning-border: #fcd34d;
+
+  /* State Colors - Info */
+  --color-info: #3b82f6;
+  --color-info-hover: #2563eb;
+  --color-info-bg: #eff6ff;
+  --color-info-border: #93c5fd;
+
+  /* Interactive Elements */
+  --color-interactive: #4f46e5;
+  --color-interactive-hover: #4338ca;
+  --color-interactive-text: #ffffff;
+  --color-interactive-bg: #eef2ff;
+
+  /* Input Elements */
+  --color-input-bg: #ffffff;
+  --color-input-border: #e5e7eb;
+  --color-input-text: #1f2937;
+  --color-input-placeholder: #9ca3af;
+  --color-input-focus-ring: #4f46e5;
+
+  /* Dropdown/Menu */
+  --color-dropdown-bg: #ffffff;
+  --color-dropdown-border: #e5e7eb;
+  --color-dropdown-hover: #f3f4f6;
+
+  /* Skeleton Loader */
+  --color-skeleton-base: #f0f0f0;
+  --color-skeleton-highlight: #e0e0e0;
+
+  --color-primary-icon: #444746;
+}
+
+
+/* ============================================
+   DARK THEME
+   ============================================ */
+:root.dark {
+  /* Primary & Secondary Colors */
+  --color-primary: #a78bfa;
+  --color-primary-hover: #8b5cf6;
+  --color-primary-light: #1e1b4b;
+  --color-secondary: #94a3b8;
+  --color-secondary-hover: #cbd5e1;
+
+  /* Surface Colors */
+  --color-body: #0f172a;
+  --color-surface: #1e293b;
+  --color-surface-elevated: #334155;
+  --color-surface-hover: #334155;
+  --color-surface-active: #475569;
+  --color-surface-secondary: #334155;
+  --color-surface-third: #2d3a4f;
+
+  /* Text Colors */
+  --color-text: #e2e8f0;
+  --color-text-secondary: #cbd5e1;
+  --color-text-muted: #94a3b8;
+  --color-text-inverse: #0f172a;
+
+  /* Border Colors */
+  --color-border: #334155;
+  --color-border-light: #475569;
+  --color-border-hover: #475569;
+
+  /* State Colors - Success */
+  --color-success: #34d399;
+  --color-success-hover: #10b981;
+  --color-success-bg: rgba(16, 185, 129, 0.1);
+  --color-success-border: rgba(52, 211, 153, 0.3);
+
+  /* State Colors - Error */
+  --color-error: #f87171;
+  --color-error-hover: #ef4444;
+  --color-error-bg: rgba(239, 68, 68, 0.1);
+  --color-error-border: rgba(248, 113, 113, 0.3);
+
+  /* State Colors - Warning */
+  --color-warning: #fbbf24;
+  --color-warning-hover: #f59e0b;
+  --color-warning-bg: rgba(245, 158, 11, 0.1);
+  --color-warning-border: rgba(251, 191, 36, 0.3);
+
+  /* State Colors - Info */
+  --color-info: #60a5fa;
+  --color-info-hover: #3b82f6;
+  --color-info-bg: rgba(59, 130, 246, 0.1);
+  --color-info-border: rgba(96, 165, 250, 0.3);
+
+  /* Interactive Elements */
+  --color-interactive: #a78bfa;
+  --color-interactive-hover: #8b5cf6;
+  --color-interactive-text: #ffffff;
+  --color-interactive-bg: rgba(167, 139, 250, 0.1);
+
+  /* Input Elements */
+  --color-input-bg: #1e293b;
+  --color-input-border: #334155;
+  --color-input-text: #e2e8f0;
+  --color-input-placeholder: #64748b;
+  --color-input-focus-ring: #a78bfa;
+
+  /* Dropdown/Menu */
+  --color-dropdown-bg: #1e293b;
+  --color-dropdown-border: #334155;
+  --color-dropdown-hover: #334155;
+
+  /* Skeleton Loader */
+  --color-skeleton-base: #1e293b;
+  --color-skeleton-highlight: #334155;
+
+  --color-primary-icon: #d8d8d8;
+}

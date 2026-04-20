@@ -1,0 +1,326 @@
+@layer components {
+
+  /* Dropzone overlay fade transition */
+  .dropzone-fade-enter-active,
+  .dropzone-fade-leave-active {
+    transition: opacity 0.15s ease;
+  }
+
+  .dropzone-fade-enter-from,
+  .dropzone-fade-leave-to {
+    opacity: 0;
+  }
+
+  .btn {
+    @apply px-4 py-2 rounded-md font-medium transition-colors duration-200 text-white;
+  }
+
+  .btn-primary {
+    @apply px-4 py-2 rounded-md font-medium transition-colors duration-200;
+    @apply bg-primary hover:bg-primary-hover;
+  }
+
+  .btn-secondary {
+    @apply px-4 py-2 rounded-md font-medium transition-colors duration-200;
+    @apply bg-secondary hover:bg-secondary-hover;
+  }
+
+  /* Small icon button (close, action) */
+  .icon-btn {
+    @apply p-1.5 rounded hover:bg-surface-hover transition-colors;
+  }
+
+  /* Info/content card panel */
+  .panel-card {
+    @apply rounded-lg bg-surface-elevated border border-border p-4;
+  }
+
+  /* Progress bar track and fill */
+  .progress-track {
+    @apply w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5;
+  }
+
+  .progress-fill {
+    @apply h-1.5 rounded-full bg-primary transition-all duration-300;
+  }
+
+  /* Small spinner for loading states inside buttons */
+  .spinner-sm {
+    @apply animate-spin h-4 w-4;
+  }
+
+  /* Table header row label style */
+  .thead-row {
+    @apply text-xs font-medium text-secondary uppercase tracking-wider;
+  }
+
+  .card {
+    @apply p-4 bg-surface rounded-lg shadow-md border border-border;
+  }
+
+  /* ============================================
+   ICON SYSTEM - SVG Masks
+   ============================================ */
+
+  .icon {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background-color: var(--color-primary-icon);
+    mask-size: contain;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    -webkit-mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+  }
+
+  /* File and Folder Icons */
+  .icon-folder {
+    mask-image: url(/images/folder.svg);
+    -webkit-mask-image: url(/images/folder.svg);
+  }
+
+  .icon-open-folder {
+    mask-image: url(/images/open-folder.svg);
+    -webkit-mask-image: url(/images/open-folder.svg);
+  }
+
+  .icon-file {
+    mask-image: url(/images/file-default.svg);
+    -webkit-mask-image: url(/images/file-default.svg);
+  }
+
+  .icon-file-pdf {
+    mask-image: url(/images/file-pdf.svg);
+    -webkit-mask-image: url(/images/file-pdf.svg);
+  }
+
+  .icon-file-image,
+  .icon-file-jpg,
+  .icon-file-png,
+  .icon-file-gif,
+  .icon-file-bmp,
+  .icon-file-svg,
+  .icon-file-heic,
+  .icon-file-webp,
+  .icon-file-tiff {
+    mask-image: url(/images/file-image.svg);
+    -webkit-mask-image: url(/images/file-image.svg);
+  }
+
+  .icon-file-archive,
+  .icon-file-zip,
+  .icon-file-rar,
+  .icon-file-7z,
+  .icon-file-tar,
+  .icon-file-gz {
+    mask-image: url(/images/file-archive.svg);
+    -webkit-mask-image: url(/images/file-archive.svg);
+  }
+
+  /* Toolbar Action Icons */
+  .icon-create-folder {
+    mask-image: url(/images/create-folder.svg);
+    -webkit-mask-image: url(/images/create-folder.svg);
+  }
+
+  .icon-upload-items {
+    mask-image: url(/images/upload.svg);
+    -webkit-mask-image: url(/images/upload.svg);
+  }
+
+  .icon-download-items {
+    mask-image: url(/images/download.svg);
+    -webkit-mask-image: url(/images/download.svg);
+  }
+
+  .icon-rename-item {
+    mask-image: url(/images/rename.svg);
+    -webkit-mask-image: url(/images/rename.svg);
+  }
+
+  .icon-delete-items {
+    mask-image: url(/images/delete.svg);
+    -webkit-mask-image: url(/images/delete.svg);
+  }
+
+  .icon-copy-items {
+    mask-image: url(/images/copy.svg);
+    -webkit-mask-image: url(/images/copy.svg);
+  }
+
+  .icon-cut-items {
+    mask-image: url(/images/cut.svg);
+    -webkit-mask-image: url(/images/cut.svg);
+  }
+
+  .icon-paste-items {
+    mask-image: url(/images/paste.svg);
+    -webkit-mask-image: url(/images/paste.svg);
+  }
+
+  .icon-reload-items {
+    mask-image: url(/images/reload.svg);
+    -webkit-mask-image: url(/images/reload.svg);
+  }
+
+  .icon-print-items {
+    mask-image: url(/images/print.svg);
+    -webkit-mask-image: url(/images/print.svg);
+  }
+
+  .icon-lock {
+    mask-image: url(/images/lock.svg);
+    -webkit-mask-image: url(/images/lock.svg);
+  }
+
+  .icon-unlock {
+    mask-image: url(/images/unlock.svg);
+    -webkit-mask-image: url(/images/unlock.svg);
+  }
+
+  .icon-locked {
+    mask-image: url(/images/locked.svg);
+    -webkit-mask-image: url(/images/locked.svg);
+  }
+
+  /* UI Control Icons */
+  .icon-close {
+    mask-image: url(/images/cancel.svg);
+    -webkit-mask-image: url(/images/cancel.svg);
+  }
+
+  .icon-play {
+    mask-image: url(/images/play.svg);
+    -webkit-mask-image: url(/images/play.svg);
+  }
+
+  .icon-pause {
+    mask-image: url(/images/pause.svg);
+    -webkit-mask-image: url(/images/pause.svg);
+  }
+
+  .icon-search {
+    mask-image: url(/images/search.svg);
+    -webkit-mask-image: url(/images/search.svg);
+  }
+
+  .icon-home {
+    mask-image: url(/images/home.svg);
+    -webkit-mask-image: url(/images/home.svg);
+    width: 14px;
+    height: 16px;
+  }
+
+  .icon-up-one-level {
+    mask-image: url(/images/up-one-level.svg);
+    -webkit-mask-image: url(/images/up-one-level.svg);
+  }
+
+  .icon-check-square {
+    mask-image: url(/images/check-square.svg);
+    -webkit-mask-image: url(/images/check-square.svg);
+  }
+
+  /* Edit Icons */
+  .icon-edit {
+    mask-image: url(/images/edit.svg);
+    -webkit-mask-image: url(/images/edit.svg);
+  }
+
+  .icon-edit-associated {
+    mask-image: url(/images/edit-associated.svg);
+    -webkit-mask-image: url(/images/edit-associated.svg);
+  }
+
+  .icon-menu-edit {
+    mask-image: url(/images/menu-edit.svg);
+    -webkit-mask-image: url(/images/menu-edit.svg);
+  }
+
+  .icon-menu-gsuit-edit {
+    mask-image: url(/images/menu-gsuit-edit.svg);
+    -webkit-mask-image: url(/images/menu-gsuit-edit.svg);
+  }
+
+  .icon-menu-microsoft-edit {
+    mask-image: url(/images/menu-microsoft-edit.svg);
+    -webkit-mask-image: url(/images/menu-microsoft-edit.svg);
+  }
+
+  /* Logo and Branding */
+  .icon-logo {
+    mask-image: url(/images/logo.svg);
+    -webkit-mask-image: url(/images/logo.svg);
+  }
+
+  .icon-webdav-drive {
+    mask-image: url(/images/webdav-drive-icon.svg);
+    -webkit-mask-image: url(/images/webdav-drive-icon.svg);
+  }
+
+  .icon-logo {
+    mask-image: url(/images/logo.svg);
+    -webkit-mask-image: url(/images/logo.svg);
+  }
+
+  .icon-sign-i {
+    mask-image: url(/images/sign-i.svg);
+    -webkit-mask-image: url(/images/sign-i.svg);
+  }
+
+  /* ============================================
+   ANIMATIONS
+   ============================================ */
+
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .icon-spinner {
+    animation: spin 1s linear infinite;
+  }
+
+  /* Shimmer animation for skeleton loaders */
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+
+    100% {
+      background-position: 200% 0;
+    }
+  }
+
+  .skeleton-loader {
+    display: inline-block;
+    background: linear-gradient(90deg,
+        var(--color-skeleton-base) 25%,
+        var(--color-skeleton-highlight) 50%,
+        var(--color-skeleton-base) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 4px;
+  }
+
+  .sort.ascending::after {
+    content: "▲";
+    margin-left: 7px;
+    font-size: 0.75em;
+    vertical-align: top;
+  }
+
+  .sort.descending::after {
+    content: "▼";
+    margin-left: 7px;
+    font-size: 0.75em;
+    vertical-align: bottom;
+  }
+}

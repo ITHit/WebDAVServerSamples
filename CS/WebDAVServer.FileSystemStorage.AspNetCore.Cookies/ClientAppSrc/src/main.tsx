@@ -1,24 +1,37 @@
-import "./webDavInitializeLicense.ts";
-import { createRoot } from "react-dom/client";
-import "./i18n/config.ts";
-import App from "./App.tsx";
-import { Provider } from "react-redux";
-import { store } from "./app/store.ts";
-import { getPath } from "./app/routerPaths.ts";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import "./styles/scss/skin_base/app.scss";
+import { WebDavClient } from '@/infrastructure/webdav/WebDavClient';
+WebDavClient.initializeLicense();
 
-createRoot(document.getElementById("app")!).render(
-  <Provider store={store}>
-    <BrowserRouter
-      future={{
-        v7_startTransition: true,
-        v7_relativeSplatPath: true,
-      }}
-    >
-      <Routes>
-        <Route path={getPath("home")} element={<App />} />
-      </Routes>
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import './styles/index.css';
+import App from './App';
+import { STORAGE_KEY } from '@/shared/composables/useThemeMode';
+
+// Initialize theme before mounting the app
+const initTheme = () => {
+  const savedTheme =
+    (localStorage.getItem(STORAGE_KEY) as 'light' | 'dark' | 'system' | null) || 'system';
+
+  const getSystemPreference = () => {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  };
+
+  const isDark = savedTheme === 'dark' || (savedTheme === 'system' && getSystemPreference());
+
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+  }
+};
+
+initTheme();
+
+createRoot(document.getElementById('app')!).render(
+  <StrictMode>
+    <BrowserRouter>
+      <App />
     </BrowserRouter>
-  </Provider>
+  </StrictMode>
 );

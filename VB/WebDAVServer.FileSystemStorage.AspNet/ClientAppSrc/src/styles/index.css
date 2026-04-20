@@ -1,0 +1,9 @@
+@import "tailwindcss";
+@import "./theme.css";
+@import "./base.css";
+@import "./components.css";
+@import "./utilities.css";
+
+/* Configure class-based dark mode for Tailwind v4 */
+@custom-variant dark (&:is(.dark *));
+@source "../";

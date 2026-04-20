@@ -12,9 +12,56 @@
       "uploadButton": "Upload",
       "downloadButton": "Download",
       "lockButton": "Lock",
-      "unlockButton": "Unlock"
+      "unlockButton": "Unlock",
+      "editButton": "Edit",
+      "editWithButton": "Edit With ..."
+    },
+    "rowToolbar": {
+      "open": "Open",
+      "edit": "Edit",
+      "rename": "Rename"
+    },
+    "contextMenu": {
+      "open": "Open",
+      "ariaLabel": "Context menu",
+      "keyboardShortcut": "Keyboard shortcut"
+    },
+    "theme": {
+      "switchToLightMode": "Switch to light mode",
+      "switchToDarkMode": "Switch to dark mode",
+      "selectTheme": "Select theme",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    },
+    "dropzone": {
+      "dropHere": "Drop files here to upload"
+    },
+    "toast": {
+      "closeNotification": "Close notification"
+    },
+    "header": {
+      "toggleMenu": "Toggle menu",
+      "pageDescription": "This page is displayed when user accesses any folder on your WebDAV server in a web browser. You can customize this page to your needs.",
+      "testYourServer": "Test Your Server",
+      "testYourServerDescription": "To test your WebDAV server you can run Ajax integration tests right from this page.",
+      "runIntegrationTests": "Run Integration Tests",
+      "mountWebDAVDrive": "Mount WebDAV Drive",
+      "mountWebDAVDriveDescription": "Install WebDAV Drive to manage files in OS File Manager and open documents for editing.",
+      "browseUsingOsFileManager": "Browse Using OS File Manager"
+    },
+    "downloadDrive": {
+      "downloadTitle": "Download {appName}",
+      "signedWithCertificate": "Your {appName} is signed with a development certificate.",
+      "forTesting": "For Testing:",
+      "forTestingDescription": "To install the application for testing purposes download zip archive and run the \"Install.ps1\".",
+      "forProduction": "For Production:",
+      "forProductionDescription": "To deploy the application in production environment use the Package and Publish in your Drive project context menu.",
+      "downloadZipForTesting": "Download zip for Testing",
+      "downloadMsixForProduction": "Download msix for Production"
     },
     "modals": {
+      "copyConflictMessage": "The following item(s) already exist in the target folder: {names}. Do you want to overwrite them?",
       "renameMessage": "Are you sure want to rename selected items?",
       "deleteMessage": "Are you sure want to delete selected items?",
       "printMessage": "Are you sure want to print selected items?",
@@ -54,12 +101,48 @@
     "breadcrumb": {
       "upOneLevelTitle": "Up one level"
     },
+    "hotkeys": {
+      "panelTitle": "Keyboard Shortcuts",
+      "navigationGroup": "Navigation",
+      "fileActionsGroup": "File Actions",
+      "descriptions": {
+        "navEscape": "Clear selection",
+        "navSelectAll": "Select all items",
+        "navArrowDown": "Select next item",
+        "navArrowDownShift": "Extend selection downward",
+        "navArrowUp": "Select previous item",
+        "navArrowUpShift": "Extend selection upward",
+        "navEnter": "Open selected folder",
+        "toolbarRename": "Rename selected item",
+        "toolbarCopy": "Copy selected items",
+        "toolbarCut": "Cut selected items",
+        "toolbarPaste": "Paste items",
+        "toolbarReload": "Reload folder",
+        "toolbarDelete": "Delete selected items"
+      }
+    },
     "validations": {
       "nameIsRequired": "Name is required!",
       "folderExists": "Folder already exists.",
       "followingItemExist": "The following item(s) exist on the server",
       "notSupportSearch": "The server does not support search",
-      "notContainFollowingCharacters": "The name cannot contain any of the following characters"
+      "notContainFollowingCharacters": "The name cannot contain any of the following characters",
+      "invalidCharacters": "The name contains invalid characters",
+      "noItemsSelectedForCopying": "No items selected for copying",
+      "targetPathRequired": "Target path is required",
+      "itemPathsCannotBeEmpty": "Item paths cannot be empty",
+      "cannotCopyParentToChild": "Cannot copy parent folder into child",
+      "noItemsSelectedForDeletion": "No items selected for deletion",
+      "noItemsSelectedForMoving": "No items selected for moving",
+      "cannotMoveItemToItself": "Cannot move item to itself",
+      "cannotMoveParentToChild": "Cannot move parent folder into child",
+      "newNameCannotBeEmpty": "New name cannot be empty",
+      "nameContainsInvalidCharacters": "Name contains invalid characters",
+      "folderNameCannotBeEmpty": "Folder name cannot be empty",
+      "folderNameContainsInvalidCharacters": "Folder name contains invalid characters",
+      "searchQueryCannotBeEmpty": "Search query cannot be empty",
+      "pageMustBePositive": "Page must be >= 1",
+      "pageSizeMustBePositive": "Page size must be >= 1"
     },
     "downloadProtocol": {
       "installCustomProtocol": "To open this document, you must install a custom protocol on a client machine and enable a web browser extension.",
@@ -82,7 +165,16 @@
       "renameItemErrorMessage": "Rename item error.",
       "renameItemLockedErrorMessage": "Item is locked.",
       "validationErrorMessage": "Validation Error",
-      "failedCheckExistsErrorMessage": "Check for already exists item failed with error."
+      "failedCheckExistsErrorMessage": "Check for already exists item failed with error.",
+      "createFolderErrorMessage": "Create folder error.",
+      "renameFailed": "Rename item error.",
+      "serverMessage": "Server message",
+      "webdav": "WebDAV error (status: {status})",
+      "unknown": "An unexpected error occurred. Please try again.",
+      "networkError": "Unable to connect to the server. Please check your connection.",
+      "notFound": "The requested item could not be found.",
+      "permissionError": "You don't have permission to perform this action.",
+      "serverError": "A server error occurred. Please try again later."
     },
     "uploader": {
       "filesUpload": "Files upload",
@@ -94,6 +186,8 @@
     "browse": "Browse",
     "edit": "Edit",
     "ok": "OK",
+    "loading": "Loading...",
+    "creating": "Creating...",
     "cancel": "Cancel",
     "close": "Close",
     "url": "Url",
@@ -107,6 +201,7 @@
     "secondShortened": "sec",
     "otherOs": "Other OS",
     "otherWebBrowsers": "Other web browsers",
-    "extensionFor": "Extension for {{browser}}"
+    "extensionFor": "Extension for {browser}",
+    "searchPlaceholder": "Search files and folders"
   }
 }

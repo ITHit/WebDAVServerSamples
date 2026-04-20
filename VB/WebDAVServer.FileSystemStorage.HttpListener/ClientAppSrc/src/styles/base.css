@@ -1,0 +1,34 @@
+@layer base {
+
+  /* Control browser native form element appearance */
+  :root {
+    color-scheme: light;
+  }
+
+  :root.dark {
+    color-scheme: dark;
+  }
+
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]):not([type="range"]):not([type="color"]):not([type="button"]):not([type="submit"]):not([type="reset"]),
+  textarea {
+    border-width: 1px;
+    border-style: solid;
+    border-color: var(--color-input-border);
+  }
+
+  body {
+    @apply bg-body font-base;
+  }
+
+  h1 {
+    @apply text-3xl font-bold;
+  }
+
+  h2 {
+    @apply text-2xl font-semibold;
+  }
+
+  p {
+    @apply leading-relaxed;
+  }
+}
