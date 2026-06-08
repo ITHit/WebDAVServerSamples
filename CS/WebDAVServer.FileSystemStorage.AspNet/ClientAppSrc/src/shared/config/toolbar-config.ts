@@ -81,6 +81,16 @@ export const defaultToolbarButtons: ToolbarButtonConfig[] = [
     action: ctx => ctx.fileBrowser.refresh(),
   },
   {
+    id: 'print',
+    label: { text: 'phrases.toolbar.printButton', show: true, class: 'hidden lg:block' },
+    icon: 'icon-print-items',
+    action: ctx => ctx.fileBrowser.printItems?.(ctx.fileBrowser.selectedItems),
+    isDisabled: ctx =>
+      !helpers.hasSelection(ctx) ||
+      !helpers.hasFiles(ctx) ||
+      !ctx.fileBrowser.isDavProtocolSupported,
+  },
+  {
     id: 'delete',
     label: { text: 'phrases.toolbar.deleteButton', show: true, class: 'hidden lg:block' },
     icon: 'icon-delete-items',

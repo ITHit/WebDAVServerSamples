@@ -8,6 +8,10 @@
   .more-pnl {
     display: none;
   }
+
+  .more-pnl.block {
+    display: block;
+  }
 }
 
 @keyframes slide-in-right {

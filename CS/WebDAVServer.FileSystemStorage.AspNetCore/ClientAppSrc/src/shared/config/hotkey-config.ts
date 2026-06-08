@@ -7,43 +7,49 @@ export const defaultHotkeys: HotkeyConfig[] = [
   {
     id: 'nav-escape',
     shortcut: ShortcutLabel.Escape,
-    description: 'Clear selection',
+    description: 'phrases.hotkeys.descriptions.navEscape',
     action: ctx => ctx.fileBrowser.clearSelection(),
   },
   {
     id: 'nav-select-all',
     shortcut: ShortcutLabel.CtrlA,
-    description: 'Select all items',
+    description: 'phrases.hotkeys.descriptions.navSelectAll',
     action: ctx => ctx.fileBrowser.selectAll(),
   },
   {
     id: 'nav-arrow-down',
     shortcut: ShortcutLabel.ArrowDown,
-    description: 'Move selection down',
+    description: 'phrases.hotkeys.descriptions.navArrowDown',
     action: ctx => ctx.fileBrowser.moveSelection(1, false),
   },
   {
     id: 'nav-arrow-down-shift',
     shortcut: ShortcutLabel.ShiftArrowDown,
-    description: 'Extend selection down',
+    description: 'phrases.hotkeys.descriptions.navArrowDownShift',
     action: ctx => ctx.fileBrowser.moveSelection(1, true),
   },
   {
     id: 'nav-arrow-up',
     shortcut: ShortcutLabel.ArrowUp,
-    description: 'Move selection up',
+    description: 'phrases.hotkeys.descriptions.navArrowUp',
     action: ctx => ctx.fileBrowser.moveSelection(-1, false),
   },
   {
     id: 'nav-arrow-up-shift',
     shortcut: ShortcutLabel.ShiftArrowUp,
-    description: 'Extend selection up',
+    description: 'phrases.hotkeys.descriptions.navArrowUpShift',
     action: ctx => ctx.fileBrowser.moveSelection(-1, true),
+  },
+  {
+    id: 'nav-parent-folder',
+    shortcut: ShortcutLabel.AltArrowUp,
+    description: 'phrases.hotkeys.descriptions.navParentFolder',
+    action: ctx => ctx.fileBrowser.loadParentFolder(true),
   },
   {
     id: 'nav-enter',
     shortcut: ShortcutLabel.Enter,
-    description: 'Open selected folder',
+    description: 'phrases.hotkeys.descriptions.navEnter',
     action: ctx => {
       const selected = ctx.fileBrowser.selectedItems;
       if (selected.length === 1 && isFolderItem(selected[0])) {
@@ -59,7 +65,7 @@ export const defaultToolbarHotkeys: HotkeyConfig[] = [
   {
     id: 'toolbar-rename',
     shortcut: ShortcutLabel.F2,
-    description: 'Rename selected item',
+    description: 'phrases.hotkeys.descriptions.toolbarRename',
     action: ctx => {
       const item = helpers.effectiveItem(ctx);
       return item ? ctx.fileBrowser.renameItemWithModal(item) : Promise.resolve();
@@ -69,34 +75,34 @@ export const defaultToolbarHotkeys: HotkeyConfig[] = [
   {
     id: 'toolbar-copy',
     shortcut: ShortcutLabel.CtrlC,
-    description: 'Copy selected items',
+    description: 'phrases.hotkeys.descriptions.toolbarCopy',
     action: ctx => ctx.fileBrowser.copyItemsToClipboard(ctx.fileBrowser.selectedItems),
     isDisabled: ctx => !helpers.hasSelection(ctx),
   },
   {
     id: 'toolbar-cut',
     shortcut: ShortcutLabel.CtrlX,
-    description: 'Cut selected items',
+    description: 'phrases.hotkeys.descriptions.toolbarCut',
     action: ctx => ctx.fileBrowser.cutItemsToClipboard(ctx.fileBrowser.selectedItems),
     isDisabled: ctx => !helpers.hasSelection(ctx),
   },
   {
     id: 'toolbar-paste',
     shortcut: ShortcutLabel.CtrlV,
-    description: 'Paste clipboard items',
+    description: 'phrases.hotkeys.descriptions.toolbarPaste',
     action: ctx => ctx.fileBrowser.pasteStoredItems(),
     isDisabled: ctx => !helpers.hasStoredItems(ctx),
   },
   {
     id: 'toolbar-reload',
     shortcut: ShortcutLabel.F5,
-    description: 'Refresh current folder',
+    description: 'phrases.hotkeys.descriptions.toolbarReload',
     action: ctx => ctx.fileBrowser.refresh(),
   },
   {
     id: 'toolbar-delete',
     shortcut: ShortcutLabel.Del,
-    description: 'Delete selected items',
+    description: 'phrases.hotkeys.descriptions.toolbarDelete',
     action: ctx => ctx.fileBrowser.deleteItemsWithConfirmation(ctx.fileBrowser.selectedItems),
     isDisabled: ctx => !helpers.hasSelection(ctx),
   },

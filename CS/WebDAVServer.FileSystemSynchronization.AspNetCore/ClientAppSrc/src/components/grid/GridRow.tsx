@@ -56,7 +56,12 @@ export function GridRow({
 
   const handleContextMenu = (event: MouseEvent<HTMLTableRowElement>) => {
     event.preventDefault();
-    fileBrowser.selectSingle(index);
+
+    // Keep existing multi-selection when right-clicking one of the selected rows.
+    if (!selected) {
+      fileBrowser.selectSingle(index);
+    }
+
     onContextMenu?.(item, event.nativeEvent);
   };
 

@@ -6,6 +6,7 @@ export const ShortcutLabel = {
   Enter: 'Enter',
   ArrowDown: 'ArrowDown',
   ArrowUp: 'ArrowUp',
+  AltArrowUp: 'Alt+ArrowUp',
   ShiftArrowDown: 'Shift+ArrowDown',
   ShiftArrowUp: 'Shift+ArrowUp',
   F2: 'F2',
@@ -108,6 +109,7 @@ export interface RowToolbarItemConfig {
   id: string;
   title: string;
   icon: string;
+  label?: string;
   action: (item: HierarchyItem, context: FileBrowserContext) => void | Promise<void>;
   isVisible?: (item: HierarchyItem, context: FileBrowserContext) => boolean;
   isDisabled?: (item: HierarchyItem, context: FileBrowserContext) => boolean;
@@ -117,6 +119,7 @@ export interface ResolvedRowToolbarItem {
   id: string;
   title: string;
   icon: string;
+  label?: string;
   disabled: boolean;
   action: () => void | Promise<void>;
 }

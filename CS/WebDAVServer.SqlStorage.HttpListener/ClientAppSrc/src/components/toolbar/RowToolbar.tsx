@@ -11,7 +11,7 @@ export function RowToolbar({ items }: Props) {
         <button
           key={button.id}
           type="button"
-          className="p-1.5 rounded hover:bg-surface-active text-muted cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+          className="flex items-center p-1.5 rounded hover:bg-surface-active text-muted cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
           title={button.title}
           disabled={button.disabled}
           onClick={event => {
@@ -20,6 +20,9 @@ export function RowToolbar({ items }: Props) {
           }}
         >
           <i className={`icon w-4 h-4 align-middle ${button.icon}`} />
+          {button.label ? (
+            <span className="-mb-0.5 mx-1 text-primary-icon">{button.label}</span>
+          ) : null}
         </button>
       ))}
     </div>

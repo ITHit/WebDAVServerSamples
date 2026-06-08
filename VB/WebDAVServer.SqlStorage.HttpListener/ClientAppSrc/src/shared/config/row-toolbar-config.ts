@@ -12,8 +12,9 @@ export const defaultRowToolbarItems: RowToolbarItemConfig[] = [
   {
     id: 'edit',
     title: 'phrases.rowToolbar.edit',
-    icon: 'icon-edit',
-    action: (item, ctx) => ctx.fileBrowser.editItem?.(item),
+    icon: 'icon-edit w-5 h-5 -mt-1',
+    label: 'phrases.rowToolbar.edit',
+    action: (item, ctx) => ctx.fileBrowser.editItem!(item),
     isVisible: (item) => !isFolderItem(item),
   },
   {

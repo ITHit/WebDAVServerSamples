@@ -1,6 +1,4 @@
-import { WebDavClient } from '@/infrastructure/webdav/WebDavClient';
-WebDavClient.initializeLicense();
-
+import '@/infrastructure/webdav/initializeLicense';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';

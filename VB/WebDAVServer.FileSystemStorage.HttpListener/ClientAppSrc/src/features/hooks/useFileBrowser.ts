@@ -20,11 +20,13 @@ import {
 } from '@/features/models/fileBrowserViewState';
 import { WebDavSettings } from '@/infrastructure/config/webDavSettings';
 import { WebDavFileSystemRepository } from '@/infrastructure/repositories/WebDavFileSystemRepository';
-import { getAppPathFromServerUrl, getServerRootUrl } from '@/infrastructure/services/webDavBaseUrl';
+import { getAppPathFromServerUrl, getServerRootUrl, getServerUrl } from '@/infrastructure/services/webDavBaseUrl';
 import { WebDavClient } from '@/infrastructure/webdav/WebDavClient';
 import { downloadMultipleFiles } from '@/shared/utils/downloadUtils';
 import type { MutableBox } from '@/shared/types/box';
 import { PaginationOptions } from '@/domain/value-objects/PaginationOptions';
+import { InstallProtocolModal } from '@/components/modals/InstallProtocolModal';
+import { showModalComponent } from '@/shared/composables/useModalRegistry';
 
 export type FileBrowserViewModel = {
   title: string;
@@ -57,6 +59,7 @@ export type FileBrowserViewModel = {
   isAllSelected: boolean;
   hasSelection: boolean;
   loadFolder: (path: string, showSkeleton?: boolean) => Promise<void>;
+  loadParentFolder: (showSkeleton?: boolean) => Promise<void>;
   search: (query: string) => Promise<void>;
   clearSearch: () => Promise<void>;
   toggleSort: (column: string) => Promise<void>;
@@ -371,9 +374,11 @@ export function useFileBrowser(): FileBrowserViewModel {
         fileSystemRepository: repository,
         uiPorts,
         getSelectedItems: () => getSelectedItems(itemsBox.value, selectedIndexesBox.value),
-        manageDocuments: (fileUrls, operation) => webDavClient.manageDocuments(fileUrls, operation),
+        manageDocuments: (fileUrls, operation) => webDavClient.manageDocuments(fileUrls, operation, () => showModalComponent(InstallProtocolModal as never)),
         isDavProtocolSupported: () => webDavClient.isDavProtocolSupported(),
         downloadMultipleFiles,
+        getAppPathFromServerUrl,
+        getServerUrl,
       }),
     [] // eslint-disable-line react-hooks/exhaustive-deps -- all deps are stable: coreState and boxes are stable refs
   );
@@ -585,18 +590,21 @@ export function useFileBrowser(): FileBrowserViewModel {
         return [];
       }
 
-      try {
-        const result = await repository.searchInFolder(
-          folderPath,
-          query,
-          PaginationOptions.default()
-        );
-        return result.items;
-      } catch {
-        return [];
-      }
+      const result = await repository.searchInFolder(
+        folderPath,
+        query,
+        PaginationOptions.default()
+      );
+      return result.items;
     },
     [repository]
+  );
+
+  const loadParentFolder = useCallback(
+    async (showSkeleton = true) => {
+      await runSafely(() => operations.loadParentFolder(showSkeleton));
+    },
+    [operations, runSafely]
   );
 
   const breadcrumbs = useMemo(() => buildBreadcrumbs(currentFolderPath), [currentFolderPath]);
@@ -683,6 +691,7 @@ export function useFileBrowser(): FileBrowserViewModel {
     isAllSelected,
     hasSelection,
     loadFolder,
+    loadParentFolder,
     search,
     clearSearch,
     refresh,

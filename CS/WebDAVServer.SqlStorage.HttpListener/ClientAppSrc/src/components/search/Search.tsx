@@ -5,6 +5,8 @@ import { isFolderItem, type HierarchyItem } from '@/domain/entities/HierarchyIte
 import type { FileBrowserViewModel } from '@/features/hooks/useFileBrowser';
 import { getAppPathFromServerUrl } from '@/infrastructure/services/webDavBaseUrl';
 import { t } from '@/shared/i18n/translate';
+import { toast } from '@/shared/composables/useToast';
+import { handleError as processError, logError } from '@/shared/utils/errorHandler';
 
 interface Props {
   fileBrowser: FileBrowserViewModel;
@@ -72,9 +74,17 @@ export function Search({ fileBrowser }: Props) {
         return;
       }
 
-      void fileBrowser.searchSuggestions(query).then(results => {
-        setSearchResults(results);
-      });
+      void fileBrowser
+        .searchSuggestions(query)
+        .then(results => {
+          setSearchResults(results);
+        })
+        .catch(error => {
+          const appError = processError(error, t);
+          logError(appError);
+          toast.error(appError.userMessage);
+          setSearchResults([]);
+        });
     }, 400);
 
     return () => {

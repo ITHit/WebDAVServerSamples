@@ -8,6 +8,7 @@ import type { ReadonlyBox } from '@/shared/types/box';
 export interface FileBrowserContract {
   selectedItems: ReadonlyBox<HierarchyItem[]>;
   storedItems: ReadonlyBox<HierarchyItem[]>;
+  isDavProtocolSupported: boolean;
 
   loadFolder(path: string, showSkeleton?: boolean): Promise<void>;
   editItem(item: HierarchyItem): Promise<void>;
@@ -27,5 +28,4 @@ export interface FileBrowserContract {
   clearSelection(): void;
   selectAll(): void;
   moveSelection(offset: number, extend: boolean): void;
-  isDavProtocolSupported(): boolean;
 }

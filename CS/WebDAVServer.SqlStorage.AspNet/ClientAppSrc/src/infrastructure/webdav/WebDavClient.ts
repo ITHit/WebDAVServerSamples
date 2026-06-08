@@ -274,12 +274,13 @@ export class WebDavClient {
 
   manageDocuments(
     fileUrls: string[],
-    operation: 'Edit' | 'Print' | 'Lock' | 'Unlock' | 'OpenWith'
+    operation: 'Edit' | 'Print' | 'Lock' | 'Unlock' | 'OpenWith',
+    showProtocolInstallModal: (...args: unknown[]) => void,
   ): void {
     ITHit.WebDAV.Client.DocManager.DavProtocolEditDocument(
       fileUrls,
       getServerRootUrl(),
-      () => { },
+      showProtocolInstallModal,
       null,
       WebDavSettings.EditDocAuth.SearchIn,
       WebDavSettings.EditDocAuth.CookieNames,
@@ -326,17 +327,5 @@ export class WebDavClient {
       cookieNames,
       loginUrl
     );
-  }
-
-  static initializeLicense(): void {
-    if (import.meta.env.VITE_LICENSE_ID) {
-      ITHit.WebDAV.Client.LicenseId = import.meta.env.VITE_LICENSE_ID;
-    } else if (window.webDavSettings && window.webDavSettings.LicenseId) {
-      ITHit.WebDAV.Client.LicenseId = window.webDavSettings.LicenseId;
-    }
-
-    if (window.webDavSettings && window.webDavSettings.ProtocolName) {
-      ITHit.WebDAV.Client.DocManager.ProtocolName = window.webDavSettings.ProtocolName;
-    }
   }
 }

@@ -23,6 +23,7 @@ export function useRowToolbarItems(
         id: cfg.id,
         title: t(cfg.title),
         icon: cfg.icon,
+        label: cfg.label ? t(cfg.label) : undefined,
         disabled: cfg.isDisabled ? cfg.isDisabled(item, context) : false,
         action: () => cfg.action(item, context),
       }));

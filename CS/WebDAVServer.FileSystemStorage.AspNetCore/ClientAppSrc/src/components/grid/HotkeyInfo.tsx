@@ -93,7 +93,9 @@ export function HotkeyInfo() {
                       </span>
                     ))}
                   </span>
-                  <span className="text-sm text-foreground text-right">{hotkey.description}</span>
+                  <span className="text-sm text-foreground text-right">
+                    {t(hotkey.description!)}
+                  </span>
                 </li>
               ))}
             </ul>
@@ -116,7 +118,9 @@ export function HotkeyInfo() {
                       </span>
                     ))}
                   </span>
-                  <span className="text-sm text-foreground text-right">{hotkey.description}</span>
+                  <span className="text-sm text-foreground text-right">
+                    {t(hotkey.description!)}
+                  </span>
                 </li>
               ))}
             </ul>

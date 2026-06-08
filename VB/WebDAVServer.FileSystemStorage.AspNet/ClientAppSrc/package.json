@@ -23,7 +23,7 @@
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-router-dom": "^7.14.0",
-    "webdav.client": "^6.2.8934"
+    "webdav.client": "^6.2.8935"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",

@@ -112,6 +112,7 @@
         "navArrowDownShift": "Extend selection downward",
         "navArrowUp": "Select previous item",
         "navArrowUpShift": "Extend selection upward",
+        "navParentFolder": "Go to parent folder",
         "navEnter": "Open selected folder",
         "toolbarRename": "Rename selected item",
         "toolbarCopy": "Copy selected items",

@@ -3,7 +3,9 @@ import type { HierarchyItem } from '@/domain/entities/HierarchyItem';
 export interface FileBrowserContract {
   selectedItems: HierarchyItem[];
   storedItems: HierarchyItem[];
+  isDavProtocolSupported: boolean;
   loadFolder(path: string, showSkeleton?: boolean): Promise<void>;
+  loadParentFolder(showSkeleton?: boolean): Promise<void>;
   createFolderWithModal?(): Promise<void>;
   renameItemWithModal(item?: HierarchyItem): Promise<void>;
   deleteItemsWithConfirmation(items?: HierarchyItem[]): Promise<void>;

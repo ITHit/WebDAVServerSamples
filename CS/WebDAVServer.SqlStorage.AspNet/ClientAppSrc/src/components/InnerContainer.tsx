@@ -35,6 +35,7 @@ import { toast } from '@/shared/composables/useToast';
 import {
   defaultContainerContextMenuItems,
   defaultContextMenuItems,
+  defaultMultiContextMenuItems,
 } from '@/shared/config/context-menu-config';
 import { APP_EVENTS } from '@/shared/contracts/appEventBus';
 import { t } from '@/shared/i18n/translate';
@@ -56,6 +57,9 @@ export function InnerContainer({ fileBrowser }: Props) {
   const contextMenu = useContextMenu();
   const { getContextMenuItems: getRowContextMenuItems } =
     useContextMenuItems(defaultContextMenuItems);
+  const { getContextMenuItems: getMultiContextMenuItems } = useContextMenuItems(
+    defaultMultiContextMenuItems
+  );
   const { getContextMenuItems: getContainerContextMenuItems } = useContextMenuItems(
     defaultContainerContextMenuItems
   );
@@ -228,7 +232,16 @@ export function InnerContainer({ fileBrowser }: Props) {
   });
 
   const handleRowContextMenu = (item: HierarchyItem, event: globalThis.MouseEvent) => {
-    contextMenu.show(event, getRowContextMenuItems(item, menuContext));
+    const selectedItems = fileBrowser.selectedItems;
+    const isClickedItemSelected = selectedItems.some(s => s.path === item.path);
+    const shouldUseMultiMenu = selectedItems.length > 1 && isClickedItemSelected;
+
+    contextMenu.show(
+      event,
+      shouldUseMultiMenu
+        ? getMultiContextMenuItems(item, menuContext)
+        : getRowContextMenuItems(item, menuContext)
+    );
   };
 
   const handleContainerContextMenu = (event: MouseEvent<HTMLElement>) => {

@@ -1,6 +1,7 @@
 import { isFolderItem } from '@/domain/entities/HierarchyItem';
 import type { ContextMenuItemConfig, ContainerContextMenuItemConfig } from './config-types';
 import { ShortcutLabel } from './config-types';
+import { helpers } from './config-helpers';
 
 export const defaultContainerContextMenuItems: ContainerContextMenuItemConfig[] = [
   {
@@ -90,5 +91,69 @@ export const defaultContextMenuItems: ContextMenuItemConfig[] = [
     shortcutInfo: ShortcutLabel.Del,
     danger: true,
     action: (ctx, item) => ctx.fileBrowser.deleteItemsWithConfirmation([item]),
+  },
+];
+
+export const defaultMultiContextMenuItems: ContextMenuItemConfig[] = [
+  {
+    id: 'download-multi',
+    label: 'phrases.toolbar.downloadButton',
+    icon: 'icon-download-items',
+    action: ctx => ctx.fileBrowser.downloadItems?.(ctx.fileBrowser.selectedItems),
+    isVisible: ctx => !helpers.hasFolders(ctx),
+    isDisabled: ctx => !helpers.hasSelection(ctx) || !helpers.hasFiles(ctx),
+  },
+  {
+    id: 'separator-1',
+    type: 'separator',
+  },
+  {
+    id: 'lock-multi',
+    label: 'phrases.toolbar.lockButton',
+    icon: 'icon-lock',
+    action: ctx => ctx.fileBrowser.lockFiles?.(ctx.fileBrowser.selectedItems),
+    isVisible: ctx => !helpers.allLocked(ctx) && !helpers.hasFolders(ctx),
+    isDisabled: ctx => !helpers.allUnlocked(ctx),
+  },
+  {
+    id: 'unlock-multi',
+    label: 'phrases.toolbar.unlockButton',
+    icon: 'icon-unlock',
+    action: ctx => ctx.fileBrowser.unlockFiles?.(ctx.fileBrowser.selectedItems),
+    isVisible: ctx => helpers.allLocked(ctx) && !helpers.hasFolders(ctx),
+    isDisabled: ctx => !helpers.allLocked(ctx),
+  },
+  {
+    id: 'separator-2',
+    type: 'separator',
+  },
+  {
+    id: 'copy-multi',
+    label: 'phrases.toolbar.copyButton',
+    icon: 'icon-copy-items',
+    shortcutInfo: ShortcutLabel.CtrlC,
+    action: ctx => ctx.fileBrowser.copyItemsToClipboard(ctx.fileBrowser.selectedItems),
+    isDisabled: ctx => !helpers.hasSelection(ctx),
+  },
+  {
+    id: 'cut-multi',
+    label: 'phrases.toolbar.cutButton',
+    icon: 'icon-cut-items',
+    shortcutInfo: ShortcutLabel.CtrlX,
+    action: ctx => ctx.fileBrowser.cutItemsToClipboard(ctx.fileBrowser.selectedItems),
+    isDisabled: ctx => !helpers.hasSelection(ctx),
+  },
+  {
+    id: 'separator-3',
+    type: 'separator',
+  },
+  {
+    id: 'delete-multi',
+    label: 'phrases.toolbar.deleteButton',
+    icon: 'icon-delete-items',
+    shortcutInfo: ShortcutLabel.Del,
+    danger: true,
+    action: ctx => ctx.fileBrowser.deleteItemsWithConfirmation(ctx.fileBrowser.selectedItems),
+    isDisabled: ctx => !helpers.hasSelection(ctx),
   },
 ];

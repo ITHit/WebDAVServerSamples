@@ -48,6 +48,8 @@ export interface FileBrowserOperationsDeps {
   manageDocuments: ManageDocumentsFn;
   isDavProtocolSupported: () => boolean;
   getSelectedItems: () => HierarchyItem[];
+  getAppPathFromServerUrl: (serverUrl: string) => string;
+  getServerUrl: (pathName: string) => string;
 }
 
 export function createFileBrowserOperations(deps: FileBrowserOperationsDeps) {
@@ -59,6 +61,8 @@ export function createFileBrowserOperations(deps: FileBrowserOperationsDeps) {
     manageDocuments,
     isDavProtocolSupported,
     getSelectedItems,
+    getAppPathFromServerUrl,
+    getServerUrl,
   } = deps;
 
   const {
@@ -77,6 +81,17 @@ export function createFileBrowserOperations(deps: FileBrowserOperationsDeps) {
 
   async function loadFolder(path: string, showSkeleton = false) {
     await loadFolderCore(state, fileSystemRepository, path, showSkeleton);
+  }
+
+  async function loadParentFolder(showSkeleton = true) {
+    const currentPath = state.currentFolder.value?.path;
+    if (!currentPath) return;
+
+    const segments = getAppPathFromServerUrl(currentPath).split('/').filter(Boolean);
+    if (segments.length === 0) return;
+
+    const parentAppPath = segments.length === 1 ? '/' : `/${segments.slice(0, -1).join('/')}`;
+    await loadFolder(getServerUrl(parentAppPath), showSkeleton);
   }
 
   async function search(query: string, showSkeleton = false) {
@@ -234,6 +249,7 @@ export function createFileBrowserOperations(deps: FileBrowserOperationsDeps) {
     toggleSelectAll,
     moveSelection,
     loadFolder,
+    loadParentFolder,
     search,
     clearSearch,
     refresh,
