@@ -277,16 +277,49 @@ export class WebDavClient {
     operation: 'Edit' | 'Print' | 'Lock' | 'Unlock' | 'OpenWith',
     showProtocolInstallModal: (...args: unknown[]) => void,
   ): void {
-    ITHit.WebDAV.Client.DocManager.DavProtocolEditDocument(
-      fileUrls,
-      getServerRootUrl(),
-      showProtocolInstallModal,
-      null,
-      WebDavSettings.EditDocAuth.SearchIn,
-      WebDavSettings.EditDocAuth.CookieNames,
-      WebDavSettings.EditDocAuth.LoginUrl,
-      operation != 'Edit' ? operation : undefined
-    );
+    const msFileUrls: string[] = [];
+    const generalFileUrls: string[] = [];
+
+    for (const fileUrl of fileUrls) {
+      // If the operation is 'Edit' and the authentication is anonymous or not set, and the file is a Microsoft Office document, add it to msFileUrls. Otherwise, add it to generalFileUrls.
+      if (operation === 'Edit' && (WebDavSettings.EditDocAuth.Authentication == 'anonymous' || !WebDavSettings.EditDocAuth.Authentication) && ITHit.WebDAV.Client.DocManager.IsMicrosoftOfficeDocument(fileUrl)) {
+        msFileUrls.push(fileUrl);
+      } else {
+        generalFileUrls.push(fileUrl);
+      }
+    }
+
+    if (generalFileUrls.length > 0) {
+      ITHit.WebDAV.Client.DocManager.DavProtocolEditDocument(
+        generalFileUrls,
+        getServerRootUrl(),
+        showProtocolInstallModal,
+        null,
+        WebDavSettings.EditDocAuth.SearchIn,
+        WebDavSettings.EditDocAuth.CookieNames,
+        WebDavSettings.EditDocAuth.LoginUrl,
+        operation != 'Edit' ? operation : undefined
+      );
+    }
+
+    // If there are Microsoft Office document URLs, handle them separately using the EditDocument method (use Microsoft Office protocol).
+    if (msFileUrls.length > 0) {
+      for (const msFileUrl of msFileUrls) {
+        ITHit.WebDAV.Client.DocManager.EditDocument(
+          msFileUrl,
+          getServerRootUrl(),
+          () => ITHit.WebDAV.Client.DocManager.DavProtocolEditDocument(
+            msFileUrl,
+            getServerRootUrl(),
+            showProtocolInstallModal,
+            null,
+            WebDavSettings.EditDocAuth.SearchIn,
+            WebDavSettings.EditDocAuth.CookieNames,
+            WebDavSettings.EditDocAuth.LoginUrl
+          )
+        );
+      }
+    }
   }
 
   createUploaderCore(): IUploaderCore {
